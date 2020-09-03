@@ -1,52 +1,179 @@
-<ui:composition xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-	xmlns:composite="http://xmlns.jcp.org/jsf/composite"
-	xmlns:h="http://xmlns.jcp.org/jsf/html"
-	xmlns:f="http://xmlns.jcp.org/jsf/core"
-	xmlns:x="http://myfaces.apache.org/tomahawk"
-	xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites"
-	xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
-	xmlns:p="http://primefaces.org/ui">
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:composite="http://xmlns.jcp.org/jsf/composite"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:x="http://myfaces.apache.org/tomahawk"
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites"
+    xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
+    xmlns:p="http://primefaces.org/ui">
 
-	<composite:interface>
-	</composite:interface>
+    <composite:interface>
+    </composite:interface>
 
-	<composite:implementation>
+    <composite:implementation>
+        <style>
+div.container {
+    min-height: 20em;
+    position: relative
+}
 
-		<h:panelGroup>
-			<div class="row">
-				<div class="col-sm-12">
-					<div class="box box-color box-bordered lightgrey">
-						<div class="box-title">
-							<h3>
-								<i class="fa fa-plug"></i>
-								<h:outputText
-									value="#{msgs[AdministrationForm.administrationPlugin.title]}" />
-							</h3>
-						</div>
-						<div class="box-content">
+div.center {
+    margin: 0;
+    background: lightgrey;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    padding: 20px 60px;
+    border: 1px solid black;
+    transform: translate(-50%, -50%)
+}
 
-							<h:panelGroup
-								rendered="#{!LoginForm.hasRole('Plugin_administration_tektonik')}">
-								<h:outputText
-									styleClass="alert alert-danger alert-dismissable margin-bottom-10 margin-top-10"
-									value="#{msgs.plugin_administration_missingPermission} Plugin_administration_tektonik"></h:outputText>
-							</h:panelGroup>
+div.grid-content {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    grid-gap: 10px;
+    /* margin-left: -15px; */
+    /* margin-right: -15px; */
+}
 
-							<h:panelGroup id="actionform" styleClass="col-sm-12"
-								rendered="#{LoginForm.hasRole('Plugin_administration_tektonik')}">
-								<div class="row">
-									<h:form>
-										hello adminstration plugin: #{AdministrationForm.administrationPlugin.value}
-									</h:form>
-								</div>
-							</h:panelGroup>
+div.leftArea {
+    padding-left: 15px;
+}
 
-						</div>
-					</div>
-				</div>
-			</div>
-		</h:panelGroup>
+div.rightArea {
+    padding-right: 15px;
+}
 
-	</composite:implementation>
+div.rightArea p {
+    text-align: center;
+}
+
+div.no-element-selected {
+    min-height: 10em;
+    padding: 20px 60px;
+    background: lightgrey;
+    border: 1px solid black;
+}
+</style>
+        <h:panelGroup>
+            <div class="row">
+                <div class="col-sm-12">
+                    <h:panelGroup
+                        layout="block"
+                        styleClass="box box-color box-bordered"
+                        rendered="#{AdministrationForm.administrationPlugin.selectedDatabase == NULL}">
+                        <div class="box-title">
+                            <h3>
+                                <i class="fa fa-plug"></i>
+                                <h:outputText value="#{msgs[AdministrationForm.administrationPlugin.title]}" />
+                            </h3>
+                        </div>
+                        <div class="box-content">
+
+                            <h:panelGroup rendered="#{!LoginForm.hasRole('Plugin_Administration_Tektonik')}">
+                                <h:outputText
+                                    styleClass="alert alert-danger alert-dismissable margin-bottom-10 margin-top-10"
+                                    value="#{msgs.plugin_administration_missingPermission} Plugin_Administration_Tektonik"></h:outputText>
+                            </h:panelGroup>
+
+                            <h:panelGroup
+                                id="actionform"
+                                styleClass="col-sm-12"
+                                rendered="#{LoginForm.hasRole('Plugin_Administration_Tektonik')}">
+                                <h:panelGroup
+                                    layout="block"
+                                    styleClass="row"
+                                    rendered="#{AdministrationForm.administrationPlugin.selectedDatabase == NULL}">
+                                    <h:form>
+
+                                        <div class="container">
+                                            <div class="center">
+                                                <p>
+                                                    <strong>#{msgs.plugin_administration_tectonics_SelectionHeading}</strong>
+                                                </p>
+                                                <p>#{msgs.plugin_administration_tectonics_SelectionText}</p>
+
+
+                                                <h:selectOneMenu
+                                                    id="selectDB"
+                                                    styleClass="form-control"
+                                                    value="#{AdministrationForm.administrationPlugin.selectedDatabase}">
+                                                    <f:selectItem
+                                                        itemValue="null"
+                                                        itemLabel="#{msgs.bitteAuswaehlen}" />
+                                                    <f:selectItems value="#{AdministrationForm.administrationPlugin.possibleDatabases}" />
+                                                </h:selectOneMenu>
+
+
+
+                                                <h:commandLink
+                                                    styleClass="btn btn-primary font-size-s pull-right margin-top-10"
+                                                    id="absenden"
+                                                    action="#{AdministrationForm.administrationPlugin.loadSelectedDatabase}">
+                                                    <h:outputText value="#{msgs.plugin_administration_tectonics_loadDatabase}" />
+                                                </h:commandLink>
+                                            </div>
+                                        </div>
+
+
+                                    </h:form>
+                                </h:panelGroup>
+
+                            </h:panelGroup>
+                        </div>
+                    </h:panelGroup>
+
+
+                    <h:panelGroup
+                        layout="block"
+                        styleClass="row"
+                        rendered="#{AdministrationForm.administrationPlugin.selectedDatabase != NULL}">
+                        <div class="grid-content">
+                            <div class="box-content grid-container leftArea">
+
+                                <h:panelGroup
+                                    layout="block"
+                                    styleClass="box box-color box-bordered lightgrey">
+                                    <div class="box-title">
+                                        <h3>
+                                            <i class="fa fa-plug"></i>
+                                            <h:outputText value="#{msgs[AdministrationForm.administrationPlugin.title]}" />
+                                        </h3>
+                                    </div>
+                                    <div class="box-content">left</div>
+                                </h:panelGroup>
+
+                            </div>
+
+
+                            <div class="grid-container rightArea">
+
+                                <div class="container">
+                                    <h:panelGroup
+                                        layout="block"
+                                        styleClass="center">
+
+                                        <p>
+                                            <strong>#{msgs.plugin_administration_tectonics_noElementSelectedHeading}</strong>
+                                        </p>
+                                        <p>#{msgs.plugin_administration_tectonics_noElementSelectedText}</p>
+
+                                    </h:panelGroup>
+
+                                </div>
+
+                            </div>
+                        </div>
+
+
+
+                    </h:panelGroup>
+                </div>
+            </div>
+        </h:panelGroup>
+
+    </composite:implementation>
 </ui:composition>
