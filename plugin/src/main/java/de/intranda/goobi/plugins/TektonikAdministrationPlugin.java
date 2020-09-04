@@ -39,7 +39,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
     @Getter
     @Setter
-    private String datastoreUrl ="http://localhost:8984/"; // TODO get this from config
+    private String datastoreUrl = "http://localhost:8984/"; // TODO get this from config
 
     private static final Namespace defaultNamespace = Namespace.getNamespace("urn:isbn:1-931666-22-9");
 
@@ -48,8 +48,6 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
      */
     public TektonikAdministrationPlugin() {
     }
-
-
 
     @Getter
     @Setter
@@ -65,28 +63,44 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         String response = HttpClientHelper.getStringFromUrl(datastoreUrl + "databases");
         if (StringUtils.isNotBlank(response)) {
 
-            SAXBuilder builder = new SAXBuilder(XMLReaders.NONVALIDATING);
-            builder.setFeature("http://xml.org/sax/features/validation", false);
-            builder.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
-            builder.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-
-            try {
-                Document document = builder.build(new StringReader(response), "utf-8");
+            Document document = openDocument(response);
+            if (document != null) {
                 Element root = document.getRootElement();
                 List<Element> databaseList = root.getChildren("database", defaultNamespace);
                 for (Element db : databaseList) {
                     databases.add(db.getText());
                 }
-            } catch (JDOMException | IOException e) {
-                log.error(e);
             }
         }
         return databases;
     }
 
-    public String loadSelectedDatabase() {
+    public void loadSelectedDatabase() {
+        // open selected database
 
-        System.out.println(selectedDatabase);
-        return "plugin_administration_tektonik2";
+        if (StringUtils.isNotBlank(selectedDatabase)) {
+            String response = HttpClientHelper.getStringFromUrl(datastoreUrl + "db/" + selectedDatabase);
+            // get xml root element
+            Document document = openDocument(response);
+            if (document != null) {
+                // parse ead file
+            }
+        }
+    }
+
+    private Document openDocument(String response) {
+        SAXBuilder builder = new SAXBuilder(XMLReaders.NONVALIDATING);
+        builder.setFeature("http://xml.org/sax/features/validation", false);
+        builder.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
+        builder.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+
+        try {
+            Document document = builder.build(new StringReader(response), "utf-8");
+            return document;
+
+        } catch (JDOMException | IOException e) {
+            log.error(e);
+        }
+        return null;
     }
 }
