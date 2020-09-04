@@ -1,16 +1,23 @@
 package de.intranda.goobi.plugins.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Data;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 @Data
-public class Entry {
+@RequiredArgsConstructor
+public class EadEntry {
 
     // list contains all child elements
-    private List<Entry> subEntryList;
+    private List<EadEntry> subEntryList = new ArrayList<>();
+
     // order number of the current element
+    @NonNull
     private Integer orderNumber;
+
     // display label
     private String label;
     // node is open/closed
@@ -23,7 +30,7 @@ public class Entry {
 
     /* 1. metadata for Identity Statement Area */
     //    Reference code(s)
-    private String agencycode; // /ead/eadheader/eadid/@mainagencycode
+    private String agencycode; // /ead/control/maintenanceagency/agencycode
     private String eadid; //  /ead/eadheader/eadid
     private String recordid; // /ead/control/recordid
     private String unitid; // did/unitid
@@ -94,17 +101,20 @@ public class Entry {
     private String maintenanceevent; // control/maintenancehistory/maintenanceevent/eventtype (only on root level)
     private String eventdatetime; //  control/maintenancehistory/maintenanceevent/eventdatetime (only on root level)
 
-
-    public void addSubEntry() {
-
+    public void addSubEntry(EadEntry other) {
+        subEntryList.add(other);
     }
 
-    public void removeSubEntry() {
+    public void removeSubEntry(EadEntry other) {
+        subEntryList.remove(other);
 
     }
 
     public void reOrderElements() {
-
+        int order = 1;
+        for (EadEntry entry : subEntryList) {
+            entry.setOrderNumber(order++);
+        }
     }
 
 }
