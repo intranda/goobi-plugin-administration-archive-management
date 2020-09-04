@@ -15,6 +15,7 @@ import org.jdom2.Namespace;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.input.sax.XMLReaders;
 
+import de.intranda.goobi.plugins.model.Entry;
 import de.sub.goobi.helper.HttpClientHelper;
 import lombok.Getter;
 import lombok.Setter;
@@ -40,6 +41,9 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     @Getter
     @Setter
     private String datastoreUrl = "http://localhost:8984/"; // TODO get this from config
+
+    @Getter
+    private List<Entry> entryList = new ArrayList<>();
 
     private static final Namespace defaultNamespace = Namespace.getNamespace("urn:isbn:1-931666-22-9");
 
