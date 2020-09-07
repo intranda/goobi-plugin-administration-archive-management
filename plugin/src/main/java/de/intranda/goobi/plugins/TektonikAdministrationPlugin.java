@@ -178,75 +178,23 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         }
 
         Element eadheader = element.getChild("eadheader", ns);
-        Element control = element.getChild("control", ns);
-        Element archdesc = element.getChild("archdesc", ns);
-        Element did = null;
-        Element dsc = null;
-        List<Element> clist = null;
+
+
         entry.setId(element.getAttributeValue("id"));
-        //        entry.setDescriptionLevel(element.getAttributeValue("level"));
         if (eadheader != null) {
-            //            entry.setEadid(eadheader.getChildText("eadid", ns));
             entry.setLabel(eadheader.getChild("filedesc", ns).getChild("titlestmt", ns).getChildText("titleproper", ns));
         }
-        if (control != null) {
-            //            entry.setRecordid(control.getChildText("recordid", ns));
-            //            Element maintenanceagency = control.getChild("maintenanceagency", ns);
-            //            if (maintenanceagency != null) {
-            //                entry.setAgencycode(maintenanceagency.getChildText("agencycode", ns));
-            //            }
-            entry.setConventiondeclaration(control.getChildText("conventiondeclaration", ns));
-            Element maintenancehistory = control.getChild("maintenancehistory", ns);
-            if (maintenancehistory != null) {
-                Element maintenanceevent = maintenancehistory.getChild("maintenanceevent", ns);
-                entry.setMaintenanceevent(maintenanceevent.getChildText("eventtype", ns));
-                entry.setEventdatetime(maintenanceevent.getChildText("eventdatetime", ns));
+
+        // get child elements
+        List<Element> clist = null;
+        Element archdesc = element.getChild("archdesc", ns);
+        if (archdesc != null) {
+            Element dsc = archdesc.getChild("dsc", ns);
+            if (dsc != null) {
+                clist = dsc.getChildren("c", ns);
             }
         }
 
-        if (archdesc != null) {
-            //            entry.setDescriptionLevel(archdesc.getAttributeValue("level"));
-
-            did = archdesc.getChild("did", ns);
-            dsc = archdesc.getChild("dsc", ns);
-        } else {
-            did = element.getChild("did", ns);
-            dsc = element.getChild("dsc", ns);
-        }
-        if (did != null) {
-
-            //            entry.setUnitid(did.getChildText("unitid", ns));
-            //            entry.setUnittitle(did.getChildText("unittitle", ns));
-            //            entry.setUnitdate(did.getChildText("unitdate", ns));
-            //            entry.setUnitdatestructured(did.getChildText("unitdatestructured", ns));
-            //            entry.setPhysdesc(did.getChildText("physdesc", ns));
-            //            entry.setPhysdescstructured(did.getChildText("physdescstructured", ns));
-            //            entry.setOrigination(did.getChildText("origination", ns));
-            entry.setLangmaterial(did.getChildText("langmaterial", ns));
-            entry.setDidnote(did.getChildText("didnote", ns));
-        }
-
-        if (dsc != null) {
-            //            entry.setBioghist(dsc.getChildText("bioghist", ns));
-            //            entry.setCustodhist(dsc.getChildText("custodhist", ns));
-            //            entry.setAcqinfo(dsc.getChildText("acqinfo", ns));
-            entry.setScopecontent(dsc.getChildText("scopecontent", ns));
-            entry.setAppraisal(dsc.getChildText("appraisal", ns));
-            entry.setAccruals(dsc.getChildText("accruals", ns));
-            entry.setArrangement(dsc.getChildText("arrangement", ns));
-            entry.setAccessrestrict(dsc.getChildText("accessrestrict", ns));
-            entry.setUserestrict(dsc.getChildText("userestrict", ns));
-            entry.setPhystech(dsc.getChildText("phystech", ns));
-            entry.setOtherfindaid(dsc.getChildText("otherfindaid", ns));
-            entry.setOriginalsloc(dsc.getChildText("originalsloc", ns));
-            entry.setAltformavail(dsc.getChildText("altformavail", ns));
-            entry.setRelatedmaterial(dsc.getChildText("relatedmaterial", ns));
-            entry.setSeparatedmaterial(dsc.getChildText("separatedmaterial", ns));
-            entry.setBibliography(dsc.getChildText("bibliography", ns));
-            entry.setOdd(dsc.getChildText("odd", ns));
-            entry.setProcessinfo(dsc.getChildText("processinfo", ns));
-            clist = dsc.getChildren("c", ns);
-        }
         if (clist == null) {
             clist = element.getChildren("c", ns);
         }

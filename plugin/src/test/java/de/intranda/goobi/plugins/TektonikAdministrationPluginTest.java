@@ -178,6 +178,111 @@ public class TektonikAdministrationPluginTest {
             }
         }
 
+        EadMetadataField scopecontent = null;
+        EadMetadataField appraisal = null;
+        EadMetadataField accruals = null;
+        EadMetadataField arrangement = null;
+        for (EadMetadataField emf : entry.getContentAndStructureAreaAreaList()) {
+            switch (emf.getName()) {
+                case "scopecontent":
+                    scopecontent = emf;
+                    break;
+                case "appraisal":
+                    appraisal = emf;
+                    break;
+                case "accruals":
+                    accruals = emf;
+                    break;
+                case "arrangement":
+                    arrangement = emf;
+                    break;
+            }
+        }
+        EadMetadataField accessrestrict = null;
+        EadMetadataField userestrict = null;
+        EadMetadataField langmaterial = null;
+        EadMetadataField phystech = null;
+        EadMetadataField otherfindaid = null;
+        for (EadMetadataField emf : entry.getAccessAndUseAreaList()) {
+            switch (emf.getName()) {
+                case "accessrestrict":
+                    accessrestrict = emf;
+                    break;
+                case "userestrict":
+                    userestrict = emf;
+                    break;
+                case "langmaterial":
+                    langmaterial = emf;
+                    break;
+                case "phystech":
+                    phystech = emf;
+                    break;
+                case "otherfindaid":
+                    otherfindaid = emf;
+                    break;
+            }
+
+        }
+        EadMetadataField originalsloc = null;
+        EadMetadataField altformavail = null;
+        EadMetadataField relatedmaterial = null;
+        EadMetadataField separatedmaterial = null;
+        EadMetadataField bibliography = null;
+        for (EadMetadataField emf : entry.getAlliedMaterialsAreaList()) {
+            switch (emf.getName()) {
+                case "originalsloc":
+                    originalsloc = emf;
+                    break;
+                case "altformavail":
+                    altformavail = emf;
+                    break;
+                case "relatedmaterial":
+                    relatedmaterial = emf;
+                    break;
+                case "separatedmaterial":
+                    separatedmaterial = emf;
+                    break;
+                case "bibliography":
+                    bibliography = emf;
+                    break;
+            }
+        }
+
+        EadMetadataField didnote = null;
+        EadMetadataField odd = null;
+        for (EadMetadataField emf : entry.getNotesAreaList()) {
+            switch (emf.getName()) {
+                case "didnote":
+                    didnote = emf;
+                    break;
+                case "odd":
+                    odd = emf;
+                    break;
+            }
+        }
+
+        EadMetadataField processinfo = null;
+        EadMetadataField conventiondeclaration = null;
+        EadMetadataField maintenanceevent = null;
+        EadMetadataField eventdatetime = null;
+        for (EadMetadataField emf : entry.getDescriptionControlAreaList()) {
+            switch (emf.getName()) {
+                case "processinfo":
+                    processinfo = emf;
+                    break;
+                case "conventiondeclaration":
+                    conventiondeclaration = emf;
+                    break;
+                case "maintenanceevent":
+                    maintenanceevent = emf;
+                    break;
+                case "eventdatetime":
+                    eventdatetime = emf;
+                    break;
+
+            }
+        }
+
         assertEquals(1, entry.getOrderNumber().intValue());
         assertEquals("tectonics header", entry.getLabel());
 
@@ -187,9 +292,9 @@ public class TektonikAdministrationPluginTest {
         assertEquals("unitid", unitid.getValue());
         assertEquals("unittitle", unittitle.getValue());
 
-        assertEquals("conventiondeclaration", entry.getConventiondeclaration());
-        assertEquals("eventtype", entry.getMaintenanceevent());
-        assertEquals("eventdatetime", entry.getEventdatetime());
+        assertEquals("conventiondeclaration", conventiondeclaration.getValue());
+        assertEquals("eventtype", maintenanceevent.getValue());
+        assertEquals("eventdatetime", eventdatetime.getValue());
         assertEquals("collection", descriptionLevel.getValue());
 
         assertEquals("unitdate", unitdate.getValue());
@@ -197,27 +302,28 @@ public class TektonikAdministrationPluginTest {
         assertEquals("physdesc", physdesc.getValue());
         assertEquals("physdescstructured", physdescstructured.getValue());
         assertEquals("origination", origination.getValue());
-        assertEquals("langmaterial", entry.getLangmaterial());
-        assertEquals("didnote", entry.getDidnote());
+        assertEquals("langmaterial", langmaterial.getValue());
+        assertEquals("didnote", didnote.getValue());
 
         assertEquals("bioghist", bioghist.getValue());
         assertEquals("custodhist", custodhist.getValue());
         assertEquals("acqinfo", acqinfo.getValue());
-        assertEquals("scopecontent", entry.getScopecontent());
-        assertEquals("appraisal", entry.getAppraisal());
-        assertEquals("accruals", entry.getAccruals());
-        assertEquals("arrangement", entry.getArrangement());
-        assertEquals("accessrestrict", entry.getAccessrestrict());
-        assertEquals("userestrict", entry.getUserestrict());
-        assertEquals("phystech", entry.getPhystech());
-        assertEquals("otherfindaid", entry.getOtherfindaid());
-        assertEquals("originalsloc", entry.getOriginalsloc());
-        assertEquals("altformavail", entry.getAltformavail());
-        assertEquals("relatedmaterial", entry.getRelatedmaterial());
-        assertEquals("separatedmaterial", entry.getSeparatedmaterial());
-        assertEquals("bibliography", entry.getBibliography());
-        assertEquals("odd", entry.getOdd());
-        assertEquals("processinfo", entry.getProcessinfo());
+        assertEquals("scopecontent", scopecontent.getValue());
+        assertEquals("appraisal", appraisal.getValue());
+        assertEquals("accruals", accruals.getValue());
+        assertEquals("arrangement", arrangement.getValue());
+        assertEquals("accessrestrict", accessrestrict.getValue());
+        assertEquals("userestrict", userestrict.getValue());
+        assertEquals("phystech", phystech.getValue());
+        assertEquals("otherfindaid", otherfindaid.getValue());
+
+        assertEquals("originalsloc", originalsloc.getValue());
+        assertEquals("altformavail", altformavail.getValue());
+        assertEquals("relatedmaterial", relatedmaterial.getValue());
+        assertEquals("separatedmaterial", separatedmaterial.getValue());
+        assertEquals("bibliography", bibliography.getValue());
+        assertEquals("odd", odd.getValue());
+        assertEquals("processinfo", processinfo.getValue());
 
         EadEntry firstSub = entry.getSubEntryList().get(0);
 

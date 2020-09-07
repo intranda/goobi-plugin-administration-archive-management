@@ -48,56 +48,38 @@ public class EadEntry {
 
 
     /* 3. Content and Structure Area */
-    private List<EadMetadataField> contentAndStructureAreaAreaList = new ArrayList<>();
     //    Scope and content
-    private String scopecontent; // dsc/scopecontent
     //    Appraisal, destruction and scheduling information
-    private String appraisal; // dsc/appraisal
     //    Accruals
-    private String accruals; // dsc/accruals
     //    System of arrangement
-    private String arrangement; // dsc/arrangement
+    private List<EadMetadataField> contentAndStructureAreaAreaList = new ArrayList<>();
 
     /* 4. Condition of Access and Use Area */
-    private List<EadMetadataField> accessAndUseAreaList = new ArrayList<>();
     //    Conditions governing access
-    private String accessrestrict; // dsc/accessrestrict
     //    Conditions governing reproduction
-    private String userestrict; // dsc/userestrict
     //    Language | Scripts of material
-    private String langmaterial; // did/langmaterial
     //    Physical characteristics and technical requirements
-    private String phystech; // dsc/phystech
     //    Finding aids
-    private String otherfindaid; // dsc/otherfindaid
+    private List<EadMetadataField> accessAndUseAreaList = new ArrayList<>();
 
     /* 5. Allied Materials Area */
-    private List<EadMetadataField> alliedMaterialsAreaList = new ArrayList<>();
     //    Existence and location of originals
-    private String originalsloc; // dsc/originalsloc
     //    Existence and location of copies
-    private String altformavail; // dsc/altformavail
     //    Related units of description
-    private String relatedmaterial; // dsc/relatedmaterial
-    private String separatedmaterial; // dsc/separatedmaterial
     //    Publication note
-    private String bibliography; // dsc/bibliography
+    private List<EadMetadataField> alliedMaterialsAreaList = new ArrayList<>();
 
     /* 6. Note Area */
-    private List<EadMetadataField> notesAreaList = new ArrayList<>();
     //    Note
-    private String didnote; // did/didnote
-    private String odd; //  dsc/odd
+    private List<EadMetadataField> notesAreaList = new ArrayList<>();
+
     /* 7. Description Control Area */
+    //    Archivist's Note
+    //    Rules or Conventions
+    //    Date(s) of descriptions
     private List<EadMetadataField> descriptionControlAreaList = new ArrayList<>();
 
-    //    Archivist's Note
-    private String processinfo; // dsc/processinfo
-    //    Rules or Conventions
-    private String conventiondeclaration; // control/conventiondeclaration (only on root level)
-    //    Date(s) of descriptions
-    private String maintenanceevent; // control/maintenancehistory/maintenanceevent/eventtype (only on root level)
-    private String eventdatetime; //  control/maintenancehistory/maintenanceevent/eventdatetime (only on root level)
+
 
     public void addSubEntry(EadEntry other) {
         subEntryList.add(other);
