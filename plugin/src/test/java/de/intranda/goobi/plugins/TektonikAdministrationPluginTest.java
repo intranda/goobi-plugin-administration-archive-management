@@ -56,7 +56,7 @@ public class TektonikAdministrationPluginTest {
     }
 
     private XMLConfiguration getConfig() throws Exception {
-        XMLConfiguration config = new XMLConfiguration("plugin_intranda_administration_tektonik.xml");
+        XMLConfiguration config = new XMLConfiguration(resourcesFolder + "plugin_intranda_administration_tektonik.xml");
         config.setListDelimiter('&');
         config.setReloadingStrategy(new FileChangedReloadingStrategy());
         return config;
@@ -123,7 +123,7 @@ public class TektonikAdministrationPluginTest {
         EadMetadataField physdesc = null;
         EadMetadataField physdescstructured = null;
 
-        for (EadMetadataField emf : fieldList) {
+        for (EadMetadataField emf : entry.getIdentityStatementAreaList()) {
             switch (emf.getName()) {
                 case "agencycode":
                     agencycode = emf;
@@ -155,7 +155,26 @@ public class TektonikAdministrationPluginTest {
                 case "physdescstructured":
                     physdescstructured = emf;
                     break;
-
+            }
+        }
+        EadMetadataField origination = null;
+        EadMetadataField bioghist = null;
+        EadMetadataField custodhist = null;
+        EadMetadataField acqinfo = null;
+        for (EadMetadataField emf : entry.getContextAreaList()) {
+            switch (emf.getName()) {
+                case "origination":
+                    origination = emf;
+                    break;
+                case "bioghist":
+                    bioghist = emf;
+                    break;
+                case "custodhist":
+                    custodhist = emf;
+                    break;
+                case "acqinfo":
+                    acqinfo = emf;
+                    break;
             }
         }
 
@@ -177,13 +196,13 @@ public class TektonikAdministrationPluginTest {
         assertEquals("unitdatestructured", unitdatestructured.getValue());
         assertEquals("physdesc", physdesc.getValue());
         assertEquals("physdescstructured", physdescstructured.getValue());
-        assertEquals("origination", entry.getOrigination());
+        assertEquals("origination", origination.getValue());
         assertEquals("langmaterial", entry.getLangmaterial());
         assertEquals("didnote", entry.getDidnote());
 
-        assertEquals("bioghist", entry.getBioghist());
-        assertEquals("custodhist", entry.getCustodhist());
-        assertEquals("acqinfo", entry.getAcqinfo());
+        assertEquals("bioghist", bioghist.getValue());
+        assertEquals("custodhist", custodhist.getValue());
+        assertEquals("acqinfo", acqinfo.getValue());
         assertEquals("scopecontent", entry.getScopecontent());
         assertEquals("appraisal", entry.getAppraisal());
         assertEquals("accruals", entry.getAccruals());

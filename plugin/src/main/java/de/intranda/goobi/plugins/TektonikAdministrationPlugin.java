@@ -177,10 +177,6 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             }
         }
 
-        for (EadMetadataField emf : entry.getIdentityStatementAreaList()) {
-            System.out.println(emf.getName() + " " + emf.getValue());
-        }
-
         Element eadheader = element.getChild("eadheader", ns);
         Element control = element.getChild("control", ns);
         Element archdesc = element.getChild("archdesc", ns);
@@ -225,15 +221,15 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             //            entry.setUnitdatestructured(did.getChildText("unitdatestructured", ns));
             //            entry.setPhysdesc(did.getChildText("physdesc", ns));
             //            entry.setPhysdescstructured(did.getChildText("physdescstructured", ns));
-            entry.setOrigination(did.getChildText("origination", ns));
+            //            entry.setOrigination(did.getChildText("origination", ns));
             entry.setLangmaterial(did.getChildText("langmaterial", ns));
             entry.setDidnote(did.getChildText("didnote", ns));
         }
 
         if (dsc != null) {
-            entry.setBioghist(dsc.getChildText("bioghist", ns));
-            entry.setCustodhist(dsc.getChildText("custodhist", ns));
-            entry.setAcqinfo(dsc.getChildText("acqinfo", ns));
+            //            entry.setBioghist(dsc.getChildText("bioghist", ns));
+            //            entry.setCustodhist(dsc.getChildText("custodhist", ns));
+            //            entry.setAcqinfo(dsc.getChildText("acqinfo", ns));
             entry.setScopecontent(dsc.getChildText("scopecontent", ns));
             entry.setAppraisal(dsc.getChildText("appraisal", ns));
             entry.setAccruals(dsc.getChildText("accruals", ns));

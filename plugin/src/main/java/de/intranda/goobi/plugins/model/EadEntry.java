@@ -39,18 +39,13 @@ public class EadEntry {
     //    Extent and medium of the unit of description (quantity, bulk, or size)
     private List<EadMetadataField> identityStatementAreaList = new ArrayList<>();
 
-
     /* 2. Context Area */
+    //    Name of creator(s)
+    //    Administrative | Biographical history
+    //    Archival history
+    //    Immediate source of acquisition or transfer
     private List<EadMetadataField> contextAreaList = new ArrayList<>();
 
-    //    Name of creator(s)
-    private String origination; // /did/origination
-    //    Administrative | Biographical history
-    private String bioghist; // dsc/bioghist
-    //    Archival history
-    private String custodhist; // dsc/custodhist
-    //    Immediate source of acquisition or transfer
-    private String acqinfo; // dsc/acqinfo
 
     /* 3. Content and Structure Area */
     private List<EadMetadataField> contentAndStructureAreaAreaList = new ArrayList<>();
