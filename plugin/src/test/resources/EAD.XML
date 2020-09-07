@@ -69,10 +69,10 @@
                 <odd>odd</odd>
                 <processinfo>processinfo</processinfo>
       
-        <c level="file" id="A91x59286248683929420181205140345809">
+        <c level="file" id="1234uniqueId">
           <did>
-            <unitid>Doe-Foto</unitid>
-            <unittitle>John Doe - Fotosammlung</unittitle>
+            <unitid>first level id</unitid>
+            <unittitle>first level title</unittitle>
           </did>
           <c level="class" id="A91x59286248683929420181205140345809A91x69955980777740420181205140002806">
             <did>

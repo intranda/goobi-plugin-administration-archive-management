@@ -18,6 +18,8 @@ public class EadEntry {
     @NonNull
     private Integer orderNumber;
 
+    private String id; // c@id
+
     // display label
     private String label;
     // node is open/closed
@@ -30,22 +32,17 @@ public class EadEntry {
 
     /* 1. metadata for Identity Statement Area */
     //    Reference code(s)
-    private String agencycode; // /ead/control/maintenanceagency/agencycode
-    private String eadid; //  /ead/eadheader/eadid
-    private String recordid; // /ead/control/recordid
-    private String unitid; // did/unitid
     //    Title
-    private String unittitle; // did/unittitle
+    //    private String unittitle; // did/unittitle
     //    Date(s)
-    private String unitdate; // did/unitdate
-    private String unitdatestructured; //  did/unitdatestructured
     //    Level of description
-    private String descriptionLevel; // combine parent descriptionLevel + c/@level (or archdesc/@level on root element)
     //    Extent and medium of the unit of description (quantity, bulk, or size)
-    private String physdesc; // did/physdesc
-    private String physdescstructured; // did/physdescstructured
+    private List<EadMetadataField> identityStatementAreaList = new ArrayList<>();
+
 
     /* 2. Context Area */
+    private List<EadMetadataField> contextAreaList = new ArrayList<>();
+
     //    Name of creator(s)
     private String origination; // /did/origination
     //    Administrative | Biographical history
@@ -55,7 +52,8 @@ public class EadEntry {
     //    Immediate source of acquisition or transfer
     private String acqinfo; // dsc/acqinfo
 
-    /* 3. Content and Structure Area*/
+    /* 3. Content and Structure Area */
+    private List<EadMetadataField> contentAndStructureAreaAreaList = new ArrayList<>();
     //    Scope and content
     private String scopecontent; // dsc/scopecontent
     //    Appraisal, destruction and scheduling information
@@ -66,6 +64,7 @@ public class EadEntry {
     private String arrangement; // dsc/arrangement
 
     /* 4. Condition of Access and Use Area */
+    private List<EadMetadataField> accessAndUseAreaList = new ArrayList<>();
     //    Conditions governing access
     private String accessrestrict; // dsc/accessrestrict
     //    Conditions governing reproduction
@@ -78,6 +77,7 @@ public class EadEntry {
     private String otherfindaid; // dsc/otherfindaid
 
     /* 5. Allied Materials Area */
+    private List<EadMetadataField> alliedMaterialsAreaList = new ArrayList<>();
     //    Existence and location of originals
     private String originalsloc; // dsc/originalsloc
     //    Existence and location of copies
@@ -89,10 +89,13 @@ public class EadEntry {
     private String bibliography; // dsc/bibliography
 
     /* 6. Note Area */
+    private List<EadMetadataField> notesAreaList = new ArrayList<>();
     //    Note
     private String didnote; // did/didnote
     private String odd; //  dsc/odd
     /* 7. Description Control Area */
+    private List<EadMetadataField> descriptionControlAreaList = new ArrayList<>();
+
     //    Archivist's Note
     private String processinfo; // dsc/processinfo
     //    Rules or Conventions
@@ -116,5 +119,7 @@ public class EadEntry {
             entry.setOrderNumber(order++);
         }
     }
+
+    private List<EadMetadataField> level1Fields = new ArrayList<>();
 
 }

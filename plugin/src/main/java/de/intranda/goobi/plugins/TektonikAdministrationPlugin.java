@@ -5,17 +5,27 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang.StringUtils;
 import org.goobi.production.enums.PluginType;
 import org.goobi.production.plugin.interfaces.IAdministrationPlugin;
+import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
+import org.jdom2.Text;
+import org.jdom2.filter.Filters;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.input.sax.XMLReaders;
+import org.jdom2.xpath.XPathExpression;
+import org.jdom2.xpath.XPathFactory;
 
 import de.intranda.goobi.plugins.model.EadEntry;
+import de.intranda.goobi.plugins.model.EadMetadataField;
+import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.helper.HttpClientHelper;
 import lombok.Getter;
 import lombok.Setter;
@@ -45,7 +55,10 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     @Getter
     private List<EadEntry> entryList = new ArrayList<>();
 
-    private static final Namespace ns = Namespace.getNamespace("urn:isbn:1-931666-22-9");
+    private static final Namespace ns = Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9");
+    private static XPathFactory xFactory = XPathFactory.instance();
+
+    private List<EadMetadataField> configuredFields;
 
     /**
      * Constructor
@@ -81,12 +94,14 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
     public void loadSelectedDatabase() {
         // open selected database
-
         if (StringUtils.isNotBlank(selectedDatabase)) {
             String response = HttpClientHelper.getStringFromUrl(datastoreUrl + "db/" + selectedDatabase);
             // get xml root element
             Document document = openDocument(response);
             if (document != null) {
+                // get field definitions from config file
+                readConfiguration();
+
                 // parse ead file
                 parseEadFile(document);
             }
@@ -99,6 +114,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         int order = 1;
         for (Element ead : eadElements) {
             EadEntry rootEntry = parseElement(order, ead);
+            rootEntry.setDisplayChildren(true);
             entryList.add(rootEntry);
             order++;
 
@@ -107,23 +123,82 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
     private EadEntry parseElement(int order, Element element) {
         EadEntry entry = new EadEntry(order);
-        entry.setDisplayChildren(true);
+        for (EadMetadataField emf : configuredFields) {
+            if ("text".equalsIgnoreCase(emf.getXpathType())) {
+                XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, ns);
+                List<Text> values = engine.evaluate(element);
+                if (emf.isRepeatable()) {
+                    for (Text value : values) {
+                        String stringValue = value.getValue();
+                        addFieldToEntry(entry, emf, stringValue);
+                    }
+                } else {
+                    if (!values.isEmpty()) {
+                        Text value = values.get(0);
+                        String stringValue = value.getValue();
+                        addFieldToEntry(entry, emf, stringValue);
+                    }
+                }
+
+            } else if ("attribute".equalsIgnoreCase(emf.getXpathType())) {
+                XPathExpression<Attribute> engine = xFactory.compile(emf.getXpath(), Filters.attribute(), null, ns);
+                List<Attribute> values = engine.evaluate(element);
+                if (emf.isRepeatable()) {
+                    for (Attribute value : values) {
+                        String stringValue = value.getValue();
+                        addFieldToEntry(entry, emf, stringValue);
+                    }
+                } else {
+                    if (!values.isEmpty()) {
+                        Attribute value = values.get(0);
+                        String stringValue = value.getValue();
+                        addFieldToEntry(entry, emf, stringValue);
+                    }
+                }
+            } else {
+                XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, ns);
+                List<Element> values = engine.evaluate(element);
+                if (emf.isRepeatable()) {
+                    for (Element value : values) {
+                        String stringValue = value.getValue();
+                        addFieldToEntry(entry, emf, stringValue);
+                    }
+                } else {
+                    if (!values.isEmpty()) {
+                        Element value = values.get(0);
+                        String stringValue = value.getValue();
+                        addFieldToEntry(entry, emf, stringValue);
+                    }
+                }
+            }
+            if (StringUtils.isBlank(emf.getValue())) {
+                // nothing found, add it as empty field
+                addFieldToEntry(entry, emf, null);
+            }
+        }
+
+        for (EadMetadataField emf : entry.getIdentityStatementAreaList()) {
+            System.out.println(emf.getName() + " " + emf.getValue());
+        }
 
         Element eadheader = element.getChild("eadheader", ns);
         Element control = element.getChild("control", ns);
         Element archdesc = element.getChild("archdesc", ns);
-
-
+        Element did = null;
+        Element dsc = null;
+        List<Element> clist = null;
+        entry.setId(element.getAttributeValue("id"));
+        //        entry.setDescriptionLevel(element.getAttributeValue("level"));
         if (eadheader != null) {
-            entry.setEadid(eadheader.getChildText("eadid", ns));
+            //            entry.setEadid(eadheader.getChildText("eadid", ns));
             entry.setLabel(eadheader.getChild("filedesc", ns).getChild("titlestmt", ns).getChildText("titleproper", ns));
         }
         if (control != null) {
-            entry.setRecordid(control.getChildText("recordid", ns));
-            Element maintenanceagency = control.getChild("maintenanceagency", ns);
-            if (maintenanceagency != null) {
-                entry.setAgencycode(maintenanceagency.getChildText("agencycode", ns));
-            }
+            //            entry.setRecordid(control.getChildText("recordid", ns));
+            //            Element maintenanceagency = control.getChild("maintenanceagency", ns);
+            //            if (maintenanceagency != null) {
+            //                entry.setAgencycode(maintenanceagency.getChildText("agencycode", ns));
+            //            }
             entry.setConventiondeclaration(control.getChildText("conventiondeclaration", ns));
             Element maintenancehistory = control.getChild("maintenancehistory", ns);
             if (maintenancehistory != null) {
@@ -131,61 +206,104 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                 entry.setMaintenanceevent(maintenanceevent.getChildText("eventtype", ns));
                 entry.setEventdatetime(maintenanceevent.getChildText("eventdatetime", ns));
             }
-        } if (archdesc != null) {
-            entry.setDescriptionLevel(archdesc.getAttributeValue("level"));
+        }
 
-            Element did = archdesc.getChild("did", ns);
-            if (did != null) {
+        if (archdesc != null) {
+            //            entry.setDescriptionLevel(archdesc.getAttributeValue("level"));
 
-                entry.setUnitid(did.getChildText("unitid", ns));
-                entry.setUnittitle(did.getChildText("unittitle", ns));
-                entry.setUnitdate(did.getChildText("unitdate", ns));
-                entry.setUnitdatestructured(did.getChildText("unitdatestructured", ns));
-                entry.setPhysdesc(did.getChildText("physdesc", ns));
-                entry.setPhysdescstructured(did.getChildText("physdescstructured", ns));
-                entry.setOrigination(did.getChildText("origination", ns));
-                entry.setLangmaterial(did.getChildText("langmaterial", ns));
-                entry.setDidnote(did.getChildText("didnote", ns));
-            }
+            did = archdesc.getChild("did", ns);
+            dsc = archdesc.getChild("dsc", ns);
+        } else {
+            did = element.getChild("did", ns);
+            dsc = element.getChild("dsc", ns);
+        }
+        if (did != null) {
 
+            //            entry.setUnitid(did.getChildText("unitid", ns));
+            //            entry.setUnittitle(did.getChildText("unittitle", ns));
+            //            entry.setUnitdate(did.getChildText("unitdate", ns));
+            //            entry.setUnitdatestructured(did.getChildText("unitdatestructured", ns));
+            //            entry.setPhysdesc(did.getChildText("physdesc", ns));
+            //            entry.setPhysdescstructured(did.getChildText("physdescstructured", ns));
+            entry.setOrigination(did.getChildText("origination", ns));
+            entry.setLangmaterial(did.getChildText("langmaterial", ns));
+            entry.setDidnote(did.getChildText("didnote", ns));
+        }
 
-
-            Element dsc= archdesc.getChild("dsc", ns);
-            if (dsc != null) {
-                entry.setBioghist(dsc.getChildText("bioghist", ns));
-                entry.setCustodhist(dsc.getChildText("custodhist", ns));
-                entry.setAcqinfo(dsc.getChildText("acqinfo", ns));
-                entry.setScopecontent(dsc.getChildText("scopecontent", ns));
-                entry.setAppraisal(dsc.getChildText("appraisal", ns));
-                entry.setAccruals(dsc.getChildText("accruals", ns));
-                entry.setArrangement(dsc.getChildText("arrangement", ns));
-                entry.setAccessrestrict(dsc.getChildText("accessrestrict", ns));
-                entry.setUserestrict(dsc.getChildText("userestrict", ns));
-                entry.setPhystech(dsc.getChildText("phystech", ns));
-                entry.setOtherfindaid(dsc.getChildText("otherfindaid", ns));
-                entry.setOriginalsloc(dsc.getChildText("originalsloc", ns));
-                entry.setAltformavail(dsc.getChildText("altformavail", ns));
-                entry.setRelatedmaterial(dsc.getChildText("relatedmaterial", ns));
-                entry.setSeparatedmaterial(dsc.getChildText("separatedmaterial", ns));
-                entry.setBibliography(dsc.getChildText("bibliography", ns));
-                entry.setOdd(dsc.getChildText("odd", ns));
-                entry.setProcessinfo(dsc.getChildText("processinfo", ns));
-
-                List<Element> clist = dsc.getChildren("c", ns);
-                if (clist != null) {
-                    int subOrder = 1;
-                    for (Element c : clist) {
-                        EadEntry child = parseElement(subOrder, c);
-                        entry.addSubEntry(child);
-                        order++;
-                    }
-                }
+        if (dsc != null) {
+            entry.setBioghist(dsc.getChildText("bioghist", ns));
+            entry.setCustodhist(dsc.getChildText("custodhist", ns));
+            entry.setAcqinfo(dsc.getChildText("acqinfo", ns));
+            entry.setScopecontent(dsc.getChildText("scopecontent", ns));
+            entry.setAppraisal(dsc.getChildText("appraisal", ns));
+            entry.setAccruals(dsc.getChildText("accruals", ns));
+            entry.setArrangement(dsc.getChildText("arrangement", ns));
+            entry.setAccessrestrict(dsc.getChildText("accessrestrict", ns));
+            entry.setUserestrict(dsc.getChildText("userestrict", ns));
+            entry.setPhystech(dsc.getChildText("phystech", ns));
+            entry.setOtherfindaid(dsc.getChildText("otherfindaid", ns));
+            entry.setOriginalsloc(dsc.getChildText("originalsloc", ns));
+            entry.setAltformavail(dsc.getChildText("altformavail", ns));
+            entry.setRelatedmaterial(dsc.getChildText("relatedmaterial", ns));
+            entry.setSeparatedmaterial(dsc.getChildText("separatedmaterial", ns));
+            entry.setBibliography(dsc.getChildText("bibliography", ns));
+            entry.setOdd(dsc.getChildText("odd", ns));
+            entry.setProcessinfo(dsc.getChildText("processinfo", ns));
+            clist = dsc.getChildren("c", ns);
+        }
+        if (clist == null) {
+            clist = element.getChildren("c", ns);
+        }
+        if (clist != null) {
+            int subOrder = 1;
+            for (Element c : clist) {
+                EadEntry child = parseElement(subOrder, c);
+                entry.addSubEntry(child);
+                order++;
             }
         }
+
         return entry;
     }
 
+    private void addFieldToEntry(EadEntry entry, EadMetadataField emf, String stringValue) {
+        EadMetadataField toAdd = null;
+        if (StringUtils.isBlank(emf.getValue())) {
+            emf.setValue(stringValue);
+            toAdd = emf;
+        } else {
+            toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable());
+            toAdd.setValue(stringValue);
+        }
+
+        switch (toAdd.getLevel()) {
+            case 1:
+                entry.getIdentityStatementAreaList().add(toAdd);
+                break;
+            case 2:
+                entry.getContextAreaList().add(toAdd);
+                break;
+            case 3:
+                entry.getContentAndStructureAreaAreaList().add(toAdd);
+                break;
+            case 4:
+                entry.getAccessAndUseAreaList().add(toAdd);
+                break;
+            case 5:
+                entry.getAlliedMaterialsAreaList().add(toAdd);
+                break;
+            case 6:
+                entry.getNotesAreaList().add(toAdd);
+                break;
+            case 7:
+                entry.getDescriptionControlAreaList().add(toAdd);
+                break;
+        }
+
+    }
+
     private Document openDocument(String response) {
+        // read response
         SAXBuilder builder = new SAXBuilder(XMLReaders.NONVALIDATING);
         builder.setFeature("http://xml.org/sax/features/validation", false);
         builder.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
@@ -199,5 +317,34 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             log.error(e);
         }
         return null;
+    }
+
+    /**
+     * private method to read in all parameters from the configuration file
+     * 
+     * @param projectName
+     */
+    private void readConfiguration() {
+        configuredFields = new ArrayList<>();
+        HierarchicalConfiguration config = null;
+        XMLConfiguration xmlConfig = ConfigPlugins.getPluginConfig(title);
+        xmlConfig.setExpressionEngine(new XPathExpressionEngine());
+
+        try {
+            config = xmlConfig.configurationAt("//config[./tectonics = '" + selectedDatabase + "']");
+        } catch (IllegalArgumentException e) {
+            try {
+                config = xmlConfig.configurationAt("//config[./tectonics = '*']");
+            } catch (IllegalArgumentException e1) {
+
+            }
+        }
+
+        for (HierarchicalConfiguration hc : config.configurationsAt("/metadata")) {
+            EadMetadataField field = new EadMetadataField(hc.getString("@name"), hc.getInt("@level"), hc.getString("@xpath"),
+                    hc.getString("@xpathType", "element"), hc.getBoolean("@repeatable", false));
+            configuredFields.add(field);
+        }
+
     }
 }

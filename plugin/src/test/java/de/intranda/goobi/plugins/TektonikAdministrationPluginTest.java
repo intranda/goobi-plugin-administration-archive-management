@@ -10,6 +10,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,11 +22,13 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import de.intranda.goobi.plugins.model.EadEntry;
+import de.intranda.goobi.plugins.model.EadMetadataField;
+import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.HttpClientHelper;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ ConfigurationHelper.class, HttpClientHelper.class })
+@PrepareForTest({ ConfigurationHelper.class, HttpClientHelper.class, ConfigPlugins.class })
 @PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*" })
 
 public class TektonikAdministrationPluginTest {
@@ -32,7 +36,7 @@ public class TektonikAdministrationPluginTest {
     private String resourcesFolder;
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
         resourcesFolder = "src/test/resources/"; // for junit tests in eclipse
 
         if (!Files.exists(Paths.get(resourcesFolder))) {
@@ -42,8 +46,20 @@ public class TektonikAdministrationPluginTest {
         PowerMock.mockStatic(HttpClientHelper.class);
         EasyMock.expect(HttpClientHelper.getStringFromUrl("http://localhost:8984/databases")).andReturn(getDatabaseResponse()).anyTimes();
         EasyMock.expect(HttpClientHelper.getStringFromUrl("http://localhost:8984/db/fixture")).andReturn(readDatabaseResponse()).anyTimes();
-        //EasyMock.replay(httpClientHelper);
+
+        XMLConfiguration config = getConfig();
+        PowerMock.mockStatic(ConfigPlugins.class);
+        EasyMock.expect(ConfigPlugins.getPluginConfig(EasyMock.anyString())).andReturn(config).anyTimes();
+
         PowerMock.replay(HttpClientHelper.class);
+        PowerMock.replay(ConfigPlugins.class);
+    }
+
+    private XMLConfiguration getConfig() throws Exception {
+        XMLConfiguration config = new XMLConfiguration("plugin_intranda_administration_tektonik.xml");
+        config.setListDelimiter('&');
+        config.setReloadingStrategy(new FileChangedReloadingStrategy());
+        return config;
     }
 
     private String getDatabaseResponse() {
@@ -95,22 +111,72 @@ public class TektonikAdministrationPluginTest {
         assertEquals(1, el.size());
 
         EadEntry entry = el.get(0);
+        List<EadMetadataField> fieldList = entry.getIdentityStatementAreaList();
+        EadMetadataField agencycode = null;
+        EadMetadataField eadid = null;
+        EadMetadataField recordid = null;
+        EadMetadataField unitid = null;
+        EadMetadataField unittitle = null;
+        EadMetadataField unitdate = null;
+        EadMetadataField unitdatestructured = null;
+        EadMetadataField descriptionLevel = null;
+        EadMetadataField physdesc = null;
+        EadMetadataField physdescstructured = null;
+
+        for (EadMetadataField emf : fieldList) {
+            switch (emf.getName()) {
+                case "agencycode":
+                    agencycode = emf;
+                    break;
+                case "eadid":
+                    eadid = emf;
+                    break;
+                case "recordid":
+                    recordid = emf;
+                    break;
+                case "unitid":
+                    unitid = emf;
+                    break;
+                case "unittitle":
+                    unittitle = emf;
+                    break;
+                case "unitdate":
+                    unitdate = emf;
+                    break;
+                case "physdesc":
+                    physdesc = emf;
+                    break;
+                case "unitdatestructured":
+                    unitdatestructured = emf;
+                    break;
+                case "descriptionLevel":
+                    descriptionLevel = emf;
+                    break;
+                case "physdescstructured":
+                    physdescstructured = emf;
+                    break;
+
+            }
+        }
+
         assertEquals(1, entry.getOrderNumber().intValue());
         assertEquals("tectonics header", entry.getLabel());
-        assertEquals("eadid", entry.getEadid());
-        assertEquals("recordid", entry.getRecordid());
-        assertEquals("agencycode", entry.getAgencycode());
+
+        assertEquals("eadid", eadid.getValue());
+        assertEquals("recordid", recordid.getValue());
+        assertEquals("agencycode", agencycode.getValue());
+        assertEquals("unitid", unitid.getValue());
+        assertEquals("unittitle", unittitle.getValue());
+
         assertEquals("conventiondeclaration", entry.getConventiondeclaration());
         assertEquals("eventtype", entry.getMaintenanceevent());
         assertEquals("eventdatetime", entry.getEventdatetime());
-        assertEquals("collection", entry.getDescriptionLevel());
+        assertEquals("collection", descriptionLevel.getValue());
 
-        assertEquals("unitid", entry.getUnitid());
-        assertEquals("unittitle", entry.getUnittitle());
-        assertEquals("unitdate", entry.getUnitdate());
-        assertEquals("unitdatestructured", entry.getUnitdatestructured());
-        assertEquals("physdesc", entry.getPhysdesc());
-        assertEquals("physdescstructured", entry.getPhysdescstructured());
+        assertEquals("unitdate", unitdate.getValue());
+        assertEquals("unitdatestructured", unitdatestructured.getValue());
+        assertEquals("physdesc", physdesc.getValue());
+        assertEquals("physdescstructured", physdescstructured.getValue());
         assertEquals("origination", entry.getOrigination());
         assertEquals("langmaterial", entry.getLangmaterial());
         assertEquals("didnote", entry.getDidnote());
@@ -134,5 +200,121 @@ public class TektonikAdministrationPluginTest {
         assertEquals("odd", entry.getOdd());
         assertEquals("processinfo", entry.getProcessinfo());
 
+        EadEntry firstSub = entry.getSubEntryList().get(0);
+
+        fieldList = firstSub.getIdentityStatementAreaList();
+        for (EadMetadataField emf : fieldList) {
+            switch (emf.getName()) {
+                case "unitid":
+                    unitid = emf;
+                    break;
+                case "unittitle":
+                    unittitle = emf;
+                    break;
+                case "descriptionLevel":
+                    descriptionLevel = emf;
+                    break;
+            }
+        }
+
+        assertEquals("file", descriptionLevel.getValue());
+        assertEquals("1234uniqueId", firstSub.getId());
+        assertEquals("first level id", unitid.getValue());
+        assertEquals("first level title", unittitle.getValue());
+
+        List<EadEntry> secondSubList = firstSub.getSubEntryList();
+
+        EadEntry second = secondSubList.get(0);
+        fieldList = second.getIdentityStatementAreaList();
+        for (EadMetadataField emf : fieldList) {
+            switch (emf.getName()) {
+                case "unitid":
+                    unitid = emf;
+                    break;
+                case "unittitle":
+                    unittitle = emf;
+                    break;
+            }
+        }
+
+        assertEquals("1 Werke", unittitle.getValue());
+        second = secondSubList.get(1);
+
+        fieldList = second.getIdentityStatementAreaList();
+        for (EadMetadataField emf : fieldList) {
+            switch (emf.getName()) {
+                case "unitid":
+                    unitid = emf;
+                    break;
+                case "unittitle":
+                    unittitle = emf;
+                    break;
+            }
+        }
+        assertEquals("2 Korrespondenz", unittitle.getValue());
+
+        second = secondSubList.get(4);
+        fieldList = second.getIdentityStatementAreaList();
+        for (EadMetadataField emf : fieldList) {
+            switch (emf.getName()) {
+                case "unitid":
+                    unitid = emf;
+                    break;
+                case "unittitle":
+                    unittitle = emf;
+                    break;
+            }
+        }
+        assertEquals("5 Sammlungen / Objekte", unittitle.getValue());
+
+        EadEntry third = second.getSubEntryList().get(2);
+        fieldList = third.getIdentityStatementAreaList();
+        for (EadMetadataField emf : fieldList) {
+            switch (emf.getName()) {
+                case "unitid":
+                    unitid = emf;
+                    break;
+                case "unittitle":
+                    unittitle = emf;
+                    break;
+            }
+        }
+        assertEquals("5.3 Fotosammlung", unittitle.getValue());
+
+        EadEntry fourth = third.getSubEntryList().get(2);
+        fieldList = fourth.getIdentityStatementAreaList();
+        for (EadMetadataField emf : fieldList) {
+            switch (emf.getName()) {
+                case "unitid":
+                    unitid = emf;
+                    break;
+                case "unittitle":
+                    unittitle = emf;
+                    break;
+                case "descriptionLevel":
+                    descriptionLevel = emf;
+                    break;
+            }
+        }
+        assertEquals("5.3.3 Porträts, andere", unittitle.getValue());
+        assertEquals("class", descriptionLevel.getValue());
+
+        EadEntry fifth = fourth.getSubEntryList().get(0);
+
+        fieldList = fifth.getIdentityStatementAreaList();
+        for (EadMetadataField emf : fieldList) {
+            switch (emf.getName()) {
+                case "unitid":
+                    unitid = emf;
+                    break;
+                case "unittitle":
+                    unittitle = emf;
+                    break;
+                case "descriptionLevel":
+                    descriptionLevel = emf;
+                    break;
+            }
+        }
+        assertEquals("file", descriptionLevel.getValue());
     }
 }

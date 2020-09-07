@@ -1,6 +1,38 @@
 <config_plugin>
-	
-	<!-- configuration item as sample -->
-	<value>sample value from config</value>
-	
+
+<config>
+    <!-- define the name(s) of all tectonics for t -->
+    <tectonics>*</tectonics>
+
+    <!-- define metadata fields. All fields are displayed on the UI based on the level and the order within this file.
+            - name: contains the internal name of the field. The value can be used to translate the field in the messages files
+            - level: metadata level, allowed values are 1-7:
+                * 1: metadata for Identity Statement Area 
+                * 2: Context Area 
+                * 3: Content and Structure Area
+                * 4: Condition of Access and Use Area
+                * 5: Allied Materials Area
+                * 6: Note Area
+                * 7: Description Control Area
+            - xpath: contains a relative path to the ead value. The root of the xpath is either the <ead> element or the <c> element-
+            - xpathType: type of the xpath return value, can be text, attribute, element (default)
+            - repeatable: true/false 
+            
+     -->
+	<!--   -->
+    <metadata xpath="ead:control/ead:maintenanceagency/ead:agencycode" xpathType="element" name="agencycode" level="1" repeatable="false"/>	
+    <metadata xpath="ead:eadheader/ead:eadid" xpathType="element" name="eadid" level="1" repeatable="false"/> 
+    <metadata xpath="ead:control/ead:recordid" xpathType="element" name="recordid" level="1" repeatable="false"/> 
+    <metadata xpath="(ead:archdesc/ead:did/ead:unitid[not(@type)] | ead:did/ead:unitid[not(@type)])[1]" xpathType="element" name="unitid" level="1" repeatable="false"/> 
+    <metadata xpath="ead:did/ead:unitid[@type='Altsignatur']" xpathType="element" name="Shelfmark" level="1" repeatable="true"/> 
+    <metadata xpath="(ead:archdesc/ead:did/ead:unittitle | ead:did/ead:unittitle)[1]" xpathType="element" name="unittitle" level="1" repeatable="false"/> 
+
+    <metadata xpath="(ead:archdesc/ead:did/ead:unitdate | ead:did/ead:unitdate)[1]" xpathType="element" name="unitdate" level="1" repeatable="false"/> 
+    <metadata xpath="(ead:archdesc/ead:did/ead:unitdatestructured | ead:did/ead:unitdatestructured)[1]" xpathType="element" name="unitdatestructured" level="1" repeatable="false"/> 
+    <metadata xpath="(ead:archdesc/@level | @level)[1]" xpathType="attribute" name="descriptionLevel" level="1" repeatable="false"/> 
+    <metadata xpath="(ead:archdesc/ead:did/ead:physdesc | ead:did/ead:physdesc)[1]" xpathType="element" name="physdesc" level="1" repeatable="false"/> 
+    <metadata xpath="(ead:archdesc/ead:did/ead:physdescstructured | ead:did/ead:physdescstructured)[1]" xpathType="element" name="physdescstructured" level="1" repeatable="false"/> 
+
+
+</config>
 </config_plugin>
