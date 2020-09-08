@@ -42,7 +42,7 @@ public class TektonikAdministrationPluginTest {
 
         PowerMock.mockStatic(HttpClientHelper.class);
         EasyMock.expect(HttpClientHelper.getStringFromUrl("http://localhost:8984/databases")).andReturn(getDatabaseResponse()).anyTimes();
-        EasyMock.expect(HttpClientHelper.getStringFromUrl("http://localhost:8984/db/fixture")).andReturn(readDatabaseResponse()).anyTimes();
+        EasyMock.expect(HttpClientHelper.getStringFromUrl("http://localhost:8984/db/fixture/ead.xml")).andReturn(readDatabaseResponse()).anyTimes();
         PowerMock.replay(HttpClientHelper.class);
 
 
@@ -60,10 +60,22 @@ public class TektonikAdministrationPluginTest {
 
     private String getDatabaseResponse() {
         StringBuilder sb = new StringBuilder();
-        sb.append("<databases xmlns=\"urn:isbn:1-931666-22-9\">");
-        sb.append("    <database>first database</database>");
-        sb.append("    <database>second database</database>");
+        sb.append("<databases>");
+        sb.append("  <database>");
+        sb.append("    <name>first database</name>");
+        sb.append("    <details>");
+        sb.append("      <resource>first_file.xml</resource>");
+        sb.append("      <resource>another_file.xml</resource>");
+        sb.append("    </details>");
+        sb.append("  </database>");
+        sb.append("  <database>");
+        sb.append("    <name>second database</name>");
+        sb.append("    <details>");
+        sb.append("      <resource>first_file.xml</resource>");
+        sb.append("    </details>");
+        sb.append("  </database>");
         sb.append("</databases>");
+
         return sb.toString();
     }
 
@@ -90,9 +102,10 @@ public class TektonikAdministrationPluginTest {
         TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         List<String> databases = plugin.getPossibleDatabases();
-        assertEquals(2, databases.size());
-        assertEquals("first database", databases.get(0));
-        assertEquals("second database", databases.get(1));
+        assertEquals(3, databases.size());
+        assertEquals("first database - first_file.xml", databases.get(0));
+        assertEquals("first database - another_file.xml", databases.get(1));
+        assertEquals("second database - first_file.xml", databases.get(2));
     }
 
     @Test
@@ -100,7 +113,7 @@ public class TektonikAdministrationPluginTest {
         TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
-        plugin.setSelectedDatabase("fixture");
+        plugin.setSelectedDatabase("fixture - ead.xml");
         plugin.loadSelectedDatabase();
         //  hierarchy contains only root element
         List<EadEntry> el = plugin.getHierarchialList();
@@ -121,7 +134,7 @@ public class TektonikAdministrationPluginTest {
         TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
-        plugin.setSelectedDatabase("fixture");
+        plugin.setSelectedDatabase("fixture - ead.xml");
         plugin.loadSelectedDatabase();
 
         List<EadEntry> el = plugin.getHierarchialList();

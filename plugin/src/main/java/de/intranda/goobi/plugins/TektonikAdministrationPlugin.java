@@ -60,8 +60,8 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     private List<EadEntry> hierarchialList = new ArrayList<>();
 
     private List<EadEntry> flatEntryList;
+
     @Getter
-    @Setter
     private EadEntry selectedEntry;
 
     private static final Namespace ns = Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9");
@@ -92,9 +92,15 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             Document document = openDocument(response);
             if (document != null) {
                 Element root = document.getRootElement();
-                List<Element> databaseList = root.getChildren("database", ns);
+                List<Element> databaseList = root.getChildren("database");
                 for (Element db : databaseList) {
-                    databases.add(db.getText());
+                    String dbName = db.getChildText("name");
+
+                    Element details = db.getChild("details");
+                    for (Element resource : details.getChildren()) {
+                        databases.add(dbName + " - " + resource.getText());
+                    }
+
                 }
             }
         }
@@ -104,7 +110,9 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     public void loadSelectedDatabase() {
         // open selected database
         if (StringUtils.isNotBlank(selectedDatabase)) {
-            String response = HttpClientHelper.getStringFromUrl(datastoreUrl + "db/" + selectedDatabase);
+            String[] parts = selectedDatabase.split(" - ");
+
+            String response = HttpClientHelper.getStringFromUrl(datastoreUrl + "db/" + parts[0] + "/" + parts[1]);
             // get xml root element
             Document document = openDocument(response);
             if (document != null) {
@@ -122,7 +130,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         hierarchialList = new ArrayList<>(eadElements.size());
         int order = 1;
         for (Element ead : eadElements) {
-            EadEntry rootEntry = parseElement(order,0, ead);
+            EadEntry rootEntry = parseElement(order, 0, ead);
             rootEntry.setDisplayChildren(true);
             hierarchialList.add(rootEntry);
             order++;
@@ -208,10 +216,10 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         }
         if (clist != null) {
             int subOrder = 1;
-            int subHierarchy = hierarchy +1;
+            int subHierarchy = hierarchy + 1;
             for (Element c : clist) {
 
-                EadEntry child = parseElement(subOrder,subHierarchy, c);
+                EadEntry child = parseElement(subOrder, subHierarchy, c);
                 entry.addSubEntry(child);
                 subOrder++;
             }
@@ -233,7 +241,6 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable());
             toAdd.setValue(stringValue);
         }
-
 
         switch (toAdd.getLevel()) {
             case 1:
@@ -315,7 +322,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         }
     }
 
-    public void resetFlatList () {
+    public void resetFlatList() {
         flatEntryList = null;
     }
 
