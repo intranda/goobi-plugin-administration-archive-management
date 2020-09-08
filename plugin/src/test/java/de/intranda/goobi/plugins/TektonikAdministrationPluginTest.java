@@ -10,8 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,12 +21,11 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.EadMetadataField;
-import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.HttpClientHelper;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ ConfigurationHelper.class, HttpClientHelper.class, ConfigPlugins.class })
+@PrepareForTest({ ConfigurationHelper.class, HttpClientHelper.class })
 @PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*" })
 
 public class TektonikAdministrationPluginTest {
@@ -46,21 +43,20 @@ public class TektonikAdministrationPluginTest {
         PowerMock.mockStatic(HttpClientHelper.class);
         EasyMock.expect(HttpClientHelper.getStringFromUrl("http://localhost:8984/databases")).andReturn(getDatabaseResponse()).anyTimes();
         EasyMock.expect(HttpClientHelper.getStringFromUrl("http://localhost:8984/db/fixture")).andReturn(readDatabaseResponse()).anyTimes();
-
-        XMLConfiguration config = getConfig();
-        PowerMock.mockStatic(ConfigPlugins.class);
-        EasyMock.expect(ConfigPlugins.getPluginConfig(EasyMock.anyString())).andReturn(config).anyTimes();
-
         PowerMock.replay(HttpClientHelper.class);
-        PowerMock.replay(ConfigPlugins.class);
+
+
+
+        PowerMock.mockStatic(ConfigurationHelper.class);
+        ConfigurationHelper configurationHelper = EasyMock.createMock(ConfigurationHelper.class);
+        EasyMock.expect(ConfigurationHelper.getInstance()).andReturn(configurationHelper).anyTimes();
+        EasyMock.expect(configurationHelper.getConfigurationFolder()).andReturn(resourcesFolder).anyTimes();
+
+        EasyMock.replay(configurationHelper);
+        PowerMock.replay(ConfigurationHelper.class);
     }
 
-    private XMLConfiguration getConfig() throws Exception {
-        XMLConfiguration config = new XMLConfiguration(resourcesFolder + "plugin_intranda_administration_tektonik.xml");
-        config.setListDelimiter('&');
-        config.setReloadingStrategy(new FileChangedReloadingStrategy());
-        return config;
-    }
+
 
     private String getDatabaseResponse() {
         StringBuilder sb = new StringBuilder();
@@ -100,6 +96,27 @@ public class TektonikAdministrationPluginTest {
     }
 
     @Test
+    public void testFlatList() {
+        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        plugin.setDatastoreUrl("http://localhost:8984/");
+        plugin.getPossibleDatabases();
+        plugin.setSelectedDatabase("fixture");
+        plugin.loadSelectedDatabase();
+        //  hierarchy contains only root element
+        List<EadEntry> el = plugin.getHierarchialList();
+        assertEquals(1, el.size());
+        // flat list contains root element + first hierarchy
+        List<EadEntry> flat = plugin.getFlatEntryList();
+        assertEquals(2, flat.size());
+        // display second hierarchy
+        flat.get(1).setDisplayChildren(true);
+        plugin.resetFlatList();
+        flat = plugin.getFlatEntryList();
+        // now flat list contains root element + first + second hierarchy
+        assertEquals(7, flat.size());
+    }
+
+    @Test
     public void testLoadDatabase() {
         TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
@@ -107,7 +124,7 @@ public class TektonikAdministrationPluginTest {
         plugin.setSelectedDatabase("fixture");
         plugin.loadSelectedDatabase();
 
-        List<EadEntry> el = plugin.getEntryList();
+        List<EadEntry> el = plugin.getHierarchialList();
         assertEquals(1, el.size());
 
         EadEntry entry = el.get(0);
@@ -284,7 +301,8 @@ public class TektonikAdministrationPluginTest {
         }
 
         assertEquals(1, entry.getOrderNumber().intValue());
-        assertEquals("tectonics header", entry.getLabel());
+        assertEquals(0, entry.getHierarchy().intValue());
+        assertEquals("tectonics header title", entry.getLabel());
 
         assertEquals("eadid", eadid.getValue());
         assertEquals("recordid", recordid.getValue());
@@ -326,7 +344,8 @@ public class TektonikAdministrationPluginTest {
         assertEquals("processinfo", processinfo.getValue());
 
         EadEntry firstSub = entry.getSubEntryList().get(0);
-
+        assertEquals(1, firstSub.getOrderNumber().intValue());
+        assertEquals(1, firstSub.getHierarchy().intValue());
         fieldList = firstSub.getIdentityStatementAreaList();
         for (EadMetadataField emf : fieldList) {
             switch (emf.getName()) {
@@ -350,6 +369,8 @@ public class TektonikAdministrationPluginTest {
         List<EadEntry> secondSubList = firstSub.getSubEntryList();
 
         EadEntry second = secondSubList.get(0);
+        assertEquals(1, second.getOrderNumber().intValue());
+        assertEquals(2, second.getHierarchy().intValue());
         fieldList = second.getIdentityStatementAreaList();
         for (EadMetadataField emf : fieldList) {
             switch (emf.getName()) {
@@ -364,7 +385,8 @@ public class TektonikAdministrationPluginTest {
 
         assertEquals("1 Werke", unittitle.getValue());
         second = secondSubList.get(1);
-
+        assertEquals(2, second.getOrderNumber().intValue());
+        assertEquals(2, second.getHierarchy().intValue());
         fieldList = second.getIdentityStatementAreaList();
         for (EadMetadataField emf : fieldList) {
             switch (emf.getName()) {
@@ -379,6 +401,8 @@ public class TektonikAdministrationPluginTest {
         assertEquals("2 Korrespondenz", unittitle.getValue());
 
         second = secondSubList.get(4);
+        assertEquals(5, second.getOrderNumber().intValue());
+        assertEquals(2, second.getHierarchy().intValue());
         fieldList = second.getIdentityStatementAreaList();
         for (EadMetadataField emf : fieldList) {
             switch (emf.getName()) {
@@ -393,6 +417,8 @@ public class TektonikAdministrationPluginTest {
         assertEquals("5 Sammlungen / Objekte", unittitle.getValue());
 
         EadEntry third = second.getSubEntryList().get(2);
+        assertEquals(3, third.getOrderNumber().intValue());
+        assertEquals(3, third.getHierarchy().intValue());
         fieldList = third.getIdentityStatementAreaList();
         for (EadMetadataField emf : fieldList) {
             switch (emf.getName()) {

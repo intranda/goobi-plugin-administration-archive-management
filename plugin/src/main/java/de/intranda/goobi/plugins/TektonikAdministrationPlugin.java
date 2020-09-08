@@ -3,10 +3,13 @@ package de.intranda.goobi.plugins;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang.StringUtils;
 import org.goobi.production.enums.PluginType;
@@ -25,7 +28,7 @@ import org.jdom2.xpath.XPathFactory;
 
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.EadMetadataField;
-import de.sub.goobi.config.ConfigPlugins;
+import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.HttpClientHelper;
 import lombok.Getter;
 import lombok.Setter;
@@ -53,7 +56,13 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     private String datastoreUrl = "http://localhost:8984/"; // TODO get this from config
 
     @Getter
-    private List<EadEntry> entryList = new ArrayList<>();
+    @Setter
+    private List<EadEntry> hierarchialList = new ArrayList<>();
+
+    private List<EadEntry> flatEntryList;
+    @Getter
+    @Setter
+    private EadEntry selectedEntry;
 
     private static final Namespace ns = Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9");
     private static XPathFactory xFactory = XPathFactory.instance();
@@ -110,19 +119,19 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
     private void parseEadFile(Document document) {
         List<Element> eadElements = document.getRootElement().getChildren();
-        entryList = new ArrayList<>(eadElements.size());
+        hierarchialList = new ArrayList<>(eadElements.size());
         int order = 1;
         for (Element ead : eadElements) {
-            EadEntry rootEntry = parseElement(order, ead);
+            EadEntry rootEntry = parseElement(order,0, ead);
             rootEntry.setDisplayChildren(true);
-            entryList.add(rootEntry);
+            hierarchialList.add(rootEntry);
             order++;
 
         }
     }
 
-    private EadEntry parseElement(int order, Element element) {
-        EadEntry entry = new EadEntry(order);
+    private EadEntry parseElement(int order, int hierarchy, Element element) {
+        EadEntry entry = new EadEntry(order, hierarchy);
         for (EadMetadataField emf : configuredFields) {
             if ("text".equalsIgnoreCase(emf.getXpathType())) {
                 XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, ns);
@@ -179,7 +188,6 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
         Element eadheader = element.getChild("eadheader", ns);
 
-
         entry.setId(element.getAttributeValue("id"));
         if (eadheader != null) {
             entry.setLabel(eadheader.getChild("filedesc", ns).getChild("titlestmt", ns).getChildText("titleproper", ns));
@@ -200,10 +208,12 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         }
         if (clist != null) {
             int subOrder = 1;
+            int subHierarchy = hierarchy +1;
             for (Element c : clist) {
-                EadEntry child = parseElement(subOrder, c);
+
+                EadEntry child = parseElement(subOrder,subHierarchy, c);
                 entry.addSubEntry(child);
-                order++;
+                subOrder++;
             }
         }
 
@@ -211,6 +221,10 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     }
 
     private void addFieldToEntry(EadEntry entry, EadMetadataField emf, String stringValue) {
+        if (StringUtils.isBlank(entry.getLabel()) && emf.getXpath().contains("unittitle")) {
+            entry.setLabel(stringValue);
+        }
+
         EadMetadataField toAdd = null;
         if (StringUtils.isBlank(emf.getValue())) {
             emf.setValue(stringValue);
@@ -219,6 +233,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable());
             toAdd.setValue(stringValue);
         }
+
 
         switch (toAdd.getLevel()) {
             case 1:
@@ -271,24 +286,57 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     private void readConfiguration() {
         configuredFields = new ArrayList<>();
         HierarchicalConfiguration config = null;
-        XMLConfiguration xmlConfig = ConfigPlugins.getPluginConfig(title);
-        xmlConfig.setExpressionEngine(new XPathExpressionEngine());
-
+        XMLConfiguration xmlConfig;
         try {
-            config = xmlConfig.configurationAt("//config[./tectonics = '" + selectedDatabase + "']");
-        } catch (IllegalArgumentException e) {
-            try {
-                config = xmlConfig.configurationAt("//config[./tectonics = '*']");
-            } catch (IllegalArgumentException e1) {
+            xmlConfig =
+                    new XMLConfiguration(ConfigurationHelper.getInstance().getConfigurationFolder() + "plugin_intranda_administration_tektonik.xml");
+            xmlConfig.setListDelimiter('&');
+            xmlConfig.setReloadingStrategy(new FileChangedReloadingStrategy());
+            xmlConfig.setExpressionEngine(new XPathExpressionEngine());
 
+            try {
+                config = xmlConfig.configurationAt("//config[./tectonics = '" + selectedDatabase + "']");
+            } catch (IllegalArgumentException e) {
+                try {
+                    config = xmlConfig.configurationAt("//config[./tectonics = '*']");
+                } catch (IllegalArgumentException e1) {
+
+                }
+            }
+            for (HierarchicalConfiguration hc : config.configurationsAt("/metadata")) {
+                hc.setDelimiterParsingDisabled(false);
+                hc.setListDelimiter(';');
+                EadMetadataField field = new EadMetadataField(hc.getString("@name"), hc.getInt("@level"), hc.getString("@xpath"),
+                        hc.getString("@xpathType", "element"), hc.getBoolean("@repeatable", false));
+                configuredFields.add(field);
+            }
+        } catch (ConfigurationException e2) {
+            log.error(e2);
+        }
+    }
+
+    public void resetFlatList () {
+        flatEntryList = null;
+    }
+
+    public List<EadEntry> getFlatEntryList() {
+        if (flatEntryList == null) {
+            if (!hierarchialList.isEmpty()) {
+                flatEntryList = new LinkedList<>();
+                for (EadEntry entry : hierarchialList) {
+                    flatEntryList.addAll(entry.getAsFlatList());
+                }
             }
         }
-
-        for (HierarchicalConfiguration hc : config.configurationsAt("/metadata")) {
-            EadMetadataField field = new EadMetadataField(hc.getString("@name"), hc.getInt("@level"), hc.getString("@xpath"),
-                    hc.getString("@xpathType", "element"), hc.getBoolean("@repeatable", false));
-            configuredFields.add(field);
-        }
-
+        return flatEntryList;
     }
+
+    public void setSelectedEntry(EadEntry entry) {
+        for (EadEntry other : flatEntryList) {
+            other.setSelected(false);
+        }
+        entry.setSelected(true);
+        this.selectedEntry = entry;
+    }
+
 }

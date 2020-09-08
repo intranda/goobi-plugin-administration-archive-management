@@ -1,22 +1,23 @@
 package de.intranda.goobi.plugins.model;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import lombok.Data;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 @Data
-@RequiredArgsConstructor
+
 public class EadEntry {
 
     // list contains all child elements
     private List<EadEntry> subEntryList = new ArrayList<>();
 
-    // order number of the current element
-    @NonNull
+    // order number of the current element within the current hierarchy
     private Integer orderNumber;
+
+    // hierarchy level
+    private Integer hierarchy;
 
     private String id; // c@id
 
@@ -25,7 +26,7 @@ public class EadEntry {
     // node is open/closed
     private boolean displayChildren;
     // node is selected
-    private boolean selectedNode;
+    private boolean selected;
 
     // node type -  @level
     private String nodeType;
@@ -45,7 +46,6 @@ public class EadEntry {
     //    Archival history
     //    Immediate source of acquisition or transfer
     private List<EadMetadataField> contextAreaList = new ArrayList<>();
-
 
     /* 3. Content and Structure Area */
     //    Scope and content
@@ -79,7 +79,10 @@ public class EadEntry {
     //    Date(s) of descriptions
     private List<EadMetadataField> descriptionControlAreaList = new ArrayList<>();
 
-
+    public EadEntry(Integer order, Integer hierarchy) {
+        this.orderNumber = order;
+        this.hierarchy = hierarchy;
+    }
 
     public void addSubEntry(EadEntry other) {
         subEntryList.add(other);
@@ -97,6 +100,22 @@ public class EadEntry {
         }
     }
 
-    private List<EadMetadataField> level1Fields = new ArrayList<>();
+    public List<EadEntry> getAsFlatList() {
+        List<EadEntry> list = new LinkedList<>();
+        list.add(this);
+        if (displayChildren) {
+            if (subEntryList != null) {
+                for (EadEntry ds : subEntryList) {
+                    list.addAll(ds.getAsFlatList());
+                }
+            }
+        }
+        return list;
+    }
+
+    public boolean isHasChildren() {
+        return !subEntryList.isEmpty();
+
+    }
 
 }
