@@ -57,7 +57,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
     @Getter
     @Setter
-    private List<EadEntry> hierarchialList = new ArrayList<>();
+    private EadEntry rootElement = null;
 
     private List<EadEntry> flatEntryList;
 
@@ -126,21 +126,19 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     }
 
     private void parseEadFile(Document document) {
-        List<Element> eadElements = document.getRootElement().getChildren();
-        hierarchialList = new ArrayList<>(eadElements.size());
-        int order = 1;
-        for (Element ead : eadElements) {
-            EadEntry rootEntry = parseElement(order, 0, ead);
-            rootEntry.setDisplayChildren(true);
-            hierarchialList.add(rootEntry);
-            order++;
-
-        }
+        Element collection = document.getRootElement();
+        Element eadElement = collection.getChild("ead", ns);
+        rootElement = parseElement(1, 0, eadElement);
+        rootElement.setDisplayChildren(true);
     }
 
     private EadEntry parseElement(int order, int hierarchy, Element element) {
         EadEntry entry = new EadEntry(order, hierarchy);
         for (EadMetadataField emf : configuredFields) {
+            //            if (hierarchy == 0 && emf.getElementType().equals("child")) {
+            //                continue;
+            //            }
+            boolean added = false;
             if ("text".equalsIgnoreCase(emf.getXpathType())) {
                 XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, ns);
                 List<Text> values = engine.evaluate(element);
@@ -148,12 +146,14 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                     for (Text value : values) {
                         String stringValue = value.getValue();
                         addFieldToEntry(entry, emf, stringValue);
+                        added = true;
                     }
                 } else {
                     if (!values.isEmpty()) {
                         Text value = values.get(0);
                         String stringValue = value.getValue();
                         addFieldToEntry(entry, emf, stringValue);
+                        added = true;
                     }
                 }
 
@@ -164,12 +164,14 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                     for (Attribute value : values) {
                         String stringValue = value.getValue();
                         addFieldToEntry(entry, emf, stringValue);
+                        added = true;
                     }
                 } else {
                     if (!values.isEmpty()) {
                         Attribute value = values.get(0);
                         String stringValue = value.getValue();
                         addFieldToEntry(entry, emf, stringValue);
+                        added = true;
                     }
                 }
             } else {
@@ -179,16 +181,18 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                     for (Element value : values) {
                         String stringValue = value.getValue();
                         addFieldToEntry(entry, emf, stringValue);
+                        added = true;
                     }
                 } else {
                     if (!values.isEmpty()) {
                         Element value = values.get(0);
                         String stringValue = value.getValue();
                         addFieldToEntry(entry, emf, stringValue);
+                        added = true;
                     }
                 }
             }
-            if (StringUtils.isBlank(emf.getValue())) {
+            if (!added) {
                 // nothing found, add it as empty field
                 addFieldToEntry(entry, emf, null);
             }
@@ -233,14 +237,9 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             entry.setLabel(stringValue);
         }
 
-        EadMetadataField toAdd = null;
-        if (StringUtils.isBlank(emf.getValue())) {
-            emf.setValue(stringValue);
-            toAdd = emf;
-        } else {
-            toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable());
-            toAdd.setValue(stringValue);
-        }
+        EadMetadataField toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable());
+
+        toAdd.setValue(stringValue);
 
         switch (toAdd.getLevel()) {
             case 1:
@@ -311,8 +310,6 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                 }
             }
             for (HierarchicalConfiguration hc : config.configurationsAt("/metadata")) {
-                hc.setDelimiterParsingDisabled(false);
-                hc.setListDelimiter(';');
                 EadMetadataField field = new EadMetadataField(hc.getString("@name"), hc.getInt("@level"), hc.getString("@xpath"),
                         hc.getString("@xpathType", "element"), hc.getBoolean("@repeatable", false));
                 configuredFields.add(field);
@@ -328,11 +325,9 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
     public List<EadEntry> getFlatEntryList() {
         if (flatEntryList == null) {
-            if (!hierarchialList.isEmpty()) {
+            if (rootElement != null) {
                 flatEntryList = new LinkedList<>();
-                for (EadEntry entry : hierarchialList) {
-                    flatEntryList.addAll(entry.getAsFlatList());
-                }
+                flatEntryList.addAll(rootElement.getAsFlatList());
             }
         }
         return flatEntryList;

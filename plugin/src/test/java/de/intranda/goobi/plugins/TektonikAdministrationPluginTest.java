@@ -116,8 +116,8 @@ public class TektonikAdministrationPluginTest {
         plugin.setSelectedDatabase("fixture - ead.xml");
         plugin.loadSelectedDatabase();
         //  hierarchy contains only root element
-        List<EadEntry> el = plugin.getHierarchialList();
-        assertEquals(1, el.size());
+        EadEntry root = plugin.getRootElement();
+        root.setDisplayChildren(true);
         // flat list contains root element + first hierarchy
         List<EadEntry> flat = plugin.getFlatEntryList();
         assertEquals(2, flat.size());
@@ -137,10 +137,8 @@ public class TektonikAdministrationPluginTest {
         plugin.setSelectedDatabase("fixture - ead.xml");
         plugin.loadSelectedDatabase();
 
-        List<EadEntry> el = plugin.getHierarchialList();
-        assertEquals(1, el.size());
+        EadEntry entry = plugin.getRootElement();
 
-        EadEntry entry = el.get(0);
         List<EadMetadataField> fieldList = entry.getIdentityStatementAreaList();
         EadMetadataField agencycode = null;
         EadMetadataField eadid = null;

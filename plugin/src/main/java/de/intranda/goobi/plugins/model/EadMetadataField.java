@@ -6,7 +6,6 @@ import lombok.Data;
 
 public class EadMetadataField {
 
-
     private String name;
 
     private Integer level;
@@ -26,7 +25,5 @@ public class EadMetadataField {
         this.xpathType = xpathType;
         this.repeatable = repeatable;
     }
-
-
 
 }
