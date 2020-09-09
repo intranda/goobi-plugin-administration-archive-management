@@ -16,10 +16,18 @@
                     * 7: Description Control Area
                 - xpath: contains a relative path to the ead value. The root of the xpath is either the <ead> element or the <c> element-
                 - xpathType: type of the xpath return value, can be text, attribute, element (default)
-                - repeatable: true/false 
-                - nodeType: define for which nodes the metadata is created, allowed values are root, child or both (default)
+                - repeatable: define if the field can exist once or multiple times, values can be true/false, default is false
+                - visible: define if the field is displayed on the UI, values can be true/false, default is true
                 
          -->
+         
+        <!-- internal fields, not visible on the UI -->        
+<metadata xpath="./ead:eadheader[@countryencoding='iso3166-1'][@dateencoding='iso8601'][@langencoding='iso639-2b'][@repositoryencoding='iso15511'][@scriptencoding='iso15924']/ead:eadid/@mainagencycode" xpathType="attribute" name="mainagencycode" level="1" repeatable="false" visible="false"/>   
+
+<metadata xpath="./ead:eadheader/ead:profiledesc/ead:creation/@normal" xpathType="attribute" name="normalcreationdate" level="1" repeatable="false" visible="false"/>   
+<metadata xpath="./ead:eadheader/ead:profiledesc/ead:creation" xpathType="element" name="creationdate" level="1" repeatable="false" visible="false"/>   
+<metadata xpath="./ead:eadheader/ead:filedesc/ead:titlestmt/ead:titleproper" xpathType="element" name="titlestmt" level="1" repeatable="false" visible="false"/>   
+
          
     	<!--  Identity Statement Area -->
         <metadata xpath="./ead:control/ead:maintenanceagency/ead:agencycode" xpathType="element" name="agencycode" level="1" repeatable="false"/>	
@@ -70,6 +78,8 @@
         <metadata xpath="./ead:control/ead:conventiondeclaration" xpathType="element" name="conventiondeclaration" level="7" repeatable="false"/>    
         <metadata xpath="./ead:control/ead:maintenancehistory/ead:maintenanceevent/ead:eventtype" xpathType="element" name="maintenanceevent" level="7" repeatable="false"/>    
         <metadata xpath="./ead:control/ead:maintenancehistory/ead:maintenanceevent/ead:eventdatetime" xpathType="element" name="eventdatetime" level="7" repeatable="false"/>    
+   
+  
     
     </config>
 </config_plugin>

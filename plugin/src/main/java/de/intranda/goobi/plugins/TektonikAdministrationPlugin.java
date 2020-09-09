@@ -237,7 +237,8 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             entry.setLabel(stringValue);
         }
 
-        EadMetadataField toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable());
+        EadMetadataField toAdd =
+                new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable(), emf.isVisible());
 
         toAdd.setValue(stringValue);
 
@@ -311,7 +312,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             }
             for (HierarchicalConfiguration hc : config.configurationsAt("/metadata")) {
                 EadMetadataField field = new EadMetadataField(hc.getString("@name"), hc.getInt("@level"), hc.getString("@xpath"),
-                        hc.getString("@xpathType", "element"), hc.getBoolean("@repeatable", false));
+                        hc.getString("@xpathType", "element"), hc.getBoolean("@repeatable", false), hc.getBoolean("@visible", true));
                 configuredFields.add(field);
             }
         } catch (ConfigurationException e2) {

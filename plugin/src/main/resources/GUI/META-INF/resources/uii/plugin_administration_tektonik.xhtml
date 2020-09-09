@@ -354,14 +354,15 @@ div.no-element-selected {
                                                     <ui:repeat
                                                         var="item"
                                                         value="#{AdministrationForm.administrationPlugin.selectedEntry.identityStatementAreaList}">
-                                                        <intranda:formInputText
-                                                            id="#{item.name}a1"
-                                                            name="#{item.name}a1"
-                                                            label="#{msgs[item.name]}"
-                                                            field="#{item.value}"
-                                                            fieldStyle="form-control"
-                                                            required="false" />
-
+                                                        <ui:fragment rendered="#{item.visible}">
+                                                            <intranda:formInputText
+                                                                id="#{item.name}a1"
+                                                                name="#{item.name}a1"
+                                                                label="#{msgs[item.name]}"
+                                                                field="#{item.value}"
+                                                                fieldStyle="form-control"
+                                                                required="false" />
+                                                        </ui:fragment>
                                                     </ui:repeat>
 
 
@@ -372,14 +373,15 @@ div.no-element-selected {
                                                     <ui:repeat
                                                         var="item"
                                                         value="#{AdministrationForm.administrationPlugin.selectedEntry.contextAreaList}">
-                                                        <intranda:formInputText
-                                                            id="#{item.name}a1"
-                                                            name="#{item.name}a1"
-                                                            label="#{msgs[item.name]}"
-                                                            field="#{item.value}"
-                                                            fieldStyle="form-control"
-                                                            required="false" />
-
+                                                        <ui:fragment rendered="#{item.visible}">
+                                                            <intranda:formInputText
+                                                                id="#{item.name}a1"
+                                                                name="#{item.name}a1"
+                                                                label="#{msgs[item.name]}"
+                                                                field="#{item.value}"
+                                                                fieldStyle="form-control"
+                                                                required="false" />
+                                                        </ui:fragment>
                                                     </ui:repeat>
                                                 </div>
                                                 <br />
@@ -388,79 +390,84 @@ div.no-element-selected {
                                                     <ui:repeat
                                                         var="item"
                                                         value="#{AdministrationForm.administrationPlugin.selectedEntry.contentAndStructureAreaAreaList}">
-                                                        <intranda:formInputText
-                                                            id="#{item.name}a1"
-                                                            name="#{item.name}a1"
-                                                            label="#{msgs[item.name]}"
-                                                            field="#{item.value}"
-                                                            fieldStyle="form-control"
-                                                            required="false" />
-
+                                                        <ui:fragment rendered="#{item.visible}">
+                                                            <intranda:formInputText
+                                                                id="#{item.name}a1"
+                                                                name="#{item.name}a1"
+                                                                label="#{msgs[item.name]}"
+                                                                field="#{item.value}"
+                                                                fieldStyle="form-control"
+                                                                required="false" />
+                                                        </ui:fragment>
                                                     </ui:repeat>
                                                 </div>
-                                                
-                                                                                                <br />
+
+                                                <br />
                                                 <div class="context">
                                                     <p>Condition of Access and Use Area</p>
                                                     <ui:repeat
                                                         var="item"
                                                         value="#{AdministrationForm.administrationPlugin.selectedEntry.accessAndUseAreaList}">
-                                                        <intranda:formInputText
-                                                            id="#{item.name}a1"
-                                                            name="#{item.name}a1"
-                                                            label="#{msgs[item.name]}"
-                                                            field="#{item.value}"
-                                                            fieldStyle="form-control"
-                                                            required="false" />
-
+                                                        <ui:fragment rendered="#{item.visible}">
+                                                            <intranda:formInputText
+                                                                id="#{item.name}a1"
+                                                                name="#{item.name}a1"
+                                                                label="#{msgs[item.name]}"
+                                                                field="#{item.value}"
+                                                                fieldStyle="form-control"
+                                                                required="false" />
+                                                        </ui:fragment>
                                                     </ui:repeat>
                                                 </div>
-                                                                                                <br />
+                                                <br />
                                                 <div class="context">
                                                     <p>Allied Materials Area</p>
                                                     <ui:repeat
                                                         var="item"
                                                         value="#{AdministrationForm.administrationPlugin.selectedEntry.alliedMaterialsAreaList}">
-                                                        <intranda:formInputText
-                                                            id="#{item.name}a1"
-                                                            name="#{item.name}a1"
-                                                            label="#{msgs[item.name]}"
-                                                            field="#{item.value}"
-                                                            fieldStyle="form-control"
-                                                            required="false" />
-
+                                                        <ui:fragment rendered="#{item.visible}">
+                                                            <intranda:formInputText
+                                                                id="#{item.name}a1"
+                                                                name="#{item.name}a1"
+                                                                label="#{msgs[item.name]}"
+                                                                field="#{item.value}"
+                                                                fieldStyle="form-control"
+                                                                required="false" />
+                                                        </ui:fragment>
                                                     </ui:repeat>
                                                 </div>
-                                                                                                <br />
+                                                <br />
                                                 <div class="context">
                                                     <p>Note Area</p>
                                                     <ui:repeat
                                                         var="item"
                                                         value="#{AdministrationForm.administrationPlugin.selectedEntry.notesAreaList}">
-                                                        <intranda:formInputText
-                                                            id="#{item.name}a1"
-                                                            name="#{item.name}a1"
-                                                            label="#{msgs[item.name]}"
-                                                            field="#{item.value}"
-                                                            fieldStyle="form-control"
-                                                            required="false" />
-
+                                                        <ui:fragment rendered="#{item.visible}">
+                                                            <intranda:formInputText
+                                                                id="#{item.name}a1"
+                                                                name="#{item.name}a1"
+                                                                label="#{msgs[item.name]}"
+                                                                field="#{item.value}"
+                                                                fieldStyle="form-control"
+                                                                required="false" />
+                                                        </ui:fragment>
                                                     </ui:repeat>
                                                 </div>
-                                                                                                <br />
+                                                <br />
                                                 <div class="context">
                                                     <p>Description Control Area</p>
                                                     <ui:repeat
                                                         var="item"
                                                         value="#{AdministrationForm.administrationPlugin.selectedEntry.descriptionControlAreaList}">
-                                                        <intranda:formInputText
-                                                            id="#{item.name}a1"
-                                                            name="#{item.name}a1"
-                                                            label="#{msgs[item.name]}"
-                                                            field="#{item.value}"
-                                                            fieldStyle="form-control"
-                                                            required="false" />
-
+                                                        <ui:fragment rendered="#{item.visible}">
+                                                            <intranda:formInputText
+                                                                id="#{item.name}a1"
+                                                                name="#{item.name}a1"
+                                                                label="#{msgs[item.name]}"
+                                                                field="#{item.value}"
+                                                                fieldStyle="form-control"
+                                                                required="false" />
+                                                        </ui:fragment>
                                                     </ui:repeat>
                                                 </div>
                                             </div>

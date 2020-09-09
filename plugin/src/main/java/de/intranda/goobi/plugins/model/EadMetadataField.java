@@ -18,12 +18,15 @@ public class EadMetadataField {
 
     private String value;
 
-    public EadMetadataField(String name, Integer level, String xpath, String xpathType, boolean repeatable) {
+    private boolean visible;
+
+    public EadMetadataField(String name, Integer level, String xpath, String xpathType, boolean repeatable, boolean visible) {
         this.name = name;
         this.level = level;
         this.xpath = xpath;
         this.xpathType = xpathType;
         this.repeatable = repeatable;
+        this.visible = visible;
     }
 
 }
