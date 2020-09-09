@@ -80,6 +80,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     private String selectedDatabase;
 
     /**
+     * Get the database names and file names from the basex databases
      * 
      * @return
      */
@@ -107,6 +108,10 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         return databases;
     }
 
+    /**
+     * open the selected database and load the file
+     */
+
     public void loadSelectedDatabase() {
         // open selected database
         if (StringUtils.isNotBlank(selectedDatabase)) {
@@ -125,6 +130,9 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         }
     }
 
+    /*
+     * get ead root element from document
+     */
     private void parseEadFile(Document document) {
         Element collection = document.getRootElement();
         Element eadElement = collection.getChild("ead", ns);
@@ -132,6 +140,14 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         rootElement.setDisplayChildren(true);
     }
 
+    /**
+     * read the metadata for the current xml node.
+     * - create an {@link EadEntry}
+     * - execute the configured xpaths on the current node
+     * - add the metadata to one of the 7 levels
+     * - check if the node has sub nodes
+     * - call the method recursively for all sub nodes
+     */
     private EadEntry parseElement(int order, int hierarchy, Element element) {
         EadEntry entry = new EadEntry(order, hierarchy);
         for (EadMetadataField emf : configuredFields) {
@@ -232,6 +248,14 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         return entry;
     }
 
+    /**
+     * Add the metaata to the configured level
+     * 
+     * @param entry
+     * @param emf
+     * @param stringValue
+     */
+
     private void addFieldToEntry(EadEntry entry, EadMetadataField emf, String stringValue) {
         if (StringUtils.isBlank(entry.getLabel()) && emf.getXpath().contains("unittitle")) {
             entry.setLabel(stringValue);
@@ -268,6 +292,11 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
     }
 
+    /**
+     * Parse the string response from the basex database into a xml document
+     * @param response
+     * @return
+     */
     private Document openDocument(String response) {
         // read response
         SAXBuilder builder = new SAXBuilder(XMLReaders.NONVALIDATING);
@@ -286,9 +315,8 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     }
 
     /**
-     * private method to read in all parameters from the configuration file
+     * read in all parameters from the configuration file
      * 
-     * @param projectName
      */
     private void readConfiguration() {
         configuredFields = new ArrayList<>();
@@ -323,6 +351,12 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     public void resetFlatList() {
         flatEntryList = null;
     }
+
+    /**
+     * Get the hierarchical tree as a flat list
+     * 
+     * @return
+     */
 
     public List<EadEntry> getFlatEntryList() {
         if (flatEntryList == null) {
