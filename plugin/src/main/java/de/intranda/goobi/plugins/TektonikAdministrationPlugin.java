@@ -23,11 +23,14 @@ import org.jdom2.Text;
 import org.jdom2.filter.Filters;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.input.sax.XMLReaders;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.EadMetadataField;
+import de.schlichtherle.io.FileOutputStream;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.HttpClientHelper;
 import lombok.Getter;
@@ -141,12 +144,8 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     }
 
     /**
-     * read the metadata for the current xml node.
-     * - create an {@link EadEntry}
-     * - execute the configured xpaths on the current node
-     * - add the metadata to one of the 7 levels
-     * - check if the node has sub nodes
-     * - call the method recursively for all sub nodes
+     * read the metadata for the current xml node. - create an {@link EadEntry} - execute the configured xpaths on the current node - add the metadata
+     * to one of the 7 levels - check if the node has sub nodes - call the method recursively for all sub nodes
      */
     private EadEntry parseElement(int order, int hierarchy, Element element) {
         EadEntry entry = new EadEntry(order, hierarchy);
@@ -221,14 +220,19 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             entry.setLabel(eadheader.getChild("filedesc", ns).getChild("titlestmt", ns).getChildText("titleproper", ns));
         }
 
+        // nodeType
+
         // get child elements
         List<Element> clist = null;
         Element archdesc = element.getChild("archdesc", ns);
         if (archdesc != null) {
+            entry.setNodeType(archdesc.getAttributeValue("type"));
             Element dsc = archdesc.getChild("dsc", ns);
             if (dsc != null) {
                 clist = dsc.getChildren("c", ns);
             }
+        } else {
+            entry.setNodeType(element.getAttributeValue("otherlevel"));
         }
 
         if (clist == null) {
@@ -244,6 +248,8 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                 subOrder++;
             }
         }
+
+        // TODO generate id, if id is null
 
         return entry;
     }
@@ -294,6 +300,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
     /**
      * Parse the string response from the basex database into a xml document
+     * 
      * @param response
      * @return
      */
@@ -376,4 +383,229 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         this.selectedEntry = entry;
     }
 
+    public void createEadDocument() {
+
+        Document document = new Document();
+
+        Element eadRoot = new Element("ead", ns);
+        document.setRootElement(eadRoot);
+
+        addMetadata(eadRoot, rootElement);
+
+        // TODO temporary save doc
+        XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
+        try {
+            out.output(document, new FileOutputStream("/tmp/ead.xml"));
+        } catch (IOException e) {
+            log.error(e);
+        }
+
+    }
+
+    private void addMetadata(Element xmlElement, EadEntry node) {
+        boolean isMainElement = false;
+        if (xmlElement.getName().equals("ead")) {
+            isMainElement = true;
+        }
+
+        for (EadMetadataField emf : node.getIdentityStatementAreaList()) {
+            if (StringUtils.isNotBlank(emf.getValue())) {
+                createEadXmlField(xmlElement, isMainElement, emf);
+            }
+        }
+        for (EadMetadataField emf : node.getContextAreaList()) {
+            if (StringUtils.isNotBlank(emf.getValue())) {
+                createEadXmlField(xmlElement, isMainElement, emf);
+            }
+        }
+        for (EadMetadataField emf : node.getContentAndStructureAreaAreaList()) {
+            if (StringUtils.isNotBlank(emf.getValue())) {
+                createEadXmlField(xmlElement, isMainElement, emf);
+            }
+        }
+        for (EadMetadataField emf : node.getAccessAndUseAreaList()) {
+            if (StringUtils.isNotBlank(emf.getValue())) {
+                createEadXmlField(xmlElement, isMainElement, emf);
+            }
+        }
+        for (EadMetadataField emf : node.getAlliedMaterialsAreaList()) {
+            if (StringUtils.isNotBlank(emf.getValue())) {
+                createEadXmlField(xmlElement, isMainElement, emf);
+            }
+        }
+        for (EadMetadataField emf : node.getNotesAreaList()) {
+            if (StringUtils.isNotBlank(emf.getValue())) {
+                createEadXmlField(xmlElement, isMainElement, emf);
+            }
+        }
+        for (EadMetadataField emf : node.getDescriptionControlAreaList()) {
+            if (StringUtils.isNotBlank(emf.getValue())) {
+                createEadXmlField(xmlElement, isMainElement, emf);
+            }
+        }
+        Element dsc = null;
+        if (isMainElement) {
+            Element archdesc = xmlElement.getChild("archdesc", ns);
+
+            dsc = archdesc.getChild("dsc", ns);
+
+            if (StringUtils.isNotBlank(node.getId())) {
+                archdesc.setAttribute("id", node.getId());
+            }
+            if (StringUtils.isNotBlank(node.getNodeType())) {
+                archdesc.setAttribute("type", node.getNodeType());
+            }
+        } else {
+            dsc = xmlElement.getChild("dsc", ns);
+            if (StringUtils.isNotBlank(node.getId())) {
+                xmlElement.setAttribute("id", node.getId());
+            }
+            if (StringUtils.isNotBlank(node.getNodeType())) {
+                xmlElement.setAttribute("otherlevel", node.getNodeType());
+            }
+        }
+        for (EadEntry subNode : node.getSubEntryList()) {
+            if (dsc == null) {
+                dsc = new Element("dsc", ns);
+                xmlElement.addContent(dsc);
+            }
+            Element c = new Element("c", ns);
+            dsc.addContent(c);
+            addMetadata(c, subNode);
+        }
+
+    }
+
+    private void createEadXmlField(Element xmlElement, boolean isMainElement, EadMetadataField emf) {
+        Element currentElement = xmlElement;
+        String xpath = emf.getXpath();
+        if (xpath.endsWith("[1]")) {
+            xpath = xpath.replace("[1]", "");
+        }
+        if (xpath.matches("\\(.+\\|.*\\)")) {
+            String[] parts = xpath.substring(1, xpath.lastIndexOf(")")).split("\\|");
+
+            for (String part : parts) {
+                if (isMainElement) {
+                    if (part.contains("archdesc")) {
+                        xpath = part;
+                    }
+                } else {
+                    if (!part.contains("archdesc")) {
+                        xpath = part;
+                    }
+                }
+            }
+        }
+        // split xpath on "/"
+        String[] fields = xpath.split("/");
+        boolean written = false;
+        for (String field : fields) {
+            field = field.trim();
+
+            // ignore .
+            if (field.equals(".")) {
+                continue;
+            }
+            // check if its an element or attribute
+            else if (field.startsWith("@")) {
+                field = field.substring(1);
+                // create attribute on current element
+                currentElement.setAttribute(field, emf.getValue());
+                written = true;
+            } else {
+                // remove namespace
+                field = field.replace("ead:", "");
+
+                String conditions = null;
+                if (field.contains("[")) {
+                    conditions = field.substring(field.indexOf("["));
+                    field = field.substring(0, field.indexOf("["));
+                }
+
+                // check if element exists, re-use if possible
+                Element element = currentElement.getChild(field, ns);
+                if (element == null) {
+                    element = createXmlElement(currentElement, field, conditions);
+                } else if (conditions != null) {
+                    // check if conditions are fulfilled
+                    String[] conditionArray = conditions.split("\\[");
+                    // add each condition
+                    boolean conditionsMatch = true;
+                    for (String condition : conditionArray) {
+                        if (StringUtils.isBlank(condition)) {
+                            continue;
+                        } else if (condition.trim().startsWith("not")) {
+                            condition = condition.substring(condition.indexOf("(" + 2), condition.indexOf(")"));
+                            if (condition.contains("=")) {
+                                // [not(@type='abc')]
+                                String value = element.getAttributeValue(condition.substring(0, condition.indexOf("=")));
+                                if (StringUtils.isNotBlank(value) && value.equals(condition.substring(condition.indexOf("=") + 1).replace("'", ""))) {
+                                    conditionsMatch = false;
+                                }
+                            } else {
+                                // [not(@type)]
+                                String value = element.getAttributeValue(condition);
+                                if (StringUtils.isNotBlank(value)) {
+                                    conditionsMatch = false;
+                                }
+                            }
+                            continue;
+                        } else if (condition.contains("]")) {
+                            condition = condition.substring(1, condition.lastIndexOf("]"));
+                        } else {
+                            condition = condition.substring(1);
+                        }
+                        condition = condition.trim();
+                        if (condition.contains("=")) {
+                            String value = element.getAttributeValue(condition.substring(0, condition.indexOf("=")));
+                            if (StringUtils.isBlank(value) || !value.equals(condition.substring(condition.indexOf("=") + 1).replace("'", ""))) {
+                                conditionsMatch = false;
+                            }
+                        } else {
+                            String value = element.getAttributeValue(condition);
+                            if (StringUtils.isBlank(value)) {
+                                conditionsMatch = false;
+                            }
+                        }
+                    }
+                    // if not create new element
+                    if (!conditionsMatch) {
+                        element = createXmlElement(currentElement, field, conditions);
+                    }
+                }
+                currentElement = element;
+
+            }
+        }
+        if (!written) {
+            currentElement.setText(emf.getValue());
+        }
+    }
+
+    private Element createXmlElement(Element currentElement, String field, String conditions) {
+        Element element;
+        element = new Element(field, ns);
+        currentElement.addContent(element);
+        if (conditions != null) {
+            String[] conditionArray = conditions.split("\\[");
+            // add each condition
+            for (String condition : conditionArray) {
+                if (StringUtils.isBlank(condition) || condition.trim().startsWith("not")) {
+                    continue;
+                }
+                if (condition.contains("]")) {
+                    condition = condition.substring(1, condition.lastIndexOf("]"));
+                } else {
+                    condition = condition.substring(1);
+                }
+                condition = condition.trim();
+
+                String[] attr = condition.split("=");
+                element.setAttribute(attr[0], attr[1].replace("'", ""));
+            }
+
+        }
+        return element;
+    }
 }

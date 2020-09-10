@@ -45,8 +45,6 @@ public class TektonikAdministrationPluginTest {
         EasyMock.expect(HttpClientHelper.getStringFromUrl("http://localhost:8984/db/fixture/ead.xml")).andReturn(readDatabaseResponse()).anyTimes();
         PowerMock.replay(HttpClientHelper.class);
 
-
-
         PowerMock.mockStatic(ConfigurationHelper.class);
         ConfigurationHelper configurationHelper = EasyMock.createMock(ConfigurationHelper.class);
         EasyMock.expect(ConfigurationHelper.getInstance()).andReturn(configurationHelper).anyTimes();
@@ -55,8 +53,6 @@ public class TektonikAdministrationPluginTest {
         EasyMock.replay(configurationHelper);
         PowerMock.replay(ConfigurationHelper.class);
     }
-
-
 
     private String getDatabaseResponse() {
         StringBuilder sb = new StringBuilder();
@@ -478,5 +474,19 @@ public class TektonikAdministrationPluginTest {
             }
         }
         assertEquals("file", descriptionLevel.getValue());
+    }
+
+    @Test
+    public void testCreateEadDocument() {
+        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        plugin.setDatastoreUrl("http://localhost:8984/");
+        plugin.getPossibleDatabases();
+        plugin.setSelectedDatabase("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+
+        EadEntry root = plugin.getRootElement();
+
+        plugin.createEadDocument();
+
     }
 }
