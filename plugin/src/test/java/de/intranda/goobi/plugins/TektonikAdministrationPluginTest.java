@@ -2,7 +2,9 @@ package de.intranda.goobi.plugins;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -11,8 +13,14 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import org.easymock.EasyMock;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.input.sax.XMLReaders;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.powermock.api.easymock.PowerMock;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -31,6 +39,9 @@ import de.sub.goobi.helper.HttpClientHelper;
 public class TektonikAdministrationPluginTest {
 
     private String resourcesFolder;
+
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
 
     @Before
     public void setUp() throws Exception {
@@ -477,7 +488,7 @@ public class TektonikAdministrationPluginTest {
     }
 
     @Test
-    public void testCreateEadDocument() {
+    public void testCreateEadDocument() throws Exception {
         TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
@@ -485,8 +496,37 @@ public class TektonikAdministrationPluginTest {
         plugin.loadSelectedDatabase();
 
         EadEntry root = plugin.getRootElement();
-
+        // save file
+        File exportFolder = folder.newFolder("export");
+        plugin.setExportFolder(exportFolder.toString());
         plugin.createEadDocument();
+
+        Path createdEadFile = Paths.get(exportFolder.toString(), "ead.xml");
+        assertTrue(Files.exists(createdEadFile));
+
+        // open file
+        Document doc = new SAXBuilder(XMLReaders.NONVALIDATING).build(createdEadFile.toFile());
+
+        Element ead = doc.getRootElement();
+        Element eadHeader = ead.getChild("eadheader", TektonikAdministrationPlugin.ns);
+        assertEquals("eadid", eadHeader.getChildText("eadid", TektonikAdministrationPlugin.ns));
+
+        assertEquals("tectonics header title",
+                eadHeader.getChild("filedesc", TektonikAdministrationPlugin.ns)
+                .getChild("titlestmt", TektonikAdministrationPlugin.ns)
+                .getChildText("titleproper", TektonikAdministrationPlugin.ns));
+        Element archdesc = ead.getChild("archdesc", TektonikAdministrationPlugin.ns);
+        Element did = archdesc.getChild("did", TektonikAdministrationPlugin.ns);
+        Element dsc = archdesc.getChild("dsc", TektonikAdministrationPlugin.ns);
+
+        assertEquals(9, did.getChildren().size());
+        assertEquals("unitid", did.getChildren().get(0).getText());
+        assertEquals(19, dsc.getChildren().size());
+
+        Element c = dsc.getChildren().get(18);
+        Element subDid = c.getChild("did", TektonikAdministrationPlugin.ns);
+        assertEquals("first level id", subDid.getChildText("unitid", TektonikAdministrationPlugin.ns));
+        assertEquals("first level title", subDid.getChildText("unittitle", TektonikAdministrationPlugin.ns));
 
     }
 }

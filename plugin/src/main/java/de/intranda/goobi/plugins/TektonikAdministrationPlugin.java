@@ -58,6 +58,8 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     @Getter
     @Setter
     private String datastoreUrl = "http://localhost:8984/"; // TODO get this from config
+    @Setter
+    private String exportFolder = "/tmp/"; // TODO is this needed?
 
     @Getter
     @Setter
@@ -68,7 +70,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     @Getter
     private EadEntry selectedEntry;
 
-    private static final Namespace ns = Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9");
+    public static final Namespace ns = Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9");
     private static XPathFactory xFactory = XPathFactory.instance();
 
     private List<EadMetadataField> configuredFields;
@@ -251,7 +253,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         }
 
         // generate new id, if id is null
-        if (entry.getId()== null) {
+        if (entry.getId() == null) {
             entry.setId(String.valueOf(UUID.randomUUID()));
         }
 
@@ -396,10 +398,11 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
         addMetadata(eadRoot, rootElement);
 
-        // TODO temporary save doc
+        // TODO create new XQuery file to upload and replace/add file
+        // temporary save doc
         XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
         try {
-            out.output(document, new FileOutputStream("/tmp/ead.xml"));
+            out.output(document, new FileOutputStream(exportFolder + "/ead.xml"));
         } catch (IOException e) {
             log.error(e);
         }
@@ -460,7 +463,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                 archdesc.setAttribute("type", node.getNodeType());
             }
         } else {
-            dsc = xmlElement.getChild("dsc", ns);
+            dsc = xmlElement;
             if (StringUtils.isNotBlank(node.getId())) {
                 xmlElement.setAttribute("id", node.getId());
             }
