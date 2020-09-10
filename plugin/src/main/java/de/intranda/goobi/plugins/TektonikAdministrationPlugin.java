@@ -5,6 +5,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
@@ -249,7 +250,10 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             }
         }
 
-        // TODO generate id, if id is null
+        // generate new id, if id is null
+        if (entry.getId()== null) {
+            entry.setId(String.valueOf(UUID.randomUUID()));
+        }
 
         return entry;
     }
