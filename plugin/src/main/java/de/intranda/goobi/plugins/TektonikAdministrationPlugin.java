@@ -47,9 +47,6 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     private String title = "intranda_administration_tektonik";
 
     @Getter
-    private String value;
-
-    @Getter
     private PluginType type = PluginType.Administration;
 
     @Getter
@@ -397,15 +394,20 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         document.setRootElement(eadRoot);
 
         addMetadata(eadRoot, rootElement);
-
-        // TODO create new XQuery file to upload and replace/add file
-        // temporary save doc
+        String[] nameParts = selectedDatabase.split(" - ");
         XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
         try {
-            out.output(document, new FileOutputStream(exportFolder + "/ead.xml"));
+            out.output(document, new FileOutputStream(exportFolder + "/" + nameParts[1]));
         } catch (IOException e) {
             log.error(e);
         }
+
+        // call function to import created ead file
+        String importUrl = datastoreUrl + "import/" + nameParts[0] + "/" + nameParts[1];
+
+        HttpClientHelper.getStringFromUrl(importUrl);
+
+        // delete created file ?
 
     }
 

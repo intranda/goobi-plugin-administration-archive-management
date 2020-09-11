@@ -50,10 +50,12 @@ public class TektonikAdministrationPluginTest {
         if (!Files.exists(Paths.get(resourcesFolder))) {
             resourcesFolder = "target/test-classes/"; // to run mvn test from cli or in jenkins
         }
-
         PowerMock.mockStatic(HttpClientHelper.class);
         EasyMock.expect(HttpClientHelper.getStringFromUrl("http://localhost:8984/databases")).andReturn(getDatabaseResponse()).anyTimes();
         EasyMock.expect(HttpClientHelper.getStringFromUrl("http://localhost:8984/db/fixture/ead.xml")).andReturn(readDatabaseResponse()).anyTimes();
+        EasyMock.expect(HttpClientHelper.getStringFromUrl("http://localhost:8984/import/fixture/ead.xml"))
+        .andReturn(readDatabaseResponse())
+        .anyTimes();
         PowerMock.replay(HttpClientHelper.class);
 
         PowerMock.mockStatic(ConfigurationHelper.class);
