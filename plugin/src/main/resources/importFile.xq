@@ -7,7 +7,7 @@ declare
   %rest:GET
   %rest:path("/import/{$db}/{$filename}")
 updating function page:import($db, $filename) {
-let $path := '/tmp/export/' || $filename
+let $path := '/opt/digiverso/basex/import/' || $filename
 let $details := db:list-details($db, $filename)
 
 return 

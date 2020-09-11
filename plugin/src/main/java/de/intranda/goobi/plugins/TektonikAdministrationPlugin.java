@@ -72,10 +72,24 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
     private List<EadMetadataField> configuredFields;
 
+    private XMLConfiguration xmlConfig;
+
     /**
      * Constructor
      */
     public TektonikAdministrationPlugin() {
+        try {
+            xmlConfig =
+                    new XMLConfiguration(ConfigurationHelper.getInstance().getConfigurationFolder() + "plugin_intranda_administration_tektonik.xml");
+            xmlConfig.setListDelimiter('&');
+            xmlConfig.setReloadingStrategy(new FileChangedReloadingStrategy());
+            xmlConfig.setExpressionEngine(new XPathExpressionEngine());
+
+            datastoreUrl = xmlConfig.getString("/basexUrl", "http://localhost:8984/");
+            exportFolder = xmlConfig.getString("/eadExportFolder", "/tmp");
+        } catch (ConfigurationException e2) {
+            log.error(e2);
+        }
     }
 
     @Getter
@@ -331,31 +345,22 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     private void readConfiguration() {
         configuredFields = new ArrayList<>();
         HierarchicalConfiguration config = null;
-        XMLConfiguration xmlConfig;
+
         try {
-            xmlConfig =
-                    new XMLConfiguration(ConfigurationHelper.getInstance().getConfigurationFolder() + "plugin_intranda_administration_tektonik.xml");
-            xmlConfig.setListDelimiter('&');
-            xmlConfig.setReloadingStrategy(new FileChangedReloadingStrategy());
-            xmlConfig.setExpressionEngine(new XPathExpressionEngine());
-
+            config = xmlConfig.configurationAt("//config[./tectonics = '" + selectedDatabase + "']");
+        } catch (IllegalArgumentException e) {
             try {
-                config = xmlConfig.configurationAt("//config[./tectonics = '" + selectedDatabase + "']");
-            } catch (IllegalArgumentException e) {
-                try {
-                    config = xmlConfig.configurationAt("//config[./tectonics = '*']");
-                } catch (IllegalArgumentException e1) {
+                config = xmlConfig.configurationAt("//config[./tectonics = '*']");
+            } catch (IllegalArgumentException e1) {
 
-                }
             }
-            for (HierarchicalConfiguration hc : config.configurationsAt("/metadata")) {
-                EadMetadataField field = new EadMetadataField(hc.getString("@name"), hc.getInt("@level"), hc.getString("@xpath"),
-                        hc.getString("@xpathType", "element"), hc.getBoolean("@repeatable", false), hc.getBoolean("@visible", true));
-                configuredFields.add(field);
-            }
-        } catch (ConfigurationException e2) {
-            log.error(e2);
         }
+        for (HierarchicalConfiguration hc : config.configurationsAt("/metadata")) {
+            EadMetadataField field = new EadMetadataField(hc.getString("@name"), hc.getInt("@level"), hc.getString("@xpath"),
+                    hc.getString("@xpathType", "element"), hc.getBoolean("@repeatable", false), hc.getBoolean("@visible", true));
+            configuredFields.add(field);
+        }
+
     }
 
     public void resetFlatList() {
@@ -385,6 +390,12 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         entry.setSelected(true);
         this.selectedEntry = entry;
     }
+
+    /**
+     * Create a new ead xml document and store it in the configured folder
+     * 
+     * 
+     */
 
     public void createEadDocument() {
 

@@ -1,5 +1,7 @@
 <config_plugin>
 
+    <basexUrl>http://localhost:8984/</basexUrl>
+    <eadExportFolder>/opt/digiverso/basex/import</eadExportFolder>
     <config>
         <!-- define the name(s) of all tectonics for t -->
         <tectonics>*</tectonics>
