@@ -258,6 +258,27 @@ div.no-element-selected {
                                             <i class="fa fa-plug"></i>
                                             <h:outputText value="#{msgs[AdministrationForm.administrationPlugin.title]}" />
                                         </h3>
+ <h:commandLink
+                                        id="new"
+                                        styleClass="btn btn-primary font-size-s"
+                                        action="#{AdministrationForm.administrationPlugin.addNode}"
+                                >
+                                        <i class="fa fa-plus margin-right-5"></i>
+                                        <h:outputText value="#{msgs.createNew}" />
+                                          <f:ajax
+                                                            execute="meStructure"
+                                                            render="meStructure" />
+                                    </h:commandLink>
+
+                                              <h:commandLink
+                                                        styleClass="btn btn-danger"
+                                                        action="#{AdministrationForm.administrationPlugin.deleteNode}">
+                                                        <i class="fa fa-trash-o margin-right-5" />
+                                                        <h:outputText value="#{msgs.loeschen}" />
+                                                          <f:ajax
+                                                            execute="meStructure"
+                                                            render="meStructure" />
+                                                    </h:commandLink>
                                     </div>
                                     <div class="box-content">
                                         <div class="table">

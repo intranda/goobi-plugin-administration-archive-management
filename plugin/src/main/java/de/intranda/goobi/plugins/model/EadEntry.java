@@ -7,8 +7,10 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-
 public class EadEntry {
+
+    // parent node
+    private EadEntry parentNode;
 
     // list contains all child elements
     private List<EadEntry> subEntryList = new ArrayList<>();
@@ -86,15 +88,16 @@ public class EadEntry {
 
     public void addSubEntry(EadEntry other) {
         subEntryList.add(other);
+        other.setParentNode(this);
     }
 
     public void removeSubEntry(EadEntry other) {
         subEntryList.remove(other);
-
+        reOrderElements();
     }
 
     public void reOrderElements() {
-        int order = 1;
+        int order = 0;
         for (EadEntry entry : subEntryList) {
             entry.setOrderNumber(order++);
         }

@@ -253,12 +253,13 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             clist = element.getChildren("c", ns);
         }
         if (clist != null) {
-            int subOrder = 1;
+            int subOrder = 0;
             int subHierarchy = hierarchy + 1;
             for (Element c : clist) {
 
                 EadEntry child = parseElement(subOrder, subHierarchy, c);
                 entry.addSubEntry(child);
+                child.setParentNode(entry);
                 subOrder++;
             }
         }
@@ -391,9 +392,40 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         this.selectedEntry = entry;
     }
 
+    public void addNode() {
+        if (selectedEntry != null) {
+            EadEntry entry =
+                    new EadEntry(selectedEntry.isHasChildren() ? selectedEntry.getSubEntryList().size() + 1 : 0, selectedEntry.getHierarchy() + 1);
+            // initial metadata values
+            for (EadMetadataField emf : configuredFields) {
+                addFieldToEntry(entry, emf, null);
+            }
+            selectedEntry.addSubEntry(entry);
+            selectedEntry.setDisplayChildren(true);
+            selectedEntry = entry;
+            flatEntryList = null;
+        }
+    }
+
+    public void deleteNode() {
+        if (selectedEntry != null) {
+            // find parent node
+            EadEntry parentNode = selectedEntry.getParentNode();
+            if (parentNode == null) {
+                // we found the root node, this node cant be deleted
+                return;
+            }
+            // remove current element from parent node
+            parentNode.removeSubEntry(selectedEntry);
+            // set selectedEntry to parent node
+            selectedEntry = parentNode;
+            flatEntryList = null;
+        }
+    }
+
     /**
-     * Create a new ead xml document and store it in the configured folder
-     * 
+     * Create a new ead xml document and store it in the configured folder The document is stored in the configured folder and the basex import
+     * routine is called
      * 
      */
 

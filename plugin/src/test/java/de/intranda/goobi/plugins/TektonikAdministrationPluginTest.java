@@ -364,7 +364,7 @@ public class TektonikAdministrationPluginTest {
         assertEquals("processinfo", processinfo.getValue());
 
         EadEntry firstSub = entry.getSubEntryList().get(0);
-        assertEquals(1, firstSub.getOrderNumber().intValue());
+        assertEquals(0, firstSub.getOrderNumber().intValue());
         assertEquals(1, firstSub.getHierarchy().intValue());
         fieldList = firstSub.getIdentityStatementAreaList();
         for (EadMetadataField emf : fieldList) {
@@ -389,7 +389,7 @@ public class TektonikAdministrationPluginTest {
         List<EadEntry> secondSubList = firstSub.getSubEntryList();
 
         EadEntry second = secondSubList.get(0);
-        assertEquals(1, second.getOrderNumber().intValue());
+        assertEquals(0, second.getOrderNumber().intValue());
         assertEquals(2, second.getHierarchy().intValue());
         fieldList = second.getIdentityStatementAreaList();
         for (EadMetadataField emf : fieldList) {
@@ -405,7 +405,7 @@ public class TektonikAdministrationPluginTest {
 
         assertEquals("1 Werke", unittitle.getValue());
         second = secondSubList.get(1);
-        assertEquals(2, second.getOrderNumber().intValue());
+        assertEquals(1, second.getOrderNumber().intValue());
         assertEquals(2, second.getHierarchy().intValue());
         fieldList = second.getIdentityStatementAreaList();
         for (EadMetadataField emf : fieldList) {
@@ -421,7 +421,7 @@ public class TektonikAdministrationPluginTest {
         assertEquals("2 Korrespondenz", unittitle.getValue());
 
         second = secondSubList.get(4);
-        assertEquals(5, second.getOrderNumber().intValue());
+        assertEquals(4, second.getOrderNumber().intValue());
         assertEquals(2, second.getHierarchy().intValue());
         fieldList = second.getIdentityStatementAreaList();
         for (EadMetadataField emf : fieldList) {
@@ -437,7 +437,7 @@ public class TektonikAdministrationPluginTest {
         assertEquals("5 Sammlungen / Objekte", unittitle.getValue());
 
         EadEntry third = second.getSubEntryList().get(2);
-        assertEquals(3, third.getOrderNumber().intValue());
+        assertEquals(2, third.getOrderNumber().intValue());
         assertEquals(3, third.getHierarchy().intValue());
         fieldList = third.getIdentityStatementAreaList();
         for (EadMetadataField emf : fieldList) {
