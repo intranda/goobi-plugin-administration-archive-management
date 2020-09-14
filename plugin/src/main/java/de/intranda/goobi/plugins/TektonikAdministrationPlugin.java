@@ -44,6 +44,10 @@ import net.xeoh.plugins.base.annotations.PluginImplementation;
 public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
     @Getter
+    @Setter
+    private String displayMode = "";
+
+    @Getter
     private String title = "intranda_administration_tektonik";
 
     @Getter
@@ -660,4 +664,53 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         }
         return element;
     }
+
+    @Getter
+    private List<EadEntry> moveList;
+
+    @Getter
+    @Setter
+    private EadEntry destinationEntry;
+
+    public void prepareMoveNode() {
+
+        // abort if no node is selected
+        if (selectedEntry == null) {
+            displayMode = "";
+            return;
+        }
+
+        // abort if root node is selected
+        if (selectedEntry.getParentNode() == null) {
+            displayMode = "";
+            return;
+        }
+
+        // abort if first and only child of root node is selected
+        if (selectedEntry.getParentNode().getParentNode() == null && selectedEntry.getParentNode().getSubEntryList().size() == 1) {
+            displayMode = "";
+            return;
+        }
+
+        // provide new flat list
+        // mark parent of current node as not selectable
+        // don't show child nodes of selected node
+        moveList = rootElement.getMoveToDestinationList(selectedEntry);
+    }
+
+    public void moveNode() {
+
+        // remove element from parent node
+        EadEntry parentNode = selectedEntry.getParentNode();
+        parentNode.removeSubEntry(selectedEntry);
+
+        // add it to new parent
+        destinationEntry.addSubEntry(selectedEntry);
+        selectedEntry.setParentNode(destinationEntry);
+
+        // TODO set new hierarchy level to element and all children
+
+        displayMode = "";
+    }
+
 }

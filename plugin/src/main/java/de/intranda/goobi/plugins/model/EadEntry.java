@@ -30,6 +30,9 @@ public class EadEntry {
     // node is selected
     private boolean selected;
 
+    // node can be selected as destination when moving nodes
+    private boolean selectable;
+
     // node type -  @level
     private String nodeType;
 
@@ -118,7 +121,79 @@ public class EadEntry {
 
     public boolean isHasChildren() {
         return !subEntryList.isEmpty();
+    }
 
+    public List<EadEntry> getMoveToDestinationList(EadEntry entry) {
+        List<EadEntry> list = new LinkedList<>();
+        list.add(this);
+
+        if (entry.equals(this)) {
+            setSelectable(false);
+            parentNode.setSelectable(false);
+        } else if (subEntryList != null) {
+            for (EadEntry ds : subEntryList) {
+                list.addAll(ds.getMoveToDestinationList(entry));
+            }
+        }
+
+        return list;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        EadEntry other = (EadEntry) obj;
+        if (hierarchy == null) {
+            if (other.hierarchy != null) {
+                return false;
+            }
+        } else if (!hierarchy.equals(other.hierarchy)) {
+            return false;
+        }
+        if (orderNumber == null) {
+            if (other.orderNumber != null) {
+                return false;
+            }
+        } else if (!orderNumber.equals(other.orderNumber)) {
+            return false;
+        }
+        if (parentNode == null && other.parentNode == null) {
+            return true;
+        }
+        if (parentNode == null && other.parentNode != null) {
+            return false;
+        }
+        if (parentNode != null && other.parentNode == null) {
+            return false;
+        }
+
+        if (!parentNode.getOrderNumber().equals(other.parentNode.getOrderNumber())) {
+            return false;
+        }
+        if (!parentNode.getHierarchy().equals(other.parentNode.getHierarchy())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((hierarchy == null) ? 0 : hierarchy.hashCode());
+        result = prime * result + ((orderNumber == null) ? 0 : orderNumber.hashCode());
+        result = prime * result + ((parentNode == null) ? 0 : parentNode.getHierarchy().hashCode());
+        result = prime * result + ((parentNode == null) ? 0 : parentNode.getOrderNumber().hashCode());
+        return result;
     }
 
 }

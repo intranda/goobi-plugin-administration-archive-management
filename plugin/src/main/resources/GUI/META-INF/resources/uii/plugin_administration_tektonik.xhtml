@@ -69,7 +69,7 @@ div.no-element-selected {
 
 .table__structure-link-active {
     font-weight: 700;
-    color: black;
+    color: green;
 }
 /* LEVELS */
 .table tr[class*="level"] td .expand {
@@ -246,265 +246,322 @@ div.no-element-selected {
                         id="details"
                         layout="block"
                         styleClass="row"
-                        rendered="#{AdministrationForm.administrationPlugin.selectedDatabase != NULL}">
-                        <div class="grid-content">
-                            <div class="box-content grid-container leftArea">
+                        rendered="#{AdministrationForm.administrationPlugin.selectedDatabase != NULL and AdministrationForm.administrationPlugin.displayMode == ''}">
+                        <h:form id="ead-details">
+                            <div class="grid-content">
+                                <div class="box-content grid-container leftArea">
 
-                                <h:panelGroup
-                                    layout="block"
-                                    styleClass="box box-color box-bordered lightgrey">
-                                    <div class="box-title">
-                                        <h3>
-                                            <i class="fa fa-plug"></i>
-                                            <h:outputText value="#{msgs[AdministrationForm.administrationPlugin.title]}" />
-                                        </h3>
- <h:commandLink
-                                        id="new"
-                                        styleClass="btn btn-primary font-size-s"
-                                        action="#{AdministrationForm.administrationPlugin.addNode}"
-                                >
-                                        <i class="fa fa-plus margin-right-5"></i>
-                                        <h:outputText value="#{msgs.createNew}" />
-                                          <f:ajax
-                                                            execute="meStructure"
-                                                            render="meStructure" />
-                                    </h:commandLink>
+                                    <h:panelGroup
+                                        layout="block"
+                                        styleClass="box box-color box-bordered lightgrey">
+                                        <div class="box-title">
+                                            <h3>
+                                                <i class="fa fa-plug"></i>
+                                                <h:outputText value="#{msgs[AdministrationForm.administrationPlugin.title]}" />
+                                            </h3>
+                                            <h:commandLink
+                                                id="new"
+                                                styleClass="btn btn-primary font-size-s"
+                                                action="#{AdministrationForm.administrationPlugin.addNode}">
+                                                <i class="fa fa-plus margin-right-5"></i>
+                                                <h:outputText value="#{msgs.newNode}" />
+                                                <f:ajax
+                                                    execute="meStructure"
+                                                    render="meStructure" />
+                                            </h:commandLink>
 
-                                              <h:commandLink
-                                                        styleClass="btn btn-danger"
-                                                        action="#{AdministrationForm.administrationPlugin.deleteNode}">
-                                                        <i class="fa fa-trash-o margin-right-5" />
-                                                        <h:outputText value="#{msgs.loeschen}" />
-                                                          <f:ajax
-                                                            execute="meStructure"
-                                                            render="meStructure" />
-                                                    </h:commandLink>
-                                    </div>
-                                    <div class="box-content">
-                                        <div class="table">
-                                            <x:dataTable
-                                                id="meStructure"
-                                                forceId="true"
-                                                value="#{AdministrationForm.administrationPlugin.flatEntryList}"
-                                                var="entry"
-                                                rowStyleClass="level-#{entry.hierarchy}">
-                                                <h:column>
-                                                    <h:commandLink
-                                                        id="expand"
-                                                        action="#{AdministrationForm.administrationPlugin.resetFlatList}"
-                                                        class="#{entry.displayChildren ? 'expand' : 'expanded'}"
-                                                        rendered="#{entry.hasChildren}">
-                                                        <i class="#{entry.displayChildren ? 'fa fa-caret-down fa-lg' : 'fa fa-caret-right fa-lg'}" />
-                                                        <x:updateActionListener
-                                                            property="#{entry.displayChildren}"
-                                                            value="#{not entry.displayChildren}" />
-                                                        <f:ajax
-                                                            execute="meStructure"
-                                                            render="meStructure" />
-                                                    </h:commandLink>
-                                                    <h:commandLink
-                                                        id="link2"
-                                                        immediate="true"
-                                                        styleClass="#{entry.selected ? 'table__structure-link-active' : 'table__structure-link'}"
-                                                        action="#{AdministrationForm.administrationPlugin.resetFlatList}">
-                                                        <i
-                                                            class="fa fa-file-o"
-                                                            aria-hidden="true"></i>
-                                                        <h:outputText
-                                                            value="#{entry.label}"
-                                                            rendered="#{entry.label != null}" />
-                                                        <h:outputText
-                                                            value="#{entry.orderNumber}"
-                                                            rendered="#{entry.label == null}" />
+                                            <h:commandLink
+                                                styleClass="btn btn-primary"
+                                                action="#{AdministrationForm.administrationPlugin.deleteNode}">
+                                                <i class="fa fa-trash-o margin-right-5" />
+                                                <h:outputText value="#{msgs.loeschen}" />
+                                                <f:ajax
+                                                    execute="meStructure"
+                                                    render="meStructure" />
+                                            </h:commandLink>
 
-                                                        <x:updateActionListener
-                                                            property="#{AdministrationForm.administrationPlugin.selectedEntry}"
-                                                            value="#{entry}" />
-                                                        <f:ajax
-                                                            execute="@this"
-                                                            render="details" />
-                                                    </h:commandLink>
-                                                </h:column>
-                                                <!--                                                 <br/> -->
-                                                <!--                                             </ui:repeat> -->
-                                            </x:dataTable>
+                                            <h:commandLink
+                                                styleClass="btn btn-primary"
+                                                action="#{AdministrationForm.administrationPlugin.prepareMoveNode}">
+                                                <i class="fa fa-exchange margin-right-5" />
+                                                <h:outputText value="#{msgs.moveNode}" />
+                                                <x:updateActionListener
+                                                    property="#{AdministrationForm.administrationPlugin.displayMode}"
+                                                    value="moveNode" />
+
+
+                                            </h:commandLink>
+
                                         </div>
-                                    </div>
-                                </h:panelGroup>
+                                        <div class="box-content">
+                                            <div class="table">
+                                                <x:dataTable
+                                                    id="meStructure"
+                                                    forceId="true"
+                                                    value="#{AdministrationForm.administrationPlugin.flatEntryList}"
+                                                    var="entry"
+                                                    rowStyleClass="level-#{entry.hierarchy}">
+                                                    <h:column>
+                                                        <h:commandLink
+                                                            id="expand"
+                                                            action="#{AdministrationForm.administrationPlugin.resetFlatList}"
+                                                            class="#{entry.displayChildren ? 'expand' : 'expanded'}"
+                                                            rendered="#{entry.hasChildren}">
+                                                            <i class="#{entry.displayChildren ? 'fa fa-caret-down fa-lg' : 'fa fa-caret-right fa-lg'}" />
+                                                            <x:updateActionListener
+                                                                property="#{entry.displayChildren}"
+                                                                value="#{not entry.displayChildren}" />
+                                                            <f:ajax
+                                                                execute="ead-details"
+                                                                render="ead-details" />
+                                                        </h:commandLink>
+                                                        <h:commandLink
+                                                            id="link2"
+                                                            immediate="true"
+                                                            styleClass="#{entry.selected ? 'table__structure-link-active' : 'table__structure-link'}"
+                                                            action="#{AdministrationForm.administrationPlugin.resetFlatList}">
+                                                            <i
+                                                                class="fa fa-file-o"
+                                                                aria-hidden="true"></i>
+                                                            <h:outputText
+                                                                value="#{entry.label}"
+                                                                rendered="#{entry.label != null}" />
+                                                            <h:outputText
+                                                                value="#{entry.orderNumber}"
+                                                                rendered="#{entry.label == null}" />
 
-                            </div>
-
-
-                            <div class="grid-container rightArea">
-
-                                <div
-                                    class="container"
-                                    style="width: 100%">
-                                    <h:panelGroup
-                                        layout="block"
-                                        styleClass="center"
-                                        rendered="#{AdministrationForm.administrationPlugin.selectedEntry == null}">
-
-                                        <p>
-                                            <strong>#{msgs.plugin_administration_tectonics_noElementSelectedHeading}</strong>
-                                        </p>
-                                        <p>#{msgs.plugin_administration_tectonics_noElementSelectedText}</p>
-
-                                    </h:panelGroup>
-
-                                    <h:panelGroup
-                                        layout="block"
-                                        rendered="#{AdministrationForm.administrationPlugin.selectedEntry != null}">
-
-                                        <h:panelGroup
-                                            layout="block"
-                                            styleClass="box box-color box-bordered orange">
-                                            <div class="box-title">
-                                                <h3>
-                                                    <i class="fa fa-plug"></i>
-                                                    <h:outputText value="#{AdministrationForm.administrationPlugin.selectedEntry.label}" />
-                                                </h3>
+                                                            <x:updateActionListener
+                                                                property="#{AdministrationForm.administrationPlugin.selectedEntry}"
+                                                                value="#{entry}" />
+                                                            <f:ajax
+                                                                execute="ead-details"
+                                                                render="ead-details" />
+                                                        </h:commandLink>
+                                                    </h:column>
+                                                    <!--                                                 <br/> -->
+                                                    <!--                                             </ui:repeat> -->
+                                                </x:dataTable>
                                             </div>
-                                            <div class="box-content">
-                                                <div class="processcreation"></div>
-
-
-
-                                                <div class="identification">
-                                                    <p>Identity Statement</p>
-                                                    <ui:repeat
-                                                        var="item"
-                                                        value="#{AdministrationForm.administrationPlugin.selectedEntry.identityStatementAreaList}">
-                                                        <ui:fragment rendered="#{item.visible}">
-                                                            <intranda:formInputText
-                                                                id="#{item.name}a1"
-                                                                name="#{item.name}a1"
-                                                                label="#{msgs[item.name]}"
-                                                                field="#{item.value}"
-                                                                fieldStyle="form-control"
-                                                                required="false" />
-                                                        </ui:fragment>
-                                                    </ui:repeat>
-
-
-                                                </div>
-                                                <br />
-                                                <div class="context">
-                                                    <p>Context Area</p>
-                                                    <ui:repeat
-                                                        var="item"
-                                                        value="#{AdministrationForm.administrationPlugin.selectedEntry.contextAreaList}">
-                                                        <ui:fragment rendered="#{item.visible}">
-                                                            <intranda:formInputText
-                                                                id="#{item.name}a1"
-                                                                name="#{item.name}a1"
-                                                                label="#{msgs[item.name]}"
-                                                                field="#{item.value}"
-                                                                fieldStyle="form-control"
-                                                                required="false" />
-                                                        </ui:fragment>
-                                                    </ui:repeat>
-                                                </div>
-                                                <br />
-                                                <div class="context">
-                                                    <p>Content and Structure Area</p>
-                                                    <ui:repeat
-                                                        var="item"
-                                                        value="#{AdministrationForm.administrationPlugin.selectedEntry.contentAndStructureAreaAreaList}">
-                                                        <ui:fragment rendered="#{item.visible}">
-                                                            <intranda:formInputText
-                                                                id="#{item.name}a1"
-                                                                name="#{item.name}a1"
-                                                                label="#{msgs[item.name]}"
-                                                                field="#{item.value}"
-                                                                fieldStyle="form-control"
-                                                                required="false" />
-                                                        </ui:fragment>
-                                                    </ui:repeat>
-                                                </div>
-
-                                                <br />
-                                                <div class="context">
-                                                    <p>Condition of Access and Use Area</p>
-                                                    <ui:repeat
-                                                        var="item"
-                                                        value="#{AdministrationForm.administrationPlugin.selectedEntry.accessAndUseAreaList}">
-                                                        <ui:fragment rendered="#{item.visible}">
-                                                            <intranda:formInputText
-                                                                id="#{item.name}a1"
-                                                                name="#{item.name}a1"
-                                                                label="#{msgs[item.name]}"
-                                                                field="#{item.value}"
-                                                                fieldStyle="form-control"
-                                                                required="false" />
-                                                        </ui:fragment>
-                                                    </ui:repeat>
-                                                </div>
-                                                <br />
-                                                <div class="context">
-                                                    <p>Allied Materials Area</p>
-                                                    <ui:repeat
-                                                        var="item"
-                                                        value="#{AdministrationForm.administrationPlugin.selectedEntry.alliedMaterialsAreaList}">
-                                                        <ui:fragment rendered="#{item.visible}">
-                                                            <intranda:formInputText
-                                                                id="#{item.name}a1"
-                                                                name="#{item.name}a1"
-                                                                label="#{msgs[item.name]}"
-                                                                field="#{item.value}"
-                                                                fieldStyle="form-control"
-                                                                required="false" />
-                                                        </ui:fragment>
-                                                    </ui:repeat>
-                                                </div>
-                                                <br />
-                                                <div class="context">
-                                                    <p>Note Area</p>
-                                                    <ui:repeat
-                                                        var="item"
-                                                        value="#{AdministrationForm.administrationPlugin.selectedEntry.notesAreaList}">
-                                                        <ui:fragment rendered="#{item.visible}">
-                                                            <intranda:formInputText
-                                                                id="#{item.name}a1"
-                                                                name="#{item.name}a1"
-                                                                label="#{msgs[item.name]}"
-                                                                field="#{item.value}"
-                                                                fieldStyle="form-control"
-                                                                required="false" />
-                                                        </ui:fragment>
-                                                    </ui:repeat>
-                                                </div>
-                                                <br />
-                                                <div class="context">
-                                                    <p>Description Control Area</p>
-                                                    <ui:repeat
-                                                        var="item"
-                                                        value="#{AdministrationForm.administrationPlugin.selectedEntry.descriptionControlAreaList}">
-                                                        <ui:fragment rendered="#{item.visible}">
-                                                            <intranda:formInputText
-                                                                id="#{item.name}a1"
-                                                                name="#{item.name}a1"
-                                                                label="#{msgs[item.name]}"
-                                                                field="#{item.value}"
-                                                                fieldStyle="form-control"
-                                                                required="false" />
-                                                        </ui:fragment>
-                                                    </ui:repeat>
-                                                </div>
-                                            </div>
-                                        </h:panelGroup>
-
+                                        </div>
                                     </h:panelGroup>
-
 
                                 </div>
 
-                            </div>
-                        </div>
 
+                                <div class="grid-container rightArea">
+
+                                    <div
+                                        class="container"
+                                        style="width: 100%">
+                                        <h:panelGroup
+                                            layout="block"
+                                            styleClass="center"
+                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry == null}">
+
+                                            <p>
+                                                <strong>#{msgs.plugin_administration_tectonics_noElementSelectedHeading}</strong>
+                                            </p>
+                                            <p>#{msgs.plugin_administration_tectonics_noElementSelectedText}</p>
+
+                                        </h:panelGroup>
+
+                                        <h:panelGroup
+                                            layout="block"
+                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry != null}">
+
+                                            <h:panelGroup
+                                                layout="block"
+                                                styleClass="box box-color box-bordered orange">
+                                                <div class="box-title">
+                                                    <h3>
+                                                        <i class="fa fa-plug"></i>
+                                                        <h:outputText value="#{AdministrationForm.administrationPlugin.selectedEntry.label}" />
+                                                    </h3>
+                                                </div>
+                                                <div class="box-content">
+                                                    <div class="processcreation"></div>
+
+
+
+                                                    <div class="identification">
+                                                        <p>Identity Statement</p>
+                                                        <ui:repeat
+                                                            var="item"
+                                                            value="#{AdministrationForm.administrationPlugin.selectedEntry.identityStatementAreaList}">
+                                                            <ui:fragment rendered="#{item.visible}">
+                                                                <intranda:formInputText
+                                                                    id="#{item.name}a1"
+                                                                    name="#{item.name}a1"
+                                                                    label="#{msgs[item.name]}"
+                                                                    field="#{item.value}"
+                                                                    fieldStyle="form-control"
+                                                                    required="false" />
+                                                            </ui:fragment>
+                                                        </ui:repeat>
+
+
+                                                    </div>
+                                                    <br />
+                                                    <div class="context">
+                                                        <p>Context Area</p>
+                                                        <ui:repeat
+                                                            var="item"
+                                                            value="#{AdministrationForm.administrationPlugin.selectedEntry.contextAreaList}">
+                                                            <ui:fragment rendered="#{item.visible}">
+                                                                <intranda:formInputText
+                                                                    id="#{item.name}a1"
+                                                                    name="#{item.name}a1"
+                                                                    label="#{msgs[item.name]}"
+                                                                    field="#{item.value}"
+                                                                    fieldStyle="form-control"
+                                                                    required="false" />
+                                                            </ui:fragment>
+                                                        </ui:repeat>
+                                                    </div>
+                                                    <br />
+                                                    <div class="context">
+                                                        <p>Content and Structure Area</p>
+                                                        <ui:repeat
+                                                            var="item"
+                                                            value="#{AdministrationForm.administrationPlugin.selectedEntry.contentAndStructureAreaAreaList}">
+                                                            <ui:fragment rendered="#{item.visible}">
+                                                                <intranda:formInputText
+                                                                    id="#{item.name}a1"
+                                                                    name="#{item.name}a1"
+                                                                    label="#{msgs[item.name]}"
+                                                                    field="#{item.value}"
+                                                                    fieldStyle="form-control"
+                                                                    required="false" />
+                                                            </ui:fragment>
+                                                        </ui:repeat>
+                                                    </div>
+
+                                                    <br />
+                                                    <div class="context">
+                                                        <p>Condition of Access and Use Area</p>
+                                                        <ui:repeat
+                                                            var="item"
+                                                            value="#{AdministrationForm.administrationPlugin.selectedEntry.accessAndUseAreaList}">
+                                                            <ui:fragment rendered="#{item.visible}">
+                                                                <intranda:formInputText
+                                                                    id="#{item.name}a1"
+                                                                    name="#{item.name}a1"
+                                                                    label="#{msgs[item.name]}"
+                                                                    field="#{item.value}"
+                                                                    fieldStyle="form-control"
+                                                                    required="false" />
+                                                            </ui:fragment>
+                                                        </ui:repeat>
+                                                    </div>
+                                                    <br />
+                                                    <div class="context">
+                                                        <p>Allied Materials Area</p>
+                                                        <ui:repeat
+                                                            var="item"
+                                                            value="#{AdministrationForm.administrationPlugin.selectedEntry.alliedMaterialsAreaList}">
+                                                            <ui:fragment rendered="#{item.visible}">
+                                                                <intranda:formInputText
+                                                                    id="#{item.name}a1"
+                                                                    name="#{item.name}a1"
+                                                                    label="#{msgs[item.name]}"
+                                                                    field="#{item.value}"
+                                                                    fieldStyle="form-control"
+                                                                    required="false" />
+                                                            </ui:fragment>
+                                                        </ui:repeat>
+                                                    </div>
+                                                    <br />
+                                                    <div class="context">
+                                                        <p>Note Area</p>
+                                                        <ui:repeat
+                                                            var="item"
+                                                            value="#{AdministrationForm.administrationPlugin.selectedEntry.notesAreaList}">
+                                                            <ui:fragment rendered="#{item.visible}">
+                                                                <intranda:formInputText
+                                                                    id="#{item.name}a1"
+                                                                    name="#{item.name}a1"
+                                                                    label="#{msgs[item.name]}"
+                                                                    field="#{item.value}"
+                                                                    fieldStyle="form-control"
+                                                                    required="false" />
+                                                            </ui:fragment>
+                                                        </ui:repeat>
+                                                    </div>
+                                                    <br />
+                                                    <div class="context">
+                                                        <p>Description Control Area</p>
+                                                        <ui:repeat
+                                                            var="item"
+                                                            value="#{AdministrationForm.administrationPlugin.selectedEntry.descriptionControlAreaList}">
+                                                            <ui:fragment rendered="#{item.visible}">
+                                                                <intranda:formInputText
+                                                                    id="#{item.name}a1"
+                                                                    name="#{item.name}a1"
+                                                                    label="#{msgs[item.name]}"
+                                                                    field="#{item.value}"
+                                                                    fieldStyle="form-control"
+                                                                    required="false" />
+                                                            </ui:fragment>
+                                                        </ui:repeat>
+                                                    </div>
+                                                </div>
+                                            </h:panelGroup>
+
+                                        </h:panelGroup>
+
+
+                                    </div>
+
+                                </div>
+                            </div>
+                        </h:form>
 
 
                     </h:panelGroup>
+
+                    <h:panelGroup
+                        id="moveNodeArea"
+                        layout="block"
+                        styleClass="row"
+                        rendered="#{AdministrationForm.administrationPlugin.selectedDatabase != NULL and AdministrationForm.administrationPlugin.displayMode == 'moveNode'}">
+                        <div class="box-content">
+                            <div class="table">
+                                <h:form>
+                                    <x:dataTable
+                                        id="selectNodeArea"
+                                        forceId="true"
+                                        value="#{AdministrationForm.administrationPlugin.moveList}"
+                                        var="entry"
+                                        rowStyleClass="level-#{entry.hierarchy}">
+                                        <h:column>
+
+                                            <h:commandLink
+                                                id="link2"
+                                                immediate="true"
+                                                styleClass="#{entry.selected ? 'table__structure-link-active' : 'table__structure-link'}"
+                                                action="#{AdministrationForm.administrationPlugin.moveNode}"
+                                                disabled="#{entry.selected}">
+                                                <i
+                                                    class="fa fa-file-o"
+                                                    aria-hidden="true"></i>
+                                                <h:outputText
+                                                    value="#{entry.label}"
+                                                    rendered="#{entry.label != null}" />
+                                                <h:outputText
+                                                    value="#{entry.orderNumber}"
+                                                    rendered="#{entry.label == null}" />
+                                                <x:updateActionListener
+                                                    property="#{AdministrationForm.administrationPlugin.destinationEntry}"
+                                                    value="#{entry}" />
+                                            </h:commandLink>
+                                        </h:column>
+                                    </x:dataTable>
+                                </h:form>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+
                 </div>
             </div>
         </h:panelGroup>
