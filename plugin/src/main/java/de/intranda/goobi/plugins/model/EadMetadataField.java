@@ -20,13 +20,15 @@ public class EadMetadataField {
 
     private boolean visible;
 
-    public EadMetadataField(String name, Integer level, String xpath, String xpathType, boolean repeatable, boolean visible) {
+    private boolean showField;
+
+    public EadMetadataField(String name, Integer level, String xpath, String xpathType, boolean repeatable, boolean visible, boolean showField) {
         this.name = name;
         this.level = level;
         this.xpath = xpath;
         this.xpathType = xpathType;
         this.repeatable = repeatable;
         this.visible = visible;
+        this.showField = showField;
     }
-
 }

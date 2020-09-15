@@ -7,7 +7,8 @@
     xmlns:x="http://myfaces.apache.org/tomahawk"
     xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites"
     xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
-    xmlns:p="http://primefaces.org/ui">
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:goobiio="http://goobi.io/facelets">
 
     <composite:interface>
     </composite:interface>
@@ -172,6 +173,22 @@ div.no-element-selected {
 .table    tr.level-10  td {
     padding-left: 165px
 }
+
+.area_block-border {
+    border-top: 1px solid #E8860C;
+    margin-top: 10px;
+}
+
+.area_block-border p, #contextArea, #contentStructureArea,
+    #identificationArea, #descriptionArea, #notesArea, #materialsArea,
+    #accessArea {
+    margin: 10px;
+}
+
+.box .box-content {
+    padding-left: 0;
+    padding-right: 0;
+}
 </style>
         <h:panelGroup>
             <div class="row">
@@ -247,7 +264,10 @@ div.no-element-selected {
                         layout="block"
                         styleClass="row"
                         rendered="#{AdministrationForm.administrationPlugin.selectedDatabase != NULL and AdministrationForm.administrationPlugin.displayMode == ''}">
-                        <h:form id="ead-details">
+                        <h:form
+                            styleClass="form-horizontal form-bordered"
+                            id="ead-details"
+                            prependId="false">
                             <div class="grid-content">
                                 <div class="box-content grid-container leftArea">
 
@@ -364,7 +384,6 @@ div.no-element-selected {
                                             <p>#{msgs.plugin_administration_tectonics_noElementSelectedText}</p>
 
                                         </h:panelGroup>
-
                                         <h:panelGroup
                                             layout="block"
                                             rendered="#{AdministrationForm.administrationPlugin.selectedEntry != null}">
@@ -375,134 +394,57 @@ div.no-element-selected {
                                                 <div class="box-title">
                                                     <h3>
                                                         <i class="fa fa-plug"></i>
-                                                        <h:outputText value="#{AdministrationForm.administrationPlugin.selectedEntry.label}" />
+                                                        <h:outputText value="#{msgs.details}" />
                                                     </h3>
                                                 </div>
                                                 <div class="box-content">
-                                                    <div class="processcreation"></div>
+                                                    <div class="processcreation area_block-border">
+                                                        <p>Bereich für Goobi Vorgang und Typ</p>
+                                                    </div>
 
-
-
-                                                    <div class="identification">
+                                                    <div class="identification area_block-border">
                                                         <p>Identity Statement</p>
-                                                        <ui:repeat
-                                                            var="item"
-                                                            value="#{AdministrationForm.administrationPlugin.selectedEntry.identityStatementAreaList}">
-                                                            <ui:fragment rendered="#{item.visible}">
-                                                                <intranda:formInputText
-                                                                    id="#{item.name}a1"
-                                                                    name="#{item.name}a1"
-                                                                    label="#{msgs[item.name]}"
-                                                                    field="#{item.value}"
-                                                                    fieldStyle="form-control"
-                                                                    required="false" />
-                                                            </ui:fragment>
-                                                        </ui:repeat>
-
-
+                                                        <goobiio:area
+                                                            itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.identityStatementAreaList}"
+                                                            area="identificationArea" />
                                                     </div>
-                                                    <br />
-                                                    <div class="context">
+                                                    <div class="context area_block-border">
                                                         <p>Context Area</p>
-                                                        <ui:repeat
-                                                            var="item"
-                                                            value="#{AdministrationForm.administrationPlugin.selectedEntry.contextAreaList}">
-                                                            <ui:fragment rendered="#{item.visible}">
-                                                                <intranda:formInputText
-                                                                    id="#{item.name}a1"
-                                                                    name="#{item.name}a1"
-                                                                    label="#{msgs[item.name]}"
-                                                                    field="#{item.value}"
-                                                                    fieldStyle="form-control"
-                                                                    required="false" />
-                                                            </ui:fragment>
-                                                        </ui:repeat>
+                                                        <goobiio:area
+                                                            itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.contextAreaList}"
+                                                            area="contextArea" />
                                                     </div>
-                                                    <br />
-                                                    <div class="context">
+                                                    <div class="content_structure area_block-border">
                                                         <p>Content and Structure Area</p>
-                                                        <ui:repeat
-                                                            var="item"
-                                                            value="#{AdministrationForm.administrationPlugin.selectedEntry.contentAndStructureAreaAreaList}">
-                                                            <ui:fragment rendered="#{item.visible}">
-                                                                <intranda:formInputText
-                                                                    id="#{item.name}a1"
-                                                                    name="#{item.name}a1"
-                                                                    label="#{msgs[item.name]}"
-                                                                    field="#{item.value}"
-                                                                    fieldStyle="form-control"
-                                                                    required="false" />
-                                                            </ui:fragment>
-                                                        </ui:repeat>
+                                                        <goobiio:area
+                                                            itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.contentAndStructureAreaAreaList}"
+                                                            area="contentStructureArea" />
                                                     </div>
 
-                                                    <br />
-                                                    <div class="context">
+                                                    <div class="condition area_block-border">
                                                         <p>Condition of Access and Use Area</p>
-                                                        <ui:repeat
-                                                            var="item"
-                                                            value="#{AdministrationForm.administrationPlugin.selectedEntry.accessAndUseAreaList}">
-                                                            <ui:fragment rendered="#{item.visible}">
-                                                                <intranda:formInputText
-                                                                    id="#{item.name}a1"
-                                                                    name="#{item.name}a1"
-                                                                    label="#{msgs[item.name]}"
-                                                                    field="#{item.value}"
-                                                                    fieldStyle="form-control"
-                                                                    required="false" />
-                                                            </ui:fragment>
-                                                        </ui:repeat>
+                                                        <goobiio:area
+                                                            itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.accessAndUseAreaList}"
+                                                            area="accessArea" />
                                                     </div>
                                                     <br />
-                                                    <div class="context">
+                                                    <div class="materials area_block-border">
                                                         <p>Allied Materials Area</p>
-                                                        <ui:repeat
-                                                            var="item"
-                                                            value="#{AdministrationForm.administrationPlugin.selectedEntry.alliedMaterialsAreaList}">
-                                                            <ui:fragment rendered="#{item.visible}">
-                                                                <intranda:formInputText
-                                                                    id="#{item.name}a1"
-                                                                    name="#{item.name}a1"
-                                                                    label="#{msgs[item.name]}"
-                                                                    field="#{item.value}"
-                                                                    fieldStyle="form-control"
-                                                                    required="false" />
-                                                            </ui:fragment>
-                                                        </ui:repeat>
+                                                        <goobiio:area
+                                                            itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.alliedMaterialsAreaList}"
+                                                            area="materialsArea" />
                                                     </div>
-                                                    <br />
-                                                    <div class="context">
+                                                    <div class="notes area_block-border">
                                                         <p>Note Area</p>
-                                                        <ui:repeat
-                                                            var="item"
-                                                            value="#{AdministrationForm.administrationPlugin.selectedEntry.notesAreaList}">
-                                                            <ui:fragment rendered="#{item.visible}">
-                                                                <intranda:formInputText
-                                                                    id="#{item.name}a1"
-                                                                    name="#{item.name}a1"
-                                                                    label="#{msgs[item.name]}"
-                                                                    field="#{item.value}"
-                                                                    fieldStyle="form-control"
-                                                                    required="false" />
-                                                            </ui:fragment>
-                                                        </ui:repeat>
+                                                        <goobiio:area
+                                                            itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.notesAreaList}"
+                                                            area="notesArea" />
                                                     </div>
-                                                    <br />
-                                                    <div class="context">
+                                                    <div class="description area_block-border">
                                                         <p>Description Control Area</p>
-                                                        <ui:repeat
-                                                            var="item"
-                                                            value="#{AdministrationForm.administrationPlugin.selectedEntry.descriptionControlAreaList}">
-                                                            <ui:fragment rendered="#{item.visible}">
-                                                                <intranda:formInputText
-                                                                    id="#{item.name}a1"
-                                                                    name="#{item.name}a1"
-                                                                    label="#{msgs[item.name]}"
-                                                                    field="#{item.value}"
-                                                                    fieldStyle="form-control"
-                                                                    required="false" />
-                                                            </ui:fragment>
-                                                        </ui:repeat>
+                                                        <goobiio:area
+                                                            itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.descriptionControlAreaList}"
+                                                            area="descriptionArea" />
                                                     </div>
                                                 </div>
                                             </h:panelGroup>

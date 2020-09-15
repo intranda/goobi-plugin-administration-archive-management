@@ -20,7 +20,7 @@
                 - xpathType: type of the xpath return value, can be text, attribute, element (default)
                 - repeatable: define if the field can exist once or multiple times, values can be true/false, default is false
                 - visible: define if the field is displayed on the UI, values can be true/false, default is true
-                
+                - showField: define if the field is displayed as input field (true) or badge (false, default), affects only visible metadata
          -->
          
         <!-- internal fields, not visible on the UI -->        
@@ -32,9 +32,9 @@
                  
     	<!--  Identity Statement Area -->
         <metadata xpath="./ead:control/ead:maintenanceagency/ead:agencycode" xpathType="element" name="agencycode" level="1" repeatable="false"/>	
-        <metadata xpath="./ead:eadheader/ead:eadid" xpathType="element" name="eadid" level="1" repeatable="false"/> 
+        <metadata xpath="./ead:eadheader/ead:eadid" xpathType="element" name="eadid" level="1" repeatable="false" showField="true"/> 
         <metadata xpath="./ead:control/ead:recordid" xpathType="element" name="recordid" level="1" repeatable="false"/> 
-        <metadata xpath="(./ead:archdesc/ead:did/ead:unitid[not(@type)] | ./ead:did/ead:unitid[not(@type)])[1]" xpathType="element" name="unitid" level="1" repeatable="false"/> 
+        <metadata xpath="(./ead:archdesc/ead:did/ead:unitid[not(@type)] | ./ead:did/ead:unitid[not(@type)])[1]" xpathType="element" name="unitid" level="1" repeatable="false" showField="true"/> 
         
         <metadata xpath="./ead:did/ead:unitid[@type='Vorl. Nr.']" xpathType="element" name="Number" level="1" repeatable="true"/> 
         <metadata xpath="./ead:did/ead:unitid[@type='Altsignatur']" xpathType="element" name="Shelfmark" level="1" repeatable="true"/>
