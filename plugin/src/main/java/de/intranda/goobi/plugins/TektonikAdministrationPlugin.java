@@ -3,6 +3,7 @@ package de.intranda.goobi.plugins;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -291,7 +292,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
         EadMetadataField toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable(),
                 emf.isVisible(), emf.isShowField(), emf.getFieldType());
-
+        toAdd.setSelectItemList(emf.getSelectItemList());
         toAdd.setValue(stringValue);
 
         switch (toAdd.getLevel()) {
@@ -365,8 +366,13 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                     hc.getString("@xpathType", "element"), hc.getBoolean("@repeatable", false), hc.getBoolean("@visible", true),
                     hc.getBoolean("@showField", false), hc.getString("@fieldType", "input"));
             configuredFields.add(field);
-        }
 
+            if (field.getFieldType().equals("dropdown")|| field.getFieldType().equals("multiselect")) {
+                List<String> valueList = Arrays.asList(hc.getStringArray("/value"));
+                field.setSelectItemList(valueList);
+            }
+
+        }
     }
 
     public void resetFlatList() {

@@ -1,5 +1,7 @@
 package de.intranda.goobi.plugins.model;
 
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 
 import lombok.Data;
@@ -43,6 +45,8 @@ public class EadMetadataField {
     /** defines the type of the input field. Posible values are input (default), textarea, dropdown, multiselect */
     private String fieldType;
 
+    private List<String> selectItemList;
+
     public EadMetadataField(String name, Integer level, String xpath, String xpathType, boolean repeatable, boolean visible, boolean showField,
             String fieldType) {
         this.name = name;
@@ -57,6 +61,5 @@ public class EadMetadataField {
 
     public boolean isFilled() {
         return StringUtils.isNotBlank(value);
-
     }
 }

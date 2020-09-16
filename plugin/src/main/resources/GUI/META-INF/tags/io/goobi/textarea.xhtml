@@ -21,7 +21,7 @@
                         property="#{item.showField}"
                         value="false" />
                     <f:ajax
-                        execute="@this"
+                        execute="#{fieldid}"
                         render=":#{area}" />
                 </h:commandLink>
 
@@ -33,7 +33,12 @@
                     styleClass="form-control"
                     value="#{fieldvalue}"
                     required="false"
-                    readonly="false" />
+                    readonly="false">
+                    <f:ajax
+                        execute="@this"
+                        render="@this"
+                        event="blur" />
+                </h:inputTextarea>
                 <h:message
                     for="#{fieldid}"
                     showDetail="true"

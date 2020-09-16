@@ -17,7 +17,15 @@
     <tag>
         <tag-name>textarea</tag-name>
         <source>tags/io/goobi/textarea.xhtml</source>
-    </tag>    
+    </tag>
+    <tag>
+        <tag-name>dropdown</tag-name>
+        <source>tags/io/goobi/dropdown.xhtml</source>
+    </tag>
+    <tag>
+        <tag-name>multiselect</tag-name>
+        <source>tags/io/goobi/multiselect.xhtml</source>
+    </tag>
     <tag>
         <tag-name>badge</tag-name>
         <source>tags/io/goobi/badge.xhtml</source>
@@ -44,7 +52,6 @@
             <name>rendered</name>
             <required>false</required>
             <type>java.lang.Boolean</type>
-        </attribute>        
-        
+        </attribute>
     </tag>
 </facelet-taglib>

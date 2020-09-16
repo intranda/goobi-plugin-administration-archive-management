@@ -27,15 +27,22 @@
 
             </div>
             <div class="col-sm-9">
-                <h:inputText
+                <h:selectOneMenu
                     id="#{fieldid}"
                     forceId="true"
                     styleClass="form-control"
                     value="#{fieldvalue}"
                     required="false"
                     readonly="false">
-                    <f:ajax execute="@this" render="@this" event="blur"/>
-                    </h:inputText>
+                    <f:selectItem
+                        itemValue=""
+                        itemLabel="#{msgs.bitteAuswaehlen}" />
+                    <f:selectItems value="#{selectItems}" />
+                    <f:ajax
+                        event="change"
+                        execute="@this"
+                        render="@this" />
+                </h:selectOneMenu>
                 <h:message
                     for="#{fieldid}"
                     showDetail="true"
