@@ -53,6 +53,14 @@
                                 fieldvalue="#{item.value}"
                                 selectItems="#{item.selectItemList}" />
                         </ui:fragment>
+                        <ui:fragment rendered="#{item.fieldType=='multiselect'}">
+                            <goobiio:multiselect
+                                fieldid="#{item.name}multiselect"
+                                fieldname="#{item.name}"
+                                fieldvalue="#{item.multiselectValue}"
+                                selectItems="#{item.possibleValues}"
+                                selectedItems="#{item.multiselectSelectedValues}" />
+                        </ui:fragment>
                     </ui:fragment>
                 </x:dataList>
             </div>

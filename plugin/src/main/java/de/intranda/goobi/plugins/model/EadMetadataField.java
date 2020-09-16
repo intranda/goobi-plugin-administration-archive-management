@@ -1,5 +1,6 @@
 package de.intranda.goobi.plugins.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -35,9 +36,11 @@ public class EadMetadataField {
 
     /** defines if the field can exist once or multiple times, values can be true/false, default is false */
     private boolean repeatable;
+
     /** contains the metadata value */
     private String value;
     /** defines if the field is displayed on the UI, values can be true/false, default is true */
+
     private boolean visible;
     /** defines if the field is displayed as input field (true) or badge (false, default), affects only visible metadata */
     private boolean showField;
@@ -45,7 +48,12 @@ public class EadMetadataField {
     /** defines the type of the input field. Posible values are input (default), textarea, dropdown, multiselect */
     private String fieldType;
 
+    /** contains the list of possible values for dropdown or multiselect */
     private List<String> selectItemList;
+
+    /** contains the list of selected values in multiselect */
+    private List<String> multiselectSelectedValues = new ArrayList<>();
+    // TODO store single value; fill it from single value
 
     public EadMetadataField(String name, Integer level, String xpath, String xpathType, boolean repeatable, boolean visible, boolean showField,
             String fieldType) {
@@ -62,4 +70,29 @@ public class EadMetadataField {
     public boolean isFilled() {
         return StringUtils.isNotBlank(value);
     }
+
+    public List<String> getPossibleValues() {
+        List<String> answer = new ArrayList<>();
+        for (String possibleValue : selectItemList) {
+            if (!multiselectSelectedValues.contains(possibleValue)) {
+                answer.add(possibleValue);
+            }
+        }
+        return answer;
+    }
+
+    public String getMultiselectValue() {
+        return "";
+    }
+
+    public void setMultiselectValue(String value) {
+        if (StringUtils.isNotBlank(value)) {
+            multiselectSelectedValues.add(value);
+        }
+    }
+
+    public void removeSelectedValue(String value) {
+        multiselectSelectedValues.remove(value);
+    }
+
 }

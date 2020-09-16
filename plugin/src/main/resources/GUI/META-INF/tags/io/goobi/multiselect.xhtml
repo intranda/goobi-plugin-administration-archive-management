@@ -9,7 +9,17 @@
     xmlns:x="http://myfaces.apache.org/tomahawk">
 <h:body>
     <ui:composition>
-        <div class="form-group">
+        <style>
+.col-sm-9 {
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-rows: auto auto;
+}
+</style>
+
+        <h:panelGroup
+            styleClass="form-group"
+            layout="block">
             <div class="col-sm-3 control-label">
                 <h:outputLabel
                     for="#{fieldid}"
@@ -26,20 +36,42 @@
                 </h:commandLink>
 
             </div>
-            <div class="col-sm-9">
-                <h:inputTextarea
+            <div class="col-sm-9 ">
+                <h:selectOneMenu
                     id="#{fieldid}"
                     forceId="true"
                     styleClass="form-control"
                     value="#{fieldvalue}"
                     required="false"
-                    readonly="false" />
-                <h:message
-                    for="#{fieldid}"
-                    showDetail="true"
-                    styleClass="help-inline font-danger" />
+                    readonly="false">
+                    <f:selectItem
+                        itemValue=""
+                        itemLabel="#{msgs.bitteAuswaehlen}" />
+                    <f:selectItems value="#{selectItems}" />
+                    <f:ajax
+                        event="change"
+                        execute="@this"
+                        render=":#{area}" />
+                </h:selectOneMenu>
+
+                <div>
+                    <x:dataList
+                        value="#{selectedItems}"
+                        var="selection">
+                        <h:commandLink action="#{item.removeSelectedValue(selection)}">
+                            <span class="badge">
+                                <h:outputText value="#{selection}" />
+                            </span>
+                            <f:ajax
+                                execute="@this"
+                                render=":#{area}" />
+                        </h:commandLink>
+                    </x:dataList>
+                </div>
             </div>
-        </div>
+        </h:panelGroup>
+
+
 
 
     </ui:composition>

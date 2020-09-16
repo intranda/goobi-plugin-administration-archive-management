@@ -67,7 +67,18 @@
         </metadata>
 
         <metadata xpath="(./ead:archdesc/ead:dsc/ead:userestrict | ./ead:dsc/ead:userestrict)[1]" xpathType="element" name="userestrict" level="4" repeatable="false"/>
-        <metadata xpath="(./ead:archdesc/ead:did/ead:langmaterial | ./ead:did/ead:langmaterial)[1]" xpathType="element" name="langmaterial" level="4" repeatable="false"/>
+        <metadata xpath="(./ead:archdesc/ead:did/ead:langmaterial | ./ead:did/ead:langmaterial)[1]" xpathType="element" name="langmaterial" level="4" repeatable="false" fieldType="multiselect">
+            <value>eng</value>
+            <value>ger</value>
+            <value>dut</value>
+            <value>fre</value>
+            <value>esp</value>
+            <value>ita</value>
+            <value>lat</value>
+            <value>pol</value>
+            <value>rus</value>
+            <value>swe</value>
+        </metadata>
         <metadata xpath="(./ead:archdesc/ead:dsc/ead:phystech | ./ead:dsc/ead:phystech)[1]" xpathType="element" name="phystech" level="4" repeatable="false"/>
         <metadata xpath="(./ead:archdesc/ead:dsc/ead:otherfindaid | ./ead:dsc/ead:otherfindaid)[1]" xpathType="element" name="otherfindaid" level="4" repeatable="false"/>
 
