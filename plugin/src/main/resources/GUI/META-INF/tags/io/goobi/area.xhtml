@@ -19,12 +19,12 @@
                     value="#{itemlist}">
                     <ui:fragment rendered="#{!item.showField and item.visible}">
                         <goobiio:badge
+                            styleclassname="#{!item.filled ? 'badge-empty' : 'badge-filled'}"
                             fieldname="#{item.name}"
                             showfield="#{item.showField}"
                             area="#{area}" />
                     </ui:fragment>
                 </ui:repeat>
-
             </div>
 
             <div>
@@ -32,11 +32,18 @@
                     var="item"
                     value="#{itemlist}">
                     <ui:fragment rendered="#{item.showField and item.visible}">
-                    <!-- TODO different types: input field, text area, drop down, multi select -->
-                        <goobiio:input
-                            fieldid="#{item.name}input"
-                            fieldname="#{item.name}"
-                            fieldvalue="#{item.value}" />
+                        <ui:fragment rendered="#{item.fieldType=='input'}">
+                            <goobiio:input
+                                fieldid="#{item.name}input"
+                                fieldname="#{item.name}"
+                                fieldvalue="#{item.value}" />
+                        </ui:fragment>
+                        <ui:fragment rendered="#{item.fieldType=='textarea'}">
+                            <goobiio:textarea
+                                fieldid="#{item.name}textarea"
+                                fieldname="#{item.name}"
+                                fieldvalue="#{item.value}"/>
+                        </ui:fragment>
                     </ui:fragment>
                 </ui:repeat>
             </div>

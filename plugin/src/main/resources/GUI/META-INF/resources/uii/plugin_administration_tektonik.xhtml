@@ -185,9 +185,21 @@ div.no-element-selected {
     margin: 10px;
 }
 
-.box .box-content {
-    padding-left: 0;
-    padding-right: 0;
+.badge-empty {
+    background-color: #aaa;
+}
+
+.badge-filled {
+    
+}
+
+.close-field {
+    color: #777;
+}
+
+.without-margin {
+    padding-left: 0 !important;
+    padding-right: !important;
 }
 </style>
         <h:panelGroup>
@@ -397,7 +409,7 @@ div.no-element-selected {
                                                         <h:outputText value="#{msgs.details}" />
                                                     </h3>
                                                 </div>
-                                                <div class="box-content">
+                                                <div class="box-content without-margin">
                                                     <div class="processcreation area_block-border">
                                                         <p>Bereich für Goobi Vorgang und Typ</p>
                                                     </div>
