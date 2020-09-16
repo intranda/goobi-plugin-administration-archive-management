@@ -59,9 +59,9 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
     @Getter
     @Setter
-    private String datastoreUrl = "http://localhost:8984/"; // TODO get this from config
+    private String datastoreUrl = "http://localhost:8984/";
     @Setter
-    private String exportFolder = "/tmp/"; // TODO is this needed?
+    private String exportFolder = "/tmp/";
 
     @Getter
     @Setter
@@ -295,6 +295,14 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         toAdd.setSelectItemList(emf.getSelectItemList());
         toAdd.setValue(stringValue);
 
+        // split single value into multiple fields
+        if (toAdd.getFieldType().equals("multiselect") && StringUtils.isNotBlank(stringValue)) {
+            String[] splittedValues = stringValue.split("; ");
+            for (String val : splittedValues) {
+                toAdd.setMultiselectValue(val);
+            }
+        }
+
         switch (toAdd.getLevel()) {
             case 1:
                 entry.getIdentityStatementAreaList().add(toAdd);
@@ -367,7 +375,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                     hc.getBoolean("@showField", false), hc.getString("@fieldType", "input"));
             configuredFields.add(field);
 
-            if (field.getFieldType().equals("dropdown")|| field.getFieldType().equals("multiselect")) {
+            if (field.getFieldType().equals("dropdown") || field.getFieldType().equals("multiselect")) {
                 List<String> valueList = Arrays.asList(hc.getStringArray("/value"));
                 field.setSelectItemList(valueList);
             }
@@ -574,7 +582,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             else if (field.startsWith("@")) {
                 field = field.substring(1);
                 // create attribute on current element
-                currentElement.setAttribute(field, emf.getValue());
+                currentElement.setAttribute(field, emf.getValueForXmlExport());
                 written = true;
             } else {
                 // remove namespace
@@ -642,7 +650,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             }
         }
         if (!written) {
-            currentElement.setText(emf.getValue());
+            currentElement.setText(emf.getValueForXmlExport());
         }
     }
 

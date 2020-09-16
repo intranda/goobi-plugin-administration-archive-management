@@ -95,4 +95,16 @@ public class EadMetadataField {
         multiselectSelectedValues.remove(value);
     }
 
+    public String getValueForXmlExport() {
+        if (!multiselectSelectedValues.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (String selectedValue : multiselectSelectedValues) {
+                sb.append(selectedValue);
+            }
+            return sb.toString();
+        } else {
+            return value;
+        }
+    }
+
 }
