@@ -99,6 +99,9 @@ public class EadMetadataField {
         if (!multiselectSelectedValues.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for (String selectedValue : multiselectSelectedValues) {
+                if (sb.length() > 0) {
+                    sb.append("; ");
+                }
                 sb.append(selectedValue);
             }
             return sb.toString();
