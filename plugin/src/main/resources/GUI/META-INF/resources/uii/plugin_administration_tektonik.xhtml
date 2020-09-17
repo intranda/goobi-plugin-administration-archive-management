@@ -42,6 +42,7 @@ div.grid-content {
 
 div.leftArea {
     padding-left: 15px;
+    min-height: 300px;
 }
 
 div.rightArea {
@@ -57,6 +58,10 @@ div.no-element-selected {
     padding: 20px 60px;
     background: lightgrey;
     border: 1px solid black;
+}
+
+.table {
+    min-height: 400px;
 }
 
 .table .fa {
@@ -201,6 +206,24 @@ div.no-element-selected {
     padding-left: 0 !important;
     padding-right: 0 !important;
 }
+
+.leftArea-grid {
+    display: grid;
+    grid-template-columns: auto 40px;
+}
+
+.button-area {
+    border-left: 2px solid #666;
+    margin-top: -20px;
+    margin-bottom: -20px;
+    margin-right: -7px;
+}
+
+.leftArea-button {
+    margin-top: 5px; margin-bottom : 5px;
+    width: 32px;
+    margin-bottom: 5px;
+}
 </style>
         <h:panelGroup>
             <div class="row">
@@ -289,43 +312,17 @@ div.no-element-selected {
                                         <div class="box-title">
                                             <h3>
                                                 <i class="fa fa-plug"></i>
-                                                <h:outputText value="#{msgs[AdministrationForm.administrationPlugin.title]}" />
+                                                <h:outputText value="#{msgs[AdministrationForm.administrationPlugin.title]}: #{AdministrationForm.administrationPlugin.selectedDatabase}" />
                                             </h3>
-                                            <h:commandLink
-                                                id="new"
-                                                styleClass="btn btn-primary font-size-s"
-                                                action="#{AdministrationForm.administrationPlugin.addNode}">
-                                                <i class="fa fa-plus margin-right-5"></i>
-                                                <h:outputText value="#{msgs.newNode}" />
-                                                <f:ajax
-                                                    execute="meStructure"
-                                                    render="meStructure" />
-                                            </h:commandLink>
-
-                                            <h:commandLink
-                                                styleClass="btn btn-primary"
-                                                action="#{AdministrationForm.administrationPlugin.deleteNode}">
-                                                <i class="fa fa-trash-o margin-right-5" />
-                                                <h:outputText value="#{msgs.loeschen}" />
-                                                <f:ajax
-                                                    execute="meStructure"
-                                                    render="meStructure" />
-                                            </h:commandLink>
-
-                                            <h:commandLink
-                                                styleClass="btn btn-primary"
-                                                action="#{AdministrationForm.administrationPlugin.prepareMoveNode}">
-                                                <i class="fa fa-exchange margin-right-5" />
-                                                <h:outputText value="#{msgs.moveNode}" />
-                                                <x:updateActionListener
-                                                    property="#{AdministrationForm.administrationPlugin.displayMode}"
-                                                    value="moveNode" />
+                                            <!-- TODO search box -->
 
 
-                                            </h:commandLink>
 
                                         </div>
-                                        <div class="box-content">
+                                        <div class="box-content leftArea-grid">
+
+
+
                                             <div class="table">
                                                 <x:dataTable
                                                     id="meStructure"
@@ -373,6 +370,39 @@ div.no-element-selected {
                                                     <!--                                                 <br/> -->
                                                     <!--                                             </ui:repeat> -->
                                                 </x:dataTable>
+                                            </div>
+
+                                            <div class="button-area">
+                                                <h:commandLink
+                                                    styleClass="btn btn-primary font-size-s pull-right leftArea-button"
+                                                    action="#{AdministrationForm.administrationPlugin.addNode}"
+                                                    title="#{msgs.plugin_administration_tectonics_newNode}">
+                                                    <i class="fa fa-plus"></i>
+                                                    <f:ajax
+                                                        execute="meStructure"
+                                                        render="meStructure" />
+                                                </h:commandLink>
+
+                                                <h:commandLink
+                                                    styleClass="btn  btn-danger font-size-s pull-right leftArea-button"
+                                                    action="#{AdministrationForm.administrationPlugin.deleteNode}"
+                                                    title="#{msgs.plugin_administration_tectonics_deleteNode}">
+                                                    <i class="fa fa-trash-o" />
+                                                    <f:ajax
+                                                        execute="meStructure"
+                                                        render="meStructure" />
+                                                </h:commandLink>
+
+                                                <h:commandLink
+                                                    styleClass="btn btn-primary font-size-s pull-right leftArea-button"
+                                                    action="#{AdministrationForm.administrationPlugin.prepareMoveNode}"
+                                                    title="#{msgs.plugin_administration_tectonics_moveNode}"
+                                                    style="margin-top: 150px;">
+                                                    <i class="fa fa-arrows" />
+                                                    <x:updateActionListener
+                                                        property="#{AdministrationForm.administrationPlugin.displayMode}"
+                                                        value="moveNode" />
+                                                </h:commandLink>
                                             </div>
                                         </div>
                                     </h:panelGroup>
