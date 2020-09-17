@@ -1,6 +1,7 @@
 package de.intranda.goobi.plugins;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -529,6 +530,150 @@ public class TektonikAdministrationPluginTest {
         Element subDid = c.getChild("did", TektonikAdministrationPlugin.ns);
         assertEquals("first level id", subDid.getChildText("unitid", TektonikAdministrationPlugin.ns));
         assertEquals("first level title", subDid.getChildText("unittitle", TektonikAdministrationPlugin.ns));
+
+    }
+
+    @Test
+    public void testSetSelectedEntry() {
+        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+
+        EadEntry root = new EadEntry(0, 0);
+        EadEntry firstRootChild = new EadEntry(0, 1);
+        EadEntry secondRootChild = new EadEntry(1, 1);
+        root.addSubEntry(firstRootChild);
+        root.addSubEntry(secondRootChild);
+        EadEntry sub1 = new EadEntry(0, 2);
+        EadEntry sub2 = new EadEntry(1, 2);
+        firstRootChild.addSubEntry(sub1);
+        firstRootChild.addSubEntry(sub2);
+        EadEntry sub3 = new EadEntry(0, 2);
+        EadEntry sub4 = new EadEntry(1, 2);
+        secondRootChild.addSubEntry(sub3);
+        secondRootChild.addSubEntry(sub4);
+        root.setDisplayChildren(true);
+        firstRootChild.setDisplayChildren(true);
+        secondRootChild.setDisplayChildren(true);
+        plugin.setRootElement(root);
+        plugin.getFlatEntryList();
+
+        plugin.setSelectedEntry(root);
+        assertTrue(root.isSelected());
+        assertFalse(firstRootChild.isSelected());
+
+        plugin.setSelectedEntry(firstRootChild);
+        assertTrue(firstRootChild.isSelected());
+        assertFalse(root.isSelected());
+    }
+
+    @Test
+    public void testAddNode() {
+        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        plugin.setDatastoreUrl("http://localhost:8984/");
+        plugin.getPossibleDatabases();
+        plugin.setSelectedDatabase("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+        EadEntry root = plugin.getRootElement();
+        // do nothing
+        plugin.addNode();
+
+        // add new child element
+        root.setDisplayChildren(true);
+        plugin.setRootElement(root);
+        plugin.getFlatEntryList();
+
+        plugin.setSelectedEntry(root);
+        plugin.addNode();
+
+        EadEntry fixture = plugin.getSelectedEntry();
+        assertEquals(root, fixture.getParentNode());
+    }
+
+    @Test
+    public void testDeleteNode() {
+        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        plugin.setDatastoreUrl("http://localhost:8984/");
+        plugin.getPossibleDatabases();
+        plugin.setSelectedDatabase("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+
+        EadEntry root = plugin.getRootElement();
+        root.setDisplayChildren(true);
+        EadEntry firstChild = root.getSubEntryList().get(0);
+        // do nothing
+        plugin.deleteNode();
+
+        // delete first node
+        plugin.getFlatEntryList();
+        plugin.setSelectedEntry(firstChild);
+        plugin.deleteNode();
+
+        assertEquals(root, plugin.getSelectedEntry());
+        assertEquals(0, root.getSubEntryList().size());
+    }
+
+    @Test
+    public void testPrepareMoveNode() {
+        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        plugin.setDatastoreUrl("http://localhost:8984/");
+        plugin.getPossibleDatabases();
+        plugin.setSelectedDatabase("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+
+        // no node selected
+        plugin.setDisplayMode("move");
+        plugin.prepareMoveNode();
+        assertEquals("", plugin.getDisplayMode());
+
+        EadEntry root = plugin.getRootElement();
+        EadEntry firstChild = root.getSubEntryList().get(0);
+        root.setDisplayChildren(true);
+        firstChild.setDisplayChildren(true);
+        plugin.getFlatEntryList();
+        plugin.setSelectedEntry(root);
+
+        // root node selected
+        plugin.setDisplayMode("move");
+        plugin.prepareMoveNode();
+        assertEquals("", plugin.getDisplayMode());
+
+        // first and only child is selected
+        plugin.setDisplayMode("move");
+        plugin.setSelectedEntry(firstChild);
+        plugin.prepareMoveNode();
+        assertEquals("", plugin.getDisplayMode());
+
+        // other element is selected
+        plugin.setDisplayMode("move");
+        plugin.setSelectedEntry(firstChild.getSubEntryList().get(0));
+        plugin.prepareMoveNode();
+        assertEquals("move", plugin.getDisplayMode());
+
+    }
+
+    @Test
+    public void testMoveNode() {
+
+        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        plugin.setDatastoreUrl("http://localhost:8984/");
+        plugin.getPossibleDatabases();
+        plugin.setSelectedDatabase("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+        plugin.setDisplayMode("move");
+        EadEntry root = plugin.getRootElement();
+        EadEntry firstChild = root.getSubEntryList().get(0);
+        root.setDisplayChildren(true);
+        firstChild.setDisplayChildren(true);
+        plugin.getFlatEntryList();
+        EadEntry second = firstChild.getSubEntryList().get(0);
+        plugin.setSelectedEntry(second);
+        assertEquals("move", plugin.getDisplayMode());
+
+        assertEquals(firstChild, second.getParentNode());
+        plugin.setDestinationEntry(root);
+        plugin.moveNode();
+        assertEquals("", plugin.getDisplayMode());
+        assertEquals(root, second.getParentNode());
+
 
     }
 }

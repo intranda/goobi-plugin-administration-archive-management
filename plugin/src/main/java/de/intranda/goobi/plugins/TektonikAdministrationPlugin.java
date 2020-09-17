@@ -72,12 +72,20 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     @Getter
     private EadEntry selectedEntry;
 
+    @Getter
+    private List<EadEntry> moveList;
+
+    @Getter
+    @Setter
+    private EadEntry destinationEntry;
+
     public static final Namespace ns = Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9");
     private static XPathFactory xFactory = XPathFactory.instance();
 
+    private XMLConfiguration xmlConfig;
     private List<EadMetadataField> configuredFields;
 
-    private XMLConfiguration xmlConfig;
+
 
     /**
      * Constructor
@@ -680,12 +688,6 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         return element;
     }
 
-    @Getter
-    private List<EadEntry> moveList;
-
-    @Getter
-    @Setter
-    private EadEntry destinationEntry;
 
     public void prepareMoveNode() {
 
