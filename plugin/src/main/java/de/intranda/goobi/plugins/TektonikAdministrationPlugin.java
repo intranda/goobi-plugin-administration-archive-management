@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -84,8 +85,6 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
     private XMLConfiguration xmlConfig;
     private List<EadMetadataField> configuredFields;
-
-
 
     /**
      * Constructor
@@ -688,7 +687,6 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         return element;
     }
 
-
     public void prepareMoveNode() {
 
         // abort if no node is selected
@@ -725,9 +723,61 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         destinationEntry.addSubEntry(selectedEntry);
         selectedEntry.setParentNode(destinationEntry);
 
-        // TODO set new hierarchy level to element and all children
+        // set new hierarchy level to element and all children
+        selectedEntry.updateHierarchy();
+        flatEntryList = null;
 
         displayMode = "";
+    }
+
+    public void moveNodeUp() {
+        // abort if no node is selected
+        if (selectedEntry == null) {
+            return;
+        }
+
+        // abort if root node is selected
+        if (selectedEntry.getParentNode() == null) {
+            return;
+        }
+
+        // abort if parent node has only one child
+        if (selectedEntry.getParentNode().getSubEntryList().size() == 1) {
+            return;
+        }
+        // abort if selected node is first child of parent
+        if (selectedEntry.getOrderNumber().intValue() == 0) {
+            return;
+        }
+
+        Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), selectedEntry.getOrderNumber() - 1);
+        selectedEntry.getParentNode().reOrderElements();
+        flatEntryList = null;
+    }
+
+    public void moveNodeDown() {
+        // abort if no node is selected
+        if (selectedEntry == null) {
+            return;
+        }
+
+        // abort if root node is selected
+        if (selectedEntry.getParentNode() == null) {
+            return;
+        }
+
+        // abort if parent node has only one child
+        if (selectedEntry.getParentNode().getSubEntryList().size() == 1) {
+            return;
+        }
+        // abort if selected node is last child of parent
+        if (selectedEntry.getOrderNumber().intValue() == selectedEntry.getParentNode().getSubEntryList().size()-1) {
+            return;
+        }
+
+        Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), selectedEntry.getOrderNumber()+1);
+        selectedEntry.getParentNode().reOrderElements();
+        flatEntryList = null;
     }
 
 }

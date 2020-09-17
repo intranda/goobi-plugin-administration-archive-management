@@ -673,7 +673,83 @@ public class TektonikAdministrationPluginTest {
         plugin.moveNode();
         assertEquals("", plugin.getDisplayMode());
         assertEquals(root, second.getParentNode());
+    }
 
+    @Test
+    public void testMoveNodeUp() {
+        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        plugin.setDatastoreUrl("http://localhost:8984/");
+        plugin.getPossibleDatabases();
+        plugin.setSelectedDatabase("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+        EadEntry root = plugin.getRootElement();
+        root.setDisplayChildren(true);
+        EadEntry firstChild = root.getSubEntryList().get(0);
+        firstChild.setDisplayChildren(true);
+        EadEntry firstInSecond = firstChild.getSubEntryList().get(0);
+        firstInSecond.setDisplayChildren(true);
+        EadEntry secondInSecond = firstChild.getSubEntryList().get(1);
+        secondInSecond.setDisplayChildren(true);
+        plugin.getFlatEntryList();
 
+        // no node selected - do nothing
+        plugin.moveNodeUp();
+
+        // root node selected - do nothing
+        plugin.setSelectedEntry(root);
+        plugin.moveNodeUp();
+
+        // only child node selected - do nothing
+        plugin.setSelectedEntry(firstChild);
+        plugin.moveNodeUp();
+
+        // first child node selected - do nothing
+        plugin.setSelectedEntry(firstInSecond);
+        plugin.moveNodeUp();
+
+        // second child node selected
+        plugin.setSelectedEntry(secondInSecond);
+        assertEquals(1, secondInSecond.getOrderNumber().intValue());
+        plugin.moveNodeUp();
+        assertEquals(0, secondInSecond.getOrderNumber().intValue());
+    }
+
+    @Test
+    public void testMoveNodeDown() {
+        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        plugin.setDatastoreUrl("http://localhost:8984/");
+        plugin.getPossibleDatabases();
+        plugin.setSelectedDatabase("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+        EadEntry root = plugin.getRootElement();
+        root.setDisplayChildren(true);
+        EadEntry firstChild = root.getSubEntryList().get(0);
+        firstChild.setDisplayChildren(true);
+        EadEntry firstInSecond = firstChild.getSubEntryList().get(0);
+        firstInSecond.setDisplayChildren(true);
+        EadEntry lastInSecond = firstChild.getSubEntryList().get(4);
+        lastInSecond.setDisplayChildren(true);
+        plugin.getFlatEntryList();
+
+        // no node selected - do nothing
+        plugin.moveNodeDown();
+
+        // root node selected - do nothing
+        plugin.setSelectedEntry(root);
+        plugin.moveNodeDown();
+
+        // only child node selected - do nothing
+        plugin.setSelectedEntry(firstChild);
+        plugin.moveNodeDown();
+
+        // last child node selected - do nothing
+        plugin.setSelectedEntry(lastInSecond);
+        plugin.moveNodeDown();
+
+        // first child node selected
+        plugin.setSelectedEntry(firstInSecond);
+        assertEquals(0, firstInSecond.getOrderNumber().intValue());
+        plugin.moveNodeDown();
+        assertEquals(1, firstInSecond.getOrderNumber().intValue());
     }
 }

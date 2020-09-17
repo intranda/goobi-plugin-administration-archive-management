@@ -196,4 +196,17 @@ public class EadEntry {
         return result;
     }
 
+    public void updateHierarchy() {
+        // root node
+        if (parentNode == null) {
+            hierarchy = 0;
+        } else {
+            hierarchy = parentNode.getHierarchy() + 1;
+        }
+
+        for (EadEntry child : subEntryList) {
+            child.updateHierarchy();
+        }
+    }
+
 }

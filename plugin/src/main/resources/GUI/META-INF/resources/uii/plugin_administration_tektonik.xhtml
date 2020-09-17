@@ -220,7 +220,8 @@ div.no-element-selected {
 }
 
 .leftArea-button {
-    margin-top: 5px; margin-bottom : 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
     width: 32px;
     margin-bottom: 5px;
 }
@@ -395,9 +396,30 @@ div.no-element-selected {
 
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
+                                                    action="#{AdministrationForm.administrationPlugin.moveNodeUp}"
+                                                    title="#{msgs.plugin_administration_tectonics_moveNodeUp}"
+                                                    style="margin-top: 150px;">
+                                                    <i class="fa fa-chevron-up" />
+                                                    <f:ajax
+                                                        execute="meStructure"
+                                                        render="meStructure" />
+                                                </h:commandLink>
+
+                                                <h:commandLink
+                                                    styleClass="btn btn-primary font-size-s pull-right leftArea-button"
+                                                    action="#{AdministrationForm.administrationPlugin.moveNodeDown}"
+                                                    title="#{msgs.plugin_administration_tectonics_moveNodeDown}">
+                                                    <i class="fa fa-chevron-down" />
+                                                    <f:ajax
+                                                        execute="meStructure"
+                                                        render="meStructure" />
+                                                </h:commandLink>
+
+                                                <h:commandLink
+                                                    styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.prepareMoveNode}"
                                                     title="#{msgs.plugin_administration_tectonics_moveNode}"
-                                                    style="margin-top: 150px;">
+                                                    >
                                                     <i class="fa fa-arrows" />
                                                     <x:updateActionListener
                                                         property="#{AdministrationForm.administrationPlugin.displayMode}"
@@ -406,7 +428,6 @@ div.no-element-selected {
                                             </div>
                                         </div>
                                     </h:panelGroup>
-
                                 </div>
 
 
