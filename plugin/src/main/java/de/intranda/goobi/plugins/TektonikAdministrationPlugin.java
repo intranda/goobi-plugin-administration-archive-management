@@ -86,6 +86,10 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     private XMLConfiguration xmlConfig;
     private List<EadMetadataField> configuredFields;
 
+    @Getter @Setter
+    private String searchValue;
+
+
     /**
      * Constructor
      */
@@ -780,4 +784,16 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         flatEntryList = null;
     }
 
+
+    public void  moveHierarchyDown() {
+        // TODO
+    }
+
+    public void  moveHierarchyUp() {
+        // TODO
+    }
+
+    public void search() {
+        //TODO
+    }
 }

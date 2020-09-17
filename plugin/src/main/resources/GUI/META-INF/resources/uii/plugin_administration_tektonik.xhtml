@@ -225,6 +225,20 @@ div.no-element-selected {
     width: 32px;
     margin-bottom: 5px;
 }
+
+.searchfilter {
+    /*     max-width: 30%; */
+    display: inline-block;
+    width: 30%;
+}
+
+.input-group-btn .btn {
+    height: 25px;
+}
+
+.box-title h3 {
+    max-width: 70%;
+}
 </style>
         <h:panelGroup>
             <div class="row">
@@ -316,6 +330,36 @@ div.no-element-selected {
                                                 <h:outputText value="#{msgs[AdministrationForm.administrationPlugin.title]}: #{AdministrationForm.administrationPlugin.selectedDatabase}" />
                                             </h3>
                                             <!-- TODO search box -->
+                                            <div class="searchfilter pull-right">
+                                                <div class="input-group input-group">
+                                                    <h:inputText
+                                                        onkeydown="return submitEnter('FilterAlle',event)"
+                                                        styleClass="form-control searchfield"
+                                                        id="filterField"
+                                                        value="#{AdministrationForm.administrationPlugin.searchValue}" />
+
+
+                                                    <div class="input-group-btn">
+                                                        <x:commandLink
+                                                            id="FilterAlle2"
+                                                            forceId="true"
+                                                            styleClass="btn"
+                                                            action="#{AdministrationForm.administrationPlugin.search}">
+                                                            <i class="fa fa-search"></i>
+
+                                                        </x:commandLink>
+                                                    </div>
+                                                </div>
+                                                <x:commandButton
+                                                    styleClass="submitOnEnter"
+                                                    type="submit"
+                                                    id="FilterAlle"
+                                                    forceId="true"
+                                                    style="display: none;"
+                                                    action="#{AdministrationForm.administrationPlugin.search}" />
+                                            </div>
+
+
 
 
 
@@ -414,17 +458,38 @@ div.no-element-selected {
                                                         execute="meStructure"
                                                         render="meStructure" />
                                                 </h:commandLink>
+                                                <h:commandLink
+                                                    styleClass="btn btn-primary font-size-s pull-right leftArea-button"
+                                                    action="#{AdministrationForm.administrationPlugin.moveHierarchyDown}"
+                                                    title="#{msgs.plugin_administration_tectonics_moveHierarchyDown}">
+                                                    <i class="fa fa-chevron-right" />
+                                                    <f:ajax
+                                                        execute="meStructure"
+                                                        render="meStructure" />
+                                                </h:commandLink>
+                                                <h:commandLink
+                                                    styleClass="btn btn-primary font-size-s pull-right leftArea-button"
+                                                    action="#{AdministrationForm.administrationPlugin.moveHierarchyUp}"
+                                                    title="#{msgs.plugin_administration_tectonics_moveHierarchyUp}">
+                                                    <i class="fa fa-chevron-left" />
+                                                    <f:ajax
+                                                        execute="meStructure"
+                                                        render="meStructure" />
+                                                </h:commandLink>
+
+
 
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.prepareMoveNode}"
-                                                    title="#{msgs.plugin_administration_tectonics_moveNode}"
-                                                    >
+                                                    title="#{msgs.plugin_administration_tectonics_moveNode}">
                                                     <i class="fa fa-arrows" />
                                                     <x:updateActionListener
                                                         property="#{AdministrationForm.administrationPlugin.displayMode}"
                                                         value="moveNode" />
                                                 </h:commandLink>
+
+
                                             </div>
                                         </div>
                                     </h:panelGroup>
