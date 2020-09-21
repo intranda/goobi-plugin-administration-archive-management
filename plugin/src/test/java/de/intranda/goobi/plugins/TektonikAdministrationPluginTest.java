@@ -836,9 +836,11 @@ public class TektonikAdministrationPluginTest {
         assertEquals(2, plugin.getFlatEntryList().size());
         plugin.setSearchValue("Milzbrand");
         plugin.search();
-        assertEquals(4, plugin.getFlatEntryList().size());
+        assertEquals(6, plugin.getFlatEntryList().size());
 
-
+        plugin.setSearchValue("");
+        plugin.search();
+        assertEquals(2, plugin.getFlatEntryList().size());
     }
 
 }
