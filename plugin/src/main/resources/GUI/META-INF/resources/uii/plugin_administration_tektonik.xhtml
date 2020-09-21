@@ -198,6 +198,18 @@ div.no-element-selected {
     
 }
 
+.badge {
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.badge-area {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
 .close-field {
     color: #777;
 }
@@ -534,56 +546,139 @@ div.no-element-selected {
                                                 </div>
                                                 <div class="box-content without-margin">
                                                     <div class="processcreation area_block-border">
+
+
                                                         <p>Bereich für Goobi Vorgang und Typ</p>
                                                     </div>
 
-                                                    <div class="identification area_block-border">
-                                                        <p>Identity Statement</p>
+                                                    <h:panelGroup
+                                                        layout="block"
+                                                        styleClass="identification area_block-border"
+                                                        id="identity-statement-area">
+                                                        <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
+                                                            <i class="fa #{AdministrationForm.administrationPlugin.displayIdentityStatementArea?'fa-chevron-down':'fa-chevron-right'} font-black margin-left-5 margin-right-5" />
+                                                            <x:updateActionListener
+                                                                property="#{AdministrationForm.administrationPlugin.displayIdentityStatementArea}"
+                                                                value="#{not AdministrationForm.administrationPlugin.displayIdentityStatementArea}" />
+                                                            <f:ajax render="identity-statement-area" />
+                                                        </h:commandLink>
+                                                        <h:outputText value="Identity Statement Area" />
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.identityStatementAreaList}"
-                                                            area="identificationArea" />
-                                                    </div>
-                                                    <div class="context area_block-border">
-                                                        <p>Context Area</p>
+                                                            area="identificationArea"
+                                                            showDetails="#{AdministrationForm.administrationPlugin.displayIdentityStatementArea}" />
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup
+                                                        layout="block"
+                                                        styleClass="identification area_block-border"
+                                                        id="context-area">
+                                                        <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
+                                                            <i class="fa #{AdministrationForm.administrationPlugin.displayContextArea?'fa-chevron-down':'fa-chevron-right'} font-black margin-left-5 margin-right-5" />
+                                                            <x:updateActionListener
+                                                                property="#{AdministrationForm.administrationPlugin.displayContextArea}"
+                                                                value="#{not AdministrationForm.administrationPlugin.displayContextArea}" />
+                                                            <f:ajax render="context-area" />
+                                                        </h:commandLink>
+                                                        <h:outputText value="Context Area" />
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.contextAreaList}"
-                                                            area="contextArea" />
-                                                    </div>
-                                                    <div class="content_structure area_block-border">
-                                                        <p>Content and Structure Area</p>
+                                                            area="contextArea"
+                                                            showDetails="#{AdministrationForm.administrationPlugin.displayContextArea}" />
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup
+                                                        layout="block"
+                                                        styleClass="identification area_block-border"
+                                                        id="content-area">
+                                                        <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
+                                                            <i class="fa #{AdministrationForm.administrationPlugin.displayContentArea?'fa-chevron-down':'fa-chevron-right'} font-black margin-left-5 margin-right-5" />
+                                                            <x:updateActionListener
+                                                                property="#{AdministrationForm.administrationPlugin.displayContentArea}"
+                                                                value="#{not AdministrationForm.administrationPlugin.displayContentArea}" />
+                                                            <f:ajax render="content-area" />
+                                                        </h:commandLink>
+                                                        <h:outputText value="Content and Structure Area" />
+
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.contentAndStructureAreaAreaList}"
-                                                            area="contentStructureArea" />
-                                                    </div>
+                                                            area="contentStructureArea"
+                                                            showDetails="#{AdministrationForm.administrationPlugin.displayContentArea}" />
+                                                    </h:panelGroup>
 
-                                                    <div class="condition area_block-border">
-                                                        <p>Condition of Access and Use Area</p>
+                                                    <h:panelGroup
+                                                        layout="block"
+                                                        styleClass="identification area_block-border"
+                                                        id="access-area">
+                                                        <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
+                                                            <i class="fa #{AdministrationForm.administrationPlugin.displayAccessArea?'fa-chevron-down':'fa-chevron-right'} font-black margin-left-5 margin-right-5" />
+                                                            <x:updateActionListener
+                                                                property="#{AdministrationForm.administrationPlugin.displayAccessArea}"
+                                                                value="#{not AdministrationForm.administrationPlugin.displayAccessArea}" />
+                                                            <f:ajax render="access-area" />
+                                                        </h:commandLink>
+                                                        <h:outputText value="Condition of Access and Use Area" />
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.accessAndUseAreaList}"
-                                                            area="accessArea" />
-                                                    </div>
-                                                    <br />
-                                                    <div class="materials area_block-border">
-                                                        <p>Allied Materials Area</p>
+                                                            area="accessArea"
+                                                            showDetails="#{AdministrationForm.administrationPlugin.displayAccessArea}" />
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup
+                                                        layout="block"
+                                                        styleClass="identification area_block-border"
+                                                        id="materials-area">
+                                                        <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
+                                                            <i class="fa #{AdministrationForm.administrationPlugin.displayMaterialsArea?'fa-chevron-down':'fa-chevron-right'} font-black margin-left-5 margin-right-5" />
+                                                            <x:updateActionListener
+                                                                property="#{AdministrationForm.administrationPlugin.displayMaterialsArea}"
+                                                                value="#{not AdministrationForm.administrationPlugin.displayMaterialsArea}" />
+                                                            <f:ajax render="materials-area" />
+                                                        </h:commandLink>
+                                                        <h:outputText value="Allied Materials Area" />
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.alliedMaterialsAreaList}"
-                                                            area="materialsArea" />
-                                                    </div>
-                                                    <div class="notes area_block-border">
-                                                        <p>Note Area</p>
+                                                            area="materialsArea"
+                                                            showDetails="#{AdministrationForm.administrationPlugin.displayMaterialsArea}" />
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup
+                                                        layout="block"
+                                                        styleClass="identification area_block-border"
+                                                        id="notes-area">
+                                                        <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
+                                                            <i class="fa #{AdministrationForm.administrationPlugin.displayNotesArea?'fa-chevron-down':'fa-chevron-right'} font-black margin-left-5 margin-right-5" />
+                                                            <x:updateActionListener
+                                                                property="#{AdministrationForm.administrationPlugin.displayNotesArea}"
+                                                                value="#{not AdministrationForm.administrationPlugin.displayNotesArea}" />
+                                                            <f:ajax render="notes-area" />
+                                                        </h:commandLink>
+                                                        <h:outputText value="Note Area" />
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.notesAreaList}"
-                                                            area="notesArea" />
-                                                    </div>
-                                                    <div class="description area_block-border">
-                                                        <p>Description Control Area</p>
+                                                            area="notesArea"
+                                                            showDetails="#{AdministrationForm.administrationPlugin.displayNotesArea}" />
+                                                    </h:panelGroup>
+                                                    
+                                                    <h:panelGroup
+                                                        layout="block"
+                                                        styleClass="identification area_block-border"
+                                                        id="control-area">
+                                                        <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
+                                                            <i class="fa #{AdministrationForm.administrationPlugin.displayControlArea?'fa-chevron-down':'fa-chevron-right'} font-black margin-left-5 margin-right-5" />
+                                                            <x:updateActionListener
+                                                                property="#{AdministrationForm.administrationPlugin.displayControlArea}"
+                                                                value="#{not AdministrationForm.administrationPlugin.displayControlArea}" />
+                                                            <f:ajax render="control-area" />
+                                                        </h:commandLink>
+                                                        <h:outputText value="Description Control Area" />
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.descriptionControlAreaList}"
-                                                            area="descriptionArea" />
-                                                    </div>
+                                                            area="descriptionArea"
+                                                            showDetails="#{AdministrationForm.administrationPlugin.displayControlArea}" />
+                                                    </h:panelGroup>
                                                 </div>
                                             </h:panelGroup>
-
                                         </h:panelGroup>
 
 

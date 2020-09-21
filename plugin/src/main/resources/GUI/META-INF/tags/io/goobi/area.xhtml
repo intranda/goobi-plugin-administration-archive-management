@@ -13,7 +13,7 @@
             id="#{area}"
             layout="block">
 
-            <div>
+            <span class="badge-area">
                 <x:dataList
                     var="item"
                     value="#{itemlist}">
@@ -25,12 +25,12 @@
                             area="#{area}" />
                     </ui:fragment>
                 </x:dataList>
-            </div>
+            </span>
 
             <div>
                 <x:dataList
                     var="item"
-                    value="#{itemlist}">
+                    value="#{itemlist}" rendered="#{showDetails}">
 
                     <ui:fragment rendered="#{item.showField and item.visible}">
 

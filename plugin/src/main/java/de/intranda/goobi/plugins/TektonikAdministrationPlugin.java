@@ -90,6 +90,34 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     @Setter
     private String searchValue;
 
+    @Getter
+    @Setter
+    private boolean displayIdentityStatementArea;
+
+    @Getter
+    @Setter
+    private boolean displayContextArea;
+
+    @Getter
+    @Setter
+    private boolean displayContentArea;
+
+    @Getter
+    @Setter
+    private boolean displayAccessArea;
+
+    @Getter
+    @Setter
+    private boolean displayMaterialsArea;
+
+    @Getter
+    @Setter
+    private boolean displayNotesArea;
+
+    @Getter
+    @Setter
+    private boolean displayControlArea;
+
     /**
      * Constructor
      */
@@ -305,7 +333,9 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                 emf.isVisible(), emf.isShowField(), emf.getFieldType());
         toAdd.setSelectItemList(emf.getSelectItemList());
         toAdd.setValue(stringValue);
-
+        if (StringUtils.isNotBlank(stringValue)) {
+            emf.setShowField(true);
+        }
         // split single value into multiple fields
         if (toAdd.getFieldType().equals("multiselect") && StringUtils.isNotBlank(stringValue)) {
             String[] splittedValues = stringValue.split("; ");
