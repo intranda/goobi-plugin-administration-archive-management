@@ -752,4 +752,78 @@ public class TektonikAdministrationPluginTest {
         plugin.moveNodeDown();
         assertEquals(1, firstInSecond.getOrderNumber().intValue());
     }
+
+
+    @Test
+    public void testMoveHierarchyDown() {
+        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        plugin.setDatastoreUrl("http://localhost:8984/");
+        plugin.getPossibleDatabases();
+        plugin.setSelectedDatabase("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+        EadEntry root = plugin.getRootElement();
+        root.setDisplayChildren(true);
+        EadEntry firstChild = root.getSubEntryList().get(0);
+        firstChild.setDisplayChildren(true);
+        EadEntry firstInSecond = firstChild.getSubEntryList().get(0);
+        firstInSecond.setDisplayChildren(true);
+        EadEntry secondInSecond = firstChild.getSubEntryList().get(1);
+        secondInSecond.setDisplayChildren(true);
+        plugin.getFlatEntryList();
+        // no node selected - do nothing
+        plugin.moveHierarchyDown();
+
+        // root node selected - do nothing
+        plugin.setSelectedEntry(root);
+        plugin.moveHierarchyDown();
+
+        // first child element selected - do nothing
+        plugin.setSelectedEntry(firstChild);
+        plugin.moveHierarchyDown();
+
+        // second child element selected - move it to last child element of current node
+        plugin.setSelectedEntry(secondInSecond);
+        plugin.moveHierarchyDown();
+        plugin.getFlatEntryList();
+        assertEquals(firstInSecond, secondInSecond.getParentNode());
+    }
+
+    @Test
+    public void testMoveHierarchyUp() {
+        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        plugin.setDatastoreUrl("http://localhost:8984/");
+        plugin.getPossibleDatabases();
+        plugin.setSelectedDatabase("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+        EadEntry root = plugin.getRootElement();
+        root.setDisplayChildren(true);
+        EadEntry firstChild = root.getSubEntryList().get(0);
+        firstChild.setDisplayChildren(true);
+        EadEntry firstInSecond = firstChild.getSubEntryList().get(0);
+        firstInSecond.setDisplayChildren(true);
+        EadEntry thirdInSecond = firstChild.getSubEntryList().get(3);
+        thirdInSecond.setDisplayChildren(true);
+        plugin.getFlatEntryList();
+        // no node selected - do nothing
+        plugin.moveHierarchyUp();
+
+        // root node selected - do nothing
+        plugin.setSelectedEntry(root);
+        plugin.moveHierarchyUp();
+
+        // first child element selected - do nothing
+        plugin.setSelectedEntry(firstChild);
+        plugin.moveHierarchyUp();
+
+        // second child element selected - move it to last child element of current node
+        plugin.setSelectedEntry(thirdInSecond);
+        assertEquals(3, thirdInSecond.getOrderNumber().intValue());
+        assertEquals(2, thirdInSecond.getHierarchy().intValue());
+        plugin.moveHierarchyUp();
+        plugin.getFlatEntryList();
+        assertEquals(root, thirdInSecond.getParentNode());
+        assertEquals(1, thirdInSecond.getOrderNumber().intValue());
+        assertEquals(1, thirdInSecond.getHierarchy().intValue());
+    }
+
 }

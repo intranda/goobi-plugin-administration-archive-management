@@ -86,9 +86,9 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     private XMLConfiguration xmlConfig;
     private List<EadMetadataField> configuredFields;
 
-    @Getter @Setter
+    @Getter
+    @Setter
     private String searchValue;
-
 
     /**
      * Constructor
@@ -775,22 +775,67 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             return;
         }
         // abort if selected node is last child of parent
-        if (selectedEntry.getOrderNumber().intValue() == selectedEntry.getParentNode().getSubEntryList().size()-1) {
+        if (selectedEntry.getOrderNumber().intValue() == selectedEntry.getParentNode().getSubEntryList().size() - 1) {
             return;
         }
 
-        Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), selectedEntry.getOrderNumber()+1);
+        Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), selectedEntry.getOrderNumber() + 1);
         selectedEntry.getParentNode().reOrderElements();
         flatEntryList = null;
     }
 
+    public void moveHierarchyDown() {
+        // abort if no node is selected
+        if (selectedEntry == null) {
+            return;
+        }
+        // abort if root node is selected
+        if (selectedEntry.getParentNode() == null) {
+            return;
+        }
 
-    public void  moveHierarchyDown() {
-        // TODO
+        // abort if selected node is first child of parent
+        if (selectedEntry.getOrderNumber().intValue() == 0) {
+            return;
+        }
+
+        // find previous sibling
+        EadEntry previousNode = selectedEntry.getParentNode().getSubEntryList().get(selectedEntry.getOrderNumber().intValue() - 1);
+        // move node to prev.
+        destinationEntry = previousNode;
+        moveNode();
+        destinationEntry.setDisplayChildren(true);
+
     }
 
-    public void  moveHierarchyUp() {
-        // TODO
+    public void moveHierarchyUp() {
+        // abort if no node is selected
+        if (selectedEntry == null) {
+            return;
+        }
+        // abort if root node is selected
+        if (selectedEntry.getParentNode() == null) {
+            return;
+        }
+        // abort if child of root node is selected
+        if (selectedEntry.getParentNode().getParentNode() == null) {
+            return;
+        }
+
+        // get parent node of parent
+        EadEntry oldParent = selectedEntry.getParentNode();
+        EadEntry newParent = oldParent.getParentNode();
+
+        // move current node to parents parent
+        destinationEntry = newParent;
+        moveNode();
+        newParent.reOrderElements();
+        // move node to one position after current parent
+        if (selectedEntry.getOrderNumber().intValue() != oldParent.getOrderNumber().intValue() + 1) {
+            Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), oldParent.getOrderNumber() + 1);
+            selectedEntry.getParentNode().reOrderElements();
+        }
+
     }
 
     public void search() {
