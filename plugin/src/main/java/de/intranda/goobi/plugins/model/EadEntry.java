@@ -36,6 +36,9 @@ public class EadEntry {
     // node type -  @level
     private String nodeType;
 
+    // display node in a search result
+    private boolean displaySearch;
+
     /* 1. metadata for Identity Statement Area */
     //    Reference code(s)
     //    Title
@@ -207,6 +210,44 @@ public class EadEntry {
         for (EadEntry child : subEntryList) {
             child.updateHierarchy();
         }
+    }
+
+    public void markAsFound() {
+        displaySearch = true;
+        selected = true;
+
+        if (parentNode != null) {
+            EadEntry node = parentNode;
+            while (!node.isDisplaySearch()) {
+                node.setDisplaySearch(true);
+                if (node.parentNode != null) {
+                    node = node.parentNode;
+                }
+            }
+        }
+    }
+
+    public void resetFoundList() {
+        displaySearch = false;
+        selected = false;
+        if (subEntryList != null) {
+            for (EadEntry ds : subEntryList) {
+                ds.resetFoundList();
+            }
+        }
+    }
+
+    public List<EadEntry> getSearchList() {
+        List<EadEntry> list = new LinkedList<>();
+        if (displaySearch) {
+            list.add(this);
+            if (subEntryList != null) {
+                for (EadEntry child : subEntryList) {
+                    list.addAll(child.getSearchList());
+                }
+            }
+        }
+        return list;
     }
 
 }

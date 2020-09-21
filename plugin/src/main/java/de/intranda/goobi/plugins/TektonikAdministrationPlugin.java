@@ -839,6 +839,37 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     }
 
     public void search() {
-        //TODO
+        if (StringUtils.isNotBlank(searchValue)) {
+            // hide all elements
+            rootElement.resetFoundList();
+            // search in all/some metadata fields of all elements?
+
+            // for now: search only labels
+            searchInNode(rootElement);
+
+            // fill flatList with displayable fields
+            flatEntryList = rootElement.getSearchList();
+        } else {
+            resetSearch();
+        }
     }
+
+    private void searchInNode(EadEntry node) {
+        if (node.getLabel().toLowerCase().contains(searchValue.toLowerCase())) {
+            // mark element + all parents as displayable
+            node.markAsFound();
+        }
+        if (node.getSubEntryList() != null) {
+            for (EadEntry child : node.getSubEntryList()) {
+                searchInNode(child);
+            }
+        }
+    }
+
+    public void resetSearch() {
+        searchValue = null;
+        rootElement.resetFoundList();
+        flatEntryList = null;
+    }
+
 }

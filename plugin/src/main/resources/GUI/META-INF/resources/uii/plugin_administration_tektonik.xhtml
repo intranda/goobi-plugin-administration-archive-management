@@ -380,7 +380,7 @@ div.no-element-selected {
                                                             id="expand"
                                                             action="#{AdministrationForm.administrationPlugin.resetFlatList}"
                                                             class="#{entry.displayChildren ? 'expand' : 'expanded'}"
-                                                            rendered="#{entry.hasChildren}">
+                                                            rendered="#{entry.hasChildren and !entry.displaySearch}">
                                                             <i class="#{entry.displayChildren ? 'fa fa-caret-down fa-lg' : 'fa fa-caret-right fa-lg'}" />
                                                             <x:updateActionListener
                                                                 property="#{entry.displayChildren}"
