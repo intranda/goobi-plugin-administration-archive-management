@@ -826,4 +826,19 @@ public class TektonikAdministrationPluginTest {
         assertEquals(1, thirdInSecond.getHierarchy().intValue());
     }
 
+    @Test
+    public void testSearch() {
+        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        plugin.setDatastoreUrl("http://localhost:8984/");
+        plugin.getPossibleDatabases();
+        plugin.setSelectedDatabase("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+        assertEquals(2, plugin.getFlatEntryList().size());
+        plugin.setSearchValue("Milzbrand");
+        plugin.search();
+        assertEquals(4, plugin.getFlatEntryList().size());
+
+
+    }
+
 }
