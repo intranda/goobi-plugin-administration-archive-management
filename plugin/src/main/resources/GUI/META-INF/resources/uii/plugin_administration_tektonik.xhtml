@@ -258,6 +258,25 @@ div.no-element-selected {
     background-color: #666;
     color: #ddd;
 }
+
+.node {
+    color: #aaa;
+    margin-right: 10px;
+}
+
+.node i {
+    font-size: 2em;
+}
+
+.node-selected {
+    color: #000;
+}
+
+.node-type-selection {
+    border-left: none !important;
+    display: flex;
+    justify-content: center;
+}
 </style>
         <h:panelGroup>
             <div class="row">
@@ -546,9 +565,91 @@ div.no-element-selected {
                                                 </div>
                                                 <div class="box-content without-margin">
                                                     <div class="processcreation area_block-border">
-
-
                                                         <p>Bereich für Goobi Vorgang und Typ</p>
+                                                        <!--  
+                                                        <h:outputText value="type #{AdministrationForm.administrationPlugin.selectedEntry.nodeType}"/>
+                   -->
+                                                        <h:panelGroup
+                                                            styleClass="form-group"
+                                                            id="node-type">
+                                                            <div class="col-sm-3 control-label">
+                                                                <h:outputText value="#{msgs.plugin_administration_tectonics_nodeType}" />
+                                                            </div>
+                                                            <div
+                                                                class="col-sm-9 node-type-selection">
+                                                                <h:commandLink
+                                                                    styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'folder' ? 'node-selected' : ''}"
+                                                                    title="#{msgs.plugin_administration_tectonics_nodeType_folder}">
+                                                                    <i
+                                                                        class="fa fa-folder-open-o"
+                                                                        aria-hidden="true"></i>
+                                                                    <f:setPropertyActionListener
+                                                                        value="folder"
+                                                                        target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
+                                                                    <f:ajax render="node-type" />
+                                                                </h:commandLink>
+                                                                <h:commandLink
+                                                                    styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'file' ? 'node-selected' : ''}"
+                                                                    title="#{msgs.plugin_administration_tectonics_nodeType_file}">
+                                                                    <i
+                                                                        class="fa fa-file-text-o"
+                                                                        aria-hidden="true"></i>
+                                                                    <f:setPropertyActionListener
+                                                                        value="file"
+                                                                        target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
+                                                                    <f:ajax render="node-type" />
+                                                                </h:commandLink>
+
+                                                                <h:commandLink
+                                                                    styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'image' ? 'node-selected' : ''}"
+                                                                    title="#{msgs.plugin_administration_tectonics_nodeType_image}">
+                                                                    <i
+                                                                        class="fa fa-file-image-o"
+                                                                        aria-hidden="true"></i>
+                                                                    <f:setPropertyActionListener
+                                                                        value="image"
+                                                                        target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
+                                                                    <f:ajax render="node-type" />
+                                                                </h:commandLink>
+
+                                                                <h:commandLink
+                                                                    styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'audio' ? 'node-selected' : ''}"
+                                                                    title="#{msgs.plugin_administration_tectonics_nodeType_audio}">
+                                                                    <i
+                                                                        class="fa fa-file-audio-o"
+                                                                        aria-hidden="true"></i>
+                                                                    <f:setPropertyActionListener
+                                                                        value="audio"
+                                                                        target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
+                                                                    <f:ajax render="node-type" />
+                                                                </h:commandLink>
+                                                                <h:commandLink
+                                                                    styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'video' ? 'node-selected' : ''}"
+                                                                    title="#{msgs.plugin_administration_tectonics_nodeType_video}">
+                                                                    <i
+                                                                        class="fa fa-file-video-o"
+                                                                        aria-hidden="true"></i>
+                                                                    <f:setPropertyActionListener
+                                                                        value="video"
+                                                                        target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
+                                                                    <f:ajax render="node-type" />
+                                                                </h:commandLink>
+
+                                                                <h:commandLink
+                                                                    styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'other' ? 'node-selected' : ''}"
+                                                                    title="#{msgs.plugin_administration_tectonics_nodeType_other}">
+                                                                    <i
+                                                                        class="fa fa-file-o"
+                                                                        aria-hidden="true"></i>
+                                                                    <f:setPropertyActionListener
+                                                                        value="other"
+                                                                        target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
+                                                                    <f:ajax render="node-type" />
+                                                                </h:commandLink>
+                                                            </div>
+                                                        </h:panelGroup>
+
+
                                                     </div>
 
                                                     <h:panelGroup
@@ -659,7 +760,7 @@ div.no-element-selected {
                                                             area="notesArea"
                                                             showDetails="#{AdministrationForm.administrationPlugin.displayNotesArea}" />
                                                     </h:panelGroup>
-                                                    
+
                                                     <h:panelGroup
                                                         layout="block"
                                                         styleClass="identification area_block-border"
