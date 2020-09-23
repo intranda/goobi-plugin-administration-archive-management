@@ -59,8 +59,8 @@
                         value="#{selectedItems}"
                         var="selection">
                         <h:commandLink action="#{item.removeSelectedValue(selection)}">
-                            <span class="badge">
-                                <h:outputText value="#{selection}" />
+                            <span class="badge margin-top-10">
+                                <h:outputText value="#{msgs[selection]}" />
                             </span>
                             <f:ajax
                                 execute="@this"

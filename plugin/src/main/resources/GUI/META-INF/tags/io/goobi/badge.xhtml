@@ -15,7 +15,7 @@
             </span>
             <x:updateActionListener
                 property="#{item.showField}"
-                value="true" />
+                value="#{!item.showField}" />
             <f:ajax
                 execute="@this"
                 render=":#{area}" />

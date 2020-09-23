@@ -17,7 +17,7 @@
                 <x:dataList
                     var="item"
                     value="#{itemlist}">
-                    <ui:fragment rendered="#{!item.showField and item.visible}">
+                    <ui:fragment rendered="#{item.visible and (!item.showField or !showDetails)}">
                         <goobiio:badge
                             styleclassname="#{!item.filled ? 'badge-empty' : 'badge-filled'}"
                             fieldname="#{item.name}"

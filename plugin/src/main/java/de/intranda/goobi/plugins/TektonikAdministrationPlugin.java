@@ -334,7 +334,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         toAdd.setSelectItemList(emf.getSelectItemList());
         toAdd.setValue(stringValue);
         if (StringUtils.isNotBlank(stringValue)) {
-            emf.setShowField(true);
+            toAdd.setShowField(true);
         }
         // split single value into multiple fields
         if (toAdd.getFieldType().equals("multiselect") && StringUtils.isNotBlank(stringValue)) {
