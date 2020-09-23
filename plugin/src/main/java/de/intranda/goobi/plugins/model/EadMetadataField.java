@@ -56,8 +56,12 @@ public class EadMetadataField {
 
     private EadEntry eadEntry;
 
+    private String metadataName;
+
+    private boolean importMetadataInChild;
+
     public EadMetadataField(String name, Integer level, String xpath, String xpathType, boolean repeatable, boolean visible, boolean showField,
-            String fieldType) {
+            String fieldType, String metadataName, boolean importMetadataInChild) {
         this.name = name;
         this.level = level;
         this.xpath = xpath;
@@ -66,6 +70,8 @@ public class EadMetadataField {
         this.visible = visible;
         this.showField = showField;
         this.fieldType = fieldType;
+        this.metadataName = metadataName;
+        this.importMetadataInChild = importMetadataInChild;
     }
 
     public boolean isFilled() {

@@ -590,20 +590,27 @@ div.no-element-selected {
                                                             <h:panelGroup
                                                                 layout="block"
                                                                 styleClass="col-sm-6 node-type-selection"
-                                                                rendered="#{item.goobiProcessTitle == null}">
+                                                                rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
                                                                 <h:outputText value="#{msgs.plugin_administration_tectonics_process_no_process}" />
                                                             </h:panelGroup>
                                                             <h:panelGroup
                                                                 layout="block"
                                                                 styleClass="col-sm-3 node-type-selection"
-                                                                rendered="#{item.goobiProcessTitle == null}">
+                                                                rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
                                                                 <h:commandLink
-                                                                    rendered="#{item.goobiProcessTitle == null}"
                                                                     action="#{AdministrationForm.administrationPlugin.createProcess}"
                                                                     id="process-creation-button"
                                                                     styleClass="btn btn-primary font-size-s pull-right ">
                                                                     <h:outputText value="#{msgs.plugin_administration_tectonics_process_create_process}" />
                                                                 </h:commandLink>
+                                                            </h:panelGroup>
+                                                            
+                                                            <h:panelGroup  layout="block"
+                                                                styleClass="col-sm-9 node-type-selection"
+                                                                rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null}">
+                                                                <h:outputText value="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle}"/> 
+                                                            
+                                                            
                                                             </h:panelGroup>
                                                         </h:panelGroup>
 

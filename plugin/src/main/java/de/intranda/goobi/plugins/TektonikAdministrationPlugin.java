@@ -15,6 +15,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang.StringUtils;
+import org.goobi.beans.Process;
 import org.goobi.production.enums.PluginType;
 import org.goobi.production.plugin.interfaces.IAdministrationPlugin;
 import org.jdom2.Attribute;
@@ -35,11 +36,19 @@ import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.EadMetadataField;
 import de.schlichtherle.io.FileOutputStream;
 import de.sub.goobi.config.ConfigurationHelper;
+import de.sub.goobi.helper.BeanHelper;
 import de.sub.goobi.helper.HttpClientHelper;
+import de.sub.goobi.persistence.managers.ProcessManager;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
+import ugh.dl.DigitalDocument;
+import ugh.dl.DocStruct;
+import ugh.dl.Fileformat;
+import ugh.dl.Prefs;
+import ugh.exceptions.UGHException;
+import ugh.fileformats.mets.MetsMods;
 
 @PluginImplementation
 @Log4j2
@@ -117,6 +126,10 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     @Getter
     @Setter
     private boolean displayControlArea;
+
+    private Integer processTemplateId;
+    private Process processTemplate;
+    private BeanHelper bhelp = new BeanHelper();
 
     /**
      * Constructor
@@ -292,7 +305,9 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         } else {
             entry.setNodeType(element.getAttributeValue("otherlevel"));
         }
-
+        if (StringUtils.isBlank(entry.getNodeType())) {
+            entry.setNodeType("folder");
+        }
         if (clist == null) {
             clist = element.getChildren("c", ns);
         }
@@ -330,7 +345,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         }
 
         EadMetadataField toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable(),
-                emf.isVisible(), emf.isShowField(), emf.getFieldType());
+                emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild());
         toAdd.setSelectItemList(emf.getSelectItemList());
         toAdd.setEadEntry(entry);
         toAdd.setValue(stringValue);
@@ -411,10 +426,14 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
             }
         }
+
+        processTemplateId = config.getInteger("/processTemplateId", null);
+
         for (HierarchicalConfiguration hc : config.configurationsAt("/metadata")) {
-            EadMetadataField field = new EadMetadataField(hc.getString("@name"), hc.getInt("@level"), hc.getString("@xpath"),
-                    hc.getString("@xpathType", "element"), hc.getBoolean("@repeatable", false), hc.getBoolean("@visible", true),
-                    hc.getBoolean("@showField", false), hc.getString("@fieldType", "input"));
+            EadMetadataField field =
+                    new EadMetadataField(hc.getString("@name"), hc.getInt("@level"), hc.getString("@xpath"), hc.getString("@xpathType", "element"),
+                            hc.getBoolean("@repeatable", false), hc.getBoolean("@visible", true), hc.getBoolean("@showField", false),
+                            hc.getString("@fieldType", "input"), hc.getString("@rulesetName", null), hc.getBoolean("@importMetadataInChild", false));
             configuredFields.add(field);
 
             if (field.getFieldType().equals("dropdown") || field.getFieldType().equals("multiselect")) {
@@ -908,22 +927,116 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         if (selectedEntry == null) {
             return;
         }
-        // abort if root node is selected
-        if (selectedEntry.getParentNode() == null) {
+
+        // abort if process templace is not defined
+        if (processTemplateId == null || processTemplateId == 0) {
             return;
+        }
+        if (processTemplate == null) {
+            // load process template
+            processTemplate = ProcessManager.getProcessById(processTemplateId);
+            if (processTemplate == null) {
+                // TODO error
+                return;
+            }
         }
 
         StringBuilder processTitleBuilder = new StringBuilder();
-
-        processTitleBuilder.append(selectedEntry.getHierarchy());
-        processTitleBuilder.append("_");
-        processTitleBuilder.append(selectedEntry.getOrderNumber());
-        processTitleBuilder.append("_");
+        //        processTitleBuilder.append(selectedEntry.getHierarchy());
+        //        processTitleBuilder.append("_");
+        //        processTitleBuilder.append(selectedEntry.getOrderNumber());
+        //        processTitleBuilder.append("_");
         processTitleBuilder.append(selectedEntry.getId());
         processTitleBuilder.append("_");
         processTitleBuilder.append(selectedEntry.getLabel().toLowerCase());
         String processTitle = processTitleBuilder.toString().replaceAll("[\\W]", "_");
 
+        // create process based on configured process template
+        Process process = new Process();
+        process.setTitel(processTitle);
+        selectedEntry.setGoobiProcessTitle(processTitle);
+        process.setIstTemplate(false);
+        process.setInAuswahllisteAnzeigen(false);
+        process.setProjekt(processTemplate.getProjekt());
+        process.setRegelsatz(processTemplate.getRegelsatz());
+        process.setDocket(processTemplate.getDocket());
+
+        bhelp.SchritteKopieren(processTemplate, process);
+        bhelp.ScanvorlagenKopieren(processTemplate, process);
+        bhelp.WerkstueckeKopieren(processTemplate, process);
+        bhelp.EigenschaftenKopieren(processTemplate, process);
+        Prefs prefs = processTemplate.getRegelsatz().getPreferences();
+
+        String publicationType = null;
+        // TODO get this from config?
+        switch (selectedEntry.getNodeType()) {
+            case "folder":
+                publicationType = "Record";
+                break;
+            case "file":
+                publicationType = "File";
+                break;
+            case "image":
+                publicationType = "Picture";
+                break;
+            case "audio":
+                publicationType = "Audio";
+                break;
+            case "video":
+                publicationType = "Video";
+                break;
+            case "other":
+                publicationType = "Monograph";
+                break;
+        }
+
+        try {
+            // create mets file based on nodeType
+            Fileformat fileformat = new MetsMods(prefs);
+            DigitalDocument digDoc = new DigitalDocument();
+            fileformat.setDigitalDocument(digDoc);
+            DocStruct logical = digDoc.createDocStruct(prefs.getDocStrctTypeByName(publicationType));
+            digDoc.setLogicalDocStruct(logical);
+
+            // import metadata
+            for (EadMetadataField emf : selectedEntry.getIdentityStatementAreaList()) {
+                createModsMetadata(emf, logical);
+            }
+            // TODO other areas
+
+            EadEntry parent = selectedEntry.getParentNode();
+            while (parent != null) {
+                for (EadMetadataField emf : parent.getIdentityStatementAreaList()) {
+                    if (emf.isImportMetadataInChild()) {
+                        createModsMetadata(emf, logical);
+                    }
+                }
+                // TODO other areas
+
+                parent = parent.getParentNode();
+            }
+
+            DocStruct physical = null;
+        } catch (UGHException e) {
+            log.error(e);
+        }
+
+        // TODO save process
+
+        // TODO save fileformat
+    }
+
+    private void createModsMetadata(EadMetadataField emf, DocStruct logical) {
+        if (StringUtils.isNotBlank(emf.getMetadataName())) {
+            // TODO create metadata, add it to logical
+            if (!emf.getMultiselectSelectedValues().isEmpty()) {
+                for (String value : emf.getMultiselectSelectedValues()) {
+
+                }
+            } else if (StringUtils.isNotBlank(emf.getValue())) {
+            }
+
+        }
 
     }
 

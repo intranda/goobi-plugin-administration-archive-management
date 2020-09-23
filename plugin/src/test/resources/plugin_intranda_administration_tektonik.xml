@@ -5,6 +5,8 @@
     <config>
         <!-- define the name(s) of all tectonics for t -->
         <tectonics>*</tectonics>
+        <!-- define the process template for process creation. If empty or missing, processes can't be created  -->
+        <processTemplateId>1</processTemplateId>
 
         <!-- define metadata fields. All fields are displayed on the UI based on the level and the order within this file.
                 - @name: contains the internal name of the field. The value can be used to translate the field in the messages files. The field must start with a letter and can not contain any white spaces.
@@ -22,6 +24,8 @@
                 - @visible: defines if the field is displayed on the UI, values can be true/false, default is true
                 - @showField: defines if the field is displayed as input field (true) or badge (false, default), affects only visible metadata
                 - @fieldType: defines the type of the input field. Posible values are input (default), textarea, dropdown, multiselect
+                - @rulesetName: internal name of the metadata in ruleset. If missing or empty, field is not imported into process metadata
+                - @importMetadataInChild: defines if the field is imported or skipped in processes for child elements 
                 - value: list of possible values for dropdown and multiselect lists
          -->
 
