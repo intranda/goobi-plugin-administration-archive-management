@@ -87,6 +87,9 @@ public class EadEntry {
     //    Date(s) of descriptions
     private List<EadMetadataField> descriptionControlAreaList = new ArrayList<>();
 
+    // empty if no process was created, otherwise the name of othe process is stored
+    private String goobiProcessTitle;
+
     public EadEntry(Integer order, Integer hierarchy) {
         this.orderNumber = order;
         this.hierarchy = hierarchy;

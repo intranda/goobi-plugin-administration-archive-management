@@ -53,7 +53,8 @@ public class EadMetadataField {
 
     /** contains the list of selected values in multiselect */
     private List<String> multiselectSelectedValues = new ArrayList<>();
-    // TODO store single value; fill it from single value
+
+    private EadEntry eadEntry;
 
     public EadMetadataField(String name, Integer level, String xpath, String xpathType, boolean repeatable, boolean visible, boolean showField,
             String fieldType) {
@@ -108,6 +109,15 @@ public class EadMetadataField {
         } else {
             return value;
         }
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+
+        if (xpath.contains("unittitle")) {
+            eadEntry.setLabel(value);
+        }
+
     }
 
 }

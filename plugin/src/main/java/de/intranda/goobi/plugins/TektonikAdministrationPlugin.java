@@ -332,6 +332,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         EadMetadataField toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable(),
                 emf.isVisible(), emf.isShowField(), emf.getFieldType());
         toAdd.setSelectItemList(emf.getSelectItemList());
+        toAdd.setEadEntry(entry);
         toAdd.setValue(stringValue);
         if (StringUtils.isNotBlank(stringValue)) {
             toAdd.setShowField(true);
@@ -902,8 +903,27 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         flatEntryList = null;
     }
 
-
     public void createProcess() {
+        // abort if no node is selected
+        if (selectedEntry == null) {
+            return;
+        }
+        // abort if root node is selected
+        if (selectedEntry.getParentNode() == null) {
+            return;
+        }
+
+        StringBuilder processTitleBuilder = new StringBuilder();
+
+        processTitleBuilder.append(selectedEntry.getHierarchy());
+        processTitleBuilder.append("_");
+        processTitleBuilder.append(selectedEntry.getOrderNumber());
+        processTitleBuilder.append("_");
+        processTitleBuilder.append(selectedEntry.getId());
+        processTitleBuilder.append("_");
+        processTitleBuilder.append(selectedEntry.getLabel().toLowerCase());
+        String processTitle = processTitleBuilder.toString().replaceAll("[\\W]", "_");
+
 
     }
 

@@ -417,19 +417,12 @@ div.no-element-selected {
                                                     style="display: none;"
                                                     action="#{AdministrationForm.administrationPlugin.search}" />
                                             </div>
-
-
-
-
-
                                         </div>
                                         <div class="box-content leftArea-grid">
 
-
-
                                             <div class="table">
                                                 <x:dataTable
-                                                    id="meStructure"
+                                                    id="hierarchy"
                                                     forceId="true"
                                                     value="#{AdministrationForm.administrationPlugin.flatEntryList}"
                                                     var="entry"
@@ -471,8 +464,6 @@ div.no-element-selected {
                                                                 render="ead-details" />
                                                         </h:commandLink>
                                                     </h:column>
-                                                    <!--                                                 <br/> -->
-                                                    <!--                                             </ui:repeat> -->
                                                 </x:dataTable>
                                             </div>
 
@@ -483,8 +474,8 @@ div.no-element-selected {
                                                     title="#{msgs.plugin_administration_tectonics_newNode}">
                                                     <i class="fa fa-plus"></i>
                                                     <f:ajax
-                                                        execute="meStructure"
-                                                        render="meStructure" />
+                                                        execute="hierarchy"
+                                                        render="hierarchy" />
                                                 </h:commandLink>
 
                                                 <h:commandLink
@@ -493,8 +484,8 @@ div.no-element-selected {
                                                     title="#{msgs.plugin_administration_tectonics_deleteNode}">
                                                     <i class="fa fa-trash-o" />
                                                     <f:ajax
-                                                        execute="meStructure"
-                                                        render="meStructure" />
+                                                        execute="hierarchy"
+                                                        render="hierarchy" />
                                                 </h:commandLink>
 
                                                 <h:commandLink
@@ -504,8 +495,8 @@ div.no-element-selected {
                                                     style="margin-top: 150px;">
                                                     <i class="fa fa-chevron-up" />
                                                     <f:ajax
-                                                        execute="meStructure"
-                                                        render="meStructure" />
+                                                        execute="hierarchy"
+                                                        render="hierarchy" />
                                                 </h:commandLink>
 
                                                 <h:commandLink
@@ -514,8 +505,8 @@ div.no-element-selected {
                                                     title="#{msgs.plugin_administration_tectonics_moveNodeDown}">
                                                     <i class="fa fa-chevron-down" />
                                                     <f:ajax
-                                                        execute="meStructure"
-                                                        render="meStructure" />
+                                                        execute="hierarchy"
+                                                        render="hierarchy" />
                                                 </h:commandLink>
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
@@ -523,8 +514,8 @@ div.no-element-selected {
                                                     title="#{msgs.plugin_administration_tectonics_moveHierarchyDown}">
                                                     <i class="fa fa-chevron-right" />
                                                     <f:ajax
-                                                        execute="meStructure"
-                                                        render="meStructure" />
+                                                        execute="hierarchy"
+                                                        render="hierarchy" />
                                                 </h:commandLink>
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
@@ -532,8 +523,8 @@ div.no-element-selected {
                                                     title="#{msgs.plugin_administration_tectonics_moveHierarchyUp}">
                                                     <i class="fa fa-chevron-left" />
                                                     <f:ajax
-                                                        execute="meStructure"
-                                                        render="meStructure" />
+                                                        execute="hierarchy"
+                                                        render="hierarchy" />
                                                 </h:commandLink>
 
 
@@ -593,22 +584,27 @@ div.no-element-selected {
                                                         <h:panelGroup
                                                             styleClass="form-group"
                                                             id="process-creation-area">
-                                                            <h:commandLink
-                                                                action="#{AdministrationForm.administrationPlugin.createProcess}"
-                                                                id="process-creation-button"
-                                                                styleClass="btn btn-primary font-size-s pull-right margin-top-10 margin-sides-10">
-                                                                <h:outputText value="#{msgs.plugin_administration_tectonics_process_create_process}" />
-                                                            </h:commandLink>
                                                             <div class="col-sm-3 control-label">
                                                                 <h:outputText value="#{msgs.plugin_administration_tectonics_process}" />
                                                             </div>
                                                             <h:panelGroup
                                                                 layout="block"
-                                                                styleClass="col-sm-9 node-type-selection"
-                                                                rendered="true">
+                                                                styleClass="col-sm-6 node-type-selection"
+                                                                rendered="#{item.goobiProcessTitle == null}">
                                                                 <h:outputText value="#{msgs.plugin_administration_tectonics_process_no_process}" />
                                                             </h:panelGroup>
-
+                                                            <h:panelGroup
+                                                                layout="block"
+                                                                styleClass="col-sm-3 node-type-selection"
+                                                                rendered="#{item.goobiProcessTitle == null}">
+                                                                <h:commandLink
+                                                                    rendered="#{item.goobiProcessTitle == null}"
+                                                                    action="#{AdministrationForm.administrationPlugin.createProcess}"
+                                                                    id="process-creation-button"
+                                                                    styleClass="btn btn-primary font-size-s pull-right ">
+                                                                    <h:outputText value="#{msgs.plugin_administration_tectonics_process_create_process}" />
+                                                                </h:commandLink>
+                                                            </h:panelGroup>
                                                         </h:panelGroup>
 
 
