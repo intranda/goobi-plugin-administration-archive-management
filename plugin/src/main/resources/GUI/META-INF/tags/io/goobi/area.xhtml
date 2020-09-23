@@ -6,13 +6,14 @@
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:x="http://myfaces.apache.org/tomahawk"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:goobiio="http://goobi.io/facelets">
 <h:body>
     <ui:composition>
         <h:panelGroup
             id="#{area}"
-            layout="block">
-
+            layout="block"
+            sytyle="flex-grow: 10;">
             <span class="badge-area">
                 <x:dataList
                     var="item"
@@ -30,7 +31,8 @@
             <div>
                 <x:dataList
                     var="item"
-                    value="#{itemlist}" rendered="#{showDetails}">
+                    value="#{itemlist}"
+                    rendered="#{showDetails}">
 
                     <ui:fragment rendered="#{item.showField and item.visible}">
 

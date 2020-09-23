@@ -185,9 +185,11 @@ div.no-element-selected {
 }
 
 .area_block-border p, #contextArea, #contentStructureArea,
-    #identificationArea, #descriptionArea, #notesArea, #materialsArea,
+    #metadata-areaArea, #descriptionArea, #notesArea, #materialsArea,
     #accessArea {
     margin: 10px;
+    flex-basis: 100%;
+    flex-shrink: 2;
 }
 
 .badge-empty {
@@ -276,6 +278,12 @@ div.no-element-selected {
     border-left: none !important;
     display: flex;
     justify-content: center;
+}
+
+.metadata-area {
+    display: flex;
+    justify-content: start;
+    padding-top: 10px !important;
 }
 </style>
         <h:panelGroup>
@@ -648,7 +656,7 @@ div.no-element-selected {
 
                                                     <h:panelGroup
                                                         layout="block"
-                                                        styleClass="identification area_block-border"
+                                                        styleClass="metadata-area area_block-border form-group"
                                                         id="identity-statement-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayIdentityStatementArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
@@ -660,13 +668,13 @@ div.no-element-selected {
                                                         <h:outputText value="#{msgs.plugin_administration_tectonics_area_identity}" />
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.identityStatementAreaList}"
-                                                            area="identificationArea"
+                                                            area="identicationArea"
                                                             showDetails="#{AdministrationForm.administrationPlugin.displayIdentityStatementArea}" />
                                                     </h:panelGroup>
 
                                                     <h:panelGroup
                                                         layout="block"
-                                                        styleClass="identification area_block-border"
+                                                        styleClass="metadata-area area_block-border"
                                                         id="context-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayContextArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
@@ -684,7 +692,7 @@ div.no-element-selected {
 
                                                     <h:panelGroup
                                                         layout="block"
-                                                        styleClass="identification area_block-border"
+                                                        styleClass="metadata-area area_block-border"
                                                         id="content-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayContentArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
@@ -703,7 +711,7 @@ div.no-element-selected {
 
                                                     <h:panelGroup
                                                         layout="block"
-                                                        styleClass="identification area_block-border"
+                                                        styleClass="metadata-area area_block-border"
                                                         id="access-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayAccessArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
@@ -721,7 +729,7 @@ div.no-element-selected {
 
                                                     <h:panelGroup
                                                         layout="block"
-                                                        styleClass="identification area_block-border"
+                                                        styleClass="metadata-area area_block-border"
                                                         id="materials-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayMaterialsArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
@@ -739,7 +747,7 @@ div.no-element-selected {
 
                                                     <h:panelGroup
                                                         layout="block"
-                                                        styleClass="identification area_block-border"
+                                                        styleClass="metadata-area area_block-border"
                                                         id="notes-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayNotesArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
@@ -757,7 +765,7 @@ div.no-element-selected {
 
                                                     <h:panelGroup
                                                         layout="block"
-                                                        styleClass="identification area_block-border"
+                                                        styleClass="metadata-area area_block-border"
                                                         id="control-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayControlArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
