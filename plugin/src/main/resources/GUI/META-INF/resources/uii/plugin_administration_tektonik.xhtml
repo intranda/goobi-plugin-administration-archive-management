@@ -281,7 +281,7 @@ div.no-element-selected {
 }
 
 .metadata-area {
-width:100%;
+    width: 100%;
     display: grid;
     padding-top: 10px !important;
     grid-template-columns: auto auto 1fr;
@@ -289,13 +289,17 @@ width:100%;
     justify-content: start;
     align-items: stretch;
     justify-items: stretch;
+    display: grid;
 }
 
 .form-horizontal .form-group::before {
-display: none;
-content: "";
+    display: none;
+    content: "";
 }
 
+#process-creation-button {
+    background: #368ee0;
+}
 </style>
         <h:panelGroup>
             <div class="row">
@@ -579,9 +583,34 @@ content: "";
                                                         <h:outputText value="#{msgs.details}" />
                                                     </h3>
                                                 </div>
-                                                <div class="box-content without-margin">
-                                                    <div class="processcreation area_block-border">
-                                                        <p>Bereich für Goobi Vorgang und Typ</p>
+                                                <div
+                                                    class="box-content without-margin"
+                                                    style="padding-top: 0;">
+                                                    <div
+                                                        class="processcreation area_block-border"
+                                                        style="margin-top: 0;">
+
+                                                        <h:panelGroup
+                                                            styleClass="form-group"
+                                                            id="process-creation-area">
+                                                            <h:commandLink
+                                                                action="#{AdministrationForm.administrationPlugin.createProcess}"
+                                                                id="process-creation-button"
+                                                                styleClass="btn btn-primary font-size-s pull-right margin-top-10 margin-sides-10">
+                                                                <h:outputText value="#{msgs.plugin_administration_tectonics_process_create_process}" />
+                                                            </h:commandLink>
+                                                            <div class="col-sm-3 control-label">
+                                                                <h:outputText value="#{msgs.plugin_administration_tectonics_process}" />
+                                                            </div>
+                                                            <h:panelGroup
+                                                                layout="block"
+                                                                styleClass="col-sm-9 node-type-selection"
+                                                                rendered="true">
+                                                                <h:outputText value="#{msgs.plugin_administration_tectonics_process_no_process}" />
+                                                            </h:panelGroup>
+
+                                                        </h:panelGroup>
+
 
                                                         <h:panelGroup
                                                             styleClass="form-group"

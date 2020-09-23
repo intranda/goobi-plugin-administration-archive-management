@@ -902,4 +902,9 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         flatEntryList = null;
     }
 
+
+    public void createProcess() {
+
+    }
+
 }
