@@ -15,10 +15,10 @@
             </span>
             <x:updateActionListener
                 property="#{item.showField}"
-                value="#{!item.showField}" />
+                value="true" />
             <f:ajax
                 execute="@this"
-                render=":#{area}" />
+                render=":#{ajaxid}" />
         </h:commandLink>
 
     </ui:composition>

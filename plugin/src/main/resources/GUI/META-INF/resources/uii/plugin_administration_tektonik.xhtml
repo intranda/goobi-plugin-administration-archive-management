@@ -281,10 +281,21 @@ div.no-element-selected {
 }
 
 .metadata-area {
-    display: flex;
-    justify-content: start;
+width:100%;
+    display: grid;
     padding-top: 10px !important;
+    grid-template-columns: auto auto 1fr;
+    justify-items: start;
+    justify-content: start;
+    align-items: stretch;
+    justify-items: stretch;
 }
+
+.form-horizontal .form-group::before {
+display: none;
+content: "";
+}
+
 </style>
         <h:panelGroup>
             <div class="row">
@@ -669,6 +680,7 @@ div.no-element-selected {
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.identityStatementAreaList}"
                                                             area="identicationArea"
+                                                            ajaxid="identity-statement-area"
                                                             showDetails="#{AdministrationForm.administrationPlugin.displayIdentityStatementArea}" />
                                                     </h:panelGroup>
 
@@ -687,6 +699,7 @@ div.no-element-selected {
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.contextAreaList}"
                                                             area="contextArea"
+                                                            ajaxid="context-area"
                                                             showDetails="#{AdministrationForm.administrationPlugin.displayContextArea}" />
                                                     </h:panelGroup>
 
@@ -706,6 +719,7 @@ div.no-element-selected {
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.contentAndStructureAreaAreaList}"
                                                             area="contentStructureArea"
+                                                            ajaxid="content-area"
                                                             showDetails="#{AdministrationForm.administrationPlugin.displayContentArea}" />
                                                     </h:panelGroup>
 
@@ -724,6 +738,7 @@ div.no-element-selected {
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.accessAndUseAreaList}"
                                                             area="accessArea"
+                                                            ajaxid="access-area"
                                                             showDetails="#{AdministrationForm.administrationPlugin.displayAccessArea}" />
                                                     </h:panelGroup>
 
@@ -742,6 +757,7 @@ div.no-element-selected {
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.alliedMaterialsAreaList}"
                                                             area="materialsArea"
+                                                            ajaxid="materials-area"
                                                             showDetails="#{AdministrationForm.administrationPlugin.displayMaterialsArea}" />
                                                     </h:panelGroup>
 
@@ -760,6 +776,7 @@ div.no-element-selected {
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.notesAreaList}"
                                                             area="notesArea"
+                                                            ajaxid="notes-area"
                                                             showDetails="#{AdministrationForm.administrationPlugin.displayNotesArea}" />
                                                     </h:panelGroup>
 
@@ -778,6 +795,7 @@ div.no-element-selected {
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.descriptionControlAreaList}"
                                                             area="descriptionArea"
+                                                            ajaxid="control-area"
                                                             showDetails="#{AdministrationForm.administrationPlugin.displayControlArea}" />
                                                     </h:panelGroup>
                                                 </div>
