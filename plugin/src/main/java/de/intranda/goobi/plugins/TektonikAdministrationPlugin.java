@@ -9,6 +9,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
+import javax.faces.context.FacesContext;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -37,6 +42,7 @@ import de.intranda.goobi.plugins.model.EadMetadataField;
 import de.schlichtherle.io.FileOutputStream;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.BeanHelper;
+import de.sub.goobi.helper.FacesContextHelper;
 import de.sub.goobi.helper.HttpClientHelper;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
@@ -596,7 +602,10 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             Element archdesc = xmlElement.getChild("archdesc", ns);
 
             dsc = archdesc.getChild("dsc", ns);
-
+            if (dsc== null) {
+                dsc = new Element("dsc", ns);
+                archdesc.addContent(dsc);
+            }
             if (StringUtils.isNotBlank(node.getId())) {
                 archdesc.setAttribute("id", node.getId());
             }
@@ -631,7 +640,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             if (StringUtils.isNotBlank(subNode.getGoobiProcessTitle())) {
                 Element altformavail = new Element("altformavail", ns);
                 altformavail.setAttribute("localtype", "goobi_process");
-                altformavail.setText(node.getGoobiProcessTitle());
+                altformavail.setText(subNode.getGoobiProcessTitle());
                 c.addContent(altformavail);
             }
 
@@ -1156,4 +1165,72 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         Process process = ProcessManager.getProcessByExactTitle(selectedEntry.getGoobiProcessTitle());
         process.downloadDocket();
     }
+
+    public void downloadTectonic() {
+        // create ead document
+        Document document = new Document();
+
+        Element eadRoot = new Element("ead", ns);
+        document.setRootElement(eadRoot);
+
+        addMetadata(eadRoot, rootElement);
+        //  write document to servlet output stream
+        String fileName = selectedDatabase.replaceAll("[\\W]", "_");
+        FacesContext facesContext = FacesContextHelper.getCurrentFacesContext();
+        if (!facesContext.getResponseComplete()) {
+            HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+            ServletContext servletContext = (ServletContext) facesContext.getExternalContext().getContext();
+            String contentType = servletContext.getMimeType(fileName);
+            response.setContentType(contentType);
+
+            response.setHeader("Content-Disposition", "attachment;filename=\"" + fileName + "\"");
+
+            try {
+                ServletOutputStream out = response.getOutputStream();
+                XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
+                try {
+                    outputter.output(document, out);
+                } catch (IOException e) {
+                    log.error(e);
+                }
+                out.flush();
+            } catch (IOException e) {
+                log.error("IOException while exporting run note", e);
+            }
+
+            facesContext.responseComplete();
+        }
+
+    }
+
+    public String saveTectonicAndLeave() {
+        createEadDocument();
+
+        return cancelEdition();
+
+    }
+
+    public String cancelEdition() {
+        // reset current settings
+        selectedDatabase = null;
+        selectedEntry = null;
+        rootElement = null;
+        displayMode = "";
+        flatEntryList = null;
+        configuredFields = null;
+        searchValue = null;
+        displayIdentityStatementArea = false;
+        displayContextArea = false;
+        displayContentArea = false;
+        displayAccessArea = false;
+        displayMaterialsArea = false;
+        displayNotesArea = false;
+        displayControlArea = false;
+        processTemplateId = null;
+        processTemplate = null;
+
+        // return to start screen
+        return "";
+    }
+
 }
