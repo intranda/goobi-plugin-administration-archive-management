@@ -300,6 +300,11 @@ div.no-element-selected {
 #process-creation-button {
     background: #368ee0;
 }
+
+.download-docket i {
+    font-size: 1.5em;
+    color: #000;
+}
 </style>
         <h:panelGroup>
             <div class="row">
@@ -604,13 +609,19 @@ div.no-element-selected {
                                                                     <h:outputText value="#{msgs.plugin_administration_tectonics_process_create_process}" />
                                                                 </h:commandLink>
                                                             </h:panelGroup>
-                                                            
-                                                            <h:panelGroup  layout="block"
+
+                                                            <h:panelGroup
+                                                                layout="block"
                                                                 styleClass="col-sm-9 node-type-selection"
                                                                 rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null}">
-                                                                <h:outputText value="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle}"/> 
-                                                            
-                                                            
+                                                                <h:outputText value="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle}" />
+                                                                <h:commandLink
+                                                                    styleClass="download-docket"
+                                                                    action="#{AdministrationForm.administrationPlugin.downloadDocket}"
+                                                                    onclick="preventDoubleSubmit(this);"
+                                                                    title="#{msgs.process_generateDocket}">
+                                                                    <i class="fa fa-print margin-left-10" />
+                                                                </h:commandLink>
                                                             </h:panelGroup>
                                                         </h:panelGroup>
 

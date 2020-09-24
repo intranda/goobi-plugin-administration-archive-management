@@ -223,6 +223,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
      */
     private EadEntry parseElement(int order, int hierarchy, Element element) {
         EadEntry entry = new EadEntry(order, hierarchy);
+
         for (EadMetadataField emf : configuredFields) {
             //            if (hierarchy == 0 && emf.getElementType().equals("child")) {
             //                continue;
@@ -295,18 +296,30 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         }
 
         // nodeType
-
         // get child elements
         List<Element> clist = null;
         Element archdesc = element.getChild("archdesc", ns);
         if (archdesc != null) {
-            entry.setNodeType(archdesc.getAttributeValue("type"));
+            entry.setNodeType(archdesc.getAttributeValue("localtype"));
             Element dsc = archdesc.getChild("dsc", ns);
             if (dsc != null) {
+                // read process title
+                List<Element> altformavailList = dsc.getChildren("altformavail", ns);
+                for (Element altformavail : altformavailList) {
+                    if ("goobi_process".equals(altformavail.getAttributeValue("localtype"))) {
+                        entry.setGoobiProcessTitle(altformavail.getText());
+                    }
+                }
                 clist = dsc.getChildren("c", ns);
             }
         } else {
             entry.setNodeType(element.getAttributeValue("otherlevel"));
+            List<Element> altformavailList = element.getChildren("altformavail", ns);
+            for (Element altformavail : altformavailList) {
+                if ("goobi_process".equals(altformavail.getAttributeValue("localtype"))) {
+                    entry.setGoobiProcessTitle(altformavail.getText());
+                }
+            }
         }
         if (StringUtils.isBlank(entry.getNodeType())) {
             entry.setNodeType("folder");
@@ -590,6 +603,13 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             if (StringUtils.isNotBlank(node.getNodeType())) {
                 archdesc.setAttribute("type", node.getNodeType());
             }
+            if (StringUtils.isNotBlank(node.getGoobiProcessTitle())) {
+                Element altformavail = new Element("altformavail", ns);
+                altformavail.setAttribute("localtype", "goobi_process");
+                altformavail.setText(node.getGoobiProcessTitle());
+                dsc.addContent(altformavail);
+            }
+
         } else {
             dsc = xmlElement;
             if (StringUtils.isNotBlank(node.getId())) {
@@ -599,13 +619,22 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                 xmlElement.setAttribute("otherlevel", node.getNodeType());
             }
         }
+
         for (EadEntry subNode : node.getSubEntryList()) {
             if (dsc == null) {
                 dsc = new Element("dsc", ns);
                 xmlElement.addContent(dsc);
             }
+
             Element c = new Element("c", ns);
             dsc.addContent(c);
+            if (StringUtils.isNotBlank(subNode.getGoobiProcessTitle())) {
+                Element altformavail = new Element("altformavail", ns);
+                altformavail.setAttribute("localtype", "goobi_process");
+                altformavail.setText(node.getGoobiProcessTitle());
+                c.addContent(altformavail);
+            }
+
             addMetadata(c, subNode);
         }
 
@@ -944,6 +973,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             }
         }
 
+        // TODO configure process title rules?
         StringBuilder processTitleBuilder = new StringBuilder();
         //        processTitleBuilder.append(selectedEntry.getHierarchy());
         //        processTitleBuilder.append("_");
@@ -953,6 +983,8 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         processTitleBuilder.append("_");
         processTitleBuilder.append(selectedEntry.getLabel().toLowerCase());
         String processTitle = processTitleBuilder.toString().replaceAll("[\\W]", "_");
+
+        // TODO check if title is unique
 
         // create process based on configured process template
         Process process = new Process();
@@ -1085,10 +1117,9 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         } catch (UGHException | IOException | InterruptedException | SwapException | DAOException e) {
             log.error(e);
         }
-
     }
 
-    //  create metadata, add it to logical
+    //  create metadata, add it to logical element
     private void createModsMetadata(Prefs prefs, EadMetadataField emf, DocStruct logical) {
         if (StringUtils.isNotBlank(emf.getMetadataName())) {
             if (!emf.getMultiselectSelectedValues().isEmpty()) {
@@ -1115,4 +1146,14 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
     }
 
+    public void downloadDocket() {
+        if (selectedEntry == null) {
+            return;
+        }
+        if (StringUtils.isBlank(selectedEntry.getGoobiProcessTitle())) {
+            return;
+        }
+        Process process = ProcessManager.getProcessByExactTitle(selectedEntry.getGoobiProcessTitle());
+        process.downloadDocket();
+    }
 }
