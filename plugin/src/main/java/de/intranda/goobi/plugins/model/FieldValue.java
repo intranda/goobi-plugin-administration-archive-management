@@ -1,0 +1,68 @@
+package de.intranda.goobi.plugins.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+
+import lombok.Data;
+
+@Data
+public class FieldValue {
+
+    private String value;
+    /** contains the list of selected values in multiselect */
+    private List<String> multiselectSelectedValues = new ArrayList<>();
+
+    private EadMetadataField field;
+
+    public FieldValue (EadMetadataField field) {
+        this.field = field;
+    }
+
+    public List<String> getPossibleValues() {
+        List<String> answer = new ArrayList<>();
+        for (String possibleValue : field.getSelectItemList()) {
+            if (!multiselectSelectedValues.contains(possibleValue)) {
+                answer.add(possibleValue);
+            }
+        }
+        return answer;
+    }
+
+
+    public String getMultiselectValue() {
+        return "";
+    }
+
+    public void setMultiselectValue(String value) {
+        if (StringUtils.isNotBlank(value)) {
+            multiselectSelectedValues.add(value);
+        }
+    }
+
+    public void removeSelectedValue(String value) {
+        multiselectSelectedValues.remove(value);
+    }
+
+    public String getValuesForXmlExport() {
+        if (!multiselectSelectedValues.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (String selectedValue : multiselectSelectedValues) {
+                if (sb.length() > 0) {
+                    sb.append("; ");
+                }
+                sb.append(selectedValue);
+            }
+            return sb.toString();
+
+        } else{
+            return value;
+        }
+    }
+
+    public List<String> getSelectItemList() {
+        return field.getSelectItemList();
+    }
+
+}
