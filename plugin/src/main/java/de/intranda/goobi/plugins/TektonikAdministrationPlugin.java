@@ -39,6 +39,7 @@ import org.jdom2.xpath.XPathFactory;
 
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.EadMetadataField;
+import de.intranda.goobi.plugins.model.FieldValue;
 import de.schlichtherle.io.FileOutputStream;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.BeanHelper;
@@ -62,6 +63,15 @@ import ugh.fileformats.mets.MetsMods;
 @PluginImplementation
 @Log4j2
 public class TektonikAdministrationPlugin implements IAdministrationPlugin {
+
+    // TODO validation: unique value within file
+    // TODO validation: required field?
+    // TODO get dropdown values from vocabulary
+
+    // TODO: generated processinfo = login
+    // TODO: generate <maintenanceevent>, <eventdatetime>: Created / Modified
+
+    // TODO: create ruleset, map metadata
 
     @Getter
     @Setter
@@ -268,43 +278,37 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         EadEntry entry = new EadEntry(order, hierarchy);
 
         for (EadMetadataField emf : configuredFields) {
-            //            if (hierarchy == 0 && emf.getElementType().equals("child")) {
-            //                continue;
-            //            }
-            boolean added = false;
+
+            List<String> stringValues = new ArrayList<>();
             if ("text".equalsIgnoreCase(emf.getXpathType())) {
                 XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, ns);
                 List<Text> values = engine.evaluate(element);
                 if (emf.isRepeatable()) {
                     for (Text value : values) {
                         String stringValue = value.getValue();
-                        addFieldToEntry(entry, emf, stringValue);
-                        added = true;
+                        stringValues.add(stringValue);
                     }
                 } else {
                     if (!values.isEmpty()) {
                         Text value = values.get(0);
                         String stringValue = value.getValue();
-                        addFieldToEntry(entry, emf, stringValue);
-                        added = true;
+                        stringValues.add(stringValue);
                     }
                 }
-
             } else if ("attribute".equalsIgnoreCase(emf.getXpathType())) {
                 XPathExpression<Attribute> engine = xFactory.compile(emf.getXpath(), Filters.attribute(), null, ns);
                 List<Attribute> values = engine.evaluate(element);
+
                 if (emf.isRepeatable()) {
                     for (Attribute value : values) {
                         String stringValue = value.getValue();
-                        addFieldToEntry(entry, emf, stringValue);
-                        added = true;
+                        stringValues.add(stringValue);
                     }
                 } else {
                     if (!values.isEmpty()) {
                         Attribute value = values.get(0);
                         String stringValue = value.getValue();
-                        addFieldToEntry(entry, emf, stringValue);
-                        added = true;
+                        stringValues.add(stringValue);
                     }
                 }
             } else {
@@ -313,22 +317,17 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                 if (emf.isRepeatable()) {
                     for (Element value : values) {
                         String stringValue = value.getValue();
-                        addFieldToEntry(entry, emf, stringValue);
-                        added = true;
+                        stringValues.add(stringValue);
                     }
                 } else {
                     if (!values.isEmpty()) {
                         Element value = values.get(0);
                         String stringValue = value.getValue();
-                        addFieldToEntry(entry, emf, stringValue);
-                        added = true;
+                        stringValues.add(stringValue);
                     }
                 }
             }
-            if (!added) {
-                // nothing found, add it as empty field
-                addFieldToEntry(entry, emf, null);
-            }
+            addFieldToEntry(entry, emf, stringValues);
         }
 
         Element eadheader = element.getChild("eadheader", ns);
@@ -398,25 +397,35 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
      * @param stringValue
      */
 
-    private void addFieldToEntry(EadEntry entry, EadMetadataField emf, String stringValue) {
-        if (StringUtils.isBlank(entry.getLabel()) && emf.getXpath().contains("unittitle")) {
-            entry.setLabel(stringValue);
+    private void addFieldToEntry(EadEntry entry, EadMetadataField emf, List<String> stringValues) {
+        if (StringUtils.isBlank(entry.getLabel()) && emf.getXpath().contains("unittitle") && stringValues != null && !stringValues.isEmpty()) {
+            entry.setLabel(stringValues.get(0));
         }
-
         EadMetadataField toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable(),
                 emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild());
         toAdd.setSelectItemList(emf.getSelectItemList());
         toAdd.setEadEntry(entry);
-        toAdd.setValue(stringValue);
-        if (StringUtils.isNotBlank(stringValue)) {
+
+        if (stringValues != null && !stringValues.isEmpty()) {
             toAdd.setShowField(true);
-        }
-        // split single value into multiple fields
-        if (toAdd.getFieldType().equals("multiselect") && StringUtils.isNotBlank(stringValue)) {
-            String[] splittedValues = stringValue.split("; ");
-            for (String val : splittedValues) {
-                toAdd.setMultiselectValue(val);
+
+            // split single value into multiple fields
+            for (String stringValue : stringValues) {
+                FieldValue fv = new FieldValue(toAdd);
+
+                if (toAdd.getFieldType().equals("multiselect") && StringUtils.isNotBlank(stringValue)) {
+                    String[] splittedValues = stringValue.split("; ");
+                    for (String val : splittedValues) {
+                        fv.setMultiselectValue(val);
+                    }
+                } else {
+                    fv.setValue(stringValue);
+                }
+                toAdd.addFieldValue(fv);
             }
+        } else {
+            FieldValue fv = new FieldValue(toAdd);
+            toAdd.addFieldValue(fv);
         }
 
         switch (toAdd.getLevel()) {
@@ -601,38 +610,59 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         }
 
         for (EadMetadataField emf : node.getIdentityStatementAreaList()) {
-            if (StringUtils.isNotBlank(emf.getValue())) {
-                createEadXmlField(xmlElement, isMainElement, emf);
+            for (FieldValue fv : emf.getValues()) {
+                if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
+                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
+
+                }
             }
         }
         for (EadMetadataField emf : node.getContextAreaList()) {
-            if (StringUtils.isNotBlank(emf.getValue())) {
-                createEadXmlField(xmlElement, isMainElement, emf);
+            for (FieldValue fv : emf.getValues()) {
+                if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
+                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
+
+                }
             }
         }
         for (EadMetadataField emf : node.getContentAndStructureAreaAreaList()) {
-            if (StringUtils.isNotBlank(emf.getValue())) {
-                createEadXmlField(xmlElement, isMainElement, emf);
+            for (FieldValue fv : emf.getValues()) {
+                if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
+                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
+
+                }
             }
         }
         for (EadMetadataField emf : node.getAccessAndUseAreaList()) {
-            if (StringUtils.isNotBlank(emf.getValue())) {
-                createEadXmlField(xmlElement, isMainElement, emf);
+            for (FieldValue fv : emf.getValues()) {
+                if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
+                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
+
+                }
             }
         }
         for (EadMetadataField emf : node.getAlliedMaterialsAreaList()) {
-            if (StringUtils.isNotBlank(emf.getValue())) {
-                createEadXmlField(xmlElement, isMainElement, emf);
+            for (FieldValue fv : emf.getValues()) {
+                if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
+                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
+
+                }
             }
         }
         for (EadMetadataField emf : node.getNotesAreaList()) {
-            if (StringUtils.isNotBlank(emf.getValue())) {
-                createEadXmlField(xmlElement, isMainElement, emf);
+            for (FieldValue fv : emf.getValues()) {
+                if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
+                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
+
+                }
             }
         }
         for (EadMetadataField emf : node.getDescriptionControlAreaList()) {
-            if (StringUtils.isNotBlank(emf.getValue())) {
-                createEadXmlField(xmlElement, isMainElement, emf);
+            for (FieldValue fv : emf.getValues()) {
+                if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
+                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
+
+                }
             }
         }
         Element dsc = null;
@@ -690,7 +720,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
     }
 
-    private void createEadXmlField(Element xmlElement, boolean isMainElement, EadMetadataField emf) {
+    private void createEadXmlField(Element xmlElement, boolean isMainElement, EadMetadataField emf, String metadataValue) {
         Element currentElement = xmlElement;
         String xpath = emf.getXpath();
         if (xpath.endsWith("[1]")) {
@@ -725,7 +755,19 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             else if (field.startsWith("@")) {
                 field = field.substring(1);
                 // create attribute on current element
-                currentElement.setAttribute(field, emf.getValueForXmlExport());
+                // duplicate current element if attribute is not empty
+                if (currentElement.getAttribute(field) != null) {
+                    Element duplicate = new Element(currentElement.getName(), ns);
+                    for (Attribute attr : currentElement.getAttributes()) {
+                        if (!attr.getName().equals(field)) {
+                            duplicate.setAttribute(attr.getName(), attr.getValue());
+                        }
+                    }
+                    currentElement.getParent().addContent(duplicate);
+                    currentElement = duplicate;
+                }
+
+                currentElement.setAttribute(field, metadataValue);
                 written = true;
             } else {
                 // remove namespace
@@ -793,7 +835,16 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             }
         }
         if (!written) {
-            currentElement.setText(emf.getValueForXmlExport());
+            // duplicate current element if not empty
+            if (StringUtils.isNotBlank(currentElement.getText())) {
+                Element duplicate = new Element(currentElement.getName(), ns);
+                for (Attribute attr : currentElement.getAttributes()) {
+                    duplicate.setAttribute(attr.getName(), attr.getValue());
+                }
+                currentElement.getParent().addContent(duplicate);
+                currentElement = duplicate;
+            }
+            currentElement.setText(metadataValue);
         }
     }
 
@@ -1027,7 +1078,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             }
         }
 
-        // TODO configure process title rules?
+        // TODO configure process title rule?
         StringBuilder processTitleBuilder = new StringBuilder();
         //        processTitleBuilder.append(selectedEntry.getHierarchy());
         //        processTitleBuilder.append("_");
@@ -1176,26 +1227,28 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     //  create metadata, add it to logical element
     private void createModsMetadata(Prefs prefs, EadMetadataField emf, DocStruct logical) {
         if (StringUtils.isNotBlank(emf.getMetadataName())) {
-            if (!emf.getMultiselectSelectedValues().isEmpty()) {
-                for (String value : emf.getMultiselectSelectedValues()) {
+            for (FieldValue fv : emf.getValues()) {
+                if (!fv.getMultiselectSelectedValues().isEmpty()) {
+                    for (String value : fv.getMultiselectSelectedValues()) {
+                        try {
+                            Metadata md = new Metadata(prefs.getMetadataTypeByName(emf.getMetadataName()));
+                            md.setValue(value);
+                            logical.addMetadata(md);
+                        } catch (UGHException e) {
+                            log.error(e);
+                        }
+                    }
+                } else if (StringUtils.isNotBlank(fv.getValue())) {
                     try {
+
                         Metadata md = new Metadata(prefs.getMetadataTypeByName(emf.getMetadataName()));
-                        md.setValue(value);
+                        md.setValue(fv.getValue());
                         logical.addMetadata(md);
                     } catch (UGHException e) {
                         log.error(e);
                     }
                 }
-            } else if (StringUtils.isNotBlank(emf.getValue())) {
-                try {
-                    Metadata md = new Metadata(prefs.getMetadataTypeByName(emf.getMetadataName()));
-                    md.setValue(emf.getValue());
-                    logical.addMetadata(md);
-                } catch (UGHException e) {
-                    log.error(e);
-                }
             }
-
         }
 
     }

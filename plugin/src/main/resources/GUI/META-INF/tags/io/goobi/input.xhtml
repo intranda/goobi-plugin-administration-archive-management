@@ -34,12 +34,11 @@
                     value="#{fieldvalue}"
                     required="false"
                     readonly="false">
-                    <f:ajax execute="@this" render="@this" event="blur"/>
-                    </h:inputText>
-                <h:message
-                    for="#{fieldid}"
-                    showDetail="true"
-                    styleClass="help-inline font-danger" />
+                    <f:ajax
+                        execute="@this"
+                        render="@this"
+                        event="blur" />
+                </h:inputText>
             </div>
         </div>
 

@@ -18,7 +18,8 @@
                 <x:dataList
                     var="item"
                     value="#{itemlist}">
-                    <ui:fragment rendered="#{item.visible and (!item.showField or !showDetails)}">
+                    <!--  and (!item.showField or !showDetails) -->
+                    <ui:fragment rendered="#{item.visible}">
                         <goobiio:badge
                             styleclassname="#{!item.filled ? 'badge-empty' : 'badge-filled'}"
                             fieldname="#{item.name}"
@@ -36,33 +37,35 @@
 
                     <ui:fragment rendered="#{item.showField and item.visible}">
 
+                        <x:dataList value="#{item.values}" var="field">
                         <ui:fragment rendered="#{item.fieldType=='input'}">
                             <goobiio:input
                                 fieldid="#{item.name}input"
                                 fieldname="#{item.name}"
-                                fieldvalue="#{item.value}" />
+                                fieldvalue="#{field.value}" />
                         </ui:fragment>
                         <ui:fragment rendered="#{item.fieldType=='textarea'}">
                             <goobiio:textarea
                                 fieldid="#{item.name}textarea"
                                 fieldname="#{item.name}"
-                                fieldvalue="#{item.value}" />
+                                fieldvalue="#{field.value}" />
                         </ui:fragment>
                         <ui:fragment rendered="#{item.fieldType=='dropdown'}">
                             <goobiio:dropdown
                                 fieldid="#{item.name}dropdown"
                                 fieldname="#{item.name}"
-                                fieldvalue="#{item.value}"
-                                selectItems="#{item.selectItemList}" />
+                                fieldvalue="#{field.value}"
+                                selectItems="#{field.selectItemList}" />
                         </ui:fragment>
                         <ui:fragment rendered="#{item.fieldType=='multiselect'}">
                             <goobiio:multiselect
                                 fieldid="#{item.name}multiselect"
                                 fieldname="#{item.name}"
-                                fieldvalue="#{item.multiselectValue}"
-                                selectItems="#{item.possibleValues}"
-                                selectedItems="#{item.multiselectSelectedValues}" />
+                                fieldvalue="#{field.multiselectValue}"
+                                selectItems="#{field.possibleValues}"
+                                selectedItems="#{field.multiselectSelectedValues}" />
                         </ui:fragment>
+                        </x:dataList>
                     </ui:fragment>
                 </x:dataList>
             </div>

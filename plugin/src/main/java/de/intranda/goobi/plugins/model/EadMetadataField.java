@@ -37,22 +37,20 @@ public class EadMetadataField {
     /** defines if the field can exist once or multiple times, values can be true/false, default is false */
     private boolean repeatable;
 
-    /** contains the metadata value */
-    private String value;
-    /** defines if the field is displayed on the UI, values can be true/false, default is true */
+    /** contains the metadata values */
+    private List<FieldValue> values = new ArrayList<>();
 
+    /** defines if the field is displayed on the UI, values can be true/false, default is true */
     private boolean visible;
+
     /** defines if the field is displayed as input field (true) or badge (false, default), affects only visible metadata */
     private boolean showField;
-
-    /** defines the type of the input field. Posible values are input (default), textarea, dropdown, multiselect */
-    private String fieldType;
 
     /** contains the list of possible values for dropdown or multiselect */
     private List<String> selectItemList;
 
-    /** contains the list of selected values in multiselect */
-    private List<String> multiselectSelectedValues = new ArrayList<>();
+    /** defines the type of the input field. Posible values are input (default), textarea, dropdown, multiselect */
+    private String fieldType;
 
     private EadEntry eadEntry;
 
@@ -75,55 +73,26 @@ public class EadMetadataField {
     }
 
     public boolean isFilled() {
-        return StringUtils.isNotBlank(value);
-    }
-
-    public List<String> getPossibleValues() {
-        List<String> answer = new ArrayList<>();
-        for (String possibleValue : selectItemList) {
-            if (!multiselectSelectedValues.contains(possibleValue)) {
-                answer.add(possibleValue);
+        if (values == null || values.isEmpty()) {
+            return false;
+        }
+        for (FieldValue val : values) {
+            if (StringUtils.isNotBlank(val.getValue())) {
+                return true;
             }
         }
-        return answer;
+        return false;
     }
 
-    public String getMultiselectValue() {
-        return "";
+    public void addFieldValue(FieldValue value) {
+        values.add(value);
     }
 
-    public void setMultiselectValue(String value) {
-        if (StringUtils.isNotBlank(value)) {
-            multiselectSelectedValues.add(value);
+    public void addValue() {
+        if (values == null) {
+            values = new ArrayList<>();
         }
-    }
-
-    public void removeSelectedValue(String value) {
-        multiselectSelectedValues.remove(value);
-    }
-
-    public String getValueForXmlExport() {
-        if (!multiselectSelectedValues.isEmpty()) {
-            StringBuilder sb = new StringBuilder();
-            for (String selectedValue : multiselectSelectedValues) {
-                if (sb.length() > 0) {
-                    sb.append("; ");
-                }
-                sb.append(selectedValue);
-            }
-            return sb.toString();
-        } else {
-            return value;
-        }
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-
-        if (xpath.contains("unittitle")) {
-            eadEntry.setLabel(value);
-        }
-
+        values.add(new FieldValue(this));
     }
 
 }

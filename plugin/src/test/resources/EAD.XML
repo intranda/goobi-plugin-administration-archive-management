@@ -46,29 +46,33 @@
         <physdesc>physdesc</physdesc>
         <physdescstructured>physdescstructured</physdescstructured>
         <origination>origination</origination>
-        <langmaterial>langmaterial</langmaterial>
+        <langmaterial label="Language">
+          <language>ger</language>
+        </langmaterial>
+        <langmaterial label="font">handwritten</langmaterial>
         <didnote>didnote</didnote>
       </did>
       <dsc>
-      <bioghist>bioghist</bioghist>
-                <custodhist>custodhist</custodhist>
-                <acqinfo>acqinfo</acqinfo>
-                <scopecontent>scopecontent</scopecontent>
-                <appraisal>appraisal</appraisal>
-                <accruals>accruals</accruals>
-                <arrangement>arrangement</arrangement>
-                <accessrestrict>accessrestrict</accessrestrict>
-                <userestrict>userestrict</userestrict>
-                <phystech>phystech</phystech>
-                <otherfindaid>otherfindaid</otherfindaid>
-                <originalsloc>originalsloc</originalsloc>
-                <altformavail>altformavail</altformavail>
-                <relatedmaterial>relatedmaterial</relatedmaterial>
-                <separatedmaterial>separatedmaterial</separatedmaterial>
-                <bibliography>bibliography</bibliography>
-                <odd>odd</odd>
-                <processinfo>processinfo</processinfo>
-      
+        <bioghist>bioghist</bioghist>
+        <custodhist>custodhist</custodhist>
+        <acqinfo>acqinfo</acqinfo>
+        <scopecontent>scopecontent</scopecontent>
+        <appraisal>appraisal</appraisal>
+        <accruals>accruals</accruals>
+        <arrangement>arrangement</arrangement>
+        <accessrestrict>accessrestrict</accessrestrict>
+        <userestrict>userestrict</userestrict>
+        <phystech>phystech</phystech>
+        <otherfindaid>otherfindaid</otherfindaid>
+        <originalsloc>originalsloc</originalsloc>
+        <altformavail>altformavail</altformavail>
+        <relatedmaterial>
+          <separatedmaterial>separatedmaterial</separatedmaterial>
+        </relatedmaterial>
+        <bibliography>bibliography</bibliography>
+        <odd>odd</odd>
+        <processinfo>processinfo</processinfo>
+
         <c level="file" id="1234uniqueId">
           <did>
             <unitid>first level id</unitid>

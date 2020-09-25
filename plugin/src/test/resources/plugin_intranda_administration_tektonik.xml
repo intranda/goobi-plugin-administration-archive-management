@@ -6,8 +6,7 @@
         <!-- define the name(s) of all tectonics for t -->
         <tectonics>*</tectonics>
         <!-- define the process template for process creation. If empty or missing, processes can't be created  -->
-        <processTemplateId>1</processTemplateId>
-
+        <processTemplateId>309544</processTemplateId>
         <!-- define metadata fields. All fields are displayed on the UI based on the level and the order within this file.
                 - @name: contains the internal name of the field. The value can be used to translate the field in the messages files. The field must start with a letter and can not contain any white spaces.
                 - @level: metadata level, allowed values are 1-7:
@@ -38,40 +37,71 @@
 
         <!--  Identity Statement Area -->
         <metadata xpath="./ead:control/ead:maintenanceagency/ead:agencycode" xpathType="element" name="agencycode" level="1" repeatable="false" fieldType="input"/>
-        <metadata xpath="./ead:eadheader/ead:eadid" xpathType="element" name="eadid" level="1" repeatable="false" showField="true" fieldType="input"/>
+        <metadata xpath="./ead:eadheader/ead:eadid" xpathType="element" name="eadid" level="1" repeatable="false" showField="false" fieldType="input"/>
         <metadata xpath="./ead:control/ead:recordid" xpathType="element" name="recordid" level="1" repeatable="false" fieldType="input"/>
-        <metadata xpath="(./ead:archdesc/ead:did/ead:unitid[not(@type)] | ./ead:did/ead:unitid[not(@type)])[1]" xpathType="element" name="unitid" level="1" repeatable="false" showField="true" fieldType="input"/>
+        <metadata xpath="(./ead:archdesc/ead:did/ead:unitid[not(@type)] | ./ead:did/ead:unitid[not(@type)])[1]" xpathType="element" name="unitid" level="1" repeatable="false" showField="false" fieldType="input"/>
 
         <metadata xpath="./ead:did/ead:unitid[@type='Vorl. Nr.']" xpathType="element" name="Number" level="1" repeatable="true"/>
         <metadata xpath="./ead:did/ead:unitid[@type='Altsignatur']" xpathType="element" name="Shelfmark" level="1" repeatable="true"/>
-        <metadata xpath="(./ead:archdesc/ead:did/ead:unittitle | ./ead:did/ead:unittitle)[1]" xpathType="element" name="unittitle" level="1" repeatable="false" fieldType="textarea"/>
-        <metadata xpath="(./ead:archdesc/ead:did/ead:unitdate | ./ead:did/ead:unitdate)[1]" xpathType="element" name="unitdate" level="1" repeatable="false"/>
-        <metadata xpath="(./ead:archdesc/ead:did/ead:unitdatestructured | ./ead:did/ead:unitdatestructured)[1]" xpathType="element" name="unitdatestructured" level="1" repeatable="false"/>
-        <metadata xpath="(./ead:archdesc/@level | ./@level)[1]" xpathType="attribute" name="descriptionLevel" level="1" repeatable="false"/>
+        <metadata xpath="(./ead:archdesc/ead:did/ead:unittitle | ./ead:did/ead:unittitle)[1]" xpathType="element" name="unittitle" level="1" repeatable="false" fieldType="textarea" rulesetName="TitleDocMain" importMetadataInChild="false"/>
+        <metadata xpath="(./ead:archdesc/ead:did/ead:unitdate | ./ead:did/ead:unitdate)[1]" xpathType="element" name="unitdate" level="1" repeatable="false" rulesetName="PublicationYear" importMetadataInChild="false"/>
+        <metadata xpath="(./ead:archdesc/ead:did/ead:unitdatestructured | ./ead:did/ead:unitdatestructured)[1]" xpathType="element" name="unitdatestructured" level="1" repeatable="false" />
+        <metadata xpath="(./ead:archdesc/@level | ./@level)[1]" xpathType="attribute" name="descriptionLevel" level="1" repeatable="false" fieldType="dropdown">
+            <value>collection</value>
+            <value>fonds</value>
+            <value>class</value>
+            <value>recordgrp</value>
+            <value>series</value>
+            <value>subfonds</value>
+            <value>subgrp</value>
+            <value>subseries</value>
+            <value>file</value>
+            <value>item</value>
+            <value>otherlevel</value>
+        </metadata>
+
+
         <metadata xpath="(./ead:archdesc/ead:did/ead:physdesc | ./ead:did/ead:physdesc)[1]" xpathType="element" name="physdesc" level="1" repeatable="false"/>
         <metadata xpath="(./ead:archdesc/ead:did/ead:physdescstructured | ./ead:did/ead:physdescstructured)[1]" xpathType="element" name="physdescstructured" level="1" repeatable="false"/>
 
         <!-- Context Area -->
         <metadata xpath="(./ead:archdesc/ead:did/ead:origination | ./ead:did/ead:origination)[1]" xpathType="element" name="origination" level="2" repeatable="false"/>
-        <metadata xpath="(./ead:archdesc/ead:dsc/ead:bioghist | ./ead:dsc/ead:bioghist)[1]" xpathType="element" name="bioghist" level="2" repeatable="false"/>
-        <metadata xpath="(./ead:archdesc/ead:dsc/ead:custodhist | ./ead:dsc/ead:custodhist)[1]" xpathType="element" name="custodhist" level="2" repeatable="false"/>
-        <metadata xpath="(./ead:archdesc/ead:dsc/ead:acqinfo | ./ead:dsc/ead:acqinfo)[1]" xpathType="element" name="acqinfo" level="2" repeatable="false"/>
+        <metadata xpath="(./ead:archdesc/ead:odd/ead:head | ./ead:odd/ead:head)[1]" xpathType="element" name="role" level="2" repeatable="false" fieldType="dropdown">
+
+            <value>Fotograph</value>
+            <value>Author</value>
+            <value>...</value>
+        </metadata>
+        <metadata xpath="(./ead:archdesc/ead:odd/ead:p | ./ead:odd/ead:p)[1]" xpathType="element" name="person" level="2" repeatable="false"/>
+
+        <metadata xpath="(./ead:archdesc/ead:dsc/ead:bioghist | ./ead:dsc/ead:bioghist)[1]" xpathType="element" name="bioghist" level="2" repeatable="false" fieldType="textarea"/>
+        <metadata xpath="(./ead:archdesc/ead:dsc/ead:custodhist | ./ead:dsc/ead:custodhist)[1]" xpathType="element" name="custodhist" level="2" repeatable="false" fieldType="textarea"/>
+        <metadata xpath="(./ead:archdesc/ead:dsc/ead:acqinfo | ./ead:dsc/ead:acqinfo)[1]" xpathType="element" name="acqinfo" level="2" repeatable="false" fieldType="dropdown">
+            <value>value 1</value>
+            <value>value 2</value>
+            <value>...</value>
+        </metadata>
 
         <!-- Content and Structure Area -->
-        <metadata xpath="(./ead:archdesc/ead:dsc/ead:scopecontent | ./ead:dsc/ead:scopecontent)[1]" xpathType="element" name="scopecontent" level="3" repeatable="false"/>
-        <metadata xpath="(./ead:archdesc/ead:dsc/ead:appraisal | ./ead:dsc/ead:appraisal)[1]" xpathType="element" name="appraisal" level="3" repeatable="false"/>
-        <metadata xpath="(./ead:archdesc/ead:dsc/ead:accruals | ./ead:dsc/ead:accruals)[1]" xpathType="element" name="accruals" level="3" repeatable="false"/>
-        <metadata xpath="(./ead:archdesc/ead:dsc/ead:arrangement | ./ead:dsc/ead:arrangement)[1]" xpathType="element" name="arrangement" level="3" repeatable="false"/>
+        <metadata xpath="(./ead:archdesc/ead:dsc/ead:scopecontent | ./ead:dsc/ead:scopecontent)[1]" xpathType="element" name="scopecontent" level="3" repeatable="false" fieldType="textarea"/>
+        <metadata xpath="(./ead:archdesc/ead:dsc/ead:appraisal | ./ead:dsc/ead:appraisal)[1]" xpathType="element" name="appraisal" level="3" repeatable="false" fieldType="textarea"/>
+        <metadata xpath="(./ead:archdesc/ead:dsc/ead:accruals | ./ead:dsc/ead:accruals)[1]" xpathType="element" name="accruals" level="3" repeatable="false" fieldType="textarea"/>
+        <metadata xpath="(./ead:archdesc/ead:dsc/ead:arrangement | ./ead:dsc/ead:arrangement)[1]" xpathType="element" name="arrangement" level="3" repeatable="false" fieldType="textarea"/>
 
         <!-- Condition of Access and Use Area -->
-        <metadata xpath="(./ead:archdesc/ead:dsc/ead:accessrestrict | ./ead:dsc/ead:accessrestrict)[1]" xpathType="element" name="accessrestrict" level="4" repeatable="false" fieldType="dropdown">
+        <metadata xpath="(./ead:archdesc/ead:dsc/ead:accessrestrict | ./ead:dsc/ead:accessrestrict)[1]" xpathType="element" name="accessrestrict" level="4" repeatable="false" fieldType="dropdown" rulesetName="AccessLicense" importMetadataInChild="true">
             <value>open access</value>
             <value>restricted</value>
             <value>required registration</value>
         </metadata>
 
-        <metadata xpath="(./ead:archdesc/ead:dsc/ead:userestrict | ./ead:dsc/ead:userestrict)[1]" xpathType="element" name="userestrict" level="4" repeatable="false"/>
-        <metadata xpath="(./ead:archdesc/ead:did/ead:langmaterial | ./ead:did/ead:langmaterial)[1]" xpathType="element" name="langmaterial" level="4" repeatable="false" fieldType="multiselect">
+        <metadata xpath="(./ead:archdesc/ead:dsc/ead:userestrict | ./ead:dsc/ead:userestrict)[1]" xpathType="element" name="userestrict" level="4" repeatable="false" fieldType="dropdown" rulesetName="accessCondition" importMetadataInChild="true">
+            <value>open access</value>
+            <value>restricted</value>
+            <value>required registration</value>
+        </metadata>
+
+        <metadata xpath="(./ead:archdesc/ead:did/ead:langmaterial[@label='Language']/ead:language | ./ead:did/ead:langmaterial[@label='Language']/ead:language)[1]" xpathType="element" name="langmaterial" level="4" repeatable="false" fieldType="multiselect" rulesetName="DocLanguage" importMetadataInChild="false">
             <value>eng</value>
             <value>ger</value>
             <value>dut</value>
@@ -83,28 +113,44 @@
             <value>rus</value>
             <value>swe</value>
         </metadata>
-        <metadata xpath="(./ead:archdesc/ead:dsc/ead:phystech | ./ead:dsc/ead:phystech)[1]" xpathType="element" name="phystech" level="4" repeatable="false"/>
-        <metadata xpath="(./ead:archdesc/ead:dsc/ead:otherfindaid | ./ead:dsc/ead:otherfindaid)[1]" xpathType="element" name="otherfindaid" level="4" repeatable="false"/>
+
+        <metadata xpath="(./ead:archdesc/ead:did/ead:langmaterial[@label='font'] | ./ead:did/ead:langmaterial[@label='font'])[1]" xpathType="element" name="font" level="4" repeatable="false" fieldType="multiselect" rulesetName="FontType" importMetadataInChild="false">
+            <value>antiqua</value>
+            <value>fracture</value>
+            <value>handwritten</value>
+            <value>mixed</value>
+            <value>no text</value>
+        </metadata>
+
+        <metadata xpath="(./ead:archdesc/ead:dsc/ead:phystech | ./ead:dsc/ead:phystech)[1]" xpathType="element" name="phystech" level="4" repeatable="false" fieldType="textarea"/>
+        <metadata xpath="(./ead:archdesc/ead:dsc/ead:otherfindaid | ./ead:dsc/ead:otherfindaid)[1]" xpathType="element" name="otherfindaid" level="4" repeatable="false" fieldType="textarea"/>
 
         <!-- Allied Materials Area -->
-        <metadata xpath="(./ead:archdesc/ead:dsc/ead:originalsloc | ./ead:dsc/ead:originalsloc)[1]" xpathType="element" name="originalsloc" level="5" repeatable="false"/>
-        <metadata xpath="(./ead:archdesc/ead:dsc/ead:altformavail | ./ead:dsc/ead:altformavail)[1]" xpathType="element" name="altformavail" level="5" repeatable="false"/>
-        <metadata xpath="(./ead:archdesc/ead:dsc/ead:relatedmaterial | ./ead:dsc/ead:relatedmaterial)[1]" xpathType="element" name="relatedmaterial" level="5" repeatable="false"/>
-        <metadata xpath="(./ead:archdesc/ead:dsc/ead:separatedmaterial | ./ead:dsc/ead:separatedmaterial)[1]" xpathType="element" name="separatedmaterial" level="5" repeatable="false"/>
+        <metadata xpath="(./ead:archdesc/ead:dsc/ead:originalsloc | ./ead:dsc/ead:originalsloc)[1]" xpathType="element" name="originalsloc" level="5" repeatable="false" fieldType="dropdown">
+            <value>value 1</value>
+            <value>value 2</value>
+        </metadata>
+        <metadata xpath="(./ead:archdesc/ead:dsc/ead:altformavail | ./ead:dsc/ead:altformavail)[1]" xpathType="element" name="altformavail" level="5" repeatable="false" fieldType="dropdown">
+            <value>value 1</value>
+            <value>value 2</value>
+        </metadata>
+        <metadata xpath="(./ead:archdesc/ead:dsc/ead:relatedmaterial/ead:separatedmaterial | ./ead:dsc/ead:relatedmaterial/ead:separatedmaterial)[1]" xpathType="element" name="separatedmaterial" level="5" repeatable="false"/>
         <metadata xpath="(./ead:archdesc/ead:dsc/ead:bibliography | ./ead:dsc/ead:bibliography)[1]" xpathType="element" name="bibliography" level="5" repeatable="false"/>
 
 
         <!-- Note Area -->
-        <metadata xpath="(./ead:archdesc/ead:did/ead:didnote | ./ead:did/ead:didnote)[1]" xpathType="element" name="didnote" level="6" repeatable="false"/>
-        <metadata xpath="(./ead:archdesc/ead:dsc/ead:odd | ./ead:dsc/ead:odd)[1]" xpathType="element" name="odd" level="6" repeatable="false"/>
+        <metadata xpath="(./ead:archdesc/ead:did/ead:didnote | ./ead:did/ead:didnote)[1]" xpathType="element" name="didnote" level="6" repeatable="false" fieldType="textarea"/>
+        <metadata xpath="(./ead:archdesc/ead:dsc/ead:odd | ./ead:dsc/ead:odd)[1]" xpathType="element" name="oddnote" level="6" repeatable="false" fieldType="textarea"/>
 
         <!-- Description Control Area -->
-        <metadata xpath="(./ead:archdesc/ead:dsc/ead:processinfo | ./ead:dsc/ead:processinfo)[1]" xpathType="element" name="processinfo" level="7" repeatable="false"/>
-        <metadata xpath="./ead:control/ead:conventiondeclaration" xpathType="element" name="conventiondeclaration" level="7" repeatable="false"/>
-        <metadata xpath="./ead:control/ead:maintenancehistory/ead:maintenanceevent/ead:eventtype" xpathType="element" name="maintenanceevent" level="7" repeatable="false"/>
-        <metadata xpath="./ead:control/ead:maintenancehistory/ead:maintenanceevent/ead:eventdatetime" xpathType="element" name="eventdatetime" level="7" repeatable="false"/>
-
-
-
+        <metadata xpath="(./ead:archdesc/ead:dsc/ead:processinfo | ./ead:dsc/ead:processinfo)[1]" xpathType="element" name="processinfo" level="7" repeatable="false" visible="false"/>
+        <metadata xpath="./ead:control/ead:conventiondeclaration" xpathType="element" name="conventiondeclaration" level="7" repeatable="false" fieldType="multiselect">
+            <value>val 1</value>
+            <value>val 2</value>
+            <value>val 3</value>
+            <value>val 4</value>
+        </metadata>
+        <metadata xpath="./ead:control/ead:maintenancehistory/ead:maintenanceevent/ead:eventtype" xpathType="element" name="maintenanceevent" level="7" repeatable="false" visible="false"/>
+        <metadata xpath="./ead:control/ead:maintenancehistory/ead:maintenanceevent/ead:eventdatetime" xpathType="element" name="eventdatetime" level="7" repeatable="false" visible="false"/>
     </config>
 </config_plugin>

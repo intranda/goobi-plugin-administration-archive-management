@@ -9,17 +9,29 @@
     xmlns:x="http://myfaces.apache.org/tomahawk">
 <h:body>
     <ui:composition>
-        <h:commandLink>
-            <span class="badge #{styleclassname}">
+        <span class="badge #{styleclassname}">
+            <h:commandLink
+                action="#{item.addValue}"
+                rendered="#{item.repeatable}">
+                <i class="fa fa-plus-circle margin-right-5"></i>
+                <x:updateActionListener
+                    property="#{item.showField}"
+                    value="true" />
+                <f:ajax
+                    execute="@this"
+                    render=":#{ajaxid} :hierarchy" />
+            </h:commandLink>
+            <h:commandLink>
+
                 <h:outputText value="#{fieldname}" />
-            </span>
-            <x:updateActionListener
-                property="#{item.showField}"
-                value="true" />
-            <f:ajax
-                execute="@this"
-                render=":#{ajaxid} :hierarchy" />
-        </h:commandLink>
+                <x:updateActionListener
+                    property="#{item.showField}"
+                    value="#{!item.showField}" />
+                <f:ajax
+                    execute="@this"
+                    render=":#{ajaxid} :hierarchy" />
+            </h:commandLink>
+        </span>
 
     </ui:composition>
 </h:body>
