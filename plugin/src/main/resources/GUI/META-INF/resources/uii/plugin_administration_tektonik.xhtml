@@ -337,7 +337,10 @@ div.no-element-selected {
                                     <h:form>
 
                                         <div class="container">
-                                            <div class="center">
+                                            <h:panelGroup
+                                                layout="block"
+                                                styleClass="center"
+                                                rendered="#{AdministrationForm.administrationPlugin.displayMode == ''}">
                                                 <p>
                                                     <strong>#{msgs.plugin_administration_tectonics_SelectionHeading}</strong>
                                                 </p>
@@ -353,8 +356,13 @@ div.no-element-selected {
                                                         itemLabel="#{msgs.bitteAuswaehlen}" />
                                                     <f:selectItems value="#{AdministrationForm.administrationPlugin.possibleDatabases}" />
                                                 </h:selectOneMenu>
-
-
+                                                <h:commandLink styleClass="btn  font-size-s  margin-top-10">
+                                                    <h:outputText value="#{msgs.plugin_administration_tectonics_createNewTectonic}" />
+                                                    <f:setPropertyActionListener
+                                                        value="createTectonics"
+                                                        target="#{AdministrationForm.administrationPlugin.displayMode}" />
+                                                    <f:ajax render="@form" />
+                                                </h:commandLink>
 
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right margin-top-10"
@@ -362,7 +370,47 @@ div.no-element-selected {
                                                     action="#{AdministrationForm.administrationPlugin.loadSelectedDatabase}">
                                                     <h:outputText value="#{msgs.plugin_administration_tectonics_loadDatabase}" />
                                                 </h:commandLink>
-                                            </div>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup
+                                                layout="block"
+                                                styleClass="center"
+                                                rendered="#{AdministrationForm.administrationPlugin.displayMode == 'createTectonics'}">
+
+                                                <p>
+                                                    <strong>#{msgs.plugin_administration_tectonics_creationHeading}</strong>
+                                                </p>
+
+
+                                                <p>#{msgs.plugin_administration_tectonics_creation_selectDatabase}</p>
+                                                <h:selectOneMenu
+                                                    styleClass="form-control"
+                                                    value="#{AdministrationForm.administrationPlugin.databaseName}">
+                                                    <f:selectItem
+                                                        itemValue="null"
+                                                        itemLabel="#{msgs.bitteAuswaehlen}" />
+                                                    <f:selectItems value="#{AdministrationForm.administrationPlugin.distinctDatabaseNames}" />
+                                                </h:selectOneMenu>
+
+                                                <p>#{msgs.plugin_administration_tectonics_creation_filename}</p>
+                                                <h:inputText
+                                                    styleClass="form-control"
+                                                    value="#{AdministrationForm.administrationPlugin.fileName}" />
+
+                                                <h:commandLink styleClass="btn  font-size-s  margin-top-10">
+                                                    <f:setPropertyActionListener
+                                                        value=""
+                                                        target="#{AdministrationForm.administrationPlugin.displayMode}" />
+                                                    <f:ajax render="@form" />
+                                                    <h:outputText value="#{msgs.abbrechen}" />
+                                                </h:commandLink>
+
+                                                <h:commandLink
+                                                    styleClass="btn btn-primary font-size-s pull-right margin-top-10"
+                                                    action="#{AdministrationForm.administrationPlugin.createNewDatabase}">
+                                                    <h:outputText value="#{msgs.plugin_administration_tectonics_createNewTectonic}" />
+                                                </h:commandLink>
+                                            </h:panelGroup>
                                         </div>
 
 

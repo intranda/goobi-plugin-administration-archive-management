@@ -79,8 +79,21 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     @Getter
     @Setter
     private String datastoreUrl = "http://localhost:8984/";
+
     @Setter
     private String exportFolder = "/tmp/";
+
+    @Getter
+    @Setter
+    private String selectedDatabase;
+
+    @Getter
+    @Setter
+    private String databaseName;
+
+    @Getter
+    @Setter
+    private String fileName;
 
     @Getter
     @Setter
@@ -158,10 +171,6 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         }
     }
 
-    @Getter
-    @Setter
-    private String selectedDatabase;
-
     /**
      * Get the database names and file names from the basex databases
      * 
@@ -210,6 +219,34 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                 // parse ead file
                 parseEadFile(document);
             }
+        }
+    }
+
+    public List<String> getDistinctDatabaseNames() {
+        List<String> answer = new ArrayList<>();
+        List<String> completeList = getPossibleDatabases();
+        for (String s : completeList) {
+            String[] parts = s.split(" - ");
+            String dbName = parts[0];
+            if (!answer.contains(dbName)) {
+                answer.add(dbName);
+            }
+        }
+
+        return answer;
+    }
+
+    public void createNewDatabase() {
+        if (StringUtils.isNotBlank(databaseName) && StringUtils.isNotBlank(fileName)) {
+            selectedDatabase = databaseName + " - " + fileName;
+            readConfiguration();
+
+            Document document = new Document();
+            Element eadElement = new Element("ead", ns);
+            document.setRootElement(eadElement);
+            rootElement = parseElement(1, 0, eadElement);
+            rootElement.setDisplayChildren(true);
+            displayMode = "";
         }
     }
 
@@ -498,6 +535,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         if (selectedEntry != null) {
             EadEntry entry =
                     new EadEntry(selectedEntry.isHasChildren() ? selectedEntry.getSubEntryList().size() + 1 : 0, selectedEntry.getHierarchy() + 1);
+            entry.setId(String.valueOf(UUID.randomUUID()));
             // initial metadata values
             for (EadMetadataField emf : configuredFields) {
                 addFieldToEntry(entry, emf, null);
@@ -600,9 +638,12 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         Element dsc = null;
         if (isMainElement) {
             Element archdesc = xmlElement.getChild("archdesc", ns);
-
+            if (archdesc == null) {
+                archdesc = new Element("archdesc", ns);
+                xmlElement.addContent(archdesc);
+            }
             dsc = archdesc.getChild("dsc", ns);
-            if (dsc== null) {
+            if (dsc == null) {
                 dsc = new Element("dsc", ns);
                 archdesc.addContent(dsc);
             }
@@ -968,8 +1009,12 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         if (selectedEntry == null) {
             return;
         }
+        if (StringUtils.isBlank(selectedEntry.getNodeType())) {
+            // TODO error
+            return;
+        }
 
-        // abort if process templace is not defined
+        // abort if process template is not defined
         if (processTemplateId == null || processTemplateId == 0) {
             return;
         }
@@ -1176,6 +1221,9 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         addMetadata(eadRoot, rootElement);
         //  write document to servlet output stream
         String fileName = selectedDatabase.replaceAll("[\\W]", "_");
+        if (!fileName.endsWith(".xml")) {
+            fileName = fileName + ".xml";
+        }
         FacesContext facesContext = FacesContextHelper.getCurrentFacesContext();
         if (!facesContext.getResponseComplete()) {
             HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
