@@ -22,7 +22,7 @@
                     <ui:fragment rendered="#{item.visible}">
                         <goobiio:badge
                             styleclassname="#{!item.filled ? 'badge-empty' : 'badge-filled'}"
-                            fieldname="#{item.name}"
+                            fieldname="#{msgs[item.name]}"
                             showfield="#{item.showField}"
                             />
                     </ui:fragment>
@@ -41,26 +41,26 @@
                         <ui:fragment rendered="#{item.fieldType=='input'}">
                             <goobiio:input
                                 fieldid="#{item.name}input"
-                                fieldname="#{item.name}"
+                                fieldname="#{msgs[item.name]}"
                                 fieldvalue="#{field.value}" />
                         </ui:fragment>
                         <ui:fragment rendered="#{item.fieldType=='textarea'}">
                             <goobiio:textarea
                                 fieldid="#{item.name}textarea"
-                                fieldname="#{item.name}"
+                                fieldname="#{msgs[item.name]}"
                                 fieldvalue="#{field.value}" />
                         </ui:fragment>
                         <ui:fragment rendered="#{item.fieldType=='dropdown'}">
                             <goobiio:dropdown
                                 fieldid="#{item.name}dropdown"
-                                fieldname="#{item.name}"
+                                fieldname="#{msgs[item.name]}"
                                 fieldvalue="#{field.value}"
                                 selectItems="#{field.selectItemList}" />
                         </ui:fragment>
                         <ui:fragment rendered="#{item.fieldType=='multiselect'}">
                             <goobiio:multiselect
                                 fieldid="#{item.name}multiselect"
-                                fieldname="#{item.name}"
+                                fieldname="#{msgs[item.name]}"
                                 fieldvalue="#{field.multiselectValue}"
                                 selectItems="#{field.possibleValues}"
                                 selectedItems="#{field.multiselectSelectedValues}" />
