@@ -21,8 +21,12 @@ import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang.StringUtils;
 import org.goobi.beans.Process;
+import org.goobi.production.cli.helper.StringPair;
 import org.goobi.production.enums.PluginType;
 import org.goobi.production.plugin.interfaces.IAdministrationPlugin;
+import org.goobi.vocabulary.Field;
+import org.goobi.vocabulary.VocabRecord;
+import org.goobi.vocabulary.Vocabulary;
 import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -48,6 +52,7 @@ import de.sub.goobi.helper.HttpClientHelper;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
+import de.sub.goobi.persistence.managers.VocabularyManager;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -507,6 +512,49 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             if (field.getFieldType().equals("dropdown") || field.getFieldType().equals("multiselect")) {
                 List<String> valueList = Arrays.asList(hc.getStringArray("/value"));
                 field.setSelectItemList(valueList);
+            } else if (field.getFieldType().equals("vocabulary")) {
+                String vocabularyName = hc.getString("/vocabulary");
+                List<String> searchParameter = Arrays.asList(hc.getStringArray("/searchParameter"));
+                List<String> fieldValueList = new ArrayList<>();
+                if (searchParameter == null) {
+                    Vocabulary currentVocabulary = VocabularyManager.getVocabularyByTitle(vocabularyName);
+                    if (currentVocabulary != null) {
+                        VocabularyManager.loadRecordsForVocabulary(currentVocabulary);
+                        if (currentVocabulary != null && currentVocabulary.getId() != null) {
+                            for (VocabRecord vr : currentVocabulary.getRecords()) {
+                                for (Field f : vr.getFields()) {
+                                    if (f.getDefinition().isMainEntry()) {
+                                        fieldValueList.add(f.getValue());
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    List<StringPair> vocabularySearchFields = new ArrayList<>();
+                    for (String fieldname : searchParameter) {
+                        String[] parts = fieldname.trim().split("=");
+                        if (parts.length > 1) {
+                            String fieldName = parts[0];
+                            String value = parts[1];
+                            StringPair sp = new StringPair(fieldName, value);
+                            vocabularySearchFields.add(sp);
+                        }
+                    }
+                    List<VocabRecord> records = VocabularyManager.findRecords(vocabularyName, vocabularySearchFields);
+                    if (records != null && records.size() > 0) {
+                        for (VocabRecord vr : records) {
+                            for (Field f : vr.getFields()) {
+                                if (f.getDefinition().isMainEntry()) {
+                                    fieldValueList.add(f.getValue());
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                field.setSelectItemList(fieldValueList);
             }
 
         }

@@ -50,7 +50,7 @@
                                 fieldname="#{msgs[item.name]}"
                                 fieldvalue="#{field.value}" />
                         </ui:fragment>
-                        <ui:fragment rendered="#{item.fieldType=='dropdown'}">
+                        <ui:fragment rendered="#{item.fieldType=='dropdown' or item.fieldType=='vocabulary'}">
                             <goobiio:dropdown
                                 fieldid="#{item.name}dropdown"
                                 fieldname="#{msgs[item.name]}"

@@ -22,10 +22,12 @@
                 - @repeatable: defines if the field can exist once or multiple times, values can be true/false, default is false
                 - @visible: defines if the field is displayed on the UI, values can be true/false, default is true
                 - @showField: defines if the field is displayed as input field (true) or badge (false, default), affects only visible metadata
-                - @fieldType: defines the type of the input field. Posible values are input (default), textarea, dropdown, multiselect
+                - @fieldType: defines the type of the input field. Posible values are input (default), textarea, dropdown, multiselect, vocabulary
                 - @rulesetName: internal name of the metadata in ruleset. If missing or empty, field is not imported into process metadata
                 - @importMetadataInChild: defines if the field is imported or skipped in processes for child elements 
                 - value: list of possible values for dropdown and multiselect lists
+                - vocabulary: name of the vocabulary
+                - searchParameter: distinct the vocabulary list by the given condition. Syntax is fieldname=value, field is repeatable
          -->
 
         <!-- internal fields, not visible on the UI -->
@@ -66,11 +68,9 @@
 
         <!-- Context Area -->
         <metadata xpath="(./ead:archdesc/ead:did/ead:origination | ./ead:did/ead:origination)[1]" xpathType="element" name="origination" level="2" repeatable="false"/>
-        <metadata xpath="(./ead:archdesc/ead:odd/ead:head | ./ead:odd/ead:head)[1]" xpathType="element" name="role" level="2" repeatable="false" fieldType="dropdown">
-
-            <value>Fotograph</value>
-            <value>Author</value>
-            <value>...</value>
+        <metadata xpath="(./ead:archdesc/ead:odd/ead:head | ./ead:odd/ead:head)[1]" xpathType="element" name="role" level="2" repeatable="false" fieldType="vocabulary">
+            <vocabulary>Rollen</vocabulary>
+            <!--<searchParameter>type=visible</searchParameter>-->
         </metadata>
         <metadata xpath="(./ead:archdesc/ead:odd/ead:p | ./ead:odd/ead:p)[1]" xpathType="element" name="person" level="2" repeatable="false"/>
 
