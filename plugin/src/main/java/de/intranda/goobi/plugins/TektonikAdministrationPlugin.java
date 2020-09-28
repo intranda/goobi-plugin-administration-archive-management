@@ -71,7 +71,6 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
     // TODO validation: unique value within file
     // TODO validation: required field?
-    // TODO get dropdown values from vocabulary
 
     // TODO: generated processinfo = login
     // TODO: generate <maintenanceevent>, <eventdatetime>: Created / Modified

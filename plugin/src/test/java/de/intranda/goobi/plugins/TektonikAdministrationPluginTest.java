@@ -11,9 +11,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.easymock.EasyMock;
+import org.goobi.vocabulary.VocabRecord;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -32,9 +34,10 @@ import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.EadMetadataField;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.HttpClientHelper;
+import de.sub.goobi.persistence.managers.VocabularyManager;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ ConfigurationHelper.class, HttpClientHelper.class })
+@PrepareForTest({ ConfigurationHelper.class, HttpClientHelper.class, VocabularyManager.class })
 @PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*" })
 
 public class TektonikAdministrationPluginTest {
@@ -63,6 +66,15 @@ public class TektonikAdministrationPluginTest {
         ConfigurationHelper configurationHelper = EasyMock.createMock(ConfigurationHelper.class);
         EasyMock.expect(ConfigurationHelper.getInstance()).andReturn(configurationHelper).anyTimes();
         EasyMock.expect(configurationHelper.getConfigurationFolder()).andReturn(resourcesFolder).anyTimes();
+
+        PowerMock.mockStatic(VocabularyManager.class);
+
+        List<VocabRecord> recordList = new ArrayList<>();
+        VocabRecord rec = new VocabRecord();
+        recordList.add(rec);
+        EasyMock.expect(VocabularyManager.findRecords(EasyMock.anyString(), EasyMock.anyObject())).andReturn(recordList);
+
+
 
         EasyMock.replay(configurationHelper);
         PowerMock.replay(ConfigurationHelper.class);
