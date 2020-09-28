@@ -2,9 +2,11 @@ package de.intranda.goobi.plugins;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -21,6 +23,7 @@ import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang.StringUtils;
 import org.goobi.beans.Process;
+import org.goobi.beans.User;
 import org.goobi.production.cli.helper.StringPair;
 import org.goobi.production.enums.PluginType;
 import org.goobi.production.plugin.interfaces.IAdministrationPlugin;
@@ -48,6 +51,7 @@ import de.schlichtherle.io.FileOutputStream;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.BeanHelper;
 import de.sub.goobi.helper.FacesContextHelper;
+import de.sub.goobi.helper.Helper;
 import de.sub.goobi.helper.HttpClientHelper;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
@@ -71,9 +75,6 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
     // TODO validation: unique value within file
     // TODO validation: required field?
-
-    // TODO: generated processinfo = login
-    // TODO: generate <maintenanceevent>, <eventdatetime>: Created / Modified
 
     // TODO: create ruleset, map metadata
 
@@ -166,6 +167,11 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     private Integer processTemplateId;
     private Process processTemplate;
     private BeanHelper bhelp = new BeanHelper();
+
+    private List<StringPair> eventList;
+    private List<String> editorList;
+    private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
 
     /**
      * Constructor
@@ -268,10 +274,37 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
      * get ead root element from document
      */
     private void parseEadFile(Document document) {
+        eventList = new ArrayList<>();
+        editorList = new ArrayList<>();
+
         Element collection = document.getRootElement();
         Element eadElement = collection.getChild("ead", ns);
         rootElement = parseElement(1, 0, eadElement);
         rootElement.setDisplayChildren(true);
+
+        Element archdesc = eadElement.getChild("archdesc", ns);
+        if (archdesc != null) {
+            Element processinfoElement = archdesc.getChild("processinfo", ns);
+            if (processinfoElement != null) {
+                Element list = processinfoElement.getChild("list", ns);
+                List<Element> entries = list.getChildren("item", ns);
+                for (Element item : entries) {
+                    editorList.add(item.getText());
+                }
+            }
+        }
+        Element control = eadElement.getChild("control", ns);
+        if (control != null) {
+            Element maintenancehistory = control.getChild("maintenancehistory", ns);
+            if (maintenancehistory != null) {
+                List<Element> events = maintenancehistory.getChildren("maintenancehistory", ns);
+                for (Element event : events) {
+                    String type = event.getChildText("eventtype", ns);
+                    String date = event.getChildText("eventdatetime", ns);
+                    eventList.add(new StringPair(type, date));
+                }
+            }
+        }
     }
 
     /**
@@ -358,6 +391,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                 }
                 clist = dsc.getChildren("c", ns);
             }
+
         } else {
             entry.setNodeType(element.getAttributeValue("otherlevel"));
             List<Element> altformavailList = element.getChildren("altformavail", ns);
@@ -367,6 +401,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                 }
             }
         }
+
         if (StringUtils.isBlank(entry.getNodeType())) {
             entry.setNodeType("folder");
         }
@@ -633,6 +668,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         document.setRootElement(eadRoot);
 
         addMetadata(eadRoot, rootElement);
+        createEventFields(eadRoot);
         String[] nameParts = selectedDatabase.split(" - ");
         XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
         try {
@@ -1319,6 +1355,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         document.setRootElement(eadRoot);
 
         addMetadata(eadRoot, rootElement);
+        createEventFields(eadRoot);
         //  write document to servlet output stream
         String fileName = selectedDatabase.replaceAll("[\\W]", "_");
         if (!fileName.endsWith(".xml")) {
@@ -1347,6 +1384,67 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             }
 
             facesContext.responseComplete();
+        }
+
+    }
+
+    private void createEventFields(Element eadElement) {
+
+        Element archdesc = eadElement.getChild("archdesc", ns);
+        if (archdesc == null) {
+            archdesc = new Element("archdesc", ns);
+            eadElement.addContent(archdesc);
+        }
+        Element processinfoElement = archdesc.getChild("processinfo", ns);
+        if (processinfoElement == null) {
+            processinfoElement = new Element("processinfo", ns);
+            archdesc.addContent(processinfoElement);
+        }
+        Element list = processinfoElement.getChild("list", ns);
+        if (list == null) {
+            list = new Element("list", ns);
+            processinfoElement.addContent(list);
+        }
+        User user = Helper.getCurrentUser();
+        String username = user != null? user.getNachVorname() : "-";
+        if (!editorList.contains(username)) {
+            editorList.add(username);
+        }
+        for (String editor : editorList) {
+            Element item = new Element("item", ns);
+            item.setText(editor);
+            list.addContent(item);
+        }
+        String type;
+        if (eventList.isEmpty()) {
+            type= "Created";
+        } else {
+            type= "Modified";
+        }
+        String date= formatter.format(new Date());
+        eventList.add(new StringPair(type, date));
+
+        Element control = eadElement.getChild("control", ns);
+        if (control == null) {
+            control = new Element("control", ns);
+            eadElement.addContent(control);
+        }
+
+        Element maintenancehistory = control.getChild("maintenancehistory", ns);
+
+        if (maintenancehistory == null) {
+            maintenancehistory = new Element("maintenancehistory", ns);
+            control.addContent(maintenancehistory);
+        }
+        for (StringPair pair : eventList) {
+            Element maintenanceevent = new Element("maintenanceevent", ns);
+            maintenancehistory.addContent(maintenanceevent);
+            Element eventtype = new Element("eventtype", ns);
+            eventtype.setText(pair.getOne());
+            maintenanceevent.addContent(eventtype);
+            Element eventdatetime = new Element("eventdatetime", ns);
+            eventdatetime.setText(pair.getTwo());
+            maintenanceevent.addContent(eventdatetime);
         }
 
     }

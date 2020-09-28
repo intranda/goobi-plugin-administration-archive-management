@@ -74,8 +74,6 @@ public class TektonikAdministrationPluginTest {
         recordList.add(rec);
         EasyMock.expect(VocabularyManager.findRecords(EasyMock.anyString(), EasyMock.anyObject())).andReturn(recordList);
 
-
-
         EasyMock.replay(configurationHelper);
         PowerMock.replay(ConfigurationHelper.class);
     }
@@ -311,24 +309,6 @@ public class TektonikAdministrationPluginTest {
             }
         }
 
-        EadMetadataField processinfo = null;
-        EadMetadataField maintenanceevent = null;
-        EadMetadataField eventdatetime = null;
-        for (EadMetadataField emf : entry.getDescriptionControlAreaList()) {
-            switch (emf.getName()) {
-                case "processinfo":
-                    processinfo = emf;
-                    break;
-                case "maintenanceevent":
-                    maintenanceevent = emf;
-                    break;
-                case "eventdatetime":
-                    eventdatetime = emf;
-                    break;
-
-            }
-        }
-
         assertEquals(1, entry.getOrderNumber().intValue());
         assertEquals(0, entry.getHierarchy().intValue());
         assertEquals("tectonics header title", entry.getLabel());
@@ -339,8 +319,6 @@ public class TektonikAdministrationPluginTest {
         assertEquals("unitid", unitid.getValues().get(0).getValue());
         assertEquals("unittitle", unittitle.getValues().get(0).getValue());
 
-        assertEquals("eventtype", maintenanceevent.getValues().get(0).getValue());
-        assertEquals("eventdatetime", eventdatetime.getValues().get(0).getValue());
         assertEquals("collection", descriptionLevel.getValues().get(0).getValue());
 
         assertEquals("unitdate", unitdate.getValues().get(0).getValue());
@@ -369,7 +347,6 @@ public class TektonikAdministrationPluginTest {
         assertEquals("separatedmaterial", separatedmaterial.getValues().get(0).getValue());
         assertEquals("bibliography", bibliography.getValues().get(0).getValue());
         assertEquals("odd", odd.getValues().get(0).getValue());
-        assertEquals("processinfo", processinfo.getValues().get(0).getValue());
 
         EadEntry firstSub = entry.getSubEntryList().get(0);
         assertEquals(0, firstSub.getOrderNumber().intValue());
@@ -530,12 +507,23 @@ public class TektonikAdministrationPluginTest {
 
         assertEquals(10, did.getChildren().size());
         assertEquals("unitid", did.getChildren().get(0).getText());
-        assertEquals(18, dsc.getChildren().size());
+        assertEquals(17, dsc.getChildren().size());
 
-        Element c = dsc.getChildren().get(17);
+        Element c = dsc.getChildren().get(16);
         Element subDid = c.getChild("did", TektonikAdministrationPlugin.ns);
         assertEquals("first level id", subDid.getChildText("unitid", TektonikAdministrationPlugin.ns));
         assertEquals("first level title", subDid.getChildText("unittitle", TektonikAdministrationPlugin.ns));
+
+        Element processinfo = archdesc.getChild("processinfo", TektonikAdministrationPlugin.ns);
+        Element list = processinfo.getChild("list", TektonikAdministrationPlugin.ns);
+        assertEquals("-", list.getChildText("item", TektonikAdministrationPlugin.ns));
+
+        Element event = ead.getChild("control", TektonikAdministrationPlugin.ns)
+                .getChild("maintenancehistory", TektonikAdministrationPlugin.ns)
+                .getChild("maintenanceevent", TektonikAdministrationPlugin.ns);
+        assertEquals("Created", event.getChild("eventtype", TektonikAdministrationPlugin.ns).getText());
+        assertNotNull(event.getChild("eventdatetime", TektonikAdministrationPlugin.ns).getText());
+
 
     }
 

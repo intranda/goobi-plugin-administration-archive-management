@@ -143,14 +143,11 @@
         <metadata xpath="(./ead:archdesc/ead:dsc/ead:odd | ./ead:dsc/ead:odd)[1]" xpathType="element" name="oddnote" level="6" repeatable="false" fieldType="textarea"/>
 
         <!-- Description Control Area -->
-        <metadata xpath="(./ead:archdesc/ead:dsc/ead:processinfo | ./ead:dsc/ead:processinfo)[1]" xpathType="element" name="processinfo" level="7" repeatable="false" visible="false"/>
         <metadata xpath="./ead:control/ead:conventiondeclaration" xpathType="element" name="conventiondeclaration" level="7" repeatable="false" fieldType="multiselect">
             <value>val 1</value>
             <value>val 2</value>
             <value>val 3</value>
             <value>val 4</value>
         </metadata>
-        <metadata xpath="./ead:control/ead:maintenancehistory/ead:maintenanceevent/ead:eventtype" xpathType="element" name="maintenanceevent" level="7" repeatable="false" visible="false"/>
-        <metadata xpath="./ead:control/ead:maintenancehistory/ead:maintenanceevent/ead:eventdatetime" xpathType="element" name="eventdatetime" level="7" repeatable="false" visible="false"/>
     </config>
 </config_plugin>
