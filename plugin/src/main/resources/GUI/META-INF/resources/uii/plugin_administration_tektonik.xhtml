@@ -208,7 +208,6 @@ div.no-element-selected {
 
 .badge a {
     color: #fff !important;
-
 }
 
 .badge-area {
@@ -312,9 +311,8 @@ div.no-element-selected {
 }
 
 .validation-error {
-border: 1px solid red;
+    border: 1px solid red;
 }
-
 </style>
         <h:panelGroup>
             <div class="row">
@@ -551,6 +549,14 @@ border: 1px solid red;
                                                         render="hierarchy" />
                                                 </h:commandLink>
 
+
+                                                <h:commandLink
+                                                    styleClass="btn btn-success font-size-s pull-right leftArea-button"
+                                                    action="#{AdministrationForm.administrationPlugin.validateTectonic}"
+                                                    title="#{msgs.plugin_administration_tectonics_validate}">
+                                                    <i class="fa fa-check"></i>
+                                                </h:commandLink>
+
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.moveNodeUp}"
@@ -615,13 +621,7 @@ border: 1px solid red;
                                             <h:outputText value="#{msgs.plugin_administration_tectonics_download}" />
                                         </h:commandLink>
 
-                                    <h:commandLink
-                                            styleClass="btn margin-sides-10 font-size-s"
-                                            type="submit"
-                                            action="#{AdministrationForm.administrationPlugin.validateTectonic}">
-                                            <i class="fa fa-check margin-right-5"></i>
-                                            <h:outputText value="#{msgs.plugin_administration_tectonics_validate}" />
-                                        </h:commandLink>
+
 
                                         <h:commandLink
                                             styleClass="btn btn-success submitOnEnter pull-right font-size-s margin-bottom-most"

@@ -322,6 +322,8 @@ public class TektonikAdministrationPluginTest {
         assertEquals("collection", descriptionLevel.getValues().get(0).getValue());
 
         assertEquals("unitdate", unitdate.getValues().get(0).getValue());
+        assertEquals("regex", unitdate.getValidationType());
+        assertEquals("\\d{4}", unitdate.getRegularExpression());
         assertEquals("unitdatestructured", unitdatestructured.getValues().get(0).getValue());
         assertEquals("physdesc", physdesc.getValues().get(0).getValue());
         assertEquals("physdescstructured", physdescstructured.getValues().get(0).getValue());

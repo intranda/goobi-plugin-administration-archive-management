@@ -25,7 +25,9 @@
                 - @fieldType: defines the type of the input field. Posible values are input (default), textarea, dropdown, multiselect, vocabulary
                 - @rulesetName: internal name of the metadata in ruleset. If missing or empty, field is not imported into process metadata
                 - @importMetadataInChild: defines if the field is imported or skipped in processes for child elements 
-                - @validationType: defines a validation rule, allowed values are unique, required, unique+required
+                - @validationType: defines a validation rule, allowed values are unique, required, unique+required, regex, regex+required
+                - @regularExpression defines a regular expression that gets used for validation type regex
+                - validationError: message to display in case of validation errors, can be translated via messages files
                 - value: list of possible values for dropdown and multiselect lists
                 - vocabulary: name of the vocabulary
                 - searchParameter: distinct the vocabulary list by the given condition. Syntax is fieldname=value, field is repeatable
@@ -46,8 +48,12 @@
 
         <metadata xpath="./ead:did/ead:unitid[@type='Vorl. Nr.']" xpathType="element" name="Number" level="1" repeatable="true"/>
         <metadata xpath="./ead:did/ead:unitid[@type='Altsignatur']" xpathType="element" name="Shelfmark" level="1" repeatable="true"/>
-        <metadata xpath="(./ead:archdesc/ead:did/ead:unittitle | ./ead:did/ead:unittitle)[1]" xpathType="element" name="unittitle" level="1" repeatable="false" fieldType="textarea" rulesetName="TitleDocMain" importMetadataInChild="false" validationType="unique"/>
-        <metadata xpath="(./ead:archdesc/ead:did/ead:unitdate | ./ead:did/ead:unitdate)[1]" xpathType="element" name="unitdate" level="1" repeatable="false" rulesetName="PublicationYear" importMetadataInChild="false"/>
+        <metadata xpath="(./ead:archdesc/ead:did/ead:unittitle | ./ead:did/ead:unittitle)[1]" xpathType="element" name="unittitle" level="1" repeatable="false" fieldType="textarea" rulesetName="TitleDocMain" importMetadataInChild="false" validationType="unique">
+            <validationError>Der Wert wurde an anderer Stelle bereits verwendet</validationError>
+        </metadata>
+        <metadata xpath="(./ead:archdesc/ead:did/ead:unitdate | ./ead:did/ead:unitdate)[1]" xpathType="element" name="unitdate" level="1" repeatable="false" rulesetName="PublicationYear" importMetadataInChild="false" regularExpression="\\d{4}" validationType="regex">
+            <validationError>Der Wert ist keine vierstellige Jahreszahl</validationError>
+        </metadata>
         <metadata xpath="(./ead:archdesc/ead:did/ead:unitdatestructured | ./ead:did/ead:unitdatestructured)[1]" xpathType="element" name="unitdatestructured" level="1" repeatable="false" />
         <metadata xpath="(./ead:archdesc/@level | ./@level)[1]" xpathType="attribute" name="descriptionLevel" level="1" repeatable="false" fieldType="dropdown">
             <value>collection</value>

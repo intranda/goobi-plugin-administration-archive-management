@@ -61,14 +61,20 @@ public class EadMetadataField {
     /** defines if this field gets inherited when a child node is created */
     private boolean importMetadataInChild;
 
-    /** defines the validation type, possible values are unique, required, unique+required */
+    /** defines the validation type, possible values are unique, required, unique+required, regex, regex+required */
     private String validationType;
+
+    /** contains the regular expression used to validate regex or regex+required */
+    private String regularExpression;
 
     /** contains the result of the validation */
     private boolean valid = true;
 
+    /** contains a human readable error text */
+    private String validationError;
+
     public EadMetadataField(String name, Integer level, String xpath, String xpathType, boolean repeatable, boolean visible, boolean showField,
-            String fieldType, String metadataName, boolean importMetadataInChild, String validationType) {
+            String fieldType, String metadataName, boolean importMetadataInChild, String validationType, String regularExpression) {
         this.name = name;
         this.level = level;
         this.xpath = xpath;
@@ -80,6 +86,7 @@ public class EadMetadataField {
         this.metadataName = metadataName;
         this.importMetadataInChild = importMetadataInChild;
         this.validationType = validationType;
+        this.regularExpression = regularExpression;
     }
 
     public boolean isFilled() {

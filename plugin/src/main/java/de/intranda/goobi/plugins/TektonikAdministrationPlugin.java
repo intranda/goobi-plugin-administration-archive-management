@@ -438,9 +438,10 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         if (StringUtils.isBlank(entry.getLabel()) && emf.getXpath().contains("unittitle") && stringValues != null && !stringValues.isEmpty()) {
             entry.setLabel(stringValues.get(0));
         }
-        EadMetadataField toAdd =
-                new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable(), emf.isVisible(),
-                        emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild(), emf.getValidationType());
+        EadMetadataField toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable(),
+                emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild(), emf.getValidationType(),
+                emf.getRegularExpression());
+        toAdd.setValidationError(emf.getValidationError());
         toAdd.setSelectItemList(emf.getSelectItemList());
         toAdd.setEadEntry(entry);
 
@@ -539,9 +540,9 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             EadMetadataField field = new EadMetadataField(hc.getString("@name"), hc.getInt("@level"), hc.getString("@xpath"),
                     hc.getString("@xpathType", "element"), hc.getBoolean("@repeatable", false), hc.getBoolean("@visible", true),
                     hc.getBoolean("@showField", false), hc.getString("@fieldType", "input"), hc.getString("@rulesetName", null),
-                    hc.getBoolean("@importMetadataInChild", false), hc.getString("@validationType", null));
+                    hc.getBoolean("@importMetadataInChild", false), hc.getString("@validationType", null), hc.getString("@regularExpression"));
             configuredFields.add(field);
-
+            field.setValidationError(hc.getString("/validationError"));
             if (field.getFieldType().equals("dropdown") || field.getFieldType().equals("multiselect")) {
                 List<String> valueList = Arrays.asList(hc.getStringArray("/value"));
                 field.setSelectItemList(valueList);
@@ -1171,7 +1172,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         processTitleBuilder.append(selectedEntry.getLabel().toLowerCase());
         String processTitle = processTitleBuilder.toString().replaceAll("[\\W]", "_");
 
-        // TODO check if title is unique
+        // TODO check if title is unique, abort if not
 
         // create process based on configured process template
         Process process = new Process();
@@ -1221,7 +1222,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         }
 
         try {
-            // create mets file based on nodeType
+            // create mets file based on selected node type
             Fileformat fileformat = new MetsMods(prefs);
             DigitalDocument digDoc = new DigitalDocument();
             fileformat.setDigitalDocument(digDoc);
@@ -1537,7 +1538,8 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                 }
 
             }
-            if ("required".equals(emf.getValidationType()) || "unique+required".equals(emf.getValidationType())) {
+            if ("required".equals(emf.getValidationType()) || "unique+required".equals(emf.getValidationType())
+                    || "regex+required".equals(emf.getValidationType())) {
                 boolean filled = false;
                 for (FieldValue fv : emf.getValues()) {
                     if (StringUtils.isNotBlank(fv.getValue())) {
@@ -1548,7 +1550,17 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                     emf.setValid(false);
                     node.setValid(false);
                 }
-
+            }
+            if ("regex".equals(emf.getValidationType()) || "regex+required".equals(emf.getValidationType())) {
+                String regex = emf.getRegularExpression();
+                for (FieldValue fv : emf.getValues()) {
+                    if (StringUtils.isNotBlank(fv.getValue())) {
+                        if (!fv.getValue().matches(regex)) {
+                            emf.setValid(false);
+                            node.setValid(false);
+                        }
+                    }
+                }
             }
         }
     }

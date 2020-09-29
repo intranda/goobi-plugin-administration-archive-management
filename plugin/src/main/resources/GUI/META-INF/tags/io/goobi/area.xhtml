@@ -65,6 +65,8 @@
                                 selectItems="#{field.possibleValues}"
                                 selectedItems="#{field.multiselectSelectedValues}" />
                         </ui:fragment>
+                        
+                        <h:outputText styleClass="help-inline font-danger" rendered="#{!item.valid}" value="#{msgs[item.validationError]}"/>
                         </x:dataList>
                     </ui:fragment>
                 </x:dataList>
