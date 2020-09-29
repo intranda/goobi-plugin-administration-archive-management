@@ -16,7 +16,7 @@ public class FieldValue {
 
     private EadMetadataField field;
 
-    public FieldValue (EadMetadataField field) {
+    public FieldValue(EadMetadataField field) {
         this.field = field;
     }
 
@@ -29,7 +29,6 @@ public class FieldValue {
         }
         return answer;
     }
-
 
     public String getMultiselectValue() {
         return "";
@@ -56,13 +55,21 @@ public class FieldValue {
             }
             return sb.toString();
 
-        } else{
+        } else {
             return value;
         }
     }
 
     public List<String> getSelectItemList() {
         return field.getSelectItemList();
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+        if (field.getXpath().contains("unittitle")) {
+            field.getEadEntry().setLabel(value);
+        }
+
     }
 
 }

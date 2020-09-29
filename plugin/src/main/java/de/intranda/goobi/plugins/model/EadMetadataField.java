@@ -52,14 +52,23 @@ public class EadMetadataField {
     /** defines the type of the input field. Posible values are input (default), textarea, dropdown, multiselect */
     private String fieldType;
 
+    /** links to the ead node */
     private EadEntry eadEntry;
 
+    /** internal name of the metadata field */
     private String metadataName;
 
+    /** defines if this field gets inherited when a child node is created */
     private boolean importMetadataInChild;
 
+    /** defines the validation type, possible values are unique, required, unique+required */
+    private String validationType;
+
+    /** contains the result of the validation */
+    private boolean valid = true;
+
     public EadMetadataField(String name, Integer level, String xpath, String xpathType, boolean repeatable, boolean visible, boolean showField,
-            String fieldType, String metadataName, boolean importMetadataInChild) {
+            String fieldType, String metadataName, boolean importMetadataInChild, String validationType) {
         this.name = name;
         this.level = level;
         this.xpath = xpath;
@@ -70,6 +79,7 @@ public class EadMetadataField {
         this.fieldType = fieldType;
         this.metadataName = metadataName;
         this.importMetadataInChild = importMetadataInChild;
+        this.validationType = validationType;
     }
 
     public boolean isFilled() {

@@ -30,7 +30,7 @@
                 <h:selectOneMenu
                     id="#{fieldid}"
                     forceId="true"
-                    styleClass="form-control"
+                    styleClass="form-control #{item.valid ? '' : 'validation-error'}"
                     value="#{fieldvalue}"
                     required="false"
                     readonly="false">
@@ -41,7 +41,7 @@
                     <f:ajax
                         event="change"
                         execute="@this"
-                        render=":#{ajaxid}" />
+                        render=":#{ajaxid} :hierarchy" />
                 </h:selectOneMenu>
                 <h:message
                     for="#{fieldid}"

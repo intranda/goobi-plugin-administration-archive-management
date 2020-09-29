@@ -90,6 +90,10 @@ public class EadEntry {
     // empty if no process was created, otherwise the name of othe process is stored
     private String goobiProcessTitle;
 
+    // true if the validation of all metadata fields was successful
+    private boolean valid = true;
+
+
     public EadEntry(Integer order, Integer hierarchy) {
         this.orderNumber = order;
         this.hierarchy = hierarchy;

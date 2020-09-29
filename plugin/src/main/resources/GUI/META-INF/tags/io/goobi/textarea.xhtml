@@ -30,13 +30,13 @@
                 <h:inputTextarea
                     id="#{fieldid}"
                     forceId="true"
-                    styleClass="form-control"
+                    styleClass="form-control #{item.valid ? '' : 'validation-error'}"
                     value="#{fieldvalue}"
                     required="false"
                     readonly="false">
                     <f:ajax
                         execute="@this"
-                        render=":#{ajaxid}"
+                        render=":#{ajaxid} :hierarchy"
                         event="blur" />
                 </h:inputTextarea>
                 <h:message

@@ -310,6 +310,11 @@ div.no-element-selected {
     font-size: 1.5em;
     color: #000;
 }
+
+.validation-error {
+border: 1px solid red;
+}
+
 </style>
         <h:panelGroup>
             <div class="row">
@@ -446,7 +451,7 @@ div.no-element-selected {
                                             <h3>
                                                 <h:outputText value="#{msgs[AdministrationForm.administrationPlugin.title]}: #{AdministrationForm.administrationPlugin.selectedDatabase}" />
                                             </h3>
-                                            <!-- TODO search box -->
+                                            <!-- search box -->
                                             <div class="searchfilter pull-right">
                                                 <div class="input-group input-group">
                                                     <h:inputText
@@ -502,7 +507,7 @@ div.no-element-selected {
                                                         <h:commandLink
                                                             id="link2"
                                                             immediate="true"
-                                                            styleClass="#{entry.selected ? 'table__structure-link-active' : 'table__structure-link'}"
+                                                            styleClass="#{entry.selected ? 'table__structure-link-active' : 'table__structure-link'}  #{entry.valid ? '' : 'validation-error'}"
                                                             action="#{AdministrationForm.administrationPlugin.resetFlatList}">
                                                             <i
                                                                 class="fa fa-file-o"
@@ -511,7 +516,7 @@ div.no-element-selected {
                                                                 value="#{entry.label}"
                                                                 rendered="#{entry.label != null}" />
                                                             <h:outputText
-                                                                value="#{entry.orderNumber}"
+                                                                value=" - "
                                                                 rendered="#{entry.label == null}" />
 
                                                             <x:updateActionListener
@@ -608,6 +613,14 @@ div.no-element-selected {
                                             action="#{AdministrationForm.administrationPlugin.downloadTectonic}">
                                             <i class="fa fa-save margin-right-5"></i>
                                             <h:outputText value="#{msgs.plugin_administration_tectonics_download}" />
+                                        </h:commandLink>
+
+                                    <h:commandLink
+                                            styleClass="btn margin-sides-10 font-size-s"
+                                            type="submit"
+                                            action="#{AdministrationForm.administrationPlugin.validateTectonic}">
+                                            <i class="fa fa-check margin-right-5"></i>
+                                            <h:outputText value="#{msgs.plugin_administration_tectonics_validate}" />
                                         </h:commandLink>
 
                                         <h:commandLink

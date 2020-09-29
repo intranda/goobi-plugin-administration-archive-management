@@ -7,8 +7,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.faces.context.FacesContext;
@@ -72,9 +74,6 @@ import ugh.fileformats.mets.MetsMods;
 @PluginImplementation
 @Log4j2
 public class TektonikAdministrationPlugin implements IAdministrationPlugin {
-
-    // TODO validation: unique value within file
-    // TODO validation: required field?
 
     // TODO: create ruleset, map metadata
 
@@ -171,7 +170,6 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     private List<StringPair> eventList;
     private List<String> editorList;
     private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
 
     /**
      * Constructor
@@ -440,8 +438,9 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         if (StringUtils.isBlank(entry.getLabel()) && emf.getXpath().contains("unittitle") && stringValues != null && !stringValues.isEmpty()) {
             entry.setLabel(stringValues.get(0));
         }
-        EadMetadataField toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable(),
-                emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild());
+        EadMetadataField toAdd =
+                new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable(), emf.isVisible(),
+                        emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild(), emf.getValidationType());
         toAdd.setSelectItemList(emf.getSelectItemList());
         toAdd.setEadEntry(entry);
 
@@ -537,10 +536,10 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         processTemplateId = config.getInteger("/processTemplateId", null);
 
         for (HierarchicalConfiguration hc : config.configurationsAt("/metadata")) {
-            EadMetadataField field =
-                    new EadMetadataField(hc.getString("@name"), hc.getInt("@level"), hc.getString("@xpath"), hc.getString("@xpathType", "element"),
-                            hc.getBoolean("@repeatable", false), hc.getBoolean("@visible", true), hc.getBoolean("@showField", false),
-                            hc.getString("@fieldType", "input"), hc.getString("@rulesetName", null), hc.getBoolean("@importMetadataInChild", false));
+            EadMetadataField field = new EadMetadataField(hc.getString("@name"), hc.getInt("@level"), hc.getString("@xpath"),
+                    hc.getString("@xpathType", "element"), hc.getBoolean("@repeatable", false), hc.getBoolean("@visible", true),
+                    hc.getBoolean("@showField", false), hc.getString("@fieldType", "input"), hc.getString("@rulesetName", null),
+                    hc.getBoolean("@importMetadataInChild", false), hc.getString("@validationType", null));
             configuredFields.add(field);
 
             if (field.getFieldType().equals("dropdown") || field.getFieldType().equals("multiselect")) {
@@ -1406,7 +1405,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             processinfoElement.addContent(list);
         }
         User user = Helper.getCurrentUser();
-        String username = user != null? user.getNachVorname() : "-";
+        String username = user != null ? user.getNachVorname() : "-";
         if (!editorList.contains(username)) {
             editorList.add(username);
         }
@@ -1417,11 +1416,11 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         }
         String type;
         if (eventList.isEmpty()) {
-            type= "Created";
+            type = "Created";
         } else {
-            type= "Modified";
+            type = "Modified";
         }
-        String date= formatter.format(new Date());
+        String date = formatter.format(new Date());
         eventList.add(new StringPair(type, date));
 
         Element control = eadElement.getChild("control", ns);
@@ -1477,6 +1476,81 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
         // return to start screen
         return "";
+    }
+
+    public void validateTectonic() {
+
+        Map<String, List<String>> valueMap = new HashMap<>();
+
+        validateNode(rootElement, valueMap);
+
+    }
+
+    private void validateNode(EadEntry node, Map<String, List<String>> valueMap) {
+        node.setValid(true);
+        for (EadMetadataField emf : node.getIdentityStatementAreaList()) {
+            validateMetadataField(node, valueMap, emf);
+        }
+        for (EadMetadataField emf : node.getContextAreaList()) {
+            validateMetadataField(node, valueMap, emf);
+        }
+        for (EadMetadataField emf : node.getContentAndStructureAreaAreaList()) {
+            validateMetadataField(node, valueMap, emf);
+        }
+        for (EadMetadataField emf : node.getAccessAndUseAreaList()) {
+            validateMetadataField(node, valueMap, emf);
+        }
+        for (EadMetadataField emf : node.getAlliedMaterialsAreaList()) {
+            validateMetadataField(node, valueMap, emf);
+        }
+        for (EadMetadataField emf : node.getNotesAreaList()) {
+            validateMetadataField(node, valueMap, emf);
+        }
+        for (EadMetadataField emf : node.getDescriptionControlAreaList()) {
+            validateMetadataField(node, valueMap, emf);
+        }
+
+        for (EadEntry child : node.getSubEntryList()) {
+            validateNode(child, valueMap);
+        }
+
+    }
+
+    private void validateMetadataField(EadEntry node, Map<String, List<String>> valueMap, EadMetadataField emf) {
+        emf.setValid(true);
+        if (emf.getValidationType() != null) {
+            if ("unique".equals(emf.getValidationType()) || "unique+required".equals(emf.getValidationType())) {
+                for (FieldValue fv : emf.getValues()) {
+                    if (StringUtils.isNotBlank(fv.getValue())) {
+                        List<String> values = valueMap.get(emf.getName());
+                        if (values == null) {
+                            values = new ArrayList<>();
+                            valueMap.put(emf.getName(), values);
+                        }
+                        if (values.contains(fv.getValue())) {
+                            emf.setValid(false);
+                            node.setValid(false);
+                        } else {
+                            values.add(fv.getValue());
+                        }
+                    }
+                }
+
+            }
+            if ("required".equals(emf.getValidationType()) || "unique+required".equals(emf.getValidationType())) {
+                boolean filled = false;
+                for (FieldValue fv : emf.getValues()) {
+                    if (StringUtils.isNotBlank(fv.getValue())) {
+                        filled = true;
+                    }
+                }
+                if (!filled) {
+                    emf.setValid(false);
+                    node.setValid(false);
+                }
+
+            }
+        }
     }
 
 }

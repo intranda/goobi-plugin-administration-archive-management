@@ -9,7 +9,7 @@
     xmlns:x="http://myfaces.apache.org/tomahawk">
 <h:body>
     <ui:composition>
-        <span class="badge #{styleclassname}">
+        <span class="badge #{styleclassname} #{item.valid ? '' : 'validation-error'}">
             <h:commandLink
                 action="#{item.addValue}"
                 rendered="#{item.repeatable}">
