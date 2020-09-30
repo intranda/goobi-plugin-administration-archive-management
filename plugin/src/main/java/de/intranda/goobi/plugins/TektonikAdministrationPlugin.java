@@ -164,6 +164,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     private boolean displayControlArea;
 
     private Integer processTemplateId;
+    @Setter
     private Process processTemplate;
     private BeanHelper bhelp = new BeanHelper();
 
@@ -1348,6 +1349,9 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     }
 
     public void downloadTectonic() {
+        // validate
+        validateTectonic();
+
         // create ead document
         Document document = new Document();
 

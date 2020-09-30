@@ -3,6 +3,7 @@ package de.intranda.goobi.plugins;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -10,6 +11,8 @@ import java.util.List;
 import org.junit.Test;
 
 import de.intranda.goobi.plugins.model.EadEntry;
+import de.intranda.goobi.plugins.model.EadMetadataField;
+import de.intranda.goobi.plugins.model.FieldValue;
 
 public class EadEntryTest {
 
@@ -174,5 +177,69 @@ public class EadEntryTest {
         firstRootChild.setDisplayChildren(true);
         flatList = root.getAsFlatList();
         assertEquals(5, flatList.size());
+    }
+
+    @Test
+    public void testEadMetadataFieldAddValue() {
+        EadEntry entry = new EadEntry(0, 0);
+        EadMetadataField title = new EadMetadataField("input", 1, "unittitle", "element", false, true, true, "input", null, false, null, null);
+        title.setEadEntry(entry);
+        assertFalse(title.isFilled());
+        title.addValue();
+        assertEquals(1, title.getValues().size());
+        // add another value
+        title.addValue();
+        // value list is still 1, because field is not repeatable
+        assertEquals(1, title.getValues().size());
+        assertFalse(title.isFilled());
+        assertNull(entry.getLabel());
+        title.getValues().get(0).setValue("title");
+        assertTrue(title.isFilled());
+        assertEquals("title", entry.getLabel());
+
+        assertEquals("input", title.getName());
+        assertEquals(1, title.getLevel().intValue());
+        assertEquals("unittitle", title.getXpath());
+        assertEquals("element", title.getXpathType());
+        assertFalse(title.isRepeatable());
+        assertTrue(title.isVisible());
+        assertTrue(title.isShowField());
+        assertEquals("input", title.getFieldType());
+        assertNull(title.getMetadataName());
+        assertFalse(title.isImportMetadataInChild());
+        assertNull(title.getValidationType());
+        assertNull(title.getRegularExpression());
+
+        EadMetadataField repeatable = new EadMetadataField("input", 1, "something", "element", true, true, true, "input", null, false, null, null);
+        repeatable.setEadEntry(entry);
+        assertFalse(repeatable.isFilled());
+        repeatable.addValue();
+        assertEquals(1, repeatable.getValues().size());
+        repeatable.addValue();
+        assertEquals(2, repeatable.getValues().size());
+    }
+
+
+    @Test
+    public void testEadMetadataFieldAddFieldValue() {
+        EadEntry entry = new EadEntry(0, 0);
+        EadMetadataField title = new EadMetadataField("input", 1, "something", "element", false, true, true, "input", null, false, null, null);
+        title.setEadEntry(entry);
+        assertFalse(title.isFilled());
+        title.addFieldValue(new FieldValue(title));
+        assertEquals(1, title.getValues().size());
+        // add another value
+        title.addFieldValue(new FieldValue(title));
+        // value list is still 1, because field is not repeatable
+        assertEquals(1, title.getValues().size());
+
+
+        EadMetadataField repeatable = new EadMetadataField("dropdown", 1, "something", "element", true, true, true, "dropdown", null, false, null, null);
+        repeatable.setEadEntry(entry);
+        assertFalse(repeatable.isFilled());
+        repeatable.addFieldValue(new FieldValue(repeatable));
+        assertEquals(1, repeatable.getValues().size());
+        repeatable.addFieldValue(new FieldValue(repeatable));
+        assertEquals(2, repeatable.getValues().size());
     }
 }

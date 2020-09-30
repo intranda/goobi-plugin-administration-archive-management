@@ -3,6 +3,7 @@ package de.intranda.goobi.plugins;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -32,12 +33,14 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.EadMetadataField;
+import de.intranda.goobi.plugins.model.FieldValue;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.HttpClientHelper;
+import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.VocabularyManager;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ ConfigurationHelper.class, HttpClientHelper.class, VocabularyManager.class })
+@PrepareForTest({ ConfigurationHelper.class, HttpClientHelper.class, VocabularyManager.class, ProcessManager.class })
 @PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*" })
 
 public class TektonikAdministrationPluginTest {
@@ -73,6 +76,10 @@ public class TektonikAdministrationPluginTest {
         VocabRecord rec = new VocabRecord();
         recordList.add(rec);
         EasyMock.expect(VocabularyManager.findRecords(EasyMock.anyString(), EasyMock.anyObject())).andReturn(recordList);
+
+        PowerMock.mockStatic(ProcessManager.class);
+        ProcessManager.saveProcess(EasyMock.anyObject());
+        PowerMock.replay(ProcessManager.class);
 
         EasyMock.replay(configurationHelper);
         PowerMock.replay(ConfigurationHelper.class);
@@ -526,7 +533,6 @@ public class TektonikAdministrationPluginTest {
         assertEquals("Created", event.getChild("eventtype", TektonikAdministrationPlugin.ns).getText());
         assertNotNull(event.getChild("eventdatetime", TektonikAdministrationPlugin.ns).getText());
 
-
     }
 
     @Test
@@ -836,6 +842,215 @@ public class TektonikAdministrationPluginTest {
         plugin.setSearchValue("");
         plugin.search();
         assertEquals(2, plugin.getFlatEntryList().size());
+    }
+
+    @Test
+    public void testGetDistinctDatabaseNames() {
+        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        plugin.getPossibleDatabases();
+        List<String> dbs = plugin.getDistinctDatabaseNames();
+        assertEquals(2, dbs.size());
+        assertEquals("first database", dbs.get(0));
+        assertEquals("second database", dbs.get(1));
+    }
+
+    @Test
+    public void testCreateNewDatabase() {
+        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        plugin.getPossibleDatabases();
+        plugin.createNewDatabase();
+        // do nothing because databaseName + fileName are not set
+        assertNull(plugin.getRootElement());
+        plugin.setDatabaseName("db");
+        plugin.createNewDatabase();
+        assertNull(plugin.getRootElement());
+        plugin.setDatabaseName("");
+        plugin.setFileName("filename");
+        plugin.createNewDatabase();
+        assertNull(plugin.getRootElement());
+        // now both are set
+        plugin.setDatabaseName("db");
+        plugin.setFileName("filename");
+        plugin.createNewDatabase();
+        assertNotNull(plugin.getRootElement());
+
+    }
+
+    @Test
+    public void testCancelEdition() {
+        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        plugin.setDatastoreUrl("http://localhost:8984/");
+        plugin.getPossibleDatabases();
+        plugin.setSelectedDatabase("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+        plugin.getFlatEntryList();
+        EadEntry entry = plugin.getRootElement();
+        plugin.setSelectedEntry(entry);
+        plugin.setDisplayMode("something");
+        plugin.setSearchValue("something");
+
+        plugin.setDisplayIdentityStatementArea(true);
+        plugin.setDisplayContextArea(true);
+        plugin.setDisplayContentArea(true);
+        plugin.setDisplayAccessArea(true);
+        plugin.setDisplayMaterialsArea(true);
+        plugin.setDisplayNotesArea(true);
+        plugin.setDisplayControlArea(true);
+
+        assertEquals("fixture - ead.xml", plugin.getSelectedDatabase());
+        assertEquals(entry, plugin.getSelectedEntry());
+        assertEquals(entry, plugin.getRootElement());
+        assertEquals("something", plugin.getDisplayMode());
+        assertNotNull(plugin.getFlatEntryList());
+        assertEquals("something", plugin.getSearchValue());
+
+        assertTrue(plugin.isDisplayIdentityStatementArea());
+        assertTrue(plugin.isDisplayContextArea());
+        assertTrue(plugin.isDisplayContentArea());
+        assertTrue(plugin.isDisplayAccessArea());
+        assertTrue(plugin.isDisplayMaterialsArea());
+        assertTrue(plugin.isDisplayNotesArea());
+        assertTrue(plugin.isDisplayControlArea());
+
+        plugin.cancelEdition();
+        assertNull(plugin.getSelectedDatabase());
+        assertNull(plugin.getSelectedEntry());
+        assertNull(plugin.getRootElement());
+        assertEquals("", plugin.getDisplayMode());
+        assertNull(plugin.getFlatEntryList());
+
+        assertNull(plugin.getSearchValue());
+        assertFalse(plugin.isDisplayIdentityStatementArea());
+        assertFalse(plugin.isDisplayContextArea());
+        assertFalse(plugin.isDisplayContentArea());
+        assertFalse(plugin.isDisplayAccessArea());
+        assertFalse(plugin.isDisplayMaterialsArea());
+        assertFalse(plugin.isDisplayNotesArea());
+        assertFalse(plugin.isDisplayControlArea());
+
+    }
+
+    @Test
+    public void testValidateTectonic() {
+
+        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        plugin.setDatastoreUrl("http://localhost:8984/");
+        plugin.getPossibleDatabases();
+        plugin.setSelectedDatabase("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+        plugin.getFlatEntryList();
+        EadEntry entry = plugin.getRootElement();
+        entry.setDisplayChildren(true);
+        EadEntry firstChild = entry.getSubEntryList().get(0);
+        firstChild.setDisplayChildren(true);
+
+        EadMetadataField rootMetadata = entry.getIdentityStatementAreaList().get(0);
+        EadMetadataField childMetadata = firstChild.getIdentityStatementAreaList().get(0);
+        assertEquals(rootMetadata.getName(), childMetadata.getName());
+        FieldValue rootValue = rootMetadata.getValues().get(0);
+        FieldValue childValue = childMetadata.getValues().get(0);
+        // no validation rules - fields are valid
+        plugin.validateTectonic();
+        assertTrue(rootMetadata.isValid());
+        assertTrue(childMetadata.isValid());
+        // check unique
+        rootMetadata.setValidationType("unique");
+        childMetadata.setValidationType("unique");
+        // different values
+        rootValue.setValue("value 1");
+        childValue.setValue("value 2");
+        plugin.validateTectonic();
+        assertTrue(rootMetadata.isValid());
+        assertTrue(childMetadata.isValid());
+
+        // identical values
+        childValue.setValue("value 1");
+        plugin.validateTectonic();
+        assertTrue(rootMetadata.isValid());
+        assertFalse(childMetadata.isValid());
+
+        // check unique+required, with different values
+        rootMetadata.setValidationType("unique+required");
+        childMetadata.setValidationType("unique+required");
+
+        // missing value
+        rootValue.setValue("");
+        childValue.setValue("value 2");
+        plugin.validateTectonic();
+        assertFalse(rootMetadata.isValid());
+        assertTrue(childMetadata.isValid());
+
+        // different values
+        rootValue.setValue("value 1");
+        childValue.setValue("value 2");
+        plugin.validateTectonic();
+        assertTrue(rootMetadata.isValid());
+        assertTrue(childMetadata.isValid());
+
+        // identical values
+        childValue.setValue("value 1");
+        plugin.validateTectonic();
+        assertTrue(rootMetadata.isValid());
+        assertFalse(childMetadata.isValid());
+
+        // check required
+        rootMetadata.setValidationType("required");
+        childMetadata.setValidationType("required");
+
+        // missing value
+        rootValue.setValue("");
+        childValue.setValue("value 2");
+        plugin.validateTectonic();
+        assertFalse(rootMetadata.isValid());
+        assertTrue(childMetadata.isValid());
+
+        // different values
+        rootValue.setValue("value 1");
+        childValue.setValue("value 2");
+        plugin.validateTectonic();
+        assertTrue(rootMetadata.isValid());
+        assertTrue(childMetadata.isValid());
+
+        // identical values
+        childValue.setValue("value 1");
+        plugin.validateTectonic();
+        assertTrue(rootMetadata.isValid());
+        assertTrue(childMetadata.isValid());
+
+        // check regex
+        rootMetadata.setValidationType("regex");
+        rootMetadata.setRegularExpression("\\d{4}");
+
+        // no value
+        rootValue.setValue("");
+        plugin.validateTectonic();
+        assertTrue(rootMetadata.isValid());
+        // matching value
+        rootValue.setValue("1234");
+        plugin.validateTectonic();
+        assertTrue(rootMetadata.isValid());
+        // wrong value
+        rootValue.setValue("12345");
+        plugin.validateTectonic();
+        assertFalse(rootMetadata.isValid());
+
+        // check regex+required
+        rootMetadata.setValidationType("regex+required");
+        rootMetadata.setRegularExpression("\\d{4}");
+
+        // no value
+        rootValue.setValue("");
+        plugin.validateTectonic();
+        assertFalse(rootMetadata.isValid());
+        // matching value
+        rootValue.setValue("1234");
+        plugin.validateTectonic();
+        assertTrue(rootMetadata.isValid());
+        // wrong value
+        rootValue.setValue("12345");
+        plugin.validateTectonic();
+        assertFalse(rootMetadata.isValid());
+
     }
 
 }

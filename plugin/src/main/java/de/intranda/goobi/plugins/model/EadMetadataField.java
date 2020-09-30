@@ -38,7 +38,7 @@ public class EadMetadataField {
     private boolean repeatable;
 
     /** contains the metadata values */
-    private List<FieldValue> values = new ArrayList<>();
+    private List<FieldValue> values;
 
     /** defines if the field is displayed on the UI, values can be true/false, default is true */
     private boolean visible;
@@ -102,14 +102,21 @@ public class EadMetadataField {
     }
 
     public void addFieldValue(FieldValue value) {
-        values.add(value);
+        if (values == null) {
+            values = new ArrayList<>();
+        }
+        if (values.isEmpty() || repeatable) {
+            values.add(value);
+        }
     }
 
     public void addValue() {
         if (values == null) {
             values = new ArrayList<>();
         }
-        values.add(new FieldValue(this));
+        if (values.isEmpty() || repeatable) {
+            values.add(new FieldValue(this));
+        }
     }
 
 }
