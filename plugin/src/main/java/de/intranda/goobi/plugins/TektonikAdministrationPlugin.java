@@ -75,8 +75,6 @@ import ugh.fileformats.mets.MetsMods;
 @Log4j2
 public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
-    // TODO: create ruleset, map metadata
-
     @Getter
     @Setter
     private String displayMode = "";
@@ -1200,10 +1198,9 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         Prefs prefs = processTemplate.getRegelsatz().getPreferences();
 
         String publicationType = null;
-        // TODO get this from config?
         switch (selectedEntry.getNodeType()) {
             case "folder":
-                publicationType = "Record";
+                publicationType = "Folder";
                 break;
             case "file":
                 publicationType = "File";
@@ -1218,7 +1215,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                 publicationType = "Video";
                 break;
             case "other":
-                publicationType = "Monograph";
+                publicationType = "Other";
                 break;
         }
 
