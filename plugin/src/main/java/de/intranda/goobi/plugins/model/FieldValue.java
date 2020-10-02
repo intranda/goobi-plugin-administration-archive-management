@@ -6,14 +6,16 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 
 import lombok.Data;
+import lombok.ToString;
 
 @Data
+@ToString
 public class FieldValue {
 
     private String value;
     /** contains the list of selected values in multiselect */
     private List<String> multiselectSelectedValues = new ArrayList<>();
-
+    @ToString.Exclude
     private EadMetadataField field;
 
     public FieldValue(EadMetadataField field) {
@@ -71,5 +73,6 @@ public class FieldValue {
         }
 
     }
+
 
 }

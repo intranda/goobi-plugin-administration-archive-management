@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 
 import lombok.Data;
+import lombok.ToString;
 
 @Data
 
@@ -53,6 +54,7 @@ public class EadMetadataField {
     private String fieldType;
 
     /** links to the ead node */
+    @ToString.Exclude
     private EadEntry eadEntry;
 
     /** internal name of the metadata field */
