@@ -75,6 +75,8 @@ import ugh.fileformats.mets.MetsMods;
 @Log4j2
 public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
+    // TODO cancel button for moveNode mode
+
     @Getter
     @Setter
     private String displayMode = "";
@@ -1120,7 +1122,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     }
 
     private void searchInNode(EadEntry node) {
-        if (node.getLabel().toLowerCase().contains(searchValue.toLowerCase())) {
+        if (node.getLabel()!= null && node.getLabel().toLowerCase().contains(searchValue.toLowerCase())) {
             // mark element + all parents as displayable
             node.markAsFound();
         }
