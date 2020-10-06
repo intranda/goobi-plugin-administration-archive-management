@@ -32,46 +32,113 @@ Suche: Hier kann in den Titeln der einzelnen Knoten gesucht werden. Dabei werden
 
 ### Knoten bearbeiten
 
-- Vorgang anlegen
-- Knotentyp
-- Bereiche auf/zuklappen
-- batch anklicken zum anzeigen
-- Metadatentypen bearbeiten (titel)
+Sofern im linken Bereich ein Knoten ausgewählt wurde, werden im rechten Bereich die Details des Knotens angezeigt.
+
+Der rechte Bereich ist in mehrere Kategorien aufgeteilt. Im obersten Bereich wird der dazugehörige Goobi-Vorgang angezeigt, sowie eine Möglichkeit zum erzeugen des Laufzettels. Wenn für den Knoten noch kein Goobi-Vorgang erzeugt wurde, kann ein neuer Vorgang erstellt werden. Als Dokumententyp wird der ausgewählte Knotentyp genutzt. Es stehen folgende Optionen zur Verfügung:
+
+- Folder/Ordner
+- File/Akte
+- Image/Bild
+- Audio
+- Video
+- Other/Sonstiges
+
+Darunter werden die einzelnen Metadaten des Knotens aufgelistet. Sie sind in verschiedene Bereiche aufgeteilt:
+
+- Identifikation
+- Kontext
+- Inhalt und innere Ordnung
+- Zugangs- und Benutzungsbedingungen
+- Sachverwandte Unterlagen
+- Anmerkungen
+- Verzeichnungskontrolle
+
+Jeder Bereich lässt sich einzeln auf- und zuklappen. Wenn ein Bereich zugeklappt ist, hat man einen schnellen Überlick über die potentiellen und existierenden Metadaten des Bereiches. Die einzelnen Metadaten werden als Badges angezeigt. Ein dunkler Hintergrund zeigt an, dass für diese Metadatum ein Wert erfasst wurde. Ein heller Hintergrund bedeutet, dass dieses Feld noch ohne Inhalt ist. Wenn das Feld wiederholbar ist, enthält der Badge ein Plus-Zeichen. Darüber kann ein neues Feld hinzugefügt werden.
+
+Wenn die Details eines Bereiches angezeigt werden, werden die einzelnen Metadaten aufgelistet. Standardmäßig werden dabei nur die Felder angezeigt, die einen Wert enthalten. Um weitere Felder anzuzeigen oder auszublenden, kann der jeweilige Badge angeklickt werden.
 
 ### Validieren
 
-TODO:
+Die Buttons zum ```Download als EAD Datei``` und ```Validieren``` führen die Validierung aus. Dabei werden die konfigurierten Regeln angewendet und geprüft, ob einzelne Werte dagegen verstoßen. Ist dies der Fall, werden die betroffene Knoten im linken Bereich hervorgehoben. Wird ein solcher Knoten ausgewählt, sind die betroffenen Badges rot umrandet und in den Metadaten wird neben der Umrandung auch ein konfigurierbarer Fehlertext angezeigt.
 
-- Hervorhebung im Strukturbaum
-- Hervorhebung in Metadaten
-- Anzeige konfigurierter Fehlermeldung
+Eine fehlgeschlagene Validierung verhindert NICHT das Speichern der Tektonik oder das Erzeugen von Goobi-Vorgängen.
 
 ### Download, Speichern, Abrechen
 
-Speichern: Nutzername wird automatisch ermittelt, neues create/modified Event wird erstellt
+Die beiden Buttons zum ```Download als EAD Datei``` und ```Tektonik speichern und verlassen``` erzeugen eine neue EAD auf Basis des aktuellen Zustandes der Knoten. Dabei wird mit Ausnahme des obersten Knoten jeder Knoten als eigentständiges ```<c>```-Element dargestellt. Die Daten des obersten Knoten werden innerhalb von ```<archdesc>``` unterhalb des ```<ead>``` Elements geschrieben.
+
+Neben den erfassten Metadaten wird ein neues create oder modified event samt Datum und Nutzerinformationen erstellt und in der Liste der Events hinzugefügt.
+Wenn die Tektonik gespeichert wird, wird der aktuelle Zustand automatisch in die XML Datenbank exportiert. Anschließend wird man genau wie bei Abbrechen auf die Startseite des Plugins weitergeleitet.
 
 ## Installation
 
-## Konfiguration
+Zur Installation des Plugins müssen folgende beiden Dateien installiert werden:
 
-- basexUrl: url zur XML Datenbank
-- eadExportFolder: Ordner, in dem die xml Dateien gespeichert werden, damit sie von der XML Datenbank importiert werden können
-- processTemplateId: ID der Vorlage, auf dessen Basis die einzelnen Vorgänge angelegt werden
-- metadata: Konfiguration der einzelnen Felder der Knoten
-- @name: contains the internal name of the field. The value can be used to translate the field in the messages files. The field must start with a letter and can not contain any white spaces.
-- @level: metadata level, allowed values are 1-7:
-  - 1: metadata for Identity Statement Area 
-  - 2: Context Area
-  - 3: Content and Structure Area
-  - 4: Condition of Access and Use Area
-  - 5: Allied Materials Area
-  - 6: Note Area
-  - 7: Description Control Area
-- @xpath: contains a relative path to the ead value. The root of the xpath is either the ead element or the c element
-- @xpathType: type of the xpath return value, can be text, attribute, element (default)
-- @repeatable: defines if the field can exist once or multiple times, values can be true/false, default is false
-- @visible: defines if the field is displayed on the UI, values can be true/false, default is true
-- @showField: defines if the field is displayed as input field (true) or badge (false, default), affects only visible metadata
+```bash
+/opt/digiverso/goobi/plugins/administration/plugin_intranda_administration_tektonik.jar
+/opt/digiverso/goobi/plugins/GUI/plugin_intranda_administration_tektonik-GUI.jar
+```
+
+Um zu konfigurieren, wie sich das Plugin verhalten soll, können verschiedene Werte in der Konfigurationsdatei angepasst werden. Die Konfigurationsdatei befindet sich üblicherweise hier:
+
+```bash
+/opt/digiverso/goobi/config/plugin_intranda_administration_tektonik.xml
+```
+
+TODO: basex installieren + konfigurieren, xq Dateien
+
+## Konfiguration des Plugins
+
+Die Konfiguration des Plugins ist folgendermaßen aufgebaut:
+
+```xml
+<config_plugin>
+    <basexUrl>http://localhost:8984/</basexUrl>
+    <eadExportFolder>/opt/digiverso/basex/import</eadExportFolder>
+
+    <config>
+        <tectonics>*</tectonics>
+        <processTemplateId>1</processTemplateId>
+            <metadata xpath="./ead:eadheader[@countryencoding='iso3166-1'][@dateencoding='iso8601'][@langencoding='iso639-2b'][@repositoryencoding='iso15511'][@scriptencoding='iso15924']/ead:eadid/@mainagencycode" xpathType="attribute" name="mainagencycode" level="1" repeatable="false" visible="false"/>
+            <metadata xpath="./ead:control/ead:maintenanceagency/ead:agencycode" xpathType="element" name="agencycode" level="1" repeatable="false" fieldType="input"/>
+
+    </config>
+
+</config_plugin>
+```
+
+Mit den beiden Parametern ```<basexUrl>``` und ```<eadExportFolder>``` wird die Anbindung an die basex XML Datenbank konfiguriert. Über basexUrl wird die URL zur REST API der XML Datenbank konfiguriert, eadExportFolder enthält den Ordnernamen, in den das Plugin die EAD Dateien exportiert. Dieser Ordner wird von der XML Datenbank überwacht.
+
+Anschließend folgt ein wiederholbarer ```<config>``` Block. Über das wiederholbare Element ```<tectonics>``` kann festgelegt werden, für welche Dateien der ```<config>``` Block gelten soll. Gibt es einen Default-Block für alle Dokuemnte, kann ```*``` genutzt werdern.
+
+Mittels ```<processTemplateId>``` wird festgelegtm, auf welcher Produktionsvorlage die erstellten Goobi Vorgänge basieren sollen.
+
+Anschließend folgt eine Liste von ```<metadata>``` Elementen. Darüber wird gesteuert, welche Felder angezeigt werden, importiert werden können, wie sie sich verhalten und ob es Validierungsregeln gibt.
+
+Jedes Feld besteht aus mindestens drei Pflichtangaben:
+
+- ```name```: mit diesem Wert wird das Feld identifiziert. Es muss daher eine eindeutige Bezeichnung enthalten. Sofern der Wert nicht noch extra in den messages Dateien konfiguriert wurde, wird er auch als Label des Feldes genutzt.
+- ```level```: hiermit wird definiert, in welchem Bereich das Metadatum eingefügt wird. Dabei sind die Zahlen 1-7 erlaubt:
+  1. Identifikation
+  2. Kontext
+  3. Inhalt und innere Ordnung
+  4. Zugangs- und Benutzungsbedingungen
+  5. Sachverwandte Unterlagen
+  6. Anmerkungen
+  7. Verzeichnungskontrolle
+- ```xpath```: Definiert einen XPath Ausdruck, der sowohl zum Lesen aus vorhanden EAD Dateien als auch zum Schreiben der EAD Datei genutzt wird. Der Pfad ist im Fall des Hauptelements relativ zum ```<ead>``` Element, bei allem anderen Knoten immer relativ zum ```<c>``` Element. 
+
+Des weiteren gibt es noch eine Reihe weiterer optionaler Angaben:
+
+- ```xpathType```: Hiermit wird definiert, ob der XPath Ausdruck ein ```element```, ein ```attribute``` oder einen ```text``` zurückliefert. Wenn nicht anders angegeben, wird der default ``element``` genutzt.
+- visible: Hierüber kann gesteuert werden, ob das Metadatum in der Maske angezeigt wird oder versteckt ist. Das Feld darf die beiden Werte ```true``` (default) und ```false``` enthalten.
+- repeatable: Definiert, ob das Feld wiederholbar ist. Das Feld darf die beiden Werte ```true``` und ```false``` (default) enthalten.
+- showField: Definiert, ob das Feld in der Detailanzeige geöffnet angezeigt wird, auch wenn noch kein Wert vohanden ist. Das Feld darf die beiden Werte ```true``` und ```false``` (default) enthalten.
+
+
+optional:
+
+
 - @fieldType: defines the type of the input field. Posible values are input (default), textarea, dropdown, multiselect, vocabulary
 - @rulesetName: internal name of the metadata in ruleset. If missing or empty, field is not imported into process metadata
 - @importMetadataInChild: defines if the field is imported or skipped in processes for child elements 
