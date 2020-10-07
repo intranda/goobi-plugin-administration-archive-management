@@ -1122,7 +1122,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     }
 
     private void searchInNode(EadEntry node) {
-        if (node.getLabel()!= null && node.getLabel().toLowerCase().contains(searchValue.toLowerCase())) {
+        if (node.getLabel() != null && node.getLabel().toLowerCase().contains(searchValue.toLowerCase())) {
             // mark element + all parents as displayable
             node.markAsFound();
         }
@@ -1523,7 +1523,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     private void validateMetadataField(EadEntry node, Map<String, List<String>> valueMap, EadMetadataField emf) {
         emf.setValid(true);
         if (emf.getValidationType() != null) {
-            if ("unique".equals(emf.getValidationType()) || "unique+required".equals(emf.getValidationType())) {
+            if (emf.getValidationType().contains("unique")) {
                 for (FieldValue fv : emf.getValues()) {
                     if (StringUtils.isNotBlank(fv.getValue())) {
                         List<String> values = valueMap.get(emf.getName());
@@ -1541,8 +1541,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                 }
 
             }
-            if ("required".equals(emf.getValidationType()) || "unique+required".equals(emf.getValidationType())
-                    || "regex+required".equals(emf.getValidationType())) {
+            if (emf.getValidationType().contains("required")) {
                 boolean filled = false;
                 for (FieldValue fv : emf.getValues()) {
                     if (StringUtils.isNotBlank(fv.getValue())) {
@@ -1554,7 +1553,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
                     node.setValid(false);
                 }
             }
-            if ("regex".equals(emf.getValidationType()) || "regex+required".equals(emf.getValidationType())) {
+            if (emf.getValidationType().contains("regex")) {
                 String regex = emf.getRegularExpression();
                 for (FieldValue fv : emf.getValues()) {
                     if (StringUtils.isNotBlank(fv.getValue())) {

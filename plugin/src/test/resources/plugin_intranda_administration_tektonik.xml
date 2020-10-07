@@ -25,7 +25,7 @@
                 - @fieldType: defines the type of the input field. Posible values are input (default), textarea, dropdown, multiselect, vocabulary
                 - @rulesetName: internal name of the metadata in ruleset. If missing or empty, field is not imported into process metadata
                 - @importMetadataInChild: defines if the field is imported or skipped in processes for child elements 
-                - @validationType: defines a validation rule, allowed values are unique, required, unique+required, regex, regex+required
+                - @validationType: defines a validation rule, allowed values are unique, required, unique+required, regex, regex+required, regex+unique, regex+unique+required
                 - @regularExpression defines a regular expression that gets used for validation type regex
                 - validationError: message to display in case of validation errors
                 - value: list of possible values for dropdown and multiselect lists
