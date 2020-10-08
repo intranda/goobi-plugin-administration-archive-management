@@ -6,33 +6,29 @@ declare
   %rest:path("/databases")
   %rest:single
   %rest:GET
+
 function page:getDatabases() {
-let $ead := db:list()
-return 
+  let $ead := db:list()
+  
+  return 
     <databases>
-{
-for $c in $ead
- return 
-<database>
-<name>
-{$c}
-</name>
-
-{
-let $files := db:list-details($c)
-
-return
-<details>
-{$files}
-</details>
-}
-
-</database>
-
-}
-
+    {
+      for $c in $ead
+      return 
+        <database>
+          <name>
+            {$c}
+          </name>
+          {
+          let $files := db:list-details($c)
+          return
+            <details>
+              {$files}
+            </details>
+          }
+        </database>
+    }
   </databases>
-
 };
 
 

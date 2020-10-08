@@ -6,10 +6,11 @@ declare
   %rest:path("/db/{$database}/{$filename}")
   %rest:single
   %rest:GET
+
 function page:getDatbase($database, $filename) {
-let $ead := db:open($database, $filename)/ead
-return 
-<collection>
-  {$ead}
-</collection>
+  let $ead := db:open($database, $filename)/ead
+  return 
+  <collection>
+    {$ead}
+  </collection>
 };

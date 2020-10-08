@@ -1,6 +1,6 @@
 # Verwaltung von Tektoniken
 
-## Installation
+## Installation des Plugins
 
 Zur Installation des Plugins müssen folgende beiden Dateien installiert werden:
 
@@ -15,7 +15,178 @@ Um zu konfigurieren, wie sich das Plugin verhalten soll, können verschiedene We
 /opt/digiverso/goobi/config/plugin_intranda_administration_tektonik.xml
 ```
 
-TODO: basex installieren + konfigurieren, xq Dateien
+## Installation der XML-Datenbank BaseX
+
+BaseX ist eine XML-Datenbank, in der die EAD Dateien verwaltet, analysiert und abgefragt werden können. Voraussetzung für die Installation von BaseX ist Java 1.8.
+
+Zunächst muss der Download der Datenbank erfolgen:
+
+​<http://basex.org/download/>​
+
+Für die Installation von BaseX auf einem Linux System muss zunächst die zip Datei herunterladen und auf dem Server installiert werden. Dies könnte beispielsweise in diesem Pfad erfolgen:
+
+```bash
+/opt/digiverso/basex
+```
+
+Anschließend muss die Jetty-Konfiguration angepasst werden, so dass die Applikation nur auf localhost erreichbar ist. Dafür muss in der Konfigurationsdatei /opt/digiverso/basex/webapp/WEB-INF/jetty.xml sichergestellt werden, dass der host auf 127.0.0.1 steht:
+
+```bash
+jetty.xml
+  <Set name="host">127.0.0.1</Set>
+```
+
+Anschließend wird die Systemd Unit File an diesen Pfad installiert:
+
+```bash
+/etc/systemd/system/basexhttp.service
+```
+
+Diese hat folgenden Aufbau:
+
+```bash
+basexhttp.service
+[Unit]
+Description=BaseX HTTP server
+​
+[Service]
+User=tomcat8
+Group=tomcat8
+ProtectSystem=full
+ExecStart=/opt/digiverso/basex/bin/basexhttp
+ExecStop=/opt/digiverso/basex/bin/basexhttp stop
+​
+[Install]
+WantedBy=multi-user.target
+```
+
+Anschließend muss der Daemon neu geladen, die Unit-File aktiviert und die Datenbank neu gestartet werden:
+
+```bash
+systemctl daemon-reload
+systemctl enable basexhttp.service
+systemctl start basexhttp.service
+```
+
+Damit das Admin-Interface auch von extern erreichbar ist, kann dieses im Apache zum Beispiel mit dem folgenden Abschnitt konfiguriert werden:
+
+```bash
+    redirect 301 /basex http://example.com/basex/
+    <Location /basex/>
+            Require ip 188.40.71.142
+            ProxyPass http://localhost:8984/ retry=0
+            ProxyPassReverse http://localhost:8984/
+    </Location>
+```
+
+Im Anschluß daran muss noch das Apache Modul proxy_http aktiviert und der Apache neu gestartet werden, damit die Anpassungen wirksam werden:
+
+```bash
+a2enmod proxy_http
+systemctl restart apache2
+```
+
+### Datenbank einrichten
+
+Die XML Datenbank kann nach der Installation unter folgender URL erreicht werden:
+
+​<http://localhost:8984/dba/login>​
+
+Die Zugangsdaten lauten admin/admin. Nach dem ersten Anmelden sollte daher als erstes ein neues Passwort vergeben werden. Dazu muss der Menüeintrag Users geöffnet werden. Hier kann der Accountname angeklickt und das neue Passwort gesetzt werden.
+
+Anschließend kann eine neue Datenbank für die EAD Dateien erzeugt werden. Dazu muss der Menüeintrag Databases ausgewählt werden. Mittels Create gelangt man in den Dialog dazu. Hier muss einTitel für die Datenbank vergeben werden. Alle anderen Einstellungen können so bleiben.
+
+### Dateien hinzufügen und löschen
+
+Nachdem die Datenbank erstellt wurde, können nun EAD-XML-Dokumente hinzugefügt werden. Dazu kann unter Databases die erstellte Datenbank ausgewählt werden. Daraufhin öffnet sich ein Fenster, in dem die zur Datenbank gehörenden Dateien verwaltet werden können. Neue Dateien lassen sich über den Dialog Add auswählen und hochladen. Hier kann im Feld Input eine EAD-Datei ausgewählt werden. Mittels Add wird die Datei hinzugefügt und die Übersichtsseite geladen. Hier können auch Dateien entfernt werden. Dazu müssen sie mittels Checkbox markiert und dann über Delete gelöscht werden. Das Aktualisieren einer EAD-Datei ist nur über Löschen und erneutes Hinzufügen möglich.
+
+### Definition der Anfragen
+
+Um das Interface zur Abfrage für Goobi einzurichten, muss der Datenbank bekannt gemacht werden, wie eine Anfrage aussieht, was damit geschehen soll und wie das Ergebnis auszusehen hat. Dafür bietet BaseX verschiedene Optionen an. Wir haben uns für RESTXQ entschieden, da diese im Gegensatz zur REST Schnittstelle keine Authentication benötigt.
+
+Dazu müssen im Verzeichnis /opt/digiverso/basex/webapp/ neue Dateien erzeugt werden.
+
+```xq
+listDatabases.xq
+
+(: XQuery file to return the names of all available databases :)
+module namespace page = 'http://basex.org/examples/web-pagepage';
+(:declare default element namespace "urn:isbn:1-931666-22-9";:)
+
+declare
+  %rest:path("/databases")
+  %rest:single
+  %rest:GET
+
+function page:getDatabases() {
+  let $ead := db:list()
+  
+  return
+    <databases>
+    {
+      for $c in $ead
+      return
+        <database>
+          <name>
+            {$c}
+          </name>
+          {
+          let $files := db:list-details($c)
+          return
+            <details>
+              {$files}
+            </details>
+          }
+        </database>
+    }
+  </databases>
+};
+```
+
+```xq
+openDatabase.xq
+
+(: XQuery file to return a full ead record :)
+module namespace page = 'http://basex.org/examples/web-page';
+declare default element namespace "urn:isbn:1-931666-22-9";
+
+declare
+  %rest:path("/db/{$database}/{$filename}")
+  %rest:single
+  %rest:GET
+
+function page:getDatbase($database, $filename) {
+  let $ead := db:open($database, $filename)/ead
+  return
+  <collection>
+    {$ead}
+  </collection>
+};
+```
+
+```xq
+importFile.xq
+
+(: XQuery file to return a full ead record :)
+module namespace page = 'http://basex.org/examples/web-page';
+declare default element namespace "urn:isbn:1-931666-22-9";
+
+declare
+  %rest:GET
+  %rest:path("/import/{$db}/{$filename}")
+
+updating function page:import($db, $filename) {
+  let $path := '/opt/digiverso/basex/import/' || $filename
+  let $details := db:list-details($db, $filename)
+
+  return
+    if (fn:empty($details)) then
+      db:add($db, doc($path), $filename)
+    else
+      db:replace($db, $filename, doc($path))
+};
+
+```
 
 ## Konfiguration des Plugins
 
