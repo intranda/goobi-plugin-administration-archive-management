@@ -954,6 +954,16 @@ div.no-element-selected {
                         <div class="box-content">
                             <div class="table">
                                 <h:form>
+                                                                            <h:commandLink
+                                            styleClass="btn margin-sides-10 font-size-s pull-right"
+                                            type="submit"
+                                            >
+                                            
+                                           <x:updateActionListener
+                                                        property="#{AdministrationForm.administrationPlugin.displayMode}"
+                                                        value="" />
+                                            <h:outputText value="#{msgs.abbrechen}" />
+                                        </h:commandLink>
                                     <x:dataTable
                                         id="selectNodeArea"
                                         forceId="true"

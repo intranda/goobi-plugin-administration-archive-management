@@ -75,8 +75,6 @@ import ugh.fileformats.mets.MetsMods;
 @Log4j2
 public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
-    // TODO cancel button for moveNode mode
-
     @Getter
     @Setter
     private String displayMode = "";
