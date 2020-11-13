@@ -17,7 +17,7 @@
     <Name>URN</Name>
     <language name="de">URN</language>
     <language name="en">URN</language>
-  </MetadataType>
+  </MetadataType> 
   <MetadataType>
     <Name>_ucc_id</Name>
     <language name="de">UCC_ID</language>
@@ -1590,7 +1590,11 @@
     <language name="en">Related item</language>
   </MetadataType>
 
-
+  <MetadataType>
+    <Name>NodeId</Name>
+    <language name="de">ID des Knotens</language>
+    <language name="en">Node ID</language>
+  </MetadataType>
   <MetadataType>
     <Name>EADID</Name>
     <language name="de">EAD ID</language>
@@ -1600,11 +1604,6 @@
     <Name>RecordID</Name>
     <language name="de">Record ID</language>
     <language name="en">Record ID</language>
-  </MetadataType>
-  <MetadataType>
-    <Name>UnitID</Name>
-    <language name="de">Unit ID</language>
-    <language name="en">Unit ID</language>
   </MetadataType>
   <MetadataType>
     <Name>UnitID</Name>
@@ -1717,6 +1716,7 @@
     <metadata DefaultDisplay="true" num="1o">TitleDocMain</metadata>
     <metadata num="1o">EADID</metadata>
     <metadata num="1o">RecordID</metadata>
+    <metadata num="1o">NodeId</metadata>
     <metadata num="1o">UnitID</metadata>
     <metadata DefaultDisplay="true" num="*">shelfmarksource</metadata>
     <metadata num="1o">PublicationYear</metadata>
@@ -1763,6 +1763,7 @@
     <metadata DefaultDisplay="true" num="1o">TitleDocMain</metadata>
     <metadata num="1o">EADID</metadata>
     <metadata num="1o">RecordID</metadata>
+    <metadata num="1o">NodeId</metadata>
     <metadata num="1o">UnitID</metadata>
     <metadata DefaultDisplay="true" num="*">shelfmarksource</metadata>
     <metadata num="1o">PublicationYear</metadata>
@@ -1809,6 +1810,7 @@
     <metadata DefaultDisplay="true" num="1o">TitleDocMain</metadata>
     <metadata num="1o">EADID</metadata>
     <metadata num="1o">RecordID</metadata>
+    <metadata num="1o">NodeId</metadata>
     <metadata num="1o">UnitID</metadata>
     <metadata DefaultDisplay="true" num="*">shelfmarksource</metadata>
     <metadata num="1o">PublicationYear</metadata>
@@ -1854,6 +1856,7 @@
     <metadata DefaultDisplay="true" num="1o">TitleDocMain</metadata>
     <metadata num="1o">EADID</metadata>
     <metadata num="1o">RecordID</metadata>
+    <metadata num="1o">NodeId</metadata>
     <metadata num="1o">UnitID</metadata>
     <metadata DefaultDisplay="true" num="*">shelfmarksource</metadata>
     <metadata num="1o">PublicationYear</metadata>
@@ -1899,6 +1902,7 @@
     <metadata DefaultDisplay="true" num="1o">TitleDocMain</metadata>
     <metadata num="1o">EADID</metadata>
     <metadata num="1o">RecordID</metadata>
+    <metadata num="1o">NodeId</metadata>    
     <metadata num="1o">UnitID</metadata>
     <metadata DefaultDisplay="true" num="*">shelfmarksource</metadata>
     <metadata num="1o">PublicationYear</metadata>
@@ -1944,6 +1948,7 @@
     <metadata DefaultDisplay="true" num="1o">TitleDocMain</metadata>
     <metadata num="1o">EADID</metadata>
     <metadata num="1o">RecordID</metadata>
+    <metadata num="1o">NodeId</metadata>    
     <metadata num="1o">UnitID</metadata>
     <metadata DefaultDisplay="true" num="*">shelfmarksource</metadata>
     <metadata num="1o">PublicationYear</metadata>
@@ -7321,6 +7326,12 @@
         <InternalName>URN</InternalName>
         <WriteXPath>./mods:mods/#mods:identifier[@type='urn']</WriteXPath>
       </Metadata>
+      <Metadata>
+        <InternalName>NodeId</InternalName>
+        <WriteXPath>./mods:mods/#mods:identifier[@type='ead node']</WriteXPath>
+      </Metadata>      
+      
+      
       <!-- Persons start -->
       <Metadata>
         <InternalName>Addressee</InternalName>

@@ -21,8 +21,8 @@
 				<excludes>
 					<exclude>**/*.java</exclude>
                     <!-- TODO remove the two lines below after development is finished -->
-                    <exclude>META-INF/tags/**/*.xhtml</exclude>
-                    <exclude>META-INF/intranda.taglib.xml</exclude>
+<!--                     <exclude>META-INF/tags/**/*.xhtml</exclude> -->
+<!--                     <exclude>META-INF/intranda.taglib.xml</exclude> -->
 				</excludes>
 			</resource>
 		</resources>

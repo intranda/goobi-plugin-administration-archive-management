@@ -67,6 +67,7 @@ import ugh.dl.DigitalDocument;
 import ugh.dl.DocStruct;
 import ugh.dl.Fileformat;
 import ugh.dl.Metadata;
+import ugh.dl.MetadataType;
 import ugh.dl.Prefs;
 import ugh.exceptions.UGHException;
 import ugh.fileformats.mets.MetsMods;
@@ -1229,6 +1230,16 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
             Metadata identifier = new Metadata(prefs.getMetadataTypeByName("CatalogIDDigital"));
             identifier.setValue(selectedEntry.getId());
             logical.addMetadata(identifier);
+            try {
+                MetadataType eadIdType = prefs.getMetadataTypeByName("NodeId");
+                if (eadIdType != null) {
+                    Metadata eadid = new Metadata(eadIdType);
+                    eadid.setValue(selectedEntry.getId());
+                    logical.addMetadata(identifier);
+                }
+            } catch (UGHException e) {
+                log.error(e);
+            }
 
             // import configured metadata
             for (EadMetadataField emf : selectedEntry.getIdentityStatementAreaList()) {
