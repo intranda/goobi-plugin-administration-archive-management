@@ -3,8 +3,8 @@
     <basexUrl>http://localhost:8984/</basexUrl>
     <eadExportFolder>/opt/digiverso/basex/import</eadExportFolder>
     <config>
-        <!-- define the name(s) of all tectonics for t -->
-        <tectonics>*</tectonics>
+        <!-- define the name(s) of all archives for the plugin -->
+        <archive>*</archive>
         <!-- define the process template for process creation. If empty or missing, processes can't be created  -->
         <processTemplateId>309544</processTemplateId>
         <!-- define metadata fields. All fields are displayed on the UI based on the level and the order within this file.

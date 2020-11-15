@@ -1,7 +1,7 @@
 <project default="devbuild">
 
 	<!-- Simply set the name of the plugin here, e.g. "fileUpload") instead of "sample" -->
-	<property name="name" value="tektonik" />
+	<property name="name" value="archive" />
 
 	<!-- Use this task to let ant copy the compiled jar files to the target folders for development  -->
 	<target name="devbuild">

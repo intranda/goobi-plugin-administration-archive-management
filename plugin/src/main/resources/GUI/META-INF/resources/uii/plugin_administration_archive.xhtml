@@ -328,16 +328,16 @@ div.no-element-selected {
                         </div>
                         <div class="box-content">
 
-                            <h:panelGroup rendered="#{!LoginForm.hasRole('Plugin_Administration_Tektonik')}">
+                            <h:panelGroup rendered="#{!LoginForm.hasRole('Plugin_Administration_Archive')}">
                                 <h:outputText
                                     styleClass="alert alert-danger alert-dismissable margin-bottom-10 margin-top-10"
-                                    value="#{msgs.plugin_administration_missingPermission} Plugin_Administration_Tektonik"></h:outputText>
+                                    value="#{msgs.plugin_administration_missingPermission} Plugin_Administration_Archive"></h:outputText>
                             </h:panelGroup>
 
                             <h:panelGroup
                                 id="actionform"
                                 styleClass="col-sm-12"
-                                rendered="#{LoginForm.hasRole('Plugin_Administration_Tektonik')}">
+                                rendered="#{LoginForm.hasRole('Plugin_Administration_Archive')}">
                                 <h:panelGroup
                                     layout="block"
                                     styleClass="row"
@@ -350,9 +350,9 @@ div.no-element-selected {
                                                 styleClass="center"
                                                 rendered="#{AdministrationForm.administrationPlugin.displayMode == ''}">
                                                 <p>
-                                                    <strong>#{msgs.plugin_administration_tectonics_SelectionHeading}</strong>
+                                                    <strong>#{msgs.plugin_administration_archive_selectionHeading}</strong>
                                                 </p>
-                                                <p>#{msgs.plugin_administration_tectonics_SelectionText}</p>
+                                                <p>#{msgs.plugin_administration_archive_selectionText}</p>
 
 
                                                 <h:selectOneMenu
@@ -365,9 +365,9 @@ div.no-element-selected {
                                                     <f:selectItems value="#{AdministrationForm.administrationPlugin.possibleDatabases}" />
                                                 </h:selectOneMenu>
                                                 <h:commandLink styleClass="btn  font-size-s  margin-top-10">
-                                                    <h:outputText value="#{msgs.plugin_administration_tectonics_createNewTectonic}" />
+                                                    <h:outputText value="#{msgs.plugin_administration_archive_createNewArchive}" />
                                                     <f:setPropertyActionListener
-                                                        value="createTectonics"
+                                                        value="createArchive"
                                                         target="#{AdministrationForm.administrationPlugin.displayMode}" />
                                                     <f:ajax render="@form" />
                                                 </h:commandLink>
@@ -376,21 +376,21 @@ div.no-element-selected {
                                                     styleClass="btn btn-primary font-size-s pull-right margin-top-10"
                                                     id="absenden"
                                                     action="#{AdministrationForm.administrationPlugin.loadSelectedDatabase}">
-                                                    <h:outputText value="#{msgs.plugin_administration_tectonics_loadDatabase}" />
+                                                    <h:outputText value="#{msgs.plugin_administration_archive_loadDatabase}" />
                                                 </h:commandLink>
                                             </h:panelGroup>
 
                                             <h:panelGroup
                                                 layout="block"
                                                 styleClass="center"
-                                                rendered="#{AdministrationForm.administrationPlugin.displayMode == 'createTectonics'}">
+                                                rendered="#{AdministrationForm.administrationPlugin.displayMode == 'createArchive'}">
 
                                                 <p>
-                                                    <strong>#{msgs.plugin_administration_tectonics_creationHeading}</strong>
+                                                    <strong>#{msgs.plugin_administration_archive_creationHeading}</strong>
                                                 </p>
 
 
-                                                <p>#{msgs.plugin_administration_tectonics_creation_selectDatabase}</p>
+                                                <p>#{msgs.plugin_administration_archive_creation_selectDatabase}</p>
                                                 <h:selectOneMenu
                                                     styleClass="form-control"
                                                     value="#{AdministrationForm.administrationPlugin.databaseName}">
@@ -400,7 +400,7 @@ div.no-element-selected {
                                                     <f:selectItems value="#{AdministrationForm.administrationPlugin.distinctDatabaseNames}" />
                                                 </h:selectOneMenu>
 
-                                                <p>#{msgs.plugin_administration_tectonics_creation_filename}</p>
+                                                <p>#{msgs.plugin_administration_archive_creation_filename}</p>
                                                 <h:inputText
                                                     styleClass="form-control"
                                                     value="#{AdministrationForm.administrationPlugin.fileName}" />
@@ -416,7 +416,7 @@ div.no-element-selected {
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right margin-top-10"
                                                     action="#{AdministrationForm.administrationPlugin.createNewDatabase}">
-                                                    <h:outputText value="#{msgs.plugin_administration_tectonics_createNewTectonic}" />
+                                                    <h:outputText value="#{msgs.plugin_administration_archive_createNewArchive}" />
                                                 </h:commandLink>
                                             </h:panelGroup>
                                         </div>
@@ -532,7 +532,7 @@ div.no-element-selected {
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.addNode}"
-                                                    title="#{msgs.plugin_administration_tectonics_newNode}">
+                                                    title="#{msgs.plugin_administration_archive_newNode}">
                                                     <i class="fa fa-plus"></i>
                                                     <f:ajax
                                                         execute="hierarchy"
@@ -542,7 +542,7 @@ div.no-element-selected {
                                                 <h:commandLink
                                                     styleClass="btn  btn-danger font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.deleteNode}"
-                                                    title="#{msgs.plugin_administration_tectonics_deleteNode}">
+                                                    title="#{msgs.plugin_administration_archive_deleteNode}">
                                                     <i class="fa fa-trash-o" />
                                                     <f:ajax
                                                         execute="hierarchy"
@@ -552,15 +552,15 @@ div.no-element-selected {
 
                                                 <h:commandLink
                                                     styleClass="btn btn-success font-size-s pull-right leftArea-button"
-                                                    action="#{AdministrationForm.administrationPlugin.validateTectonic}"
-                                                    title="#{msgs.plugin_administration_tectonics_validate}">
+                                                    action="#{AdministrationForm.administrationPlugin.validateArchive}"
+                                                    title="#{msgs.plugin_administration_archive_validate}">
                                                     <i class="fa fa-check"></i>
                                                 </h:commandLink>
 
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.moveNodeUp}"
-                                                    title="#{msgs.plugin_administration_tectonics_moveNodeUp}"
+                                                    title="#{msgs.plugin_administration_archive_moveNodeUp}"
                                                     style="margin-top: 150px;">
                                                     <i class="fa fa-chevron-up" />
                                                     <f:ajax
@@ -571,7 +571,7 @@ div.no-element-selected {
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.moveNodeDown}"
-                                                    title="#{msgs.plugin_administration_tectonics_moveNodeDown}">
+                                                    title="#{msgs.plugin_administration_archive_moveNodeDown}">
                                                     <i class="fa fa-chevron-down" />
                                                     <f:ajax
                                                         execute="hierarchy"
@@ -580,7 +580,7 @@ div.no-element-selected {
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.moveHierarchyDown}"
-                                                    title="#{msgs.plugin_administration_tectonics_moveHierarchyDown}">
+                                                    title="#{msgs.plugin_administration_archive_moveHierarchyDown}">
                                                     <i class="fa fa-chevron-right" />
                                                     <f:ajax
                                                         execute="hierarchy"
@@ -589,7 +589,7 @@ div.no-element-selected {
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.moveHierarchyUp}"
-                                                    title="#{msgs.plugin_administration_tectonics_moveHierarchyUp}">
+                                                    title="#{msgs.plugin_administration_archive_moveHierarchyUp}">
                                                     <i class="fa fa-chevron-left" />
                                                     <f:ajax
                                                         execute="hierarchy"
@@ -601,7 +601,7 @@ div.no-element-selected {
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.prepareMoveNode}"
-                                                    title="#{msgs.plugin_administration_tectonics_moveNode}">
+                                                    title="#{msgs.plugin_administration_archive_moveNode}">
                                                     <i class="fa fa-arrows" />
                                                     <x:updateActionListener
                                                         property="#{AdministrationForm.administrationPlugin.displayMode}"
@@ -616,9 +616,9 @@ div.no-element-selected {
                                         <h:commandLink
                                             styleClass="btn margin-sides-10 font-size-s"
                                             type="submit"
-                                            action="#{AdministrationForm.administrationPlugin.downloadTectonic}">
+                                            action="#{AdministrationForm.administrationPlugin.downloadArchive}">
                                             <i class="fa fa-save margin-right-5"></i>
-                                            <h:outputText value="#{msgs.plugin_administration_tectonics_download}" />
+                                            <h:outputText value="#{msgs.plugin_administration_archive_download}" />
                                         </h:commandLink>
 
 
@@ -627,9 +627,9 @@ div.no-element-selected {
                                             styleClass="btn btn-success submitOnEnter pull-right font-size-s margin-bottom-most"
                                             id="absenden"
                                             type="submit"
-                                            action="#{AdministrationForm.administrationPlugin.saveTectonicAndLeave}">
+                                            action="#{AdministrationForm.administrationPlugin.saveArchiveAndLeave}">
                                             <i class="fa fa-save margin-right-5"></i>
-                                            <h:outputText value="#{msgs.plugin_administration_tectonics_saveAndExit}" />
+                                            <h:outputText value="#{msgs.plugin_administration_archive_saveAndExit}" />
                                         </h:commandLink>
                                         <h:commandLink
                                             styleClass="btn margin-sides-10 font-size-s pull-right"
@@ -653,9 +653,9 @@ div.no-element-selected {
                                             rendered="#{AdministrationForm.administrationPlugin.selectedEntry == null}">
 
                                             <p>
-                                                <strong>#{msgs.plugin_administration_tectonics_noElementSelectedHeading}</strong>
+                                                <strong>#{msgs.plugin_administration_archive_noElementSelectedHeading}</strong>
                                             </p>
-                                            <p>#{msgs.plugin_administration_tectonics_noElementSelectedText}</p>
+                                            <p>#{msgs.plugin_administration_archive_noElementSelectedText}</p>
 
                                         </h:panelGroup>
                                         <h:panelGroup
@@ -681,13 +681,13 @@ div.no-element-selected {
                                                             styleClass="form-group"
                                                             id="process-creation-area">
                                                             <div class="col-sm-3 control-label">
-                                                                <h:outputText value="#{msgs.plugin_administration_tectonics_process}" />
+                                                                <h:outputText value="#{msgs.plugin_administration_archive_process}" />
                                                             </div>
                                                             <h:panelGroup
                                                                 layout="block"
                                                                 styleClass="col-sm-6 node-type-selection"
                                                                 rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
-                                                                <h:outputText value="#{msgs.plugin_administration_tectonics_process_no_process}" />
+                                                                <h:outputText value="#{msgs.plugin_administration_archive_process_no_process}" />
                                                             </h:panelGroup>
                                                             <h:panelGroup
                                                                 layout="block"
@@ -697,7 +697,7 @@ div.no-element-selected {
                                                                     action="#{AdministrationForm.administrationPlugin.createProcess}"
                                                                     id="process-creation-button"
                                                                     styleClass="btn btn-primary font-size-s pull-right ">
-                                                                    <h:outputText value="#{msgs.plugin_administration_tectonics_process_create_process}" />
+                                                                    <h:outputText value="#{msgs.plugin_administration_archive_process_create_process}" />
                                                                 </h:commandLink>
                                                             </h:panelGroup>
 
@@ -721,12 +721,12 @@ div.no-element-selected {
                                                             styleClass="form-group"
                                                             id="node-type">
                                                             <div class="col-sm-3 control-label">
-                                                                <h:outputText value="#{msgs.plugin_administration_tectonics_nodeType}" />
+                                                                <h:outputText value="#{msgs.plugin_administration_archive_nodeType}" />
                                                             </div>
                                                             <div class="col-sm-9 node-type-selection">
                                                                 <h:commandLink
                                                                     styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'folder' ? 'node-selected' : ''}"
-                                                                    title="#{msgs.plugin_administration_tectonics_nodeType_folder}">
+                                                                    title="#{msgs.plugin_administration_archive_nodeType_folder}">
                                                                     <i
                                                                         class="fa fa-folder-open-o"
                                                                         aria-hidden="true"></i>
@@ -737,7 +737,7 @@ div.no-element-selected {
                                                                 </h:commandLink>
                                                                 <h:commandLink
                                                                     styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'file' ? 'node-selected' : ''}"
-                                                                    title="#{msgs.plugin_administration_tectonics_nodeType_file}">
+                                                                    title="#{msgs.plugin_administration_archive_nodeType_file}">
                                                                     <i
                                                                         class="fa fa-file-text-o"
                                                                         aria-hidden="true"></i>
@@ -749,7 +749,7 @@ div.no-element-selected {
 
                                                                 <h:commandLink
                                                                     styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'image' ? 'node-selected' : ''}"
-                                                                    title="#{msgs.plugin_administration_tectonics_nodeType_image}">
+                                                                    title="#{msgs.plugin_administration_archive_nodeType_image}">
                                                                     <i
                                                                         class="fa fa-file-image-o"
                                                                         aria-hidden="true"></i>
@@ -761,7 +761,7 @@ div.no-element-selected {
 
                                                                 <h:commandLink
                                                                     styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'audio' ? 'node-selected' : ''}"
-                                                                    title="#{msgs.plugin_administration_tectonics_nodeType_audio}">
+                                                                    title="#{msgs.plugin_administration_archive_nodeType_audio}">
                                                                     <i
                                                                         class="fa fa-file-audio-o"
                                                                         aria-hidden="true"></i>
@@ -772,7 +772,7 @@ div.no-element-selected {
                                                                 </h:commandLink>
                                                                 <h:commandLink
                                                                     styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'video' ? 'node-selected' : ''}"
-                                                                    title="#{msgs.plugin_administration_tectonics_nodeType_video}">
+                                                                    title="#{msgs.plugin_administration_archive_nodeType_video}">
                                                                     <i
                                                                         class="fa fa-file-video-o"
                                                                         aria-hidden="true"></i>
@@ -784,7 +784,7 @@ div.no-element-selected {
 
                                                                 <h:commandLink
                                                                     styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'other' ? 'node-selected' : ''}"
-                                                                    title="#{msgs.plugin_administration_tectonics_nodeType_other}">
+                                                                    title="#{msgs.plugin_administration_archive_nodeType_other}">
                                                                     <i
                                                                         class="fa fa-file-o"
                                                                         aria-hidden="true"></i>
@@ -803,14 +803,14 @@ div.no-element-selected {
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border form-group"
                                                         id="identity-statement-area">
-                                                        <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
+                                                        <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayIdentityStatementArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayIdentityStatementArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayIdentityStatementArea}" />
                                                             <f:ajax render="identity-statement-area" />
                                                         </h:commandLink>
-                                                        <h:outputText value="#{msgs.plugin_administration_tectonics_area_identity}" />
+                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_identity}" />
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.identityStatementAreaList}"
                                                             area="identicationArea"
@@ -822,14 +822,14 @@ div.no-element-selected {
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border"
                                                         id="context-area">
-                                                        <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
+                                                        <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayContextArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayContextArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayContextArea}" />
                                                             <f:ajax render="context-area" />
                                                         </h:commandLink>
-                                                        <h:outputText value="#{msgs.plugin_administration_tectonics_area_context}" />
+                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_context}" />
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.contextAreaList}"
                                                             area="contextArea"
@@ -841,14 +841,14 @@ div.no-element-selected {
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border"
                                                         id="content-area">
-                                                        <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
+                                                        <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayContentArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayContentArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayContentArea}" />
                                                             <f:ajax render="content-area" />
                                                         </h:commandLink>
-                                                        <h:outputText value="#{msgs.plugin_administration_tectonics_area_content}" />
+                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_content}" />
 
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.contentAndStructureAreaAreaList}"
@@ -861,14 +861,14 @@ div.no-element-selected {
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border"
                                                         id="access-area">
-                                                        <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
+                                                        <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayAccessArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayAccessArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayAccessArea}" />
                                                             <f:ajax render="access-area" />
                                                         </h:commandLink>
-                                                        <h:outputText value="#{msgs.plugin_administration_tectonics_area_access}" />
+                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_access}" />
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.accessAndUseAreaList}"
                                                             area="accessArea"
@@ -880,14 +880,14 @@ div.no-element-selected {
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border"
                                                         id="materials-area">
-                                                        <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
+                                                        <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayMaterialsArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayMaterialsArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayMaterialsArea}" />
                                                             <f:ajax render="materials-area" />
                                                         </h:commandLink>
-                                                        <h:outputText value="#{msgs.plugin_administration_tectonics_area_materials}" />
+                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_materials}" />
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.alliedMaterialsAreaList}"
                                                             area="materialsArea"
@@ -899,14 +899,14 @@ div.no-element-selected {
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border"
                                                         id="notes-area">
-                                                        <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
+                                                        <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayNotesArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayNotesArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayNotesArea}" />
                                                             <f:ajax render="notes-area" />
                                                         </h:commandLink>
-                                                        <h:outputText value="#{msgs.plugin_administration_tectonics_area_notes}" />
+                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_notes}" />
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.notesAreaList}"
                                                             area="notesArea"
@@ -918,14 +918,14 @@ div.no-element-selected {
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border"
                                                         id="control-area">
-                                                        <h:commandLink title="#{msgs.plugin_administration_tectonics_show_details}">
+                                                        <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayControlArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayControlArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayControlArea}" />
                                                             <f:ajax render="control-area" />
                                                         </h:commandLink>
-                                                        <h:outputText value="#{msgs.plugin_administration_tectonics_area_descriptionControl}" />
+                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_descriptionControl}" />
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.descriptionControlAreaList}"
                                                             area="descriptionArea"

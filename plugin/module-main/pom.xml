@@ -2,15 +2,15 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.intranda.goobi.plugins.administration</groupId>
-	<artifactId>tektonik-main</artifactId>
+	<artifactId>archive-main</artifactId>
 	<version>1.0.0</version>
 	<properties>
-		<jar.name>plugin_intranda_administration_tektonik</jar.name>
+		<jar.name>plugin_intranda_administration_archive</jar.name>
 		<dest.folder>/opt/digiverso/goobi/plugins/administration/</dest.folder>
 	</properties>
 	<parent>
 		<groupId>de.intranda.goobi.plugins.administration</groupId>
-		<artifactId>tektonik</artifactId>
+		<artifactId>archive</artifactId>
 		<version>1.0.0</version>
 	</parent>
 	<build>
@@ -99,7 +99,7 @@
         </plugins>
     </build>
 	<scm>
-		<url>scm:git:ssh://git@gitea.intranda.com:goobi-workflow/goobi-plugin-administration-tektonik.git</url>
-		<connection>scm:git:ssh://git@gitea.intranda.com:goobi-workflow/goobi-plugin-administration-tektonik.git</connection>
+		<url>scm:git:ssh://git@gitea.intranda.com:goobi-workflow/goobi-plugin-administration-archive.git</url>
+		<connection>scm:git:ssh://git@gitea.intranda.com:goobi-workflow/goobi-plugin-administration-archive.git</connection>
 	</scm>
 </project>

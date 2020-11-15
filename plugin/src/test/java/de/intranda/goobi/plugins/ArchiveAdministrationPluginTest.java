@@ -43,7 +43,7 @@ import de.sub.goobi.persistence.managers.VocabularyManager;
 @PrepareForTest({ ConfigurationHelper.class, HttpClientHelper.class, VocabularyManager.class, ProcessManager.class })
 @PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*" })
 
-public class TektonikAdministrationPluginTest {
+public class ArchiveAdministrationPluginTest {
 
     private String resourcesFolder;
 
@@ -120,13 +120,13 @@ public class TektonikAdministrationPluginTest {
 
     @Test
     public void testConstructor() throws IOException {
-        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
         assertNotNull(plugin);
     }
 
     @Test
     public void testListDatabases() {
-        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         List<String> databases = plugin.getPossibleDatabases();
         assertEquals(3, databases.size());
@@ -137,7 +137,7 @@ public class TektonikAdministrationPluginTest {
 
     @Test
     public void testFlatList() {
-        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -158,7 +158,7 @@ public class TektonikAdministrationPluginTest {
 
     @Test
     public void testLoadDatabase() {
-        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -318,7 +318,7 @@ public class TektonikAdministrationPluginTest {
 
         assertEquals(1, entry.getOrderNumber().intValue());
         assertEquals(0, entry.getHierarchy().intValue());
-        assertEquals("tectonics header title", entry.getLabel());
+        assertEquals("archive header title", entry.getLabel());
 
         assertEquals("eadid", eadid.getValues().get(0).getValue());
         assertEquals("recordid", recordid.getValues().get(0).getValue());
@@ -485,7 +485,7 @@ public class TektonikAdministrationPluginTest {
 
     @Test
     public void testCreateEadDocument() throws Exception {
-        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -503,41 +503,41 @@ public class TektonikAdministrationPluginTest {
         Document doc = new SAXBuilder(XMLReaders.NONVALIDATING).build(createdEadFile.toFile());
 
         Element ead = doc.getRootElement();
-        Element eadHeader = ead.getChild("eadheader", TektonikAdministrationPlugin.ns);
-        assertEquals("eadid", eadHeader.getChildText("eadid", TektonikAdministrationPlugin.ns));
+        Element eadHeader = ead.getChild("eadheader", ArchiveAdministrationPlugin.ns);
+        assertEquals("eadid", eadHeader.getChildText("eadid", ArchiveAdministrationPlugin.ns));
 
-        assertEquals("tectonics header title",
-                eadHeader.getChild("filedesc", TektonikAdministrationPlugin.ns)
-                .getChild("titlestmt", TektonikAdministrationPlugin.ns)
-                .getChildText("titleproper", TektonikAdministrationPlugin.ns));
-        Element archdesc = ead.getChild("archdesc", TektonikAdministrationPlugin.ns);
-        Element did = archdesc.getChild("did", TektonikAdministrationPlugin.ns);
-        Element dsc = archdesc.getChild("dsc", TektonikAdministrationPlugin.ns);
+        assertEquals("archive header title",
+                eadHeader.getChild("filedesc", ArchiveAdministrationPlugin.ns)
+                .getChild("titlestmt", ArchiveAdministrationPlugin.ns)
+                .getChildText("titleproper", ArchiveAdministrationPlugin.ns));
+        Element archdesc = ead.getChild("archdesc", ArchiveAdministrationPlugin.ns);
+        Element did = archdesc.getChild("did", ArchiveAdministrationPlugin.ns);
+        Element dsc = archdesc.getChild("dsc", ArchiveAdministrationPlugin.ns);
 
         assertEquals(10, did.getChildren().size());
         assertEquals("unitid", did.getChildren().get(0).getText());
         assertEquals(17, dsc.getChildren().size());
 
         Element c = dsc.getChildren().get(16);
-        Element subDid = c.getChild("did", TektonikAdministrationPlugin.ns);
-        assertEquals("first level id", subDid.getChildText("unitid", TektonikAdministrationPlugin.ns));
-        assertEquals("first level title", subDid.getChildText("unittitle", TektonikAdministrationPlugin.ns));
+        Element subDid = c.getChild("did", ArchiveAdministrationPlugin.ns);
+        assertEquals("first level id", subDid.getChildText("unitid", ArchiveAdministrationPlugin.ns));
+        assertEquals("first level title", subDid.getChildText("unittitle", ArchiveAdministrationPlugin.ns));
 
-        Element processinfo = archdesc.getChild("processinfo", TektonikAdministrationPlugin.ns);
-        Element list = processinfo.getChild("list", TektonikAdministrationPlugin.ns);
-        assertEquals("-", list.getChildText("item", TektonikAdministrationPlugin.ns));
+        Element processinfo = archdesc.getChild("processinfo", ArchiveAdministrationPlugin.ns);
+        Element list = processinfo.getChild("list", ArchiveAdministrationPlugin.ns);
+        assertEquals("-", list.getChildText("item", ArchiveAdministrationPlugin.ns));
 
-        Element event = ead.getChild("control", TektonikAdministrationPlugin.ns)
-                .getChild("maintenancehistory", TektonikAdministrationPlugin.ns)
-                .getChild("maintenanceevent", TektonikAdministrationPlugin.ns);
-        assertEquals("Created", event.getChild("eventtype", TektonikAdministrationPlugin.ns).getText());
-        assertNotNull(event.getChild("eventdatetime", TektonikAdministrationPlugin.ns).getText());
+        Element event = ead.getChild("control", ArchiveAdministrationPlugin.ns)
+                .getChild("maintenancehistory", ArchiveAdministrationPlugin.ns)
+                .getChild("maintenanceevent", ArchiveAdministrationPlugin.ns);
+        assertEquals("Created", event.getChild("eventtype", ArchiveAdministrationPlugin.ns).getText());
+        assertNotNull(event.getChild("eventdatetime", ArchiveAdministrationPlugin.ns).getText());
 
     }
 
     @Test
     public void testSetSelectedEntry() {
-        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
 
         EadEntry root = new EadEntry(0, 0);
         EadEntry firstRootChild = new EadEntry(0, 1);
@@ -569,7 +569,7 @@ public class TektonikAdministrationPluginTest {
 
     @Test
     public void testAddNode() {
-        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -592,7 +592,7 @@ public class TektonikAdministrationPluginTest {
 
     @Test
     public void testDeleteNode() {
-        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -615,7 +615,7 @@ public class TektonikAdministrationPluginTest {
 
     @Test
     public void testPrepareMoveNode() {
-        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -655,7 +655,7 @@ public class TektonikAdministrationPluginTest {
     @Test
     public void testMoveNode() {
 
-        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -679,7 +679,7 @@ public class TektonikAdministrationPluginTest {
 
     @Test
     public void testMoveNodeUp() {
-        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -718,7 +718,7 @@ public class TektonikAdministrationPluginTest {
 
     @Test
     public void testMoveNodeDown() {
-        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -757,7 +757,7 @@ public class TektonikAdministrationPluginTest {
 
     @Test
     public void testMoveHierarchyDown() {
-        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -791,7 +791,7 @@ public class TektonikAdministrationPluginTest {
 
     @Test
     public void testMoveHierarchyUp() {
-        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -829,7 +829,7 @@ public class TektonikAdministrationPluginTest {
 
     @Test
     public void testSearch() {
-        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -846,7 +846,7 @@ public class TektonikAdministrationPluginTest {
 
     @Test
     public void testGetDistinctDatabaseNames() {
-        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
         plugin.getPossibleDatabases();
         List<String> dbs = plugin.getDistinctDatabaseNames();
         assertEquals(2, dbs.size());
@@ -856,7 +856,7 @@ public class TektonikAdministrationPluginTest {
 
     @Test
     public void testCreateNewDatabase() {
-        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
         plugin.getPossibleDatabases();
         plugin.createNewDatabase();
         // do nothing because databaseName + fileName are not set
@@ -878,7 +878,7 @@ public class TektonikAdministrationPluginTest {
 
     @Test
     public void testCancelEdition() {
-        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -931,9 +931,9 @@ public class TektonikAdministrationPluginTest {
     }
 
     @Test
-    public void testValidateTectonic() {
+    public void testValidateArchive() {
 
-        TektonikAdministrationPlugin plugin = new TektonikAdministrationPlugin();
+        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -950,7 +950,7 @@ public class TektonikAdministrationPluginTest {
         FieldValue rootValue = rootMetadata.getValues().get(0);
         FieldValue childValue = childMetadata.getValues().get(0);
         // no validation rules - fields are valid
-        plugin.validateTectonic();
+        plugin.validateArchive();
         assertTrue(rootMetadata.isValid());
         assertTrue(childMetadata.isValid());
         // check unique
@@ -959,13 +959,13 @@ public class TektonikAdministrationPluginTest {
         // different values
         rootValue.setValue("value 1");
         childValue.setValue("value 2");
-        plugin.validateTectonic();
+        plugin.validateArchive();
         assertTrue(rootMetadata.isValid());
         assertTrue(childMetadata.isValid());
 
         // identical values
         childValue.setValue("value 1");
-        plugin.validateTectonic();
+        plugin.validateArchive();
         assertTrue(rootMetadata.isValid());
         assertFalse(childMetadata.isValid());
 
@@ -976,20 +976,20 @@ public class TektonikAdministrationPluginTest {
         // missing value
         rootValue.setValue("");
         childValue.setValue("value 2");
-        plugin.validateTectonic();
+        plugin.validateArchive();
         assertFalse(rootMetadata.isValid());
         assertTrue(childMetadata.isValid());
 
         // different values
         rootValue.setValue("value 1");
         childValue.setValue("value 2");
-        plugin.validateTectonic();
+        plugin.validateArchive();
         assertTrue(rootMetadata.isValid());
         assertTrue(childMetadata.isValid());
 
         // identical values
         childValue.setValue("value 1");
-        plugin.validateTectonic();
+        plugin.validateArchive();
         assertTrue(rootMetadata.isValid());
         assertFalse(childMetadata.isValid());
 
@@ -1000,20 +1000,20 @@ public class TektonikAdministrationPluginTest {
         // missing value
         rootValue.setValue("");
         childValue.setValue("value 2");
-        plugin.validateTectonic();
+        plugin.validateArchive();
         assertFalse(rootMetadata.isValid());
         assertTrue(childMetadata.isValid());
 
         // different values
         rootValue.setValue("value 1");
         childValue.setValue("value 2");
-        plugin.validateTectonic();
+        plugin.validateArchive();
         assertTrue(rootMetadata.isValid());
         assertTrue(childMetadata.isValid());
 
         // identical values
         childValue.setValue("value 1");
-        plugin.validateTectonic();
+        plugin.validateArchive();
         assertTrue(rootMetadata.isValid());
         assertTrue(childMetadata.isValid());
 
@@ -1023,15 +1023,15 @@ public class TektonikAdministrationPluginTest {
 
         // no value
         rootValue.setValue("");
-        plugin.validateTectonic();
+        plugin.validateArchive();
         assertTrue(rootMetadata.isValid());
         // matching value
         rootValue.setValue("1234");
-        plugin.validateTectonic();
+        plugin.validateArchive();
         assertTrue(rootMetadata.isValid());
         // wrong value
         rootValue.setValue("12345");
-        plugin.validateTectonic();
+        plugin.validateArchive();
         assertFalse(rootMetadata.isValid());
 
         // check regex+required
@@ -1040,15 +1040,15 @@ public class TektonikAdministrationPluginTest {
 
         // no value
         rootValue.setValue("");
-        plugin.validateTectonic();
+        plugin.validateArchive();
         assertFalse(rootMetadata.isValid());
         // matching value
         rootValue.setValue("1234");
-        plugin.validateTectonic();
+        plugin.validateArchive();
         assertTrue(rootMetadata.isValid());
         // wrong value
         rootValue.setValue("12345");
-        plugin.validateTectonic();
+        plugin.validateArchive();
         assertFalse(rootMetadata.isValid());
 
     }

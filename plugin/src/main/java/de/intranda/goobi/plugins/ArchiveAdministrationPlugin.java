@@ -74,20 +74,20 @@ import ugh.fileformats.mets.MetsMods;
 
 @PluginImplementation
 @Log4j2
-public class TektonikAdministrationPlugin implements IAdministrationPlugin {
+public class ArchiveAdministrationPlugin implements IAdministrationPlugin {
 
     @Getter
     @Setter
     private String displayMode = "";
 
     @Getter
-    private String title = "intranda_administration_tektonik";
+    private String title = "intranda_administration_archive";
 
     @Getter
     private PluginType type = PluginType.Administration;
 
     @Getter
-    private String gui = "/uii/plugin_administration_tektonik.xhtml";
+    private String gui = "/uii/plugin_administration_archive.xhtml";
 
     @Getter
     @Setter
@@ -174,10 +174,10 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
     /**
      * Constructor
      */
-    public TektonikAdministrationPlugin() {
+    public ArchiveAdministrationPlugin() {
         try {
             xmlConfig =
-                    new XMLConfiguration(ConfigurationHelper.getInstance().getConfigurationFolder() + "plugin_intranda_administration_tektonik.xml");
+                    new XMLConfiguration(ConfigurationHelper.getInstance().getConfigurationFolder() + "plugin_intranda_administration_archive.xml");
             xmlConfig.setListDelimiter('&');
             xmlConfig.setReloadingStrategy(new FileChangedReloadingStrategy());
             xmlConfig.setExpressionEngine(new XPathExpressionEngine());
@@ -525,10 +525,10 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         HierarchicalConfiguration config = null;
 
         try {
-            config = xmlConfig.configurationAt("//config[./tectonics = '" + selectedDatabase + "']");
+            config = xmlConfig.configurationAt("//config[./archive = '" + selectedDatabase + "']");
         } catch (IllegalArgumentException e) {
             try {
-                config = xmlConfig.configurationAt("//config[./tectonics = '*']");
+                config = xmlConfig.configurationAt("//config[./archive = '*']");
             } catch (IllegalArgumentException e1) {
 
             }
@@ -1356,9 +1356,9 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         process.downloadDocket();
     }
 
-    public void downloadTectonic() {
+    public void downloadArchive() {
         // validate
-        validateTectonic();
+        validateArchive();
 
         // create ead document
         Document document = new Document();
@@ -1461,7 +1461,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
 
     }
 
-    public String saveTectonicAndLeave() {
+    public String saveArchiveAndLeave() {
         createEadDocument();
 
         return cancelEdition();
@@ -1491,7 +1491,7 @@ public class TektonikAdministrationPlugin implements IAdministrationPlugin {
         return "";
     }
 
-    public void validateTectonic() {
+    public void validateArchive() {
 
         Map<String, List<String>> valueMap = new HashMap<>();
 
