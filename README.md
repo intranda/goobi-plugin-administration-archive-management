@@ -1,8 +1,8 @@
-# Goobi Administration Plugin: goobi-plugin-administration-tektonik
+# Goobi Administration Plugin: goobi-plugin-administration-archive-management
 
 <img src="https://goobi.io/wp-content/uploads/logo_goobi_plugin.png" align="right" style="margin:0 0 20px 20px;" alt="Plugin for Goobi workflow" width="175" height="109">
 
-This is the tektonik Goobi administration plugin. A description for this plugin is still missing.
+This is the Goobi administration plugin to manage archive record groups. It allows managing, creating, exporting and digitising archive records..
 
 This is a plugin for Goobi workflow, the open source workflow tracking software for digitisation projects. More information about Goobi workflow is available under https://goobi.io. If you want to get in touch with the user community simply go to https://community.goobi.io.
 
@@ -12,7 +12,7 @@ More information about the functionality of this plugin and the complete documen
 
 Detail | Description
 --- | ---
-**Plugin identifier**       | intranda_administration_tektonik
+**Plugin identifier**       | intranda_administration_archive_management
 **Plugin type**             | Administration plugin
 **Licence**                 | GPL 2.0 or newer
 **Documentation (German)**  | - no documentation available -

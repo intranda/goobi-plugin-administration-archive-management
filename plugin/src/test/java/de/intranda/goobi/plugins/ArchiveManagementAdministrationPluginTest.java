@@ -43,7 +43,7 @@ import de.sub.goobi.persistence.managers.VocabularyManager;
 @PrepareForTest({ ConfigurationHelper.class, HttpClientHelper.class, VocabularyManager.class, ProcessManager.class })
 @PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*" })
 
-public class ArchiveAdministrationPluginTest {
+public class ArchiveManagementAdministrationPluginTest {
 
     private String resourcesFolder;
 
@@ -120,13 +120,13 @@ public class ArchiveAdministrationPluginTest {
 
     @Test
     public void testConstructor() throws IOException {
-        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         assertNotNull(plugin);
     }
 
     @Test
     public void testListDatabases() {
-        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         List<String> databases = plugin.getPossibleDatabases();
         assertEquals(3, databases.size());
@@ -137,7 +137,7 @@ public class ArchiveAdministrationPluginTest {
 
     @Test
     public void testFlatList() {
-        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -158,7 +158,7 @@ public class ArchiveAdministrationPluginTest {
 
     @Test
     public void testLoadDatabase() {
-        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -485,7 +485,7 @@ public class ArchiveAdministrationPluginTest {
 
     @Test
     public void testCreateEadDocument() throws Exception {
-        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -503,41 +503,41 @@ public class ArchiveAdministrationPluginTest {
         Document doc = new SAXBuilder(XMLReaders.NONVALIDATING).build(createdEadFile.toFile());
 
         Element ead = doc.getRootElement();
-        Element eadHeader = ead.getChild("eadheader", ArchiveAdministrationPlugin.ns);
-        assertEquals("eadid", eadHeader.getChildText("eadid", ArchiveAdministrationPlugin.ns));
+        Element eadHeader = ead.getChild("eadheader", ArchiveManagementAdministrationPlugin.ns);
+        assertEquals("eadid", eadHeader.getChildText("eadid", ArchiveManagementAdministrationPlugin.ns));
 
         assertEquals("archive header title",
-                eadHeader.getChild("filedesc", ArchiveAdministrationPlugin.ns)
-                .getChild("titlestmt", ArchiveAdministrationPlugin.ns)
-                .getChildText("titleproper", ArchiveAdministrationPlugin.ns));
-        Element archdesc = ead.getChild("archdesc", ArchiveAdministrationPlugin.ns);
-        Element did = archdesc.getChild("did", ArchiveAdministrationPlugin.ns);
-        Element dsc = archdesc.getChild("dsc", ArchiveAdministrationPlugin.ns);
+                eadHeader.getChild("filedesc", ArchiveManagementAdministrationPlugin.ns)
+                .getChild("titlestmt", ArchiveManagementAdministrationPlugin.ns)
+                .getChildText("titleproper", ArchiveManagementAdministrationPlugin.ns));
+        Element archdesc = ead.getChild("archdesc", ArchiveManagementAdministrationPlugin.ns);
+        Element did = archdesc.getChild("did", ArchiveManagementAdministrationPlugin.ns);
+        Element dsc = archdesc.getChild("dsc", ArchiveManagementAdministrationPlugin.ns);
 
         assertEquals(10, did.getChildren().size());
         assertEquals("unitid", did.getChildren().get(0).getText());
         assertEquals(17, dsc.getChildren().size());
 
         Element c = dsc.getChildren().get(16);
-        Element subDid = c.getChild("did", ArchiveAdministrationPlugin.ns);
-        assertEquals("first level id", subDid.getChildText("unitid", ArchiveAdministrationPlugin.ns));
-        assertEquals("first level title", subDid.getChildText("unittitle", ArchiveAdministrationPlugin.ns));
+        Element subDid = c.getChild("did", ArchiveManagementAdministrationPlugin.ns);
+        assertEquals("first level id", subDid.getChildText("unitid", ArchiveManagementAdministrationPlugin.ns));
+        assertEquals("first level title", subDid.getChildText("unittitle", ArchiveManagementAdministrationPlugin.ns));
 
-        Element processinfo = archdesc.getChild("processinfo", ArchiveAdministrationPlugin.ns);
-        Element list = processinfo.getChild("list", ArchiveAdministrationPlugin.ns);
-        assertEquals("-", list.getChildText("item", ArchiveAdministrationPlugin.ns));
+        Element processinfo = archdesc.getChild("processinfo", ArchiveManagementAdministrationPlugin.ns);
+        Element list = processinfo.getChild("list", ArchiveManagementAdministrationPlugin.ns);
+        assertEquals("-", list.getChildText("item", ArchiveManagementAdministrationPlugin.ns));
 
-        Element event = ead.getChild("control", ArchiveAdministrationPlugin.ns)
-                .getChild("maintenancehistory", ArchiveAdministrationPlugin.ns)
-                .getChild("maintenanceevent", ArchiveAdministrationPlugin.ns);
-        assertEquals("Created", event.getChild("eventtype", ArchiveAdministrationPlugin.ns).getText());
-        assertNotNull(event.getChild("eventdatetime", ArchiveAdministrationPlugin.ns).getText());
+        Element event = ead.getChild("control", ArchiveManagementAdministrationPlugin.ns)
+                .getChild("maintenancehistory", ArchiveManagementAdministrationPlugin.ns)
+                .getChild("maintenanceevent", ArchiveManagementAdministrationPlugin.ns);
+        assertEquals("Created", event.getChild("eventtype", ArchiveManagementAdministrationPlugin.ns).getText());
+        assertNotNull(event.getChild("eventdatetime", ArchiveManagementAdministrationPlugin.ns).getText());
 
     }
 
     @Test
     public void testSetSelectedEntry() {
-        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
 
         EadEntry root = new EadEntry(0, 0);
         EadEntry firstRootChild = new EadEntry(0, 1);
@@ -569,7 +569,7 @@ public class ArchiveAdministrationPluginTest {
 
     @Test
     public void testAddNode() {
-        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -592,7 +592,7 @@ public class ArchiveAdministrationPluginTest {
 
     @Test
     public void testDeleteNode() {
-        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -615,7 +615,7 @@ public class ArchiveAdministrationPluginTest {
 
     @Test
     public void testPrepareMoveNode() {
-        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -655,7 +655,7 @@ public class ArchiveAdministrationPluginTest {
     @Test
     public void testMoveNode() {
 
-        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -679,7 +679,7 @@ public class ArchiveAdministrationPluginTest {
 
     @Test
     public void testMoveNodeUp() {
-        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -718,7 +718,7 @@ public class ArchiveAdministrationPluginTest {
 
     @Test
     public void testMoveNodeDown() {
-        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -757,7 +757,7 @@ public class ArchiveAdministrationPluginTest {
 
     @Test
     public void testMoveHierarchyDown() {
-        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -791,7 +791,7 @@ public class ArchiveAdministrationPluginTest {
 
     @Test
     public void testMoveHierarchyUp() {
-        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -829,7 +829,7 @@ public class ArchiveAdministrationPluginTest {
 
     @Test
     public void testSearch() {
-        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -846,7 +846,7 @@ public class ArchiveAdministrationPluginTest {
 
     @Test
     public void testGetDistinctDatabaseNames() {
-        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.getPossibleDatabases();
         List<String> dbs = plugin.getDistinctDatabaseNames();
         assertEquals(2, dbs.size());
@@ -856,7 +856,7 @@ public class ArchiveAdministrationPluginTest {
 
     @Test
     public void testCreateNewDatabase() {
-        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.getPossibleDatabases();
         plugin.createNewDatabase();
         // do nothing because databaseName + fileName are not set
@@ -878,7 +878,7 @@ public class ArchiveAdministrationPluginTest {
 
     @Test
     public void testCancelEdition() {
-        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -933,7 +933,7 @@ public class ArchiveAdministrationPluginTest {
     @Test
     public void testValidateArchive() {
 
-        ArchiveAdministrationPlugin plugin = new ArchiveAdministrationPlugin();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");

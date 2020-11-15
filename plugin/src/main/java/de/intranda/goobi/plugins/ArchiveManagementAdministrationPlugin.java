@@ -74,20 +74,20 @@ import ugh.fileformats.mets.MetsMods;
 
 @PluginImplementation
 @Log4j2
-public class ArchiveAdministrationPlugin implements IAdministrationPlugin {
+public class ArchiveManagementAdministrationPlugin implements IAdministrationPlugin {
 
     @Getter
     @Setter
     private String displayMode = "";
 
     @Getter
-    private String title = "intranda_administration_archive";
+    private String title = "intranda_administration_archive_management";
 
     @Getter
     private PluginType type = PluginType.Administration;
 
     @Getter
-    private String gui = "/uii/plugin_administration_archive.xhtml";
+    private String gui = "/uii/plugin_administration_archive_management.xhtml";
 
     @Getter
     @Setter
@@ -174,10 +174,10 @@ public class ArchiveAdministrationPlugin implements IAdministrationPlugin {
     /**
      * Constructor
      */
-    public ArchiveAdministrationPlugin() {
+    public ArchiveManagementAdministrationPlugin() {
         try {
             xmlConfig =
-                    new XMLConfiguration(ConfigurationHelper.getInstance().getConfigurationFolder() + "plugin_intranda_administration_archive.xml");
+                    new XMLConfiguration(ConfigurationHelper.getInstance().getConfigurationFolder() + "plugin_intranda_administration_archive_management.xml");
             xmlConfig.setListDelimiter('&');
             xmlConfig.setReloadingStrategy(new FileChangedReloadingStrategy());
             xmlConfig.setExpressionEngine(new XPathExpressionEngine());
