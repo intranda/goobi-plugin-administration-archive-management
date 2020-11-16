@@ -20,9 +20,10 @@
 				<directory>../src/main/resources/GUI</directory>
 				<excludes>
 					<exclude>**/*.java</exclude>
-                    <!-- TODO remove the two lines below after development is finished -->
-                    <exclude>META-INF/tags/**/*.xhtml</exclude>
-                    <exclude>META-INF/intranda.taglib.xml</exclude>
+	                <!-- Do only uncomment these lines if you really really know what you do. 
+	                This might be helpful during development. But does not work in productive use of the plugin then. -->
+					<!-- <exclude>META-INF/tags/**/*.xhtml</exclude> -->
+					<!-- <exclude>META-INF/intranda.taglib.xml</exclude> -->
 				</excludes>
 			</resource>
 		</resources>
