@@ -237,6 +237,8 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 // parse ead file
                 parseEadFile(document);
             }
+        } else {
+            selectedDatabase = null;
         }
     }
 
