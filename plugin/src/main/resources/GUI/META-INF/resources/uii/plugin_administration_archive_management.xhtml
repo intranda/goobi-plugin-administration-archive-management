@@ -77,6 +77,12 @@ div.no-element-selected {
     font-weight: 700;
     color: #368ee0 !important;
 }
+
+.table__structure-link-searched {
+    font-weight: 700;
+
+}
+
 /* LEVELS */
 .table tr[class*="level"] td .expand {
     margin-left: -22px;
@@ -505,8 +511,9 @@ div.no-element-selected {
                                                         <h:commandLink
                                                             id="link2"
                                                             immediate="true"
-                                                            styleClass="#{entry.selected ? 'table__structure-link-active' : 'table__structure-link'}  #{entry.valid ? '' : 'validation-error'}"
-                                                            action="#{AdministrationForm.administrationPlugin.resetFlatList}">
+                                                            styleClass="#{entry.selected ? 'table__structure-link-active' : 'table__structure-link'} #{entry.searchFound ? 'table__structure-link-searched' : ''} #{entry.valid ? '' : 'validation-error'}"
+                                                            >
+<!--                                                             action="#{AdministrationForm.administrationPlugin.resetFlatList}" -->
                                                             <i
                                                                 class="fa fa-file-o"
                                                                 aria-hidden="true"></i>

@@ -38,6 +38,7 @@ public class EadEntry {
 
     // display node in a search result
     private boolean displaySearch;
+    private boolean searchFound;
 
     /* 1. metadata for Identity Statement Area */
     //    Reference code(s)
@@ -221,7 +222,8 @@ public class EadEntry {
 
     public void markAsFound() {
         displaySearch = true;
-        selected = true;
+        //      selected = true;
+        searchFound = true;
 
         if (parentNode != null) {
             EadEntry node = parentNode;
@@ -236,7 +238,8 @@ public class EadEntry {
 
     public void resetFoundList() {
         displaySearch = false;
-        selected = false;
+        //        selected = false;
+        searchFound =false;
         if (subEntryList != null) {
             for (EadEntry ds : subEntryList) {
                 ds.resetFoundList();
