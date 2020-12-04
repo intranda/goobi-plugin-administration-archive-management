@@ -80,7 +80,6 @@ div.no-element-selected {
 
 .table__structure-link-searched {
     font-weight: 700;
-
 }
 
 /* LEVELS */
@@ -401,7 +400,7 @@ div.no-element-selected {
                                                     styleClass="form-control"
                                                     value="#{AdministrationForm.administrationPlugin.databaseName}">
                                                     <f:selectItem
-                                                        itemValue="null"
+                                                        itemValue=""
                                                         itemLabel="#{msgs.bitteAuswaehlen}" />
                                                     <f:selectItems value="#{AdministrationForm.administrationPlugin.distinctDatabaseNames}" />
                                                 </h:selectOneMenu>
@@ -511,12 +510,40 @@ div.no-element-selected {
                                                         <h:commandLink
                                                             id="link2"
                                                             immediate="true"
-                                                            styleClass="#{entry.selected ? 'table__structure-link-active' : 'table__structure-link'} #{entry.searchFound ? 'table__structure-link-searched' : ''} #{entry.valid ? '' : 'validation-error'}"
-                                                            >
-<!--                                                             action="#{AdministrationForm.administrationPlugin.resetFlatList}" -->
-                                                            <i
-                                                                class="fa fa-file-o"
-                                                                aria-hidden="true"></i>
+                                                            styleClass="#{entry.selected ? 'table__structure-link-active' : 'table__structure-link'} #{entry.searchFound ? 'table__structure-link-searched' : ''} #{entry.valid ? '' : 'validation-error'}">
+                                                            <!--                                                             action="#{AdministrationForm.administrationPlugin.resetFlatList}" -->
+                                                            <h:panelGroup rendered="#{entry.nodeType == 'folder'}">
+                                                                <i
+                                                                    class="fa fa-folder-open-o"
+                                                                    aria-hidden="true"></i>
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{entry.nodeType == 'file'}">
+                                                                <i
+                                                                    class="fa fa-file-text-o"
+                                                                    aria-hidden="true"></i>
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{entry.nodeType == 'image'}">
+                                                                <i
+                                                                    class="fa fa-file-image-o"
+                                                                    aria-hidden="true"></i>
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{entry.nodeType == 'audio'}">
+                                                                <i
+                                                                    class="fa fa-file-audio-o"
+                                                                    aria-hidden="true"></i>
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{entry.nodeType == 'video'}">
+                                                                <i
+                                                                    class="fa fa-file-video-o"
+                                                                    aria-hidden="true"></i>
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{entry.nodeType == 'other'}">
+                                                                <i
+                                                                    class="fa fa-file-o"
+                                                                    aria-hidden="true"></i>
+                                                            </h:panelGroup>
+
+
                                                             <h:outputText
                                                                 value="#{entry.label}"
                                                                 rendered="#{entry.label != null}" />
@@ -740,7 +767,7 @@ div.no-element-selected {
                                                                     <f:setPropertyActionListener
                                                                         value="folder"
                                                                         target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
-                                                                    <f:ajax render="node-type" />
+                                                                    <f:ajax render="node-type :hierarchy" />
                                                                 </h:commandLink>
                                                                 <h:commandLink
                                                                     styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'file' ? 'node-selected' : ''}"
@@ -751,7 +778,7 @@ div.no-element-selected {
                                                                     <f:setPropertyActionListener
                                                                         value="file"
                                                                         target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
-                                                                    <f:ajax render="node-type" />
+                                                                    <f:ajax render="node-type :hierarchy" />
                                                                 </h:commandLink>
 
                                                                 <h:commandLink
@@ -763,7 +790,7 @@ div.no-element-selected {
                                                                     <f:setPropertyActionListener
                                                                         value="image"
                                                                         target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
-                                                                    <f:ajax render="node-type" />
+                                                                    <f:ajax render="node-type :hierarchy" />
                                                                 </h:commandLink>
 
                                                                 <h:commandLink
@@ -775,7 +802,7 @@ div.no-element-selected {
                                                                     <f:setPropertyActionListener
                                                                         value="audio"
                                                                         target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
-                                                                    <f:ajax render="node-type" />
+                                                                    <f:ajax render="node-type :hierarchy" />
                                                                 </h:commandLink>
                                                                 <h:commandLink
                                                                     styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'video' ? 'node-selected' : ''}"
@@ -786,7 +813,7 @@ div.no-element-selected {
                                                                     <f:setPropertyActionListener
                                                                         value="video"
                                                                         target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
-                                                                    <f:ajax render="node-type" />
+                                                                    <f:ajax render="node-type :hierarchy" />
                                                                 </h:commandLink>
 
                                                                 <h:commandLink
@@ -798,7 +825,7 @@ div.no-element-selected {
                                                                     <f:setPropertyActionListener
                                                                         value="other"
                                                                         target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
-                                                                    <f:ajax render="node-type" />
+                                                                    <f:ajax render="node-type :hierarchy" />
                                                                 </h:commandLink>
                                                             </div>
                                                         </h:panelGroup>
@@ -961,16 +988,15 @@ div.no-element-selected {
                         <div class="box-content">
                             <div class="table">
                                 <h:form>
-                                                                            <h:commandLink
-                                            styleClass="btn margin-sides-10 font-size-s pull-right"
-                                            type="submit"
-                                            >
-                                            
-                                           <x:updateActionListener
-                                                        property="#{AdministrationForm.administrationPlugin.displayMode}"
-                                                        value="" />
-                                            <h:outputText value="#{msgs.abbrechen}" />
-                                        </h:commandLink>
+                                    <h:commandLink
+                                        styleClass="btn margin-sides-10 font-size-s pull-right"
+                                        type="submit">
+
+                                        <x:updateActionListener
+                                            property="#{AdministrationForm.administrationPlugin.displayMode}"
+                                            value="" />
+                                        <h:outputText value="#{msgs.abbrechen}" />
+                                    </h:commandLink>
                                     <x:dataTable
                                         id="selectNodeArea"
                                         forceId="true"
