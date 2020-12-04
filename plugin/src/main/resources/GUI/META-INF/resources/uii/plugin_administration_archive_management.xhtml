@@ -511,38 +511,8 @@ div.no-element-selected {
                                                             id="link2"
                                                             immediate="true"
                                                             styleClass="#{entry.selected ? 'table__structure-link-active' : 'table__structure-link'} #{entry.searchFound ? 'table__structure-link-searched' : ''} #{entry.valid ? '' : 'validation-error'}">
-                                                            <!--                                                             action="#{AdministrationForm.administrationPlugin.resetFlatList}" -->
-                                                            <h:panelGroup rendered="#{entry.nodeType == 'folder'}">
-                                                                <i
-                                                                    class="fa fa-folder-open-o"
-                                                                    aria-hidden="true"></i>
-                                                            </h:panelGroup>
-                                                            <h:panelGroup rendered="#{entry.nodeType == 'file'}">
-                                                                <i
-                                                                    class="fa fa-file-text-o"
-                                                                    aria-hidden="true"></i>
-                                                            </h:panelGroup>
-                                                            <h:panelGroup rendered="#{entry.nodeType == 'image'}">
-                                                                <i
-                                                                    class="fa fa-file-image-o"
-                                                                    aria-hidden="true"></i>
-                                                            </h:panelGroup>
-                                                            <h:panelGroup rendered="#{entry.nodeType == 'audio'}">
-                                                                <i
-                                                                    class="fa fa-file-audio-o"
-                                                                    aria-hidden="true"></i>
-                                                            </h:panelGroup>
-                                                            <h:panelGroup rendered="#{entry.nodeType == 'video'}">
-                                                                <i
-                                                                    class="fa fa-file-video-o"
-                                                                    aria-hidden="true"></i>
-                                                            </h:panelGroup>
-                                                            <h:panelGroup rendered="#{entry.nodeType == 'other'}">
-                                                                <i
-                                                                    class="fa fa-file-o"
-                                                                    aria-hidden="true"></i>
-                                                            </h:panelGroup>
 
+                                                            <i class="#{entry.nodeType.icon}" aria-hidden="true"></i>
 
                                                             <h:outputText
                                                                 value="#{entry.label}"
@@ -758,75 +728,21 @@ div.no-element-selected {
                                                                 <h:outputText value="#{msgs.plugin_administration_archive_nodeType}" />
                                                             </div>
                                                             <div class="col-sm-9 node-type-selection">
-                                                                <h:commandLink
-                                                                    styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'folder' ? 'node-selected' : ''}"
-                                                                    title="#{msgs.plugin_administration_archive_nodeType_folder}">
-                                                                    <i
-                                                                        class="fa fa-folder-open-o"
+                                                            <x:dataList value="#{AdministrationForm.administrationPlugin.configuredNodes}" var="nodeType">
+                                                              <h:commandLink
+                                                                    styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType.nodeName == nodeType.nodeName ? 'node-selected' : ''}"
+                                                                    title="#{msgs[nodeType.nodeName]}">
+                                                                      <i
+                                                                        class="#{nodeType.icon}"
                                                                         aria-hidden="true"></i>
                                                                     <f:setPropertyActionListener
-                                                                        value="folder"
+                                                                        value="#{nodeType}"
                                                                         target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
                                                                     <f:ajax render="node-type :hierarchy" />
-                                                                </h:commandLink>
-                                                                <h:commandLink
-                                                                    styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'file' ? 'node-selected' : ''}"
-                                                                    title="#{msgs.plugin_administration_archive_nodeType_file}">
-                                                                    <i
-                                                                        class="fa fa-file-text-o"
-                                                                        aria-hidden="true"></i>
-                                                                    <f:setPropertyActionListener
-                                                                        value="file"
-                                                                        target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
-                                                                    <f:ajax render="node-type :hierarchy" />
-                                                                </h:commandLink>
-
-                                                                <h:commandLink
-                                                                    styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'image' ? 'node-selected' : ''}"
-                                                                    title="#{msgs.plugin_administration_archive_nodeType_image}">
-                                                                    <i
-                                                                        class="fa fa-file-image-o"
-                                                                        aria-hidden="true"></i>
-                                                                    <f:setPropertyActionListener
-                                                                        value="image"
-                                                                        target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
-                                                                    <f:ajax render="node-type :hierarchy" />
-                                                                </h:commandLink>
-
-                                                                <h:commandLink
-                                                                    styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'audio' ? 'node-selected' : ''}"
-                                                                    title="#{msgs.plugin_administration_archive_nodeType_audio}">
-                                                                    <i
-                                                                        class="fa fa-file-audio-o"
-                                                                        aria-hidden="true"></i>
-                                                                    <f:setPropertyActionListener
-                                                                        value="audio"
-                                                                        target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
-                                                                    <f:ajax render="node-type :hierarchy" />
-                                                                </h:commandLink>
-                                                                <h:commandLink
-                                                                    styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'video' ? 'node-selected' : ''}"
-                                                                    title="#{msgs.plugin_administration_archive_nodeType_video}">
-                                                                    <i
-                                                                        class="fa fa-file-video-o"
-                                                                        aria-hidden="true"></i>
-                                                                    <f:setPropertyActionListener
-                                                                        value="video"
-                                                                        target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
-                                                                    <f:ajax render="node-type :hierarchy" />
-                                                                </h:commandLink>
-
-                                                                <h:commandLink
-                                                                    styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType == 'other' ? 'node-selected' : ''}"
-                                                                    title="#{msgs.plugin_administration_archive_nodeType_other}">
-                                                                    <i
-                                                                        class="fa fa-file-o"
-                                                                        aria-hidden="true"></i>
-                                                                    <f:setPropertyActionListener
-                                                                        value="other"
-                                                                        target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
-                                                                    <f:ajax render="node-type :hierarchy" />
-                                                                </h:commandLink>
+                                                                 </h:commandLink>   
+                                                            
+                                                            </x:dataList>
+                                                            
                                                             </div>
                                                         </h:panelGroup>
 

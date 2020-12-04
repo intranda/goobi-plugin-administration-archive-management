@@ -49,6 +49,7 @@ import org.jdom2.xpath.XPathFactory;
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.EadMetadataField;
 import de.intranda.goobi.plugins.model.FieldValue;
+import de.intranda.goobi.plugins.model.NodeType;
 import de.schlichtherle.io.FileOutputStream;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.BeanHelper;
@@ -131,6 +132,9 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
     private List<EadMetadataField> configuredFields;
 
     @Getter
+    private List<NodeType> configuredNodes;
+
+    @Getter
     @Setter
     private String searchValue;
 
@@ -176,8 +180,8 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
      */
     public ArchiveManagementAdministrationPlugin() {
         try {
-            xmlConfig =
-                    new XMLConfiguration(ConfigurationHelper.getInstance().getConfigurationFolder() + "plugin_intranda_administration_archive_management.xml");
+            xmlConfig = new XMLConfiguration(
+                    ConfigurationHelper.getInstance().getConfigurationFolder() + "plugin_intranda_administration_archive_management.xml");
             xmlConfig.setListDelimiter('&');
             xmlConfig.setReloadingStrategy(new FileChangedReloadingStrategy());
             xmlConfig.setExpressionEngine(new XPathExpressionEngine());
@@ -379,7 +383,12 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         List<Element> clist = null;
         Element archdesc = element.getChild("archdesc", ns);
         if (archdesc != null) {
-            entry.setNodeType(archdesc.getAttributeValue("localtype"));
+            String nodeTypeName = archdesc.getAttributeValue("localtype");
+            for (NodeType nt : configuredNodes) {
+                if (nt.getNodeName().equals(nodeTypeName)) {
+                    entry.setNodeType(nt);
+                }
+            }
             Element dsc = archdesc.getChild("dsc", ns);
             if (dsc != null) {
                 // read process title
@@ -393,7 +402,12 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             }
 
         } else {
-            entry.setNodeType(element.getAttributeValue("otherlevel"));
+            String nodeTypeName = element.getAttributeValue("otherlevel");
+            for (NodeType nt : configuredNodes) {
+                if (nt.getNodeName().equals(nodeTypeName)) {
+                    entry.setNodeType(nt);
+                }
+            }
             List<Element> altformavailList = element.getChildren("altformavail", ns);
             for (Element altformavail : altformavailList) {
                 if ("goobi_process".equals(altformavail.getAttributeValue("localtype"))) {
@@ -401,9 +415,8 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 }
             }
         }
-
-        if (StringUtils.isBlank(entry.getNodeType())) {
-            entry.setNodeType("folder");
+        if (entry.getNodeType() == null) {
+            entry.setNodeType(configuredNodes.get(0));
         }
         if (clist == null) {
             clist = element.getChildren("c", ns);
@@ -524,6 +537,8 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
      */
     private void readConfiguration() {
         configuredFields = new ArrayList<>();
+        configuredNodes = new ArrayList<>();
+
         HierarchicalConfiguration config = null;
 
         try {
@@ -537,6 +552,11 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         }
 
         processTemplateId = config.getInteger("/processTemplateId", null);
+
+        for (HierarchicalConfiguration hc : config.configurationsAt("/node")) {
+            NodeType nt = new NodeType(hc.getString("@name"), hc.getString("@ruleset"), hc.getString("@icon"));
+            configuredNodes.add(nt);
+        }
 
         for (HierarchicalConfiguration hc : config.configurationsAt("/metadata")) {
             EadMetadataField field = new EadMetadataField(hc.getString("@name"), hc.getInt("@level"), hc.getString("@xpath"),
@@ -765,8 +785,8 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             if (StringUtils.isNotBlank(node.getId())) {
                 archdesc.setAttribute("id", node.getId());
             }
-            if (StringUtils.isNotBlank(node.getNodeType())) {
-                archdesc.setAttribute("type", node.getNodeType());
+            if (node.getNodeType() != null) {
+                archdesc.setAttribute("type", node.getNodeType().getNodeName());
             }
             if (StringUtils.isNotBlank(node.getGoobiProcessTitle())) {
                 Element altformavail = new Element("altformavail", ns);
@@ -780,8 +800,8 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             if (StringUtils.isNotBlank(node.getId())) {
                 xmlElement.setAttribute("id", node.getId());
             }
-            if (StringUtils.isNotBlank(node.getNodeType())) {
-                xmlElement.setAttribute("otherlevel", node.getNodeType());
+            if (node.getNodeType() != null) {
+                xmlElement.setAttribute("otherlevel", node.getNodeType().getNodeName());
             }
         }
 
@@ -1145,7 +1165,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         if (selectedEntry == null) {
             return;
         }
-        if (StringUtils.isBlank(selectedEntry.getNodeType())) {
+        if (selectedEntry.getNodeType()== null) {
             // TODO error
             return;
         }
@@ -1200,27 +1220,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
         Prefs prefs = processTemplate.getRegelsatz().getPreferences();
 
-        String publicationType = null;
-        switch (selectedEntry.getNodeType()) {
-            case "folder":
-                publicationType = "Folder";
-                break;
-            case "file":
-                publicationType = "File";
-                break;
-            case "image":
-                publicationType = "Picture";
-                break;
-            case "audio":
-                publicationType = "Audio";
-                break;
-            case "video":
-                publicationType = "Video";
-                break;
-            case "other":
-                publicationType = "Other";
-                break;
-        }
+        String publicationType = selectedEntry.getNodeType().getDocumentType();
 
         try {
             // create mets file based on selected node type

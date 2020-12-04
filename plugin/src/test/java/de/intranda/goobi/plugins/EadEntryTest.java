@@ -13,6 +13,7 @@ import org.junit.Test;
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.EadMetadataField;
 import de.intranda.goobi.plugins.model.FieldValue;
+import de.intranda.goobi.plugins.model.NodeType;
 
 public class EadEntryTest {
 
@@ -86,9 +87,10 @@ public class EadEntryTest {
 
     @Test
     public void testNodeType() {
+        NodeType nt = new NodeType("fixture", "fixture", "fixture");
         EadEntry entry = new EadEntry(1, 1);
-        entry.setNodeType("fixture");
-        assertEquals("fixture", entry.getNodeType());
+        entry.setNodeType(nt);
+        assertEquals("fixture", entry.getNodeType().getNodeName());
     }
 
     @Test
@@ -219,7 +221,6 @@ public class EadEntryTest {
         assertEquals(2, repeatable.getValues().size());
     }
 
-
     @Test
     public void testEadMetadataFieldAddFieldValue() {
         EadEntry entry = new EadEntry(0, 0);
@@ -233,8 +234,8 @@ public class EadEntryTest {
         // value list is still 1, because field is not repeatable
         assertEquals(1, title.getValues().size());
 
-
-        EadMetadataField repeatable = new EadMetadataField("dropdown", 1, "something", "element", true, true, true, "dropdown", null, false, null, null);
+        EadMetadataField repeatable =
+                new EadMetadataField("dropdown", 1, "something", "element", true, true, true, "dropdown", null, false, null, null);
         repeatable.setEadEntry(entry);
         assertFalse(repeatable.isFilled());
         repeatable.addFieldValue(new FieldValue(repeatable));

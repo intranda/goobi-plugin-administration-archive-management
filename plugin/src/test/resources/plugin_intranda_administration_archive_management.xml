@@ -155,5 +155,13 @@
             <value>val 3</value>
             <value>val 4</value>
         </metadata>
+
+
+    	<node name="file" ruleset="File" icon="fa fa-file-text-o" />
+    	<node name="folder" ruleset="Folder" icon="fa fa-folder-open-o" />
+    	<node name="image" ruleset="Picture" icon="fa fa-file-image-o" />
+    	<node name="audio" ruleset="Audio" icon="fa fa-file-audio-o" />
+    	<node name="video" ruleset="Video" icon="fa fa-file-video-o" />
+    	<node name="other" ruleset="Other" icon="fa fa-file-o" />
     </config>
 </config_plugin>

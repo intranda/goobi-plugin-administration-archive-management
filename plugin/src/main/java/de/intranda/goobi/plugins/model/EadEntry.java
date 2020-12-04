@@ -34,7 +34,7 @@ public class EadEntry {
     private boolean selectable;
 
     // node type -  @level
-    private String nodeType;
+    private NodeType nodeType;
 
     // display node in a search result
     private boolean displaySearch;
