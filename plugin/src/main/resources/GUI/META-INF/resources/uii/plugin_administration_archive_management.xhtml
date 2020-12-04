@@ -985,48 +985,73 @@ div.no-element-selected {
                         layout="block"
                         styleClass="row"
                         rendered="#{AdministrationForm.administrationPlugin.selectedDatabase != NULL and AdministrationForm.administrationPlugin.displayMode == 'moveNode'}">
-                        <div class="box-content">
-                            <div class="table">
-                                <h:form>
-                                    <h:commandLink
-                                        styleClass="btn margin-sides-10 font-size-s pull-right"
-                                        type="submit">
 
-                                        <x:updateActionListener
-                                            property="#{AdministrationForm.administrationPlugin.displayMode}"
-                                            value="" />
-                                        <h:outputText value="#{msgs.abbrechen}" />
-                                    </h:commandLink>
-                                    <x:dataTable
-                                        id="selectNodeArea"
-                                        forceId="true"
-                                        value="#{AdministrationForm.administrationPlugin.moveList}"
-                                        var="entry"
-                                        rowStyleClass="level-#{entry.hierarchy}">
-                                        <h:column>
+                        <div class="col-sm-12">
+                            <div class="box box-color box-bordered">
+                                <div class="box-title">
+                                    <h3>
+                                        <h:outputText value="#{msgs.plugin_administration_archive_moveNode}" />
+                                    </h3>
+                                    <h:form>
+                                        <h:commandLink
+                                            styleClass="btn margin-sides-10 font-size-s pull-right"
+                                            type="submit">
 
-                                            <h:commandLink
-                                                id="link2"
-                                                immediate="true"
-                                                styleClass="#{entry.selected ? 'table__structure-link-active' : 'table__structure-link'}"
-                                                action="#{AdministrationForm.administrationPlugin.moveNode}"
-                                                disabled="#{entry.selected}">
-                                                <i
-                                                    class="fa fa-file-o"
-                                                    aria-hidden="true"></i>
-                                                <h:outputText
-                                                    value="#{entry.label}"
-                                                    rendered="#{entry.label != null}" />
-                                                <h:outputText
-                                                    value="#{entry.orderNumber}"
-                                                    rendered="#{entry.label == null}" />
-                                                <x:updateActionListener
-                                                    property="#{AdministrationForm.administrationPlugin.destinationEntry}"
-                                                    value="#{entry}" />
-                                            </h:commandLink>
-                                        </h:column>
-                                    </x:dataTable>
-                                </h:form>
+                                            <x:updateActionListener
+                                                property="#{AdministrationForm.administrationPlugin.displayMode}"
+                                                value="" />
+                                            <h:outputText value="#{msgs.abbrechen}" />
+                                        </h:commandLink>
+                                    </h:form>
+                                </div>
+                                <div class="box-content">
+                                    <div class="table">
+                                        <h:form>
+
+                                            <x:dataTable
+                                                id="selectNodeArea"
+                                                forceId="true"
+                                                value="#{AdministrationForm.administrationPlugin.moveList}"
+                                                var="entry"
+                                                rowStyleClass="level-#{entry.hierarchy}">
+                                                <h:column>
+
+                                                    <h:commandLink
+                                                        id="link2"
+                                                        immediate="true"
+                                                        styleClass="#{entry.selected ? 'table__structure-link-active' : 'table__structure-link'}"
+                                                        action="#{AdministrationForm.administrationPlugin.moveNode}"
+                                                        disabled="#{entry.selected}">
+                                                        <i
+                                                            class="fa fa-file-o"
+                                                            aria-hidden="true"></i>
+                                                        <h:outputText
+                                                            value="#{entry.label}"
+                                                            rendered="#{entry.label != null}" />
+                                                        <h:outputText
+                                                            value="#{entry.orderNumber}"
+                                                            rendered="#{entry.label == null}" />
+                                                        <x:updateActionListener
+                                                            property="#{AdministrationForm.administrationPlugin.destinationEntry}"
+                                                            value="#{entry}" />
+                                                    </h:commandLink>
+                                                </h:column>
+                                            </x:dataTable>
+                                        </h:form>
+                                    </div>
+
+                                    <div class="form-actions">
+                                        <h:commandLink
+                                            styleClass="btn margin-sides-10 font-size-s "
+                                            type="submit">
+
+                                            <x:updateActionListener
+                                                property="#{AdministrationForm.administrationPlugin.displayMode}"
+                                                value="" />
+                                            <h:outputText value="#{msgs.abbrechen}" />
+                                        </h:commandLink>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </h:panelGroup>
