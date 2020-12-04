@@ -1237,7 +1237,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 if (eadIdType != null) {
                     Metadata eadid = new Metadata(eadIdType);
                     eadid.setValue(selectedEntry.getId());
-                    logical.addMetadata(identifier);
+                    logical.addMetadata(eadid);
                 }
             } catch (UGHException e) {
                 log.error(e);
