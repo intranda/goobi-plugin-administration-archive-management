@@ -512,7 +512,9 @@ div.no-element-selected {
                                                             immediate="true"
                                                             styleClass="#{entry.selected ? 'table__structure-link-active' : 'table__structure-link'} #{entry.searchFound ? 'table__structure-link-searched' : ''} #{entry.valid ? '' : 'validation-error'}">
 
-                                                            <i class="#{entry.nodeType.icon}" aria-hidden="true"></i>
+                                                            <i
+                                                                class="#{entry.nodeType.icon}"
+                                                                aria-hidden="true"></i>
 
                                                             <h:outputText
                                                                 value="#{entry.label}"
@@ -728,21 +730,23 @@ div.no-element-selected {
                                                                 <h:outputText value="#{msgs.plugin_administration_archive_nodeType}" />
                                                             </div>
                                                             <div class="col-sm-9 node-type-selection">
-                                                            <x:dataList value="#{AdministrationForm.administrationPlugin.configuredNodes}" var="nodeType">
-                                                              <h:commandLink
-                                                                    styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType.nodeName == nodeType.nodeName ? 'node-selected' : ''}"
-                                                                    title="#{msgs[nodeType.nodeName]}">
-                                                                      <i
-                                                                        class="#{nodeType.icon}"
-                                                                        aria-hidden="true"></i>
-                                                                    <f:setPropertyActionListener
-                                                                        value="#{nodeType}"
-                                                                        target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
-                                                                    <f:ajax render="node-type :hierarchy" />
-                                                                 </h:commandLink>   
-                                                            
-                                                            </x:dataList>
-                                                            
+                                                                <x:dataList
+                                                                    value="#{AdministrationForm.administrationPlugin.configuredNodes}"
+                                                                    var="nodeType">
+                                                                    <h:commandLink
+                                                                        styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType.nodeName == nodeType.nodeName ? 'node-selected' : ''}"
+                                                                        title="#{msgs[nodeType.nodeName]}">
+                                                                        <i
+                                                                            class="#{nodeType.icon}"
+                                                                            aria-hidden="true"></i>
+                                                                        <f:setPropertyActionListener
+                                                                            value="#{nodeType}"
+                                                                            target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
+                                                                        <f:ajax render="node-type :hierarchy" />
+                                                                    </h:commandLink>
+
+                                                                </x:dataList>
+
                                                             </div>
                                                         </h:panelGroup>
 
@@ -957,15 +961,17 @@ div.no-element-selected {
                                     </div>
 
                                     <div class="form-actions">
-                                        <h:commandLink
-                                            styleClass="btn margin-sides-10 font-size-s "
-                                            type="submit">
+                                        <h:form>
+                                            <h:commandLink
+                                                styleClass="btn margin-sides-10 font-size-s "
+                                                type="submit">
 
-                                            <x:updateActionListener
-                                                property="#{AdministrationForm.administrationPlugin.displayMode}"
-                                                value="" />
-                                            <h:outputText value="#{msgs.abbrechen}" />
-                                        </h:commandLink>
+                                                <x:updateActionListener
+                                                    property="#{AdministrationForm.administrationPlugin.displayMode}"
+                                                    value="" />
+                                                <h:outputText value="#{msgs.abbrechen}" />
+                                            </h:commandLink>
+                                        </h:form>
                                     </div>
                                 </div>
                             </div>
