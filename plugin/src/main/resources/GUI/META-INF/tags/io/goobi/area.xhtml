@@ -22,7 +22,7 @@
                     <ui:fragment rendered="#{item.visible}">
                         <goobiio:badge
                             styleclassname="#{!item.filled ? 'badge-empty' : 'badge-filled'}"
-                            fieldname="#{msgs[item.name]}"
+                            fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
                             showfield="#{item.showField}"
                             />
                     </ui:fragment>
@@ -30,6 +30,9 @@
             </span>
 
             <div style="grid-column: 1 / span 3; width: 100%">
+            	<!-- 
+            		<h:outputText value="#{itemlist.size()}" rendered="#{showDetails}"/>
+            	-->
                 <x:dataList
                     var="item"
                     value="#{itemlist}"
@@ -38,35 +41,35 @@
                     <ui:fragment rendered="#{item.showField and item.visible}">
 
                         <x:dataList value="#{item.values}" var="field">
-                        <ui:fragment rendered="#{item.fieldType=='input'}">
-                            <goobiio:input
-                                fieldid="#{item.name}input"
-                                fieldname="#{msgs[item.name]}"
-                                fieldvalue="#{field.value}" />
-                        </ui:fragment>
-                        <ui:fragment rendered="#{item.fieldType=='textarea'}">
-                            <goobiio:textarea
-                                fieldid="#{item.name}textarea"
-                                fieldname="#{msgs[item.name]}"
-                                fieldvalue="#{field.value}" />
-                        </ui:fragment>
-                        <ui:fragment rendered="#{item.fieldType=='dropdown' or item.fieldType=='vocabulary'}">
-                            <goobiio:dropdown
-                                fieldid="#{item.name}dropdown"
-                                fieldname="#{msgs[item.name]}"
-                                fieldvalue="#{field.value}"
-                                selectItems="#{field.selectItemList}" />
-                        </ui:fragment>
-                        <ui:fragment rendered="#{item.fieldType=='multiselect'}">
-                            <goobiio:multiselect
-                                fieldid="#{item.name}multiselect"
-                                fieldname="#{msgs[item.name]}"
-                                fieldvalue="#{field.multiselectValue}"
-                                selectItems="#{field.possibleValues}"
-                                selectedItems="#{field.multiselectSelectedValues}" />
-                        </ui:fragment>
-                        
-                        <h:outputText styleClass="help-inline font-danger" rendered="#{!item.valid}" value="#{msgs[item.validationError]}"/>
+	                        <ui:fragment rendered="#{item.fieldType=='input'}">
+	                            <goobiio:input
+	                                fieldid="#{item.name}input"
+	                                fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
+	                                fieldvalue="#{field.value}" />
+	                        </ui:fragment>
+	                        <ui:fragment rendered="#{item.fieldType=='textarea'}">
+	                            <goobiio:textarea
+	                                fieldid="#{item.name}textarea"
+	                                fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
+	                                fieldvalue="#{field.value}" />
+	                        </ui:fragment>
+	                        <ui:fragment rendered="#{item.fieldType=='dropdown' or item.fieldType=='vocabulary'}">
+	                            <goobiio:dropdown
+	                                fieldid="#{item.name}dropdown"
+	                                fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
+	                                fieldvalue="#{field.value}"
+	                                selectItems="#{field.selectItemList}" />
+	                        </ui:fragment>
+	                        <ui:fragment rendered="#{item.fieldType=='multiselect'}">
+	                            <goobiio:multiselect
+	                                fieldid="#{item.name}multiselect"
+	                                fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
+	                                fieldvalue="#{field.multiselectValue}"
+	                                selectItems="#{field.possibleValues}"
+	                                selectedItems="#{field.multiselectSelectedValues}" />
+	                        </ui:fragment>
+	                        
+	                        <h:outputText styleClass="help-inline font-danger" rendered="#{!item.valid}" value="#{msgs[item.validationError]}"/>
                         </x:dataList>
                     </ui:fragment>
                 </x:dataList>
