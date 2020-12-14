@@ -289,10 +289,13 @@
 			    color: #000;
 			}
 			
+			#node-type {
+			    margin-bottom:50px;
+			}
+
 			.node-type-selection {
 			    border-left: none !important;
 			    display: flex;
-			    justify-content: center;
 			}
 			
 			.metadata-area {
@@ -658,13 +661,26 @@
                                     <div
                                         class="container"
                                         style="width: 100%">
+
+										<!-- no node selected currently -->
                                         <h:panelGroup
-                                            layout="block"
-                                            styleClass="center"
-                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry == null}">
-                                            <h3>#{msgs.plugin_administration_archive_noElementSelectedHeading}</h3>
-                                            <p>#{msgs.plugin_administration_archive_noElementSelectedText}</p>
-                                        </h:panelGroup>
+		                                	layout="block"
+		                                    styleClass="box box-color box-bordered orange"
+		                                    rendered="#{AdministrationForm.administrationPlugin.selectedEntry == null}">
+		                                    <div class="box-title">
+		                                    	<h3>
+		                                        	<h:outputText value="#{msgs.details} - #{msgs.plugin_administration_archive_noElementSelectedHeading}" />
+		                                        </h3>
+		                                    </div>
+		                                    <div class="box-content">
+		                                    	<h:outputText
+		                                    		styleClass="alert alert-info alert-dismissable margin-bottom-10 margin-top-10"
+		                                    		value="#{msgs.plugin_administration_archive_noElementSelectedText}"/>
+			                            	</div>
+										</h:panelGroup>
+										<!-- // no node selected currently -->
+
+										<!-- a node was selected -->
                                         <h:panelGroup
                                             layout="block"
                                             rendered="#{AdministrationForm.administrationPlugin.selectedEntry != null}">
@@ -674,11 +690,13 @@
                                                 styleClass="box box-color box-bordered orange">
                                                 <div class="box-title">
                                                     <h3>
-                                                        <h:outputText value="#{msgs.details}" />
+                                                        <h:outputText value="#{msgs.details}" 
+                                                        	rendered="#{AdministrationForm.administrationPlugin.selectedEntry.label==null}"/>
+                                                        <h:outputText value="#{AdministrationForm.administrationPlugin.selectedEntry.label}"
+                                                        	rendered="#{AdministrationForm.administrationPlugin.selectedEntry.label!=null}" />
                                                     </h3>
                                                 </div>
-                                                <div
-                                                    class="box-content without-margin"
+                                                <div class="box-content without-margin"
                                                     style="padding-top: 0;">
                                                     <div
                                                         class="processcreation area_block-border"
@@ -696,7 +714,7 @@
                                                                 rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
                                                                 <h:outputText value="#{msgs.plugin_administration_archive_process_no_process}" />
                                                             </h:panelGroup>
-                                                            <!-- no process exists, so allow it here -->
+                                                            <!-- no process exists, so allow creation of a process here -->
                                                             <h:panelGroup
                                                                 layout="block"
                                                                 styleClass="col-sm-3 node-type-selection"
@@ -709,7 +727,7 @@
                                                                     <h:outputText value="#{msgs.plugin_administration_archive_process_create_process}" />
                                                                 </h:commandLink>
                                                             </h:panelGroup>
-                                                            <!-- // no process exists, so allow it here -->
+                                                            <!-- // no process exists, so allow creation of a process here -->
 
                                                             <!-- process exists -->
                                                             <h:panelGroup
@@ -729,6 +747,7 @@
                                                             <!-- process exists -->
                                                         </h:panelGroup>
 
+														<!-- node type as icon -->
                                                         <h:panelGroup
                                                             styleClass="form-group"
                                                             id="node-type">
@@ -754,6 +773,7 @@
 
                                                             </div>
                                                         </h:panelGroup>
+														<!-- // node type as icon -->
                                                     </div>
 
                                                     <h:panelGroup
@@ -762,12 +782,13 @@
                                                         id="identity-statement-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayIdentityStatementArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
+                                                        	<h:outputText styleClass="font-black" value="#{msgs.plugin_administration_archive_area_identity}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayIdentityStatementArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayIdentityStatementArea}" />
                                                             <f:ajax render="identity-statement-area" />
                                                         </h:commandLink>
-                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_identity}" />
+                                                        :
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.identityStatementAreaList}"
                                                             area="identicationArea"
@@ -777,16 +798,17 @@
 
                                                     <h:panelGroup
                                                         layout="block"
-                                                        styleClass="metadata-area area_block-border"
+                                                        styleClass="metadata-area area_block-border form-group"
                                                         id="context-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayContextArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
+	                                                        <h:outputText styleClass="font-black" value="#{msgs.plugin_administration_archive_area_context}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayContextArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayContextArea}" />
                                                             <f:ajax render="context-area" />
                                                         </h:commandLink>
-                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_context}" />
+                                                        :
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.contextAreaList}"
                                                             area="contextArea"
@@ -796,17 +818,17 @@
 
                                                     <h:panelGroup
                                                         layout="block"
-                                                        styleClass="metadata-area area_block-border"
+                                                        styleClass="metadata-area area_block-border form-group"
                                                         id="content-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayContentArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
+	                                                        <h:outputText styleClass="font-black" value="#{msgs.plugin_administration_archive_area_content}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayContentArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayContentArea}" />
                                                             <f:ajax render="content-area" />
                                                         </h:commandLink>
-                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_content}" />
-
+														:
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.contentAndStructureAreaAreaList}"
                                                             area="contentStructureArea"
@@ -816,16 +838,17 @@
 
                                                     <h:panelGroup
                                                         layout="block"
-                                                        styleClass="metadata-area area_block-border"
+                                                        styleClass="metadata-area area_block-border form-group"
                                                         id="access-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayAccessArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
+	                                                        <h:outputText styleClass="font-black" value="#{msgs.plugin_administration_archive_area_access}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayAccessArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayAccessArea}" />
                                                             <f:ajax render="access-area" />
                                                         </h:commandLink>
-                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_access}" />
+                                                        :
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.accessAndUseAreaList}"
                                                             area="accessArea"
@@ -835,16 +858,17 @@
 
                                                     <h:panelGroup
                                                         layout="block"
-                                                        styleClass="metadata-area area_block-border"
+                                                        styleClass="metadata-area area_block-border form-group"
                                                         id="materials-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayMaterialsArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
+	                                                        <h:outputText styleClass="font-black" value="#{msgs.plugin_administration_archive_area_materials}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayMaterialsArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayMaterialsArea}" />
                                                             <f:ajax render="materials-area" />
                                                         </h:commandLink>
-                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_materials}" />
+                                                        :
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.alliedMaterialsAreaList}"
                                                             area="materialsArea"
@@ -854,16 +878,17 @@
 
                                                     <h:panelGroup
                                                         layout="block"
-                                                        styleClass="metadata-area area_block-border"
+                                                        styleClass="metadata-area area_block-border form-group"
                                                         id="notes-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayNotesArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
+	                                                        <h:outputText styleClass="font-black" value="#{msgs.plugin_administration_archive_area_notes}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayNotesArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayNotesArea}" />
                                                             <f:ajax render="notes-area" />
                                                         </h:commandLink>
-                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_notes}" />
+                                                        :
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.notesAreaList}"
                                                             area="notesArea"
@@ -873,16 +898,17 @@
 
                                                     <h:panelGroup
                                                         layout="block"
-                                                        styleClass="metadata-area area_block-border"
+                                                        styleClass="metadata-area area_block-border form-group"
                                                         id="control-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayControlArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
+	                                                        <h:outputText styleClass="font-black" value="#{msgs.plugin_administration_archive_area_descriptionControl}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayControlArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayControlArea}" />
                                                             <f:ajax render="control-area" />
                                                         </h:commandLink>
-                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_descriptionControl}" />
+														:
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.descriptionControlAreaList}"
                                                             area="descriptionArea"
