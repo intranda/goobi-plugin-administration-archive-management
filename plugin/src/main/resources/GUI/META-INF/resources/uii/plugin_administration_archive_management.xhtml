@@ -464,17 +464,16 @@
                                         <div class="box-title">
                                             <h2>
                                             	<i class="fa fa-archive"/>
-                                            	<h:outputText value="#{msgs[AdministrationForm.administrationPlugin.title]}: #{AdministrationForm.administrationPlugin.selectedDatabase}" />
+                                            	<h:outputText value="#{AdministrationForm.administrationPlugin.selectedDatabase}" />
                                             </h2>
                                             <!-- search box -->
                                             <div class="searchfilter pull-right">
-                                                <div class="input-group input-group">
+                                                <div class="input-group" style="margin-right:10px;margin-top:2px;">
                                                     <h:inputText
                                                         onkeydown="return submitEnter('FilterAlle',event)"
                                                         styleClass="form-control searchfield"
                                                         id="filterField"
                                                         value="#{AdministrationForm.administrationPlugin.searchValue}" />
-
 
                                                     <div class="input-group-btn">
                                                         <x:commandLink
@@ -483,7 +482,6 @@
                                                             styleClass="btn"
                                                             action="#{AdministrationForm.administrationPlugin.search}">
                                                             <i class="fa fa-search"></i>
-
                                                         </x:commandLink>
                                                     </div>
                                                 </div>
@@ -552,9 +550,8 @@
                                                     action="#{AdministrationForm.administrationPlugin.addNode}"
                                                     title="#{msgs.plugin_administration_archive_newNode}">
                                                     <i class="fa fa-plus"></i>
-                                                    <f:ajax
-                                                        execute="hierarchy"
-                                                        render="hierarchy" />
+                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
+                                                    <f:ajax execute="hierarchy" render="hierarchy" />
                                                 </h:commandLink>
 
                                                 <h:commandLink
@@ -562,17 +559,16 @@
                                                     action="#{AdministrationForm.administrationPlugin.deleteNode}"
                                                     title="#{msgs.plugin_administration_archive_deleteNode}">
                                                     <i class="fa fa-trash-o" />
-                                                    <f:ajax
-                                                        execute="hierarchy"
-                                                        render="hierarchy" />
+                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
+                                                    <f:ajax execute="hierarchy" render="hierarchy" />
                                                 </h:commandLink>
-
 
                                                 <h:commandLink
                                                     styleClass="btn btn-success font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.validateArchive}"
                                                     title="#{msgs.plugin_administration_archive_validate}">
                                                     <i class="fa fa-check"></i>
+                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
                                                 </h:commandLink>
 
                                                 <h:commandLink
@@ -581,9 +577,8 @@
                                                     title="#{msgs.plugin_administration_archive_moveNodeUp}"
                                                     style="margin-top: 150px;">
                                                     <i class="fa fa-chevron-up" />
-                                                    <f:ajax
-                                                        execute="hierarchy"
-                                                        render="hierarchy" />
+                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
+                                                    <f:ajax execute="hierarchy" render="hierarchy" />
                                                 </h:commandLink>
 
                                                 <h:commandLink
@@ -591,27 +586,25 @@
                                                     action="#{AdministrationForm.administrationPlugin.moveNodeDown}"
                                                     title="#{msgs.plugin_administration_archive_moveNodeDown}">
                                                     <i class="fa fa-chevron-down" />
-                                                    <f:ajax
-                                                        execute="hierarchy"
-                                                        render="hierarchy" />
+                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
+                                                    <f:ajax execute="hierarchy" render="hierarchy" />
                                                 </h:commandLink>
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.moveHierarchyDown}"
                                                     title="#{msgs.plugin_administration_archive_moveHierarchyDown}">
                                                     <i class="fa fa-chevron-right" />
-                                                    <f:ajax
-                                                        execute="hierarchy"
-                                                        render="hierarchy" />
+                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
+                                                    <f:ajax execute="hierarchy" render="hierarchy" />
                                                 </h:commandLink>
+
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.moveHierarchyUp}"
                                                     title="#{msgs.plugin_administration_archive_moveHierarchyUp}">
                                                     <i class="fa fa-chevron-left" />
-                                                    <f:ajax
-                                                        execute="hierarchy"
-                                                        render="hierarchy" />
+                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
+                                                    <f:ajax execute="hierarchy" render="hierarchy" />
                                                 </h:commandLink>
 												
 												<!-- move node to another position in separate view -->
@@ -620,6 +613,7 @@
                                                     action="#{AdministrationForm.administrationPlugin.prepareMoveNode}"
                                                     title="#{msgs.plugin_administration_archive_moveNode}">
                                                     <i class="fa fa-arrows" />
+                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
                                                     <x:updateActionListener
                                                         property="#{AdministrationForm.administrationPlugin.displayMode}"
                                                         value="moveNode" />
@@ -635,9 +629,9 @@
                                             type="submit"
                                             action="#{AdministrationForm.administrationPlugin.downloadArchive}">
                                             <i class="fa fa-download margin-right-5"></i>
+                                            <f:passThroughAttribute name="data-toggle" value="tooltip" />
                                             <h:outputText value="#{msgs.plugin_administration_archive_download}" />
                                         </h:commandLink>
-
                                         <h:commandLink
                                             styleClass="btn btn-success submitOnEnter pull-right font-size-s margin-bottom-most"
                                             id="absenden"
@@ -645,19 +639,20 @@
                                         	style="margin-right:-15px;"
                                             action="#{AdministrationForm.administrationPlugin.saveArchiveAndLeave}">
                                             <i class="fa fa-save margin-right-5"></i>
+                                            <f:passThroughAttribute name="data-toggle" value="tooltip" />
                                             <h:outputText value="#{msgs.plugin_administration_archive_saveAndExit}" />
                                         </h:commandLink>
                                         <h:commandLink
                                             styleClass="btn margin-sides-10 font-size-s pull-right"
                                             type="submit"
                                             action="#{AdministrationForm.administrationPlugin.cancelEdition}">
+                                            <f:passThroughAttribute name="data-toggle" value="tooltip" />
                                             <h:outputText value="#{msgs.abbrechen}" />
                                         </h:commandLink>
                                     </div>
                                 </div>
 
-
-
+								<!-- Right area for loaded node -->
                                 <div class="grid-container rightArea">
 
                                     <div
@@ -667,12 +662,8 @@
                                             layout="block"
                                             styleClass="center"
                                             rendered="#{AdministrationForm.administrationPlugin.selectedEntry == null}">
-
-                                            <p>
-                                                <strong>#{msgs.plugin_administration_archive_noElementSelectedHeading}</strong>
-                                            </p>
+                                            <h3>#{msgs.plugin_administration_archive_noElementSelectedHeading}</h3>
                                             <p>#{msgs.plugin_administration_archive_noElementSelectedText}</p>
-
                                         </h:panelGroup>
                                         <h:panelGroup
                                             layout="block"
@@ -705,6 +696,7 @@
                                                                 rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
                                                                 <h:outputText value="#{msgs.plugin_administration_archive_process_no_process}" />
                                                             </h:panelGroup>
+                                                            <!-- no process exists, so allow it here -->
                                                             <h:panelGroup
                                                                 layout="block"
                                                                 styleClass="col-sm-3 node-type-selection"
@@ -713,10 +705,13 @@
                                                                     action="#{AdministrationForm.administrationPlugin.createProcess}"
                                                                     id="process-creation-button"
                                                                     styleClass="btn btn-primary font-size-s pull-right ">
+                                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
                                                                     <h:outputText value="#{msgs.plugin_administration_archive_process_create_process}" />
                                                                 </h:commandLink>
                                                             </h:panelGroup>
+                                                            <!-- // no process exists, so allow it here -->
 
+                                                            <!-- process exists -->
                                                             <h:panelGroup
                                                                 layout="block"
                                                                 styleClass="col-sm-9 node-type-selection"
@@ -728,10 +723,11 @@
                                                                     onclick="preventDoubleSubmit(this);"
                                                                     title="#{msgs.process_generateDocket}">
                                                                     <i class="fa fa-print margin-left-10" />
+                                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
                                                                 </h:commandLink>
                                                             </h:panelGroup>
+                                                            <!-- process exists -->
                                                         </h:panelGroup>
-
 
                                                         <h:panelGroup
                                                             styleClass="form-group"
@@ -745,22 +741,19 @@
                                                                     var="nodeType">
                                                                     <h:commandLink
                                                                         styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType.nodeName == nodeType.nodeName ? 'node-selected' : ''}"
-                                                                        title="#{msgs[nodeType.nodeName]}">
-                                                                        <i
-                                                                            class="#{nodeType.icon}"
-                                                                            aria-hidden="true"></i>
+                                                                        title="#{msgs['plugin_administration_archive_nodeType_'.concat(nodeType.nodeName)]}">
+                                                                        <i class="#{nodeType.icon}" aria-hidden="true"></i>
                                                                         <f:setPropertyActionListener
                                                                             value="#{nodeType}"
                                                                             target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
                                                                         <f:ajax render="node-type :hierarchy" />
+                                                                        <f:passThroughAttribute name="data-toggle" value="tooltip" />
                                                                     </h:commandLink>
 
                                                                 </x:dataList>
 
                                                             </div>
                                                         </h:panelGroup>
-
-
                                                     </div>
 
                                                     <h:panelGroup
@@ -899,11 +892,11 @@
                                                 </div>
                                             </h:panelGroup>
                                         </h:panelGroup>
-
-
                                     </div>
 
                                 </div>
+                                <!-- // Right area for loaded node -->
+                                
                             </div>
                         </h:form>
 
