@@ -7328,7 +7328,7 @@
       </Metadata>
       <Metadata>
         <InternalName>NodeId</InternalName>
-        <WriteXPath>./mods:mods/#mods:identifier[@type='ead node']</WriteXPath>
+        <WriteXPath>./mods:mods/#mods:identifier[@type='archive-entry-id']</WriteXPath>
       </Metadata>      
       
       
