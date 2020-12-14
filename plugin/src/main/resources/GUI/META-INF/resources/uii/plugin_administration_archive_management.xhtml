@@ -16,19 +16,17 @@
     <composite:implementation>
         <style>
 			div.container {
-			    min-height: 20em;
+			    min-height: 30em;
 			    position: relative
 			}
 			
 			div.center {
-			    margin: 0;
-			    background: lightgrey;
 			    position: absolute;
 			    top: 50%;
 			    left: 50%;
 			    margin-right: -50%;
-			    padding: 20px 60px;
-			    border: 1px solid black;
+			    padding: 20px 60px 40px 60px;
+			    border: 1px solid #ddd;
 			    transform: translate(-50%, -50%)
 			}
 			
@@ -186,6 +184,8 @@
 			
 			.table tr th, .table tr td {
 			    border-top: none;
+			    padding-top:6px;
+			    padding-bottom:6px;
 			}
 			
 			.area_block-border {
@@ -244,6 +244,8 @@
 			    margin-top: -20px;
 			    margin-bottom: -20px;
 			    margin-right: -7px;
+			    padding-top:10px;
+			    padding-bottom:10px;
 			}
 			
 			.leftArea-button {
@@ -362,14 +364,14 @@
                                                 layout="block"
                                                 styleClass="center"
                                                 rendered="#{AdministrationForm.administrationPlugin.displayMode == ''}">
-                                                <p>
-                                                    <strong>#{msgs.plugin_administration_archive_selectionHeading}</strong>
-                                                </p>
-                                                <p>#{msgs.plugin_administration_archive_selectionText}</p>
-
+                                                <h3>
+                                                    #{msgs.plugin_administration_archive_selectionHeading}
+                                                </h3>
+                                                <p style="margin-top:20px;">#{msgs.plugin_administration_archive_selectionText}</p>
 
                                                 <h:selectOneMenu
                                                     id="selectDB"
+                                                    style="margin-bottom:10px;"
                                                     styleClass="form-control"
                                                     value="#{AdministrationForm.administrationPlugin.selectedDatabase}">
                                                     <f:selectItem
@@ -377,7 +379,7 @@
                                                         itemLabel="#{msgs.bitteAuswaehlen}" />
                                                     <f:selectItems value="#{AdministrationForm.administrationPlugin.possibleDatabases}" />
                                                 </h:selectOneMenu>
-                                                <h:commandLink styleClass="btn  font-size-s  margin-top-10">
+                                                <h:commandLink styleClass="btn font-size-s  margin-top-10">
                                                     <h:outputText value="#{msgs.plugin_administration_archive_createNewArchive}" />
                                                     <f:setPropertyActionListener
                                                         value="createArchive"
@@ -398,12 +400,11 @@
                                                 styleClass="center"
                                                 rendered="#{AdministrationForm.administrationPlugin.displayMode == 'createArchive'}">
 
-                                                <p>
-                                                    <strong>#{msgs.plugin_administration_archive_creationHeading}</strong>
-                                                </p>
+                                                <h3>
+                                                    #{msgs.plugin_administration_archive_creationHeading}
+                                                </h3>
 
-
-                                                <p>#{msgs.plugin_administration_archive_creation_selectDatabase}</p>
+                                                <p style="margin-top:20px;">#{msgs.plugin_administration_archive_creation_selectDatabase}</p>
                                                 <h:selectOneMenu
                                                     styleClass="form-control"
                                                     value="#{AdministrationForm.administrationPlugin.databaseName}">
@@ -413,8 +414,8 @@
                                                     <f:selectItems value="#{AdministrationForm.administrationPlugin.distinctDatabaseNames}" />
                                                 </h:selectOneMenu>
 
-                                                <p>#{msgs.plugin_administration_archive_creation_filename}</p>
-                                                <h:inputText
+                                                <p style="margin-top:20px;">#{msgs.plugin_administration_archive_creation_filename}</p>
+                                                <h:inputText style="margin-bottom:10px;"
                                                     styleClass="form-control"
                                                     value="#{AdministrationForm.administrationPlugin.fileName}" />
 
@@ -612,9 +613,8 @@
                                                         execute="hierarchy"
                                                         render="hierarchy" />
                                                 </h:commandLink>
-
-
-
+												
+												<!-- move node to another position in separate view -->
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.prepareMoveNode}"
@@ -625,25 +625,24 @@
                                                         value="moveNode" />
                                                 </h:commandLink>
 
-
                                             </div>
                                         </div>
                                     </h:panelGroup>
                                     <div class="form-actions">
                                         <h:commandLink
-                                            styleClass="btn margin-sides-10 font-size-s"
+                                        	style="margin-left:-15px;"
+                                            styleClass="btn font-size-s"
                                             type="submit"
                                             action="#{AdministrationForm.administrationPlugin.downloadArchive}">
-                                            <i class="fa fa-save margin-right-5"></i>
+                                            <i class="fa fa-download margin-right-5"></i>
                                             <h:outputText value="#{msgs.plugin_administration_archive_download}" />
                                         </h:commandLink>
-
-
 
                                         <h:commandLink
                                             styleClass="btn btn-success submitOnEnter pull-right font-size-s margin-bottom-most"
                                             id="absenden"
                                             type="submit"
+                                        	style="margin-right:-15px;"
                                             action="#{AdministrationForm.administrationPlugin.saveArchiveAndLeave}">
                                             <i class="fa fa-save margin-right-5"></i>
                                             <h:outputText value="#{msgs.plugin_administration_archive_saveAndExit}" />
