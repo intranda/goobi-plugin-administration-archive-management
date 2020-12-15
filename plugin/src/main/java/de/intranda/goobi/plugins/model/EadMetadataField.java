@@ -121,4 +121,23 @@ public class EadMetadataField {
         }
     }
 
+    public void deleteValue(FieldValue value) {
+        FieldValue valueToDelete = null;
+        for (FieldValue fv : values) {
+            if (fv.getValue().equals(value.getValue())) {
+                valueToDelete = fv;
+                break;
+            }
+        }
+        if (valueToDelete!=null) {
+            if (values.size()>1) {
+                values.remove(valueToDelete);
+            } else {
+                valueToDelete.setValue("");
+                showField = false;
+            }
+        }
+
+    }
+
 }

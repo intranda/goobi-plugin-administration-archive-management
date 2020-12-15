@@ -15,11 +15,8 @@
                     for="#{fieldid}"
                     value="#{fieldname}" />
 
-                <h:commandLink styleClass="close-field pull-right">
-                    <i class="fa fa-minus-circle"></i>
-                    <x:updateActionListener
-                        property="#{field.value}"
-                        value=""/>                        
+                <h:commandLink styleClass="close-field pull-right" action="#{item.deleteValue(field)}">
+                    <i class="fa fa-minus-circle"></i>                      
                     <f:ajax
                         execute="@this"
                         render=":#{ajaxid} :hierarchy" />
