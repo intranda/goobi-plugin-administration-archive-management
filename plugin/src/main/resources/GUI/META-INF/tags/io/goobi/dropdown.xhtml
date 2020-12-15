@@ -9,13 +9,13 @@
     xmlns:x="http://myfaces.apache.org/tomahawk">
 <h:body>
     <ui:composition>
-        <div class="form-group control-label metadata-row-area-content">
+        <div class="control-label metadata-row-area-content">
             <h:outputLabel
                 for="#{fieldid}"
                 value="#{fieldname}" />
         </div>
             <h:commandLink
-                styleClass="form-group close-field pull-right metadata-row-area-content"
+                styleClass="close-field pull-right metadata-row-area-content"
                 action="#{item.deleteValue(field)}">
                 <i class="fa fa-minus-circle"></i>
                 <f:ajax
@@ -27,7 +27,7 @@
             <h:selectOneMenu
                 id="#{fieldid}"
                 forceId="true"
-                styleClass="form-group form-control #{item.valid ? '' : 'validation-error'}"
+                styleClass="form-control #{item.valid ? '' : 'validation-error'}"
                 value="#{fieldvalue}"
                 required="false"
                 readonly="false">
