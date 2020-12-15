@@ -171,6 +171,8 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
     private Process processTemplate;
     private BeanHelper bhelp = new BeanHelper();
 
+    private String nodeDefaultTitle;
+
     private List<StringPair> eventList = new ArrayList<>();
     private List<String> editorList = new ArrayList<>();
     private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -270,6 +272,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             document.setRootElement(eadElement);
             rootElement = parseElement(1, 0, eadElement);
             rootElement.setDisplayChildren(true);
+            selectedEntry = rootElement;
             displayMode = "";
         }
     }
@@ -285,7 +288,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         Element eadElement = collection.getChild("ead", ns);
         rootElement = parseElement(1, 0, eadElement);
         rootElement.setDisplayChildren(true);
-
+        selectedEntry = rootElement;
         Element archdesc = eadElement.getChild("archdesc", ns);
         if (archdesc != null) {
             Element processinfoElement = archdesc.getChild("processinfo", ns);
@@ -552,7 +555,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         }
 
         processTemplateId = config.getInteger("/processTemplateId", null);
-
+        nodeDefaultTitle = config.getString("/nodeDefaultTitle", "");
         for (HierarchicalConfiguration hc : config.configurationsAt("/node")) {
             NodeType nt = new NodeType(hc.getString("@name"), hc.getString("@ruleset"), hc.getString("@icon"));
             configuredNodes.add(nt);
@@ -650,9 +653,20 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                     new EadEntry(selectedEntry.isHasChildren() ? selectedEntry.getSubEntryList().size() + 1 : 0, selectedEntry.getHierarchy() + 1);
             entry.setId(String.valueOf(UUID.randomUUID()));
             // initial metadata values
-            for (EadMetadataField emf : configuredFields) {
-                addFieldToEntry(entry, emf, null);
+            List<String> titleData = new ArrayList<>();
+            if (StringUtils.isNotBlank(nodeDefaultTitle)) {
+                titleData.add(nodeDefaultTitle);
+                entry.setLabel(nodeDefaultTitle);
             }
+            for (EadMetadataField emf : configuredFields) {
+                if (emf.getXpath().contains("unittitle")) {
+                    addFieldToEntry(entry, emf, titleData);
+                } else {
+                    addFieldToEntry(entry, emf, null);
+                }
+            }
+
+            entry.setNodeType(selectedEntry.getNodeType());
             selectedEntry.addSubEntry(entry);
             selectedEntry.setDisplayChildren(true);
             selectedEntry = entry;

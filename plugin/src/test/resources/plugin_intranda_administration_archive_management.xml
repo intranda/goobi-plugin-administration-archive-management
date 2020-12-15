@@ -7,6 +7,8 @@
         <archive>*</archive>
         <!-- define the process template for process creation. If empty or missing, processes can't be created  -->
         <processTemplateId>309544</processTemplateId>
+        <!-- default title for a new node -->
+        <nodeDefaultTitle>Document</nodeDefaultTitle>
         <!-- define metadata fields. All fields are displayed on the UI based on the level and the order within this file.
                 - @name: contains the internal name of the field. The value can be used to translate the field in the messages files. The field must start with a letter and can not contain any white spaces.
                 - @level: metadata level, allowed values are 1-7:
