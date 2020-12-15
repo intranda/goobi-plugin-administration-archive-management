@@ -22,8 +22,8 @@
 					<exclude>**/*.java</exclude>
 	                <!-- Do only uncomment these lines if you really really know what you do. 
 	                This might be helpful during development. But does not work in productive use of the plugin then. -->
-					<!-- <exclude>META-INF/tags/**/*.xhtml</exclude> -->
-					<!-- <exclude>META-INF/intranda.taglib.xml</exclude> -->
+					<exclude>META-INF/tags/**/*.xhtml</exclude>
+					<exclude>META-INF/intranda.taglib.xml</exclude>
 				</excludes>
 			</resource>
 		</resources>

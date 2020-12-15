@@ -9,21 +9,21 @@
     xmlns:x="http://myfaces.apache.org/tomahawk">
 <h:body>
     <ui:composition>
-        <div class="form-group">
-            <div class="col-sm-4 control-label">
+        
+            <div class="control-label metadata-row-area-content">
                 <h:outputLabel
                     for="#{fieldid}"
                     value="#{fieldname}" />
-
-                <h:commandLink styleClass="close-field pull-right" action="#{item.deleteValue(field)}">
+</div>
+                <h:commandLink styleClass="metadata-row-area-content close-field pull-right" action="#{item.deleteValue(field)}">
                     <i class="fa fa-minus-circle"></i>
                     <f:ajax
                         execute="@this"
                         render=":#{ajaxid} :hierarchy" />
                 </h:commandLink>
 
-            </div>
-            <div class="col-sm-8">
+      
+            <div class="metadata-row-area-content">
                 <h:inputText
                     id="#{fieldid}"
                     forceId="true"
@@ -37,7 +37,6 @@
                         event="blur" />
                 </h:inputText>
             </div>
-        </div>
 
 
     </ui:composition>

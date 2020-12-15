@@ -17,23 +17,21 @@
 }
 </style>
 
-        <h:panelGroup
-            styleClass="form-group"
-            layout="block">
-            <div class="col-sm-4 control-label">
+
+            <div class="form-group control-label metadata-row-area-content">
                 <h:outputLabel
                     for="#{fieldid}"
                     value="#{fieldname}" />
+</div>
 
-                <h:commandLink styleClass="close-field pull-right" action="#{item.deleteValue(field)}">
+                <h:commandLink styleClass="close-field pull-right metadata-row-area-content" action="#{item.deleteValue(field)}">
                     <i class="fa fa-minus-circle"></i>
                     <f:ajax
                         execute="@this"
                         render=":#{ajaxid} :hierarchy" />
                 </h:commandLink>
 
-            </div>
-            <div class="col-sm-8 ">
+            <div class="metadata-row-area-content">
                 <h:selectOneMenu
                     id="#{fieldid}"
                     forceId="true"
@@ -66,7 +64,6 @@
                     </x:dataList>
                 </div>
             </div>
-        </h:panelGroup>
 
 
 

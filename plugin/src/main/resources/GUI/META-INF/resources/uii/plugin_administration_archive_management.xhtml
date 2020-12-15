@@ -302,12 +302,11 @@
 			    width: 100%;
 			    display: grid;
 			    padding-top: 10px !important;
-			    grid-template-columns: auto auto 1fr;
+			    grid-template-columns: auto 1fr;
 			    justify-items: start;
 			    justify-content: start;
 			    align-items: stretch;
 			    justify-items: stretch;
-			    display: grid;
 			}
 			
 			.form-horizontal .form-group::before {
@@ -327,6 +326,22 @@
 			.validation-error {
 			    border: 1px solid red;
 			}
+            
+            .metadata-row-area {
+               width: 100%;
+                display: grid;
+                grid-template-columns: 25% auto 1fr;
+                justify-items: start;
+                justify-content: start;
+                align-items: stretch;
+                justify-items: stretch;  
+                
+            }
+            
+            .metadata-row-area-content {
+                          padding: 8px !important;
+            
+            }
 		</style>
 		
         <h:panelGroup>
@@ -788,7 +803,6 @@
                                                                 value="#{not AdministrationForm.administrationPlugin.displayIdentityStatementArea}" />
                                                             <f:ajax render="identity-statement-area" />
                                                         </h:commandLink>
-                                                        :
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.identityStatementAreaList}"
                                                             area="identicationArea"
@@ -810,7 +824,6 @@
                                                                 value="#{not AdministrationForm.administrationPlugin.displayContextArea}" />
                                                             <f:ajax render="context-area" />
                                                         </h:commandLink>
-                                                        :
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.contextAreaList}"
                                                             area="contextArea"
@@ -831,7 +844,6 @@
                                                                 value="#{not AdministrationForm.administrationPlugin.displayContentArea}" />
                                                             <f:ajax render="content-area" />
                                                         </h:commandLink>
-														:
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.contentAndStructureAreaAreaList}"
                                                             area="contentStructureArea"
@@ -852,7 +864,6 @@
                                                                 value="#{not AdministrationForm.administrationPlugin.displayAccessArea}" />
                                                             <f:ajax render="access-area" />
                                                         </h:commandLink>
-                                                        :
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.accessAndUseAreaList}"
                                                             area="accessArea"
@@ -873,7 +884,6 @@
                                                                 value="#{not AdministrationForm.administrationPlugin.displayMaterialsArea}" />
                                                             <f:ajax render="materials-area" />
                                                         </h:commandLink>
-                                                        :
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.alliedMaterialsAreaList}"
                                                             area="materialsArea"
@@ -894,7 +904,6 @@
                                                                 value="#{not AdministrationForm.administrationPlugin.displayNotesArea}" />
                                                             <f:ajax render="notes-area" />
                                                         </h:commandLink>
-                                                        :
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.notesAreaList}"
                                                             area="notesArea"
@@ -915,7 +924,6 @@
                                                                 value="#{not AdministrationForm.administrationPlugin.displayControlArea}" />
                                                             <f:ajax render="control-area" />
                                                         </h:commandLink>
-														:
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.descriptionControlAreaList}"
                                                             area="descriptionArea"
