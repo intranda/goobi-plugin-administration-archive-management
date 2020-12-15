@@ -15,341 +15,328 @@
 
     <composite:implementation>
         <style>
-			div.container {
-			    min-height: 30em;
-			    position: relative
-			}
-			
-			div.center {
-			    position: absolute;
-			    top: 50%;
-			    left: 50%;
-			    margin-right: -50%;
-			    padding: 20px 60px 40px 60px;
-			    border: 1px solid #ddd;
-			    transform: translate(-50%, -50%)
-			}
-			
-			div.grid-content {
-			    display: grid;
-			    grid-template-columns: 50% 50%;
-			    grid-gap: 10px;
-			    /* margin-left: -15px; */
-			    /* margin-right: -15px; */
-			}
-			
-			div.leftArea {
-			    padding-left: 15px;
-			    min-height: 300px;
-			}
-			
-			div.rightArea {
-			    padding-right: 15px;
-			}
-			
-			div.rightArea .center p {
-			    text-align: center;
-			}
-			
-			div.no-element-selected {
-			    min-height: 10em;
-			    padding: 20px 60px;
-			    background: lightgrey;
-			    border: 1px solid black;
-			}
-			
-			.table {
-			    min-height: 400px;
-			}
-			
-			.table .fa {
-			    margin-right: 10px;
-			}
-			
-			.table a {
-			    color: black;
-			    text-decoration: none;
-			}
-			
-			.table__structure-link-active {
-			    font-weight: 700;
-			    color: #368ee0 !important;
-			}
-			
-			.table__structure-link-searched {
-			    font-weight: 700;
-			}
-			
-			/* LEVELS */
-			.table tr[class*="level"] td .expand {
-			    margin-left: -22px;
-			}
-			
-			.table tr[class*="level"] td .expanded {
-			    margin-left: -19px;
-			}
-			
-			.table tr .level-0 td[id*="expand"] {
-			    margin-left: 0;
-			}
-			
-			.table tr.level-1, .table td.level-1 {
-			    padding-left: 10px;
-			}
-			
-			.table tr.level-1 td {
-			    padding-left: 35px;
-			}
-			
-			}
-			.table   tr.level-2, .table  td.level-2 {
-			    padding-left: 20px;
-			}
-			
-			.table   tr.level-2 td {
-			    padding-left: 45px;
-			}
-			
-			}
-			.table    tr.level-3, .table    td.level-3 {
-			    padding-left: 30px;
-			}
-			
-			.table    tr.level-3 td {
-			    padding-left: 60px;
-			}
-			
-			}
-			.table   tr.level-4, .table    td.level-4 {
-			    padding-left: 40px;
-			}
-			
-			.table    tr.level-4  td {
-			    padding-left: 75px;
-			}
-			
-			}
-			.table    tr.level-5, .table    td.level-5 {
-			    padding-left: 50px;
-			}
-			
-			.table    tr.level-5  td {
-			    padding-left: 90px;
-			}
-			
-			}
-			.table    tr.level-6, .table   td.level-6 {
-			    padding-left: 60px;
-			}
-			
-			.table    tr.level-6   td {
-			    padding-left: 105px
-			}
-			
-			}
-			.table   tr.level-7, .table    td.level-7 {
-			    padding-left: 70px;
-			}
-			
-			.table    tr.level-7 td {
-			    padding-left: 120px
-			}
-			
-			}
-			.table  tr.level-8, .table  td.level-8 {
-			    padding-left: 80px;
-			}
-			
-			.table    tr.level-8  td {
-			    padding-left: 135px
-			}
-			
-			}
-			.table  tr.level-9, .table  td.level-9 {
-			    padding-left: 90px;
-			}
-			
-			.table    tr.level-9  td {
-			    padding-left: 150px
-			}
-			
-			}
-			.table  tr.level-10, .table  td.level-10 {
-			    padding-left: 100px;
-			}
-			
-			.table    tr.level-10  td {
-			    padding-left: 165px
-			}
-			
-			.table tr th, .table tr td {
-			    border-top: none;
-			    padding-top:6px;
-			    padding-bottom:6px;
-			}
-			
-			.area_block-border {
-			    border-top: 1px solid #E8860C;
-			    margin-top: 10px;
-			}
-			
-			.area_block-border p, #contextArea, #contentStructureArea,
-			    #metadata-areaArea, #descriptionArea, #notesArea, #materialsArea,
-			    #accessArea {
-			    margin: 10px;
-			    flex-basis: 100%;
-			    flex-shrink: 2;
-			}
-			
-			.badge-empty {
-			    background-color: #aaa;
-			}
-			
-			.badge-filled {
-			    
-			}
-			
-			.badge {
-			    margin-left: 5px;
-			    margin-right: 5px;
-			    margin-bottom: 5px;
-			}
-			
-			.badge a {
-			    color: #fff !important;
-			}
-			
-			.badge-area {
-			    display: flex;
-			    justify-content: flex-end;
-			    flex-wrap: wrap;
-			}
-			
-			.close-field {
-			    color: #777;
-			}
-			
-			.without-margin {
-			    padding-left: 0 !important;
-			    padding-right: 0 !important;
-			}
-			
-			.leftArea-grid {
-			    display: grid;
-			    grid-template-columns: auto 40px;
-			}
-			
-			.button-area {
-			    border-left: 2px solid #666;
-			    margin-top: -20px;
-			    margin-bottom: -20px;
-			    margin-right: -7px;
-			    padding-top:10px;
-			    padding-bottom:10px;
-			}
-			
-			.leftArea-button {
-			    margin-top: 5px;
-			    margin-bottom: 5px;
-			    width: 32px;
-			    margin-bottom: 5px;
-			}
-			
-			.searchfilter {
-			    /*     max-width: 30%; */
-			    display: inline-block;
-			    width: 30%;
-			}
-			
-			.input-group-btn .btn {
-			    height: 25px;
-			}
-			
-			.box-title h3 {
-			    max-width: 70%;
-			}
-			
-			#FilterAlle2 {
-			    padding-bottom: 2px;
-			    padding-top: 2px;
-			    background-color: #666;
-			    color: #ddd;
-			}
-			
-			.node {
-			    color: #aaa;
-			    margin-right: 10px;
-			}
-			
-			.node i {
-			    font-size: 2em;
-			}
-			
-			.node-selected {
-			    color: #000;
-			}
-			
-			#node-type {
-			    margin-bottom:50px;
-			}
+div.container {
+    min-height: 20em;
+    position: relative
+}
 
-			.node-type-selection {
-			    border-left: none !important;
-			    display: flex;
-			}
-			
-			.metadata-area {
-			    width: 100%;
-			    display: grid;
-			    padding-top: 10px !important;
-			    grid-template-columns: auto auto 1fr;
-			    justify-items: start;
-			    justify-content: start;
-			    align-items: stretch;
-			    justify-items: stretch;
-			    display: grid;
-			}
-			
-			.form-horizontal .form-group::before {
-			    display: none;
-			    content: "";
-			}
-			
-			#process-creation-button {
-			    background: #368ee0;
-			}
-			
-			.download-docket i {
-			    font-size: 1.5em;
-			    color: #000;
-			}
-			
-			.validation-error {
-			    border: 1px solid red;
-			}
-		</style>
-		
+div.center {
+    margin: 0;
+    background: lightgrey;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    padding: 20px 60px;
+    border: 1px solid black;
+    transform: translate(-50%, -50%)
+}
+
+div.grid-content {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    grid-gap: 10px;
+    /* margin-left: -15px; */
+    /* margin-right: -15px; */
+}
+
+div.leftArea {
+    padding-left: 15px;
+    min-height: 300px;
+}
+
+div.rightArea {
+    padding-right: 15px;
+}
+
+div.rightArea .center p {
+    text-align: center;
+}
+
+div.no-element-selected {
+    min-height: 10em;
+    padding: 20px 60px;
+    background: lightgrey;
+    border: 1px solid black;
+}
+
+.table {
+    min-height: 400px;
+}
+
+.table .fa {
+    margin-right: 10px;
+}
+
+.table a {
+    color: black;
+    text-decoration: none;
+}
+
+.table__structure-link-active {
+    font-weight: 700;
+    color: #368ee0 !important;
+}
+
+.table__structure-link-searched {
+    font-weight: 700;
+}
+
+/* LEVELS */
+.table tr[class*="level"] td .expand {
+    margin-left: -22px;
+}
+
+.table tr[class*="level"] td .expanded {
+    margin-left: -19px;
+}
+
+.table tr .level-0 td[id*="expand"] {
+    margin-left: 0;
+}
+
+.table tr.level-1, .table td.level-1 {
+    padding-left: 10px;
+}
+
+.table tr.level-1 td {
+    padding-left: 35px;
+}
+
+}
+.table   tr.level-2, .table  td.level-2 {
+    padding-left: 20px;
+}
+
+.table   tr.level-2 td {
+    padding-left: 45px;
+}
+
+}
+.table    tr.level-3, .table    td.level-3 {
+    padding-left: 30px;
+}
+
+.table    tr.level-3 td {
+    padding-left: 60px;
+}
+
+}
+.table   tr.level-4, .table    td.level-4 {
+    padding-left: 40px;
+}
+
+.table    tr.level-4  td {
+    padding-left: 75px;
+}
+
+}
+.table    tr.level-5, .table    td.level-5 {
+    padding-left: 50px;
+}
+
+.table    tr.level-5  td {
+    padding-left: 90px;
+}
+
+}
+.table    tr.level-6, .table   td.level-6 {
+    padding-left: 60px;
+}
+
+.table    tr.level-6   td {
+    padding-left: 105px
+}
+
+}
+.table   tr.level-7, .table    td.level-7 {
+    padding-left: 70px;
+}
+
+.table    tr.level-7 td {
+    padding-left: 120px
+}
+
+}
+.table  tr.level-8, .table  td.level-8 {
+    padding-left: 80px;
+}
+
+.table    tr.level-8  td {
+    padding-left: 135px
+}
+
+}
+.table  tr.level-9, .table  td.level-9 {
+    padding-left: 90px;
+}
+
+.table    tr.level-9  td {
+    padding-left: 150px
+}
+
+}
+.table  tr.level-10, .table  td.level-10 {
+    padding-left: 100px;
+}
+
+.table    tr.level-10  td {
+    padding-left: 165px
+}
+
+.area_block-border {
+    border-top: 1px solid #E8860C;
+    margin-top: 10px;
+}
+
+.area_block-border p, #contextArea, #contentStructureArea,
+    #metadata-areaArea, #descriptionArea, #notesArea, #materialsArea,
+    #accessArea {
+    margin: 10px;
+    flex-basis: 100%;
+    flex-shrink: 2;
+}
+
+.badge-empty {
+    background-color: #aaa;
+}
+
+.badge-filled {
+    
+}
+
+.badge {
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.badge a {
+    color: #fff !important;
+}
+
+.badge-area {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.close-field {
+    color: #777;
+}
+
+.without-margin {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+.leftArea-grid {
+    display: grid;
+    grid-template-columns: auto 40px;
+}
+
+.button-area {
+    border-left: 2px solid #666;
+    margin-top: -20px;
+    margin-bottom: -20px;
+    margin-right: -7px;
+}
+
+.leftArea-button {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    width: 32px;
+    margin-bottom: 5px;
+}
+
+.searchfilter {
+    /*     max-width: 30%; */
+    display: inline-block;
+    width: 30%;
+}
+
+.input-group-btn .btn {
+    height: 25px;
+}
+
+.box-title h3 {
+    max-width: 70%;
+}
+
+#FilterAlle2 {
+    padding-bottom: 2px;
+    padding-top: 2px;
+    background-color: #666;
+    color: #ddd;
+}
+
+.node {
+    color: #aaa;
+    margin-right: 10px;
+}
+
+.node i {
+    font-size: 2em;
+}
+
+.node-selected {
+    color: #000;
+}
+
+.node-type-selection {
+    border-left: none !important;
+    display: flex;
+    justify-content: center;
+}
+
+.metadata-area {
+    width: 100%;
+    display: grid;
+    padding-top: 10px !important;
+    grid-template-columns: auto auto 1fr;
+    justify-items: start;
+    justify-content: start;
+    align-items: stretch;
+    justify-items: stretch;
+    display: grid;
+}
+
+.form-horizontal .form-group::before {
+    display: none;
+    content: "";
+}
+
+#process-creation-button {
+    background: #368ee0;
+}
+
+.download-docket i {
+    font-size: 1.5em;
+    color: #000;
+}
+
+.validation-error {
+    border: 1px solid red;
+}
+</style>
         <h:panelGroup>
             <div class="row">
                 <div class="col-sm-12">
-                
-                	<!-- Selection area for a record group to load -->
                     <h:panelGroup
                         layout="block"
                         styleClass="box box-color box-bordered"
                         rendered="#{AdministrationForm.administrationPlugin.selectedDatabase == NULL}">
                         <div class="box-title">
-                            <h2>
-                            	<i class="fa fa-archive"/>
+                            <h3>
                                 <h:outputText value="#{msgs[AdministrationForm.administrationPlugin.title]}" />
-                            </h2>
+                            </h3>
                         </div>
                         <div class="box-content">
 
                             <h:panelGroup rendered="#{!LoginForm.hasRole('Plugin_Administration_Archive_Management')}">
                                 <h:outputText
                                     styleClass="alert alert-danger alert-dismissable margin-bottom-10 margin-top-10"
-                                    value="#{msgs.plugin_administration_missingPermission} Plugin_Administration_Archive_Management"/>
+                                    value="#{msgs.plugin_administration_missingPermission} Plugin_Administration_Archive_Management"></h:outputText>
                             </h:panelGroup>
 
                             <h:panelGroup
@@ -367,14 +354,14 @@
                                                 layout="block"
                                                 styleClass="center"
                                                 rendered="#{AdministrationForm.administrationPlugin.displayMode == ''}">
-                                                <h3>
-                                                    #{msgs.plugin_administration_archive_selectionHeading}
-                                                </h3>
-                                                <p style="margin-top:20px;">#{msgs.plugin_administration_archive_selectionText}</p>
+                                                <p>
+                                                    <strong>#{msgs.plugin_administration_archive_selectionHeading}</strong>
+                                                </p>
+                                                <p>#{msgs.plugin_administration_archive_selectionText}</p>
+
 
                                                 <h:selectOneMenu
                                                     id="selectDB"
-                                                    style="margin-bottom:10px;"
                                                     styleClass="form-control"
                                                     value="#{AdministrationForm.administrationPlugin.selectedDatabase}">
                                                     <f:selectItem
@@ -382,7 +369,7 @@
                                                         itemLabel="#{msgs.bitteAuswaehlen}" />
                                                     <f:selectItems value="#{AdministrationForm.administrationPlugin.possibleDatabases}" />
                                                 </h:selectOneMenu>
-                                                <h:commandLink styleClass="btn font-size-s  margin-top-10">
+                                                <h:commandLink styleClass="btn  font-size-s  margin-top-10">
                                                     <h:outputText value="#{msgs.plugin_administration_archive_createNewArchive}" />
                                                     <f:setPropertyActionListener
                                                         value="createArchive"
@@ -403,11 +390,12 @@
                                                 styleClass="center"
                                                 rendered="#{AdministrationForm.administrationPlugin.displayMode == 'createArchive'}">
 
-                                                <h3>
-                                                    #{msgs.plugin_administration_archive_creationHeading}
-                                                </h3>
+                                                <p>
+                                                    <strong>#{msgs.plugin_administration_archive_creationHeading}</strong>
+                                                </p>
 
-                                                <p style="margin-top:20px;">#{msgs.plugin_administration_archive_creation_selectDatabase}</p>
+
+                                                <p>#{msgs.plugin_administration_archive_creation_selectDatabase}</p>
                                                 <h:selectOneMenu
                                                     styleClass="form-control"
                                                     value="#{AdministrationForm.administrationPlugin.databaseName}">
@@ -417,8 +405,8 @@
                                                     <f:selectItems value="#{AdministrationForm.administrationPlugin.distinctDatabaseNames}" />
                                                 </h:selectOneMenu>
 
-                                                <p style="margin-top:20px;">#{msgs.plugin_administration_archive_creation_filename}</p>
-                                                <h:inputText style="margin-bottom:10px;"
+                                                <p>#{msgs.plugin_administration_archive_creation_filename}</p>
+                                                <h:inputText
                                                     styleClass="form-control"
                                                     value="#{AdministrationForm.administrationPlugin.fileName}" />
 
@@ -445,10 +433,8 @@
                             </h:panelGroup>
                         </div>
                     </h:panelGroup>
-                	<!-- // Selection area for a record group to load -->
 
 
-                	<!-- Edition area for the loaded record group -->
                     <h:panelGroup
                         id="details"
                         layout="block"
@@ -465,18 +451,18 @@
                                         layout="block"
                                         styleClass="box box-color box-bordered lightgrey">
                                         <div class="box-title">
-                                            <h2>
-                                            	<i class="fa fa-archive"/>
-                                            	<h:outputText value="#{AdministrationForm.administrationPlugin.selectedDatabase}" />
-                                            </h2>
+                                            <h3>
+                                                <h:outputText value="#{msgs[AdministrationForm.administrationPlugin.title]}: #{AdministrationForm.administrationPlugin.selectedDatabase}" />
+                                            </h3>
                                             <!-- search box -->
                                             <div class="searchfilter pull-right">
-                                                <div class="input-group" style="margin-right:10px;margin-top:2px;">
+                                                <div class="input-group input-group">
                                                     <h:inputText
                                                         onkeydown="return submitEnter('FilterAlle',event)"
                                                         styleClass="form-control searchfield"
                                                         id="filterField"
                                                         value="#{AdministrationForm.administrationPlugin.searchValue}" />
+
 
                                                     <div class="input-group-btn">
                                                         <x:commandLink
@@ -485,6 +471,7 @@
                                                             styleClass="btn"
                                                             action="#{AdministrationForm.administrationPlugin.search}">
                                                             <i class="fa fa-search"></i>
+
                                                         </x:commandLink>
                                                     </div>
                                                 </div>
@@ -553,8 +540,9 @@
                                                     action="#{AdministrationForm.administrationPlugin.addNode}"
                                                     title="#{msgs.plugin_administration_archive_newNode}">
                                                     <i class="fa fa-plus"></i>
-                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
-                                                    <f:ajax execute="hierarchy" render="hierarchy" />
+                                                    <f:ajax
+                                                        execute="hierarchy"
+                                                        render="hierarchy" />
                                                 </h:commandLink>
 
                                                 <h:commandLink
@@ -562,16 +550,17 @@
                                                     action="#{AdministrationForm.administrationPlugin.deleteNode}"
                                                     title="#{msgs.plugin_administration_archive_deleteNode}">
                                                     <i class="fa fa-trash-o" />
-                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
-                                                    <f:ajax execute="hierarchy" render="hierarchy" />
+                                                    <f:ajax
+                                                        execute="hierarchy"
+                                                        render="hierarchy" />
                                                 </h:commandLink>
+
 
                                                 <h:commandLink
                                                     styleClass="btn btn-success font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.validateArchive}"
                                                     title="#{msgs.plugin_administration_archive_validate}">
                                                     <i class="fa fa-check"></i>
-                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
                                                 </h:commandLink>
 
                                                 <h:commandLink
@@ -580,8 +569,9 @@
                                                     title="#{msgs.plugin_administration_archive_moveNodeUp}"
                                                     style="margin-top: 150px;">
                                                     <i class="fa fa-chevron-up" />
-                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
-                                                    <f:ajax execute="hierarchy" render="hierarchy" />
+                                                    <f:ajax
+                                                        execute="hierarchy"
+                                                        render="hierarchy" />
                                                 </h:commandLink>
 
                                                 <h:commandLink
@@ -589,98 +579,91 @@
                                                     action="#{AdministrationForm.administrationPlugin.moveNodeDown}"
                                                     title="#{msgs.plugin_administration_archive_moveNodeDown}">
                                                     <i class="fa fa-chevron-down" />
-                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
-                                                    <f:ajax execute="hierarchy" render="hierarchy" />
+                                                    <f:ajax
+                                                        execute="hierarchy"
+                                                        render="hierarchy" />
                                                 </h:commandLink>
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.moveHierarchyDown}"
                                                     title="#{msgs.plugin_administration_archive_moveHierarchyDown}">
                                                     <i class="fa fa-chevron-right" />
-                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
-                                                    <f:ajax execute="hierarchy" render="hierarchy" />
+                                                    <f:ajax
+                                                        execute="hierarchy"
+                                                        render="hierarchy" />
                                                 </h:commandLink>
-
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.moveHierarchyUp}"
                                                     title="#{msgs.plugin_administration_archive_moveHierarchyUp}">
                                                     <i class="fa fa-chevron-left" />
-                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
-                                                    <f:ajax execute="hierarchy" render="hierarchy" />
+                                                    <f:ajax
+                                                        execute="hierarchy"
+                                                        render="hierarchy" />
                                                 </h:commandLink>
-												
-												<!-- move node to another position in separate view -->
+
+
+
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.prepareMoveNode}"
                                                     title="#{msgs.plugin_administration_archive_moveNode}">
                                                     <i class="fa fa-arrows" />
-                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
                                                     <x:updateActionListener
                                                         property="#{AdministrationForm.administrationPlugin.displayMode}"
                                                         value="moveNode" />
                                                 </h:commandLink>
+
 
                                             </div>
                                         </div>
                                     </h:panelGroup>
                                     <div class="form-actions">
                                         <h:commandLink
-                                        	style="margin-left:-15px;"
-                                            styleClass="btn font-size-s"
+                                            styleClass="btn margin-sides-10 font-size-s"
                                             type="submit"
                                             action="#{AdministrationForm.administrationPlugin.downloadArchive}">
-                                            <i class="fa fa-download margin-right-5"></i>
-                                            <f:passThroughAttribute name="data-toggle" value="tooltip" />
+                                            <i class="fa fa-save margin-right-5"></i>
                                             <h:outputText value="#{msgs.plugin_administration_archive_download}" />
                                         </h:commandLink>
+
+
+
                                         <h:commandLink
                                             styleClass="btn btn-success submitOnEnter pull-right font-size-s margin-bottom-most"
                                             id="absenden"
                                             type="submit"
-                                        	style="margin-right:-15px;"
                                             action="#{AdministrationForm.administrationPlugin.saveArchiveAndLeave}">
                                             <i class="fa fa-save margin-right-5"></i>
-                                            <f:passThroughAttribute name="data-toggle" value="tooltip" />
                                             <h:outputText value="#{msgs.plugin_administration_archive_saveAndExit}" />
                                         </h:commandLink>
                                         <h:commandLink
                                             styleClass="btn margin-sides-10 font-size-s pull-right"
                                             type="submit"
                                             action="#{AdministrationForm.administrationPlugin.cancelEdition}">
-                                            <f:passThroughAttribute name="data-toggle" value="tooltip" />
                                             <h:outputText value="#{msgs.abbrechen}" />
                                         </h:commandLink>
                                     </div>
                                 </div>
 
-								<!-- Right area for loaded node -->
+
+
                                 <div class="grid-container rightArea">
 
                                     <div
                                         class="container"
                                         style="width: 100%">
-
-										<!-- no node selected currently -->
                                         <h:panelGroup
-		                                	layout="block"
-		                                    styleClass="box box-color box-bordered orange"
-		                                    rendered="#{AdministrationForm.administrationPlugin.selectedEntry == null}">
-		                                    <div class="box-title">
-		                                    	<h3>
-		                                        	<h:outputText value="#{msgs.details} - #{msgs.plugin_administration_archive_noElementSelectedHeading}" />
-		                                        </h3>
-		                                    </div>
-		                                    <div class="box-content">
-		                                    	<h:outputText
-		                                    		styleClass="alert alert-info alert-dismissable margin-bottom-10 margin-top-10"
-		                                    		value="#{msgs.plugin_administration_archive_noElementSelectedText}"/>
-			                            	</div>
-										</h:panelGroup>
-										<!-- // no node selected currently -->
+                                            layout="block"
+                                            styleClass="center"
+                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry == null}">
 
-										<!-- a node was selected -->
+                                            <p>
+                                                <strong>#{msgs.plugin_administration_archive_noElementSelectedHeading}</strong>
+                                            </p>
+                                            <p>#{msgs.plugin_administration_archive_noElementSelectedText}</p>
+
+                                        </h:panelGroup>
                                         <h:panelGroup
                                             layout="block"
                                             rendered="#{AdministrationForm.administrationPlugin.selectedEntry != null}">
@@ -690,13 +673,11 @@
                                                 styleClass="box box-color box-bordered orange">
                                                 <div class="box-title">
                                                     <h3>
-                                                        <h:outputText value="#{msgs.details}" 
-                                                        	rendered="#{AdministrationForm.administrationPlugin.selectedEntry.label==null}"/>
-                                                        <h:outputText value="#{AdministrationForm.administrationPlugin.selectedEntry.label}"
-                                                        	rendered="#{AdministrationForm.administrationPlugin.selectedEntry.label!=null}" />
+                                                        <h:outputText value="#{msgs.details}" />
                                                     </h3>
                                                 </div>
-                                                <div class="box-content without-margin"
+                                                <div
+                                                    class="box-content without-margin"
                                                     style="padding-top: 0;">
                                                     <div
                                                         class="processcreation area_block-border"
@@ -714,7 +695,6 @@
                                                                 rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
                                                                 <h:outputText value="#{msgs.plugin_administration_archive_process_no_process}" />
                                                             </h:panelGroup>
-                                                            <!-- no process exists, so allow creation of a process here -->
                                                             <h:panelGroup
                                                                 layout="block"
                                                                 styleClass="col-sm-3 node-type-selection"
@@ -723,13 +703,10 @@
                                                                     action="#{AdministrationForm.administrationPlugin.createProcess}"
                                                                     id="process-creation-button"
                                                                     styleClass="btn btn-primary font-size-s pull-right ">
-                                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
                                                                     <h:outputText value="#{msgs.plugin_administration_archive_process_create_process}" />
                                                                 </h:commandLink>
                                                             </h:panelGroup>
-                                                            <!-- // no process exists, so allow creation of a process here -->
 
-                                                            <!-- process exists -->
                                                             <h:panelGroup
                                                                 layout="block"
                                                                 styleClass="col-sm-9 node-type-selection"
@@ -741,13 +718,11 @@
                                                                     onclick="preventDoubleSubmit(this);"
                                                                     title="#{msgs.process_generateDocket}">
                                                                     <i class="fa fa-print margin-left-10" />
-                                                                    <f:passThroughAttribute name="data-toggle" value="tooltip" />
                                                                 </h:commandLink>
                                                             </h:panelGroup>
-                                                            <!-- process exists -->
                                                         </h:panelGroup>
 
-														<!-- node type as icon -->
+
                                                         <h:panelGroup
                                                             styleClass="form-group"
                                                             id="node-type">
@@ -760,20 +735,22 @@
                                                                     var="nodeType">
                                                                     <h:commandLink
                                                                         styleClass="node #{AdministrationForm.administrationPlugin.selectedEntry.nodeType.nodeName == nodeType.nodeName ? 'node-selected' : ''}"
-                                                                        title="#{msgs['plugin_administration_archive_nodeType_'.concat(nodeType.nodeName)]}">
-                                                                        <i class="#{nodeType.icon}" aria-hidden="true"></i>
+                                                                        title="#{msgs[nodeType.nodeName]}">
+                                                                        <i
+                                                                            class="#{nodeType.icon}"
+                                                                            aria-hidden="true"></i>
                                                                         <f:setPropertyActionListener
                                                                             value="#{nodeType}"
                                                                             target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
                                                                         <f:ajax render="node-type :hierarchy" />
-                                                                        <f:passThroughAttribute name="data-toggle" value="tooltip" />
                                                                     </h:commandLink>
 
                                                                 </x:dataList>
 
                                                             </div>
                                                         </h:panelGroup>
-														<!-- // node type as icon -->
+
+
                                                     </div>
 
                                                     <h:panelGroup
@@ -782,156 +759,155 @@
                                                         id="identity-statement-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayIdentityStatementArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
-                                                        	<h:outputText styleClass="font-black" value="#{msgs.plugin_administration_archive_area_identity}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayIdentityStatementArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayIdentityStatementArea}" />
                                                             <f:ajax render="identity-statement-area" />
                                                         </h:commandLink>
-                                                        :
+                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_identity}" />
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.identityStatementAreaList}"
                                                             area="identicationArea"
                                                             ajaxid="identity-statement-area"
-                                                            showDetails="#{AdministrationForm.administrationPlugin.displayIdentityStatementArea}" />
+                                                            showDetails="#{AdministrationForm.administrationPlugin.displayIdentityStatementArea}"
+                                                            dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.identityStatementAreaVisible}"
+                                                             />
                                                     </h:panelGroup>
 
                                                     <h:panelGroup
                                                         layout="block"
-                                                        styleClass="metadata-area area_block-border form-group"
+                                                        styleClass="metadata-area area_block-border"
                                                         id="context-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayContextArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
-	                                                        <h:outputText styleClass="font-black" value="#{msgs.plugin_administration_archive_area_context}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayContextArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayContextArea}" />
                                                             <f:ajax render="context-area" />
                                                         </h:commandLink>
-                                                        :
+                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_context}" />
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.contextAreaList}"
                                                             area="contextArea"
                                                             ajaxid="context-area"
-                                                            showDetails="#{AdministrationForm.administrationPlugin.displayContextArea}" />
+                                                            showDetails="#{AdministrationForm.administrationPlugin.displayContextArea}"
+                                                            dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.contextAreaVisible}" />
                                                     </h:panelGroup>
 
                                                     <h:panelGroup
                                                         layout="block"
-                                                        styleClass="metadata-area area_block-border form-group"
+                                                        styleClass="metadata-area area_block-border"
                                                         id="content-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayContentArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
-	                                                        <h:outputText styleClass="font-black" value="#{msgs.plugin_administration_archive_area_content}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayContentArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayContentArea}" />
                                                             <f:ajax render="content-area" />
                                                         </h:commandLink>
-														:
+                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_content}" />
+
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.contentAndStructureAreaAreaList}"
                                                             area="contentStructureArea"
                                                             ajaxid="content-area"
-                                                            showDetails="#{AdministrationForm.administrationPlugin.displayContentArea}" />
+                                                            showDetails="#{AdministrationForm.administrationPlugin.displayContentArea}" 
+                                                            dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.contentAndStructureAreaAreaVisible}" />
                                                     </h:panelGroup>
 
                                                     <h:panelGroup
                                                         layout="block"
-                                                        styleClass="metadata-area area_block-border form-group"
+                                                        styleClass="metadata-area area_block-border"
                                                         id="access-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayAccessArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
-	                                                        <h:outputText styleClass="font-black" value="#{msgs.plugin_administration_archive_area_access}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayAccessArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayAccessArea}" />
                                                             <f:ajax render="access-area" />
                                                         </h:commandLink>
-                                                        :
+                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_access}" />
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.accessAndUseAreaList}"
                                                             area="accessArea"
                                                             ajaxid="access-area"
-                                                            showDetails="#{AdministrationForm.administrationPlugin.displayAccessArea}" />
+                                                            showDetails="#{AdministrationForm.administrationPlugin.displayAccessArea}"
+                                                            dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.accessAndUseAreaVisible}" />
                                                     </h:panelGroup>
 
                                                     <h:panelGroup
                                                         layout="block"
-                                                        styleClass="metadata-area area_block-border form-group"
+                                                        styleClass="metadata-area area_block-border"
                                                         id="materials-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayMaterialsArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
-	                                                        <h:outputText styleClass="font-black" value="#{msgs.plugin_administration_archive_area_materials}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayMaterialsArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayMaterialsArea}" />
                                                             <f:ajax render="materials-area" />
                                                         </h:commandLink>
-                                                        :
+                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_materials}" />
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.alliedMaterialsAreaList}"
                                                             area="materialsArea"
                                                             ajaxid="materials-area"
-                                                            showDetails="#{AdministrationForm.administrationPlugin.displayMaterialsArea}" />
+                                                            showDetails="#{AdministrationForm.administrationPlugin.displayMaterialsArea}"
+                                                            dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.alliedMaterialsAreaVisible}" />
                                                     </h:panelGroup>
 
                                                     <h:panelGroup
                                                         layout="block"
-                                                        styleClass="metadata-area area_block-border form-group"
+                                                        styleClass="metadata-area area_block-border"
                                                         id="notes-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayNotesArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
-	                                                        <h:outputText styleClass="font-black" value="#{msgs.plugin_administration_archive_area_notes}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayNotesArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayNotesArea}" />
                                                             <f:ajax render="notes-area" />
                                                         </h:commandLink>
-                                                        :
+                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_notes}" />
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.notesAreaList}"
                                                             area="notesArea"
                                                             ajaxid="notes-area"
-                                                            showDetails="#{AdministrationForm.administrationPlugin.displayNotesArea}" />
+                                                            showDetails="#{AdministrationForm.administrationPlugin.displayNotesArea}"
+                                                            dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.notesAreaVisible}" />
                                                     </h:panelGroup>
 
                                                     <h:panelGroup
                                                         layout="block"
-                                                        styleClass="metadata-area area_block-border form-group"
+                                                        styleClass="metadata-area area_block-border"
                                                         id="control-area">
                                                         <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
                                                             <i class="fa #{AdministrationForm.administrationPlugin.displayControlArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
-	                                                        <h:outputText styleClass="font-black" value="#{msgs.plugin_administration_archive_area_descriptionControl}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayControlArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayControlArea}" />
                                                             <f:ajax render="control-area" />
                                                         </h:commandLink>
-														:
+                                                        <h:outputText value="#{msgs.plugin_administration_archive_area_descriptionControl}" />
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.descriptionControlAreaList}"
                                                             area="descriptionArea"
                                                             ajaxid="control-area"
-                                                            showDetails="#{AdministrationForm.administrationPlugin.displayControlArea}" />
+                                                            showDetails="#{AdministrationForm.administrationPlugin.displayControlArea}"
+                                                            dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.descriptionControlAreaVisible}" />
                                                     </h:panelGroup>
                                                 </div>
                                             </h:panelGroup>
                                         </h:panelGroup>
+
+
                                     </div>
 
                                 </div>
-                                <!-- // Right area for loaded node -->
-                                
                             </div>
                         </h:form>
 
 
                     </h:panelGroup>
-                	<!-- // Edition area for the loaded record group -->
 
-
-                	<!-- Area to move a selected node into another area -->
                     <h:panelGroup
                         id="moveNodeArea"
                         layout="block"
@@ -1009,7 +985,6 @@
                             </div>
                         </div>
                     </h:panelGroup>
-                	<!-- // Area to move a selected node into another area -->
 
 
                 </div>

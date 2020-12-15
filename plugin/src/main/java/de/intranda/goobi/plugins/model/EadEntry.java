@@ -94,7 +94,6 @@ public class EadEntry {
     // true if the validation of all metadata fields was successful
     private boolean valid = true;
 
-
     public EadEntry(Integer order, Integer hierarchy) {
         this.orderNumber = order;
         this.hierarchy = hierarchy;
@@ -239,7 +238,7 @@ public class EadEntry {
     public void resetFoundList() {
         displaySearch = false;
         //        selected = false;
-        searchFound =false;
+        searchFound = false;
         if (subEntryList != null) {
             for (EadEntry ds : subEntryList) {
                 ds.resetFoundList();
@@ -260,4 +259,67 @@ public class EadEntry {
         return list;
     }
 
+    public boolean isIdentityStatementAreaVisible() {
+        for (EadMetadataField emf : identityStatementAreaList) {
+            if (emf.isVisible() && emf.isShowField()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isContextAreaVisible() {
+        for (EadMetadataField emf : contextAreaList) {
+            if (emf.isVisible() && emf.isShowField()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    public boolean isContentAndStructureAreaAreaVisible() {
+        for (EadMetadataField emf : contentAndStructureAreaAreaList) {
+            if (emf.isVisible() && emf.isShowField()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isAccessAndUseAreaVisible() {
+        for (EadMetadataField emf : accessAndUseAreaList) {
+            if (emf.isVisible() && emf.isShowField()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isAlliedMaterialsAreaVisible() {
+        for (EadMetadataField emf : alliedMaterialsAreaList) {
+            if (emf.isVisible() && emf.isShowField()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isNotesAreaVisible() {
+        for (EadMetadataField emf : notesAreaList) {
+            if (emf.isVisible() && emf.isShowField()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isDescriptionControlAreaVisible() {
+        for (EadMetadataField emf : descriptionControlAreaList) {
+            if (emf.isVisible() && emf.isShowField()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -18,8 +18,8 @@
                 <h:commandLink styleClass="close-field pull-right">
                     <i class="fa fa-minus-circle"></i>
                     <x:updateActionListener
-                        property="#{item.showField}"
-                        value="false" />
+                        property="#{field.value}"
+                        value=""/>
                     <f:ajax
                         execute="@this"
                         render=":#{ajaxid} :hierarchy" />
