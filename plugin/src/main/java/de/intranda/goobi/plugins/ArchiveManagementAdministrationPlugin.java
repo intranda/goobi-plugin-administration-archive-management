@@ -171,8 +171,8 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
     private Process processTemplate;
     private BeanHelper bhelp = new BeanHelper();
 
-    private List<StringPair> eventList;
-    private List<String> editorList;
+    private List<StringPair> eventList = new ArrayList<>();
+    private List<String> editorList = new ArrayList<>();
     private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     /**
