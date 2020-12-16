@@ -337,12 +337,19 @@ div.no-element-selected {
     justify-content: start;
     align-items: stretch;
     justify-items: stretch;
+/*         border-top: 1px solid #ddd; */
+    margin-top: 5px !important;
+    
 }
 
 .metadata-row-area-content {
     padding: 8px !important;
-    border-bottom: 1px solid #ddd;
+    border-top: 1px solid #ddd;
 }
+.metadata-row-area-content:nth-last-child(-n+3) {
+/*  border-bottom: 0; */
+}
+
 </style>
 
         <h:panelGroup>
@@ -749,7 +756,7 @@ div.no-element-selected {
                                                 </div>
                                                 <div
                                                     class="box-content without-margin"
-                                                    style="padding-top: 0;">
+                                                    style="padding-top: 0; padding-bottom: 0;">
                                                     <div
                                                         class="processcreation area_block-border"
                                                         style="margin-top: 0;">
