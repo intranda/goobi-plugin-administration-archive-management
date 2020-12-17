@@ -25,6 +25,7 @@ import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang.StringUtils;
 import org.goobi.beans.Process;
+import org.goobi.beans.Step;
 import org.goobi.beans.User;
 import org.goobi.production.cli.helper.StringPair;
 import org.goobi.production.enums.PluginType;
@@ -56,6 +57,8 @@ import de.sub.goobi.helper.BeanHelper;
 import de.sub.goobi.helper.FacesContextHelper;
 import de.sub.goobi.helper.Helper;
 import de.sub.goobi.helper.HttpClientHelper;
+import de.sub.goobi.helper.ScriptThreadWithoutHibernate;
+import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
@@ -1332,6 +1335,14 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         }
         // save ead file
         createEadDocument();
+
+        // start any open automatic tasks
+        for (Step s : process.getSchritteList()) {
+            if (s.getBearbeitungsstatusEnum().equals(StepStatus.OPEN) && s.isTypAutomatisch()) {
+                ScriptThreadWithoutHibernate myThread = new ScriptThreadWithoutHibernate(s);
+                myThread.startOrPutToQueue();
+            }
+        }
     }
 
     //  create metadata, add it to logical element
