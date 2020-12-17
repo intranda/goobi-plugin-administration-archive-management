@@ -1330,6 +1330,8 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         } catch (UGHException | IOException | InterruptedException | SwapException | DAOException e) {
             log.error(e);
         }
+        // save ead file
+        createEadDocument();
     }
 
     //  create metadata, add it to logical element

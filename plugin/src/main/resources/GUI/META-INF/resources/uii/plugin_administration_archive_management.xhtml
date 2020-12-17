@@ -300,7 +300,6 @@ div.no-element-selected {
     flex-wrap: nowrap;
     justify-content: flex-start;
     background: #f6f6f6 !important;
-    
 }
 
 .metadata-area {
@@ -340,29 +339,23 @@ div.no-element-selected {
     justify-content: start;
     align-items: stretch;
     justify-items: stretch;
-/*         border-top: 1px solid #ddd; */
+    /*         border-top: 1px solid #ddd; */
     margin-top: 5px !important;
-    
 }
 
 .metadata-row-area-content {
     padding: 8px !important;
     border-top: 1px solid #ddd;
 }
-.metadata-row-area-content:nth-last-child(-n+3) {
-/*  border-bottom: 0; */
+
+.metadata-row-area-content-white {
+    background-color: #fff;
+    border-left: 1px solid #ddd;
 }
 
-.metadata-row-area-content-white
- {
- background-color: #fff;
+.processcreation {
+    background: #f6f6f6;
 }
-
-.processcreation  {
-
-background: #f6f6f6;
-}
-
 </style>
 
         <h:panelGroup>
@@ -794,7 +787,8 @@ background: #f6f6f6;
                                                                 <h:commandLink
                                                                     action="#{AdministrationForm.administrationPlugin.createProcess}"
                                                                     id="process-creation-button"
-                                                                    styleClass="btn btn-primary font-size-s pull-right ">
+                                                                    styleClass="btn btn-primary font-size-s pull-right" 
+                                                                    disabled="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null}">
                                                                     <f:passThroughAttribute
                                                                         name="data-toggle"
                                                                         value="tooltip" />
