@@ -525,7 +525,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
         Element processinfo = archdesc.getChild("processinfo", ArchiveManagementAdministrationPlugin.ns);
         Element list = processinfo.getChild("list", ArchiveManagementAdministrationPlugin.ns);
-        assertEquals("-", list.getChildText("item", ArchiveManagementAdministrationPlugin.ns));
+        assertEquals("", list.getChildText("item", ArchiveManagementAdministrationPlugin.ns));
 
         Element event = ead.getChild("control", ArchiveManagementAdministrationPlugin.ns)
                 .getChild("maintenancehistory", ArchiveManagementAdministrationPlugin.ns)
