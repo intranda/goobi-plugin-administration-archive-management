@@ -5,8 +5,6 @@
     <config>
         <!-- define the name(s) of all archives for the plugin -->
         <archive>*</archive>
-        <!-- define the process template for process creation. If empty or missing, processes can't be created  -->
-        <processTemplateId>309544</processTemplateId>
         <!-- default title for a new node -->
         <nodeDefaultTitle>Document</nodeDefaultTitle>
         <!-- define metadata fields. All fields are displayed on the UI based on the level and the order within this file.
@@ -159,11 +157,12 @@
         </metadata>
 
 
-    	<node name="file" ruleset="File" icon="fa fa-file-text-o" />
-    	<node name="folder" ruleset="Folder" icon="fa fa-folder-open-o" />
-    	<node name="image" ruleset="Picture" icon="fa fa-file-image-o" />
-    	<node name="audio" ruleset="Audio" icon="fa fa-file-audio-o" />
-    	<node name="video" ruleset="Video" icon="fa fa-file-video-o" />
-    	<node name="other" ruleset="Other" icon="fa fa-file-o" />
+
+    	<node name="file" ruleset="File" icon="fa fa-file-text-o" processTemplateId="309544" />
+    	<node name="folder" ruleset="Folder" icon="fa fa-folder-open-o" processTemplateId="309544"/>
+    	<node name="image" ruleset="Picture" icon="fa fa-file-image-o" processTemplateId="309544" />
+    	<node name="audio" ruleset="Audio" icon="fa fa-file-audio-o" processTemplateId="309544"/>
+    	<node name="video" ruleset="Video" icon="fa fa-file-video-o" processTemplateId="309544"/>
+    	<node name="other" ruleset="Other" icon="fa fa-file-o" processTemplateId="309544" />
     </config>
 </config_plugin>

@@ -170,7 +170,6 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
     @Setter
     private boolean displayControlArea;
 
-    private Integer processTemplateId;
     @Setter
     private Process processTemplate;
     private BeanHelper bhelp = new BeanHelper();
@@ -573,10 +572,9 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             }
         }
 
-        processTemplateId = config.getInteger("/processTemplateId", null);
         nodeDefaultTitle = config.getString("/nodeDefaultTitle", "-");
         for (HierarchicalConfiguration hc : config.configurationsAt("/node")) {
-            NodeType nt = new NodeType(hc.getString("@name"), hc.getString("@ruleset"), hc.getString("@icon"));
+            NodeType nt = new NodeType(hc.getString("@name"), hc.getString("@ruleset"), hc.getString("@icon"), hc.getInt("@processTemplateId"));
             configuredNodes.add(nt);
         }
 
@@ -1207,7 +1205,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         if (selectedEntry.getNodeType()== null) {
             return;
         }
-
+        Integer processTemplateId = selectedEntry.getNodeType().getProcessTemplateId();
         // abort if process template is not defined
         if (processTemplateId == null || processTemplateId == 0) {
             return;
@@ -1535,9 +1533,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         displayMaterialsArea = false;
         displayNotesArea = false;
         displayControlArea = false;
-        processTemplateId = null;
         processTemplate = null;
-
 
         // return to start screen
         return "";
