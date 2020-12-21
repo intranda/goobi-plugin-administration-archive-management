@@ -25,6 +25,7 @@ import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang.StringUtils;
 import org.goobi.beans.Process;
+import org.goobi.beans.Step;
 import org.goobi.beans.User;
 import org.goobi.production.cli.helper.StringPair;
 import org.goobi.production.enums.PluginType;
@@ -56,10 +57,13 @@ import de.sub.goobi.helper.BeanHelper;
 import de.sub.goobi.helper.FacesContextHelper;
 import de.sub.goobi.helper.Helper;
 import de.sub.goobi.helper.HttpClientHelper;
+import de.sub.goobi.helper.ScriptThreadWithoutHibernate;
+import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.VocabularyManager;
+import io.goobi.workflow.locking.LockingBean;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -166,7 +170,6 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
     @Setter
     private boolean displayControlArea;
 
-    private Integer processTemplateId;
     @Setter
     private Process processTemplate;
     private BeanHelper bhelp = new BeanHelper();
@@ -176,6 +179,8 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
     private List<StringPair> eventList = new ArrayList<>();
     private List<String> editorList = new ArrayList<>();
     private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    private String username;
 
     /**
      * Constructor
@@ -229,8 +234,20 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
      */
 
     public void loadSelectedDatabase() {
+
+        User user = Helper.getCurrentUser();
+        String username = user != null ? user.getNachVorname() : "-";
+
+
         // open selected database
         if (StringUtils.isNotBlank(selectedDatabase)) {
+            if (!LockingBean.lockObject(selectedDatabase, username)) {
+                Helper.setFehlerMeldung("plugin_administration_archive_databaseLocked");
+                selectedDatabase = null;
+                return;
+            }
+
+
             String[] parts = selectedDatabase.split(" - ");
 
             String response = HttpClientHelper.getStringFromUrl(datastoreUrl + "db/" + parts[0] + "/" + parts[1]);
@@ -274,6 +291,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             rootElement.setDisplayChildren(true);
             selectedEntry = rootElement;
             displayMode = "";
+            LockingBean.lockObject(selectedDatabase, username);
         }
     }
 
@@ -558,10 +576,9 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             }
         }
 
-        processTemplateId = config.getInteger("/processTemplateId", null);
-        nodeDefaultTitle = config.getString("/nodeDefaultTitle", "");
+        nodeDefaultTitle = config.getString("/nodeDefaultTitle", "-");
         for (HierarchicalConfiguration hc : config.configurationsAt("/node")) {
-            NodeType nt = new NodeType(hc.getString("@name"), hc.getString("@ruleset"), hc.getString("@icon"));
+            NodeType nt = new NodeType(hc.getString("@name"), hc.getString("@ruleset"), hc.getString("@icon"), hc.getInt("@processTemplateId"));
             configuredNodes.add(nt);
         }
 
@@ -676,6 +693,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             selectedEntry = entry;
             flatEntryList = null;
         }
+        LockingBean.updateLocking(selectedDatabase);
     }
 
     public void deleteNode() {
@@ -692,6 +710,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             selectedEntry = parentNode;
             flatEntryList = null;
         }
+        LockingBean.updateLocking(selectedDatabase);
     }
 
     /**
@@ -722,8 +741,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
         HttpClientHelper.getStringFromUrl(importUrl);
 
-        // delete created file ?
-
+        LockingBean.updateLocking(selectedDatabase);
     }
 
     private void addMetadata(Element xmlElement, EadEntry node) {
@@ -1038,6 +1056,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         flatEntryList = null;
 
         displayMode = "";
+        LockingBean.updateLocking(selectedDatabase);
     }
 
     public void moveNodeUp() {
@@ -1063,6 +1082,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), selectedEntry.getOrderNumber() - 1);
         selectedEntry.getParentNode().reOrderElements();
         flatEntryList = null;
+        LockingBean.updateLocking(selectedDatabase);
     }
 
     public void moveNodeDown() {
@@ -1088,6 +1108,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), selectedEntry.getOrderNumber() + 1);
         selectedEntry.getParentNode().reOrderElements();
         flatEntryList = null;
+        LockingBean.updateLocking(selectedDatabase);
     }
 
     public void moveHierarchyDown() {
@@ -1111,7 +1132,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         destinationEntry = previousNode;
         moveNode();
         destinationEntry.setDisplayChildren(true);
-
+        LockingBean.updateLocking(selectedDatabase);
     }
 
     public void moveHierarchyUp() {
@@ -1141,7 +1162,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), oldParent.getOrderNumber() + 1);
             selectedEntry.getParentNode().reOrderElements();
         }
-
+        LockingBean.updateLocking(selectedDatabase);
     }
 
     public void search() {
@@ -1158,6 +1179,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         } else {
             resetSearch();
         }
+        LockingBean.updateLocking(selectedDatabase);
     }
 
     private void searchInNode(EadEntry node) {
@@ -1170,6 +1192,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 searchInNode(child);
             }
         }
+        LockingBean.updateLocking(selectedDatabase);
     }
 
     public void resetSearch() {
@@ -1184,10 +1207,9 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             return;
         }
         if (selectedEntry.getNodeType()== null) {
-            // TODO error
             return;
         }
-
+        Integer processTemplateId = selectedEntry.getNodeType().getProcessTemplateId();
         // abort if process template is not defined
         if (processTemplateId == null || processTemplateId == 0) {
             return;
@@ -1334,6 +1356,17 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         } catch (UGHException | IOException | InterruptedException | SwapException | DAOException e) {
             log.error(e);
         }
+        // save ead file
+        createEadDocument();
+
+        // start any open automatic tasks
+        for (Step s : process.getSchritteList()) {
+            if (s.getBearbeitungsstatusEnum().equals(StepStatus.OPEN) && s.isTypAutomatisch()) {
+                ScriptThreadWithoutHibernate myThread = new ScriptThreadWithoutHibernate(s);
+                myThread.startOrPutToQueue();
+            }
+        }
+        LockingBean.updateLocking(selectedDatabase);
     }
 
     //  create metadata, add it to logical element
@@ -1374,6 +1407,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         }
         Process process = ProcessManager.getProcessByExactTitle(selectedEntry.getGoobiProcessTitle());
         process.downloadDocket();
+        LockingBean.updateLocking(selectedDatabase);
     }
 
     public void downloadArchive() {
@@ -1417,7 +1451,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
             facesContext.responseComplete();
         }
-
+        LockingBean.updateLocking(selectedDatabase);
     }
 
     private void createEventFields(Element eadElement) {
@@ -1437,8 +1471,6 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             list = new Element("list", ns);
             processinfoElement.addContent(list);
         }
-        User user = Helper.getCurrentUser();
-        String username = user != null ? user.getNachVorname() : "-";
         if (!editorList.contains(username)) {
             editorList.add(username);
         }
@@ -1490,6 +1522,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
     public String cancelEdition() {
         // reset current settings
+        LockingBean.freeObject(selectedDatabase);
         selectedDatabase = null;
         selectedEntry = null;
         rootElement = null;
@@ -1504,7 +1537,6 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         displayMaterialsArea = false;
         displayNotesArea = false;
         displayControlArea = false;
-        processTemplateId = null;
         processTemplate = null;
 
         // return to start screen
@@ -1516,7 +1548,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         Map<String, List<String>> valueMap = new HashMap<>();
 
         validateNode(rootElement, valueMap);
-
+        LockingBean.updateLocking(selectedDatabase);
     }
 
     private void validateNode(EadEntry node, Map<String, List<String>> valueMap) {

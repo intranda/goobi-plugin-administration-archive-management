@@ -10,4 +10,5 @@ public class NodeType {
     private String nodeName;
     private String documentType;
     private String icon;
+    private Integer processTemplateId;
 }
