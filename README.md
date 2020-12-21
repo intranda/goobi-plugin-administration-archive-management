@@ -1,4 +1,4 @@
-# Goobi Administration Plugin: goobi-plugin-administration-archive-management
+# Goobi workflow Plugin: goobi-plugin-administration-archive-management
 
 <img src="https://goobi.io/wp-content/uploads/logo_goobi_plugin.png" align="right" style="margin:0 0 20px 20px;" alt="Plugin for Goobi workflow" width="175" height="109">
 
