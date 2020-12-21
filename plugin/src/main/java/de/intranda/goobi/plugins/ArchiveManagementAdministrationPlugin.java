@@ -378,7 +378,11 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
         entry.setId(element.getAttributeValue("id"));
         if (eadheader != null) {
+            try {            
             entry.setLabel(eadheader.getChild("filedesc", ns).getChild("titlestmt", ns).getChildText("titleproper", ns));
+            } catch (Exception e) {
+                log.error("Error while setting the label", e);
+            }
         }
 
         // nodeType
