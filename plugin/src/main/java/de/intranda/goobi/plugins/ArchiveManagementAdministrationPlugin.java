@@ -396,8 +396,8 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
         entry.setId(element.getAttributeValue("id"));
         if (eadheader != null) {
-            try {            
-            entry.setLabel(eadheader.getChild("filedesc", ns).getChild("titlestmt", ns).getChildText("titleproper", ns));
+            try {
+                entry.setLabel(eadheader.getChild("filedesc", ns).getChild("titlestmt", ns).getChildText("titleproper", ns));
             } catch (Exception e) {
                 log.error("Error while setting the label", e);
             }
@@ -671,7 +671,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
     public void addNode() {
         if (selectedEntry != null) {
             EadEntry entry =
-                    new EadEntry(selectedEntry.isHasChildren() ? selectedEntry.getSubEntryList().size() + 1 : 0, selectedEntry.getHierarchy() + 1);
+                    new EadEntry(selectedEntry.isHasChildren() ? selectedEntry.getSubEntryList().size() : 0, selectedEntry.getHierarchy() + 1);
             entry.setId(String.valueOf(UUID.randomUUID()));
             // initial metadata values
             List<String> titleData = new ArrayList<>();
@@ -690,7 +690,9 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             entry.setNodeType(selectedEntry.getNodeType());
             selectedEntry.addSubEntry(entry);
             selectedEntry.setDisplayChildren(true);
+            selectedEntry.setSelected(false);
             selectedEntry = entry;
+            selectedEntry.setSelected(true);
             flatEntryList = null;
         }
         LockingBean.updateLocking(selectedDatabase);
