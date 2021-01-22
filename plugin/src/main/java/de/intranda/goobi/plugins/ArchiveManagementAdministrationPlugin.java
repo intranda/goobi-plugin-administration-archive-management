@@ -599,7 +599,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 if (searchParameter == null) {
                     Vocabulary currentVocabulary = VocabularyManager.getVocabularyByTitle(vocabularyName);
                     if (currentVocabulary != null) {
-                        VocabularyManager.loadRecordsForVocabulary(currentVocabulary);
+                        VocabularyManager.getAllRecords(currentVocabulary);
                         if (currentVocabulary != null && currentVocabulary.getId() != null) {
                             for (VocabRecord vr : currentVocabulary.getRecords()) {
                                 for (Field f : vr.getFields()) {
