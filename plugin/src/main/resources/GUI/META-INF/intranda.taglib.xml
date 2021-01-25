@@ -27,6 +27,10 @@
         <source>tags/io/goobi/multiselect.xhtml</source>
     </tag>
     <tag>
+        <tag-name>readonly</tag-name>
+        <source>tags/io/goobi/readonly.xhtml</source>
+    </tag>    
+    <tag>
         <tag-name>badge</tag-name>
         <source>tags/io/goobi/badge.xhtml</source>
         <attribute>

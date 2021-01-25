@@ -47,7 +47,9 @@ public class FieldValue {
     }
 
     public String getValuesForXmlExport() {
-        if (!multiselectSelectedValues.isEmpty()) {
+        if (StringUtils.isBlank(field.getXpath())) {
+            return null;
+        } else if (!multiselectSelectedValues.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for (String selectedValue : multiselectSelectedValues) {
                 if (sb.length() > 0) {
@@ -56,7 +58,6 @@ public class FieldValue {
                 sb.append(selectedValue);
             }
             return sb.toString();
-
         } else {
             return value;
         }
@@ -68,11 +69,10 @@ public class FieldValue {
 
     public void setValue(String value) {
         this.value = value;
-        if (field.getXpath().contains("unittitle")) {
+        if (field.getXpath()!= null && field.getXpath().contains("unittitle")) {
             field.getEadEntry().setLabel(value);
         }
 
     }
-
 
 }

@@ -238,7 +238,6 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         User user = Helper.getCurrentUser();
         String username = user != null ? user.getNachVorname() : "-";
 
-
         // open selected database
         if (StringUtils.isNotBlank(selectedDatabase)) {
             if (!LockingBean.lockObject(selectedDatabase, username)) {
@@ -246,7 +245,6 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 selectedDatabase = null;
                 return;
             }
-
 
             String[] parts = selectedDatabase.split(" - ");
 
@@ -313,9 +311,16 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             if (processinfoElement != null) {
                 Element list = processinfoElement.getChild("list", ns);
                 List<Element> entries = list.getChildren("item", ns);
+                EadMetadataField editor =
+                        new EadMetadataField("editorName", 7, null, null, false, true, true, "readonly", null, false, null, null);
+
                 for (Element item : entries) {
                     editorList.add(item.getText());
+                    FieldValue fv = new FieldValue(editor);
+                    fv.setValue(item.getText());
+                    editor.addFieldValue(fv);
                 }
+                selectedEntry.getDescriptionControlAreaList().add(editor);
             }
         }
         Element control = eadElement.getChild("control", ns);
@@ -1208,7 +1213,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         if (selectedEntry == null) {
             return;
         }
-        if (selectedEntry.getNodeType()== null) {
+        if (selectedEntry.getNodeType() == null) {
             return;
         }
         Integer processTemplateId = selectedEntry.getNodeType().getProcessTemplateId();

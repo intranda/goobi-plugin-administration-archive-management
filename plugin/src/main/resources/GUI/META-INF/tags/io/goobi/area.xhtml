@@ -66,7 +66,12 @@
 	                                selectItems="#{field.possibleValues}"
 	                                selectedItems="#{field.multiselectSelectedValues}" />
 	                        </ui:fragment>
-	                        
+	                        <ui:fragment rendered="#{item.fieldType=='readonly'}">
+                                <goobiio:readonly
+                                    fieldid="#{item.name}readonly"
+                                    fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
+                                    fieldvalue="#{field.value}" />
+                            </ui:fragment>
 	                        <h:outputText styleClass="help-inline font-danger" rendered="#{!item.valid}" value="#{msgs[item.validationError]}"/>
                         </x:dataList>
                     </ui:fragment>
