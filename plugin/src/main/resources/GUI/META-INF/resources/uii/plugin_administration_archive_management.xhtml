@@ -592,7 +592,8 @@ div.no-element-selected {
                                                 <h:commandLink
                                                     styleClass="btn  btn-danger font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.deleteNode}"
-                                                    title="#{msgs.plugin_administration_archive_deleteNode}">
+                                                    title="#{msgs.plugin_administration_archive_deleteNode}"
+                                                    onclick="if (!confirm('#{msgs.sollDieserEintragWirklichGeloeschtWerden}')) return false">
                                                     <i class="fa fa-trash-o" />
                                                     <f:passThroughAttribute
                                                         name="data-toggle"
