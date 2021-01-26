@@ -693,20 +693,10 @@ div.no-element-selected {
                                                 value="tooltip" />
                                             <h:outputText value="#{msgs.plugin_administration_archive_download}" />
                                         </h:commandLink>
+                                        
+                                                                    
                                         <h:commandLink
-                                            styleClass="btn btn-success submitOnEnter pull-right font-size-s margin-bottom-most"
-                                            id="absenden"
-                                            type="submit"
-                                            style="margin-right:-15px;"
-                                            action="#{AdministrationForm.administrationPlugin.saveArchiveAndLeave}">
-                                            <i class="fa fa-save margin-right-5"></i>
-                                            <f:passThroughAttribute
-                                                name="data-toggle"
-                                                value="tooltip" />
-                                            <h:outputText value="#{msgs.plugin_administration_archive_saveAndExit}" />
-                                        </h:commandLink>
-                                        <h:commandLink
-                                            styleClass="btn margin-sides-10 font-size-s pull-right"
+                                            styleClass="btn margin-sides-10 font-size-s"
                                             type="submit"
                                             action="#{AdministrationForm.administrationPlugin.cancelEdition}">
                                             <f:passThroughAttribute
@@ -1007,6 +997,34 @@ div.no-element-selected {
                                             </h:panelGroup>
                                         </h:panelGroup>
                                     </div>
+
+<div class="form-actions">
+                             
+                                        
+                                        <h:commandLink
+                                            styleClass="btn btn-success pull-right font-size-s margin-bottom-most"
+                                            id="absenden"
+                                            type="submit"
+                                            action="#{AdministrationForm.administrationPlugin.saveArchiveAndLeave}">
+                                            <i class="fa fa-save margin-right-5"></i>
+                                            <f:passThroughAttribute
+                                                name="data-toggle"
+                                                value="tooltip" />
+                                            <h:outputText value="#{msgs.plugin_administration_archive_saveAndExit}" />
+                                        </h:commandLink>
+                                        <h:commandLink
+                                            styleClass="btn btn-success submitOnEnter pull-right font-size-s margin-bottom-most"
+                                            id="save"
+                                            style="margin-right: 15px;"
+                                            action="#{AdministrationForm.administrationPlugin.createEadDocument}">
+                                            <i class="fa fa-save margin-right-5"></i>
+                                            <f:passThroughAttribute
+                                                name="data-toggle"
+                                                value="tooltip" />
+                                            <h:outputText value="#{msgs.save}" />
+                                        </h:commandLink>                                  
+                                    </div>
+
 
                                 </div>
                                 <!-- // Right area for loaded node -->
