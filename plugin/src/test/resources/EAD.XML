@@ -24,7 +24,7 @@
       <conventiondeclaration>conventiondeclaration</conventiondeclaration>
       <maintenancehistory>
         <maintenanceevent>
-          <eventtype>eventtype</eventtype>
+          <eventtype>Created</eventtype>
           <eventdatetime>eventdatetime</eventdatetime>
         </maintenanceevent>
       </maintenancehistory>
