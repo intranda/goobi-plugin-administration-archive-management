@@ -195,6 +195,10 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
             datastoreUrl = xmlConfig.getString("/basexUrl", "http://localhost:8984/");
             exportFolder = xmlConfig.getString("/eadExportFolder", "/tmp");
+            User user = Helper.getCurrentUser();
+            if (user != null) {
+                username = user.getNachVorname();
+            }
         } catch (ConfigurationException e2) {
             log.error(e2);
         }
@@ -327,7 +331,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         if (control != null) {
             Element maintenancehistory = control.getChild("maintenancehistory", ns);
             if (maintenancehistory != null) {
-                List<Element> events = maintenancehistory.getChildren("maintenancehistory", ns);
+                List<Element> events = maintenancehistory.getChildren("maintenanceevent", ns);
                 for (Element event : events) {
                     String type = event.getChildText("eventtype", ns);
                     String date = event.getChildText("eventdatetime", ns);
