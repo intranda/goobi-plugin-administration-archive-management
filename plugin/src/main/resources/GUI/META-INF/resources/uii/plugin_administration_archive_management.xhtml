@@ -322,11 +322,6 @@ div.no-element-selected {
     background: #368ee0;
 }
 
-.download-docket i {
-    font-size: 1.5em;
-    color: #000;
-}
-
 .validation-error {
     border: 1px solid red;
 }
@@ -555,7 +550,7 @@ div.no-element-selected {
 
                                                             <i
                                                                 class="#{entry.nodeType.icon}"
-                                                                aria-hidden="true"></i>
+                                                                aria-hidden="true"/>
 
                                                             <h:outputText
                                                                 value="#{entry.label}"
@@ -564,6 +559,12 @@ div.no-element-selected {
                                                                 value=" - "
                                                                 rendered="#{entry.label == null}" />
 
+                                                            <ui:fragment rendered="#{entry.goobiProcessTitle != null}">
+                                                                <i
+                                                                class="fa fa-cog font-light margin-left-5"
+                                                                aria-hidden="true"/>
+                                                            </ui:fragment>
+                                                            
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.selectedEntry}"
                                                                 value="#{entry}" />
@@ -770,6 +771,7 @@ div.no-element-selected {
                                                                 rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
                                                                 <h:outputText value="#{msgs.plugin_administration_archive_process_no_process}" />
                                                             </h:panelGroup>
+                                                            
                                                             <!-- no process exists, so allow creation of a process here -->
                                                             <h:panelGroup
                                                                 layout="block"
@@ -795,11 +797,11 @@ div.no-element-selected {
                                                                 rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null}">
                                                                 <h:outputText value="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle}" />
                                                                 <h:commandLink
-                                                                    styleClass="download-docket"
+                                                                    styleClass="download-docket pull-right"
                                                                     action="#{AdministrationForm.administrationPlugin.downloadDocket}"
                                                                     onclick="preventDoubleSubmit(this);"
                                                                     title="#{msgs.process_generateDocket}">
-                                                                    <i class="fa fa-print margin-left-10" />
+                                                                    <span class="btn margin-left-10 fa fa-print fa-lg width-40" />
                                                                     <f:passThroughAttribute
                                                                         name="data-toggle"
                                                                         value="tooltip" />
@@ -812,10 +814,10 @@ div.no-element-selected {
                                                         <h:panelGroup
                                                             styleClass="form-group metadata-row-area"
                                                             id="node-type">
-                                                            <div class=" control-label metadata-row-area-content">
+                                                            <div class=" control-label metadata-row-area-content" style="border-top:0">
                                                                 <h:outputText value="#{msgs.plugin_administration_archive_nodeType}" />
                                                             </div>
-                                                            <div class=" node-type-selection metadata-row-area-content">
+                                                            <div class=" node-type-selection metadata-row-area-content" style="border-top:0">
                                                                 <x:dataList
                                                                     value="#{AdministrationForm.administrationPlugin.configuredNodes}"
                                                                     var="nodeType">
@@ -841,6 +843,7 @@ div.no-element-selected {
                                                         <!-- // node type as icon -->
                                                     </div>
 
+                                                    <!-- Group: Identifikation / Identity Statement Area -->
                                                     <h:panelGroup
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border form-group"
@@ -862,7 +865,9 @@ div.no-element-selected {
                                                             showDetails="#{AdministrationForm.administrationPlugin.displayIdentityStatementArea}"
                                                             dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.identityStatementAreaVisible}" />
                                                     </h:panelGroup>
-
+                                                    <!-- // Group: Identifikation / Identity Statement Area -->
+                                                    
+                                                    <!-- Group: Kontext / Context Area -->
                                                     <h:panelGroup
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border form-group"
@@ -884,7 +889,9 @@ div.no-element-selected {
                                                             showDetails="#{AdministrationForm.administrationPlugin.displayContextArea}"
                                                             dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.contextAreaVisible}" />
                                                     </h:panelGroup>
-
+                                                    <!-- // Group: Kontext / Context Area -->
+                                                    
+                                                    <!-- Group: Inhalt und innere Ordnung / Content and Structure Area -->
                                                     <h:panelGroup
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border form-group"
@@ -906,7 +913,9 @@ div.no-element-selected {
                                                             showDetails="#{AdministrationForm.administrationPlugin.displayContentArea}"
                                                             dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.contentAndStructureAreaAreaVisible}" />
                                                     </h:panelGroup>
-
+                                                    <!-- // Group: Inhalt und innere Ordnung / Content and Structure Area -->
+                                                    
+                                                    <!-- Group: Zugangs- und Benutzungsbedingungen / Conditions of Access and Use Area -->
                                                     <h:panelGroup
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border form-group"
@@ -928,7 +937,9 @@ div.no-element-selected {
                                                             showDetails="#{AdministrationForm.administrationPlugin.displayAccessArea}"
                                                             dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.accessAndUseAreaVisible}" />
                                                     </h:panelGroup>
-
+                                                    <!-- // Group: Zugangs- und Benutzungsbedingungen / Conditions of Access and Use Area -->
+                                                    
+                                                    <!-- Group: Sachverwandte Unterlagen / Allied Material Area -->
                                                     <h:panelGroup
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border form-group"
@@ -950,7 +961,9 @@ div.no-element-selected {
                                                             showDetails="#{AdministrationForm.administrationPlugin.displayMaterialsArea}"
                                                             dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.alliedMaterialsAreaVisible}" />
                                                     </h:panelGroup>
-
+                                                    <!-- // Group: Sachverwandte Unterlagen / Allied Material Area -->
+                                                    
+                                                    <!-- Group: Anmerkungen / Note Area -->
                                                     <h:panelGroup
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border form-group"
@@ -972,7 +985,9 @@ div.no-element-selected {
                                                             showDetails="#{AdministrationForm.administrationPlugin.displayNotesArea}"
                                                             dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.notesAreaVisible}" />
                                                     </h:panelGroup>
-
+                                                    <!-- // Group: Anmerkungen / Note Area -->
+                                                    
+                                                    <!-- Group: Verzeichnungskontrolle / Description Control Area -->
                                                     <h:panelGroup
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border form-group"
@@ -994,18 +1009,17 @@ div.no-element-selected {
                                                             showDetails="#{AdministrationForm.administrationPlugin.displayControlArea}"
                                                             dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.descriptionControlAreaVisible}" />
                                                     </h:panelGroup>
+                                                    <!-- // Group: Verzeichnungskontrolle / Description Control Area -->
                                                 </div>
                                             </h:panelGroup>
                                         </h:panelGroup>
                                     </div>
 
-<div class="form-actions">
-                             
-                                        
+                                    <!-- Button Area on the bottom -->
+                                    <div class="form-actions">
                                         <h:commandLink
-                                            styleClass="btn btn-success pull-right font-size-s margin-bottom-most"
-                                            id="absenden"
-                                            type="submit"
+                                            styleClass="btn btn-success font-size-s margin-bottom-most"
+                                            id="saveAndExit"
                                             action="#{AdministrationForm.administrationPlugin.saveArchiveAndLeave}">
                                             <i class="fa fa-save margin-right-5"></i>
                                             <f:passThroughAttribute
@@ -1015,8 +1029,7 @@ div.no-element-selected {
                                         </h:commandLink>
                                         <h:commandLink
                                             styleClass="btn btn-success submitOnEnter pull-right font-size-s margin-bottom-most"
-                                            id="save"
-                                            style="margin-right: 15px;"
+                                            type="submit" id="absenden"
                                             action="#{AdministrationForm.administrationPlugin.createEadDocument}">
                                             <i class="fa fa-save margin-right-5"></i>
                                             <f:passThroughAttribute
@@ -1025,7 +1038,7 @@ div.no-element-selected {
                                             <h:outputText value="#{msgs.save}" />
                                         </h:commandLink>                                  
                                     </div>
-
+                                    <!-- // Button Area on the bottom -->
 
                                 </div>
                                 <!-- // Right area for loaded node -->

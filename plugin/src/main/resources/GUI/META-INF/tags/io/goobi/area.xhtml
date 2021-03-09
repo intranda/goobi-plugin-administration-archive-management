@@ -11,13 +11,19 @@
 <h:body>
     <ui:composition>
     
-        <ui:fragment
-            id="#{area}"
-           >
+        <ui:fragment id="#{area}">
+        
+<!-- 
+            <h:commandLink>
+                <h:outputText value="neuarea (#{showDetails})" />
+                <x:updateActionListener
+                    property="#{showDetails}"
+                    value="#{not showDetails}" />
+            </h:commandLink>
+-->
+        
             <span class="badge-area">
-                <x:dataList
-                    var="item"
-                    value="#{itemlist}">
+                <x:dataList var="item" value="#{itemlist}">
                     <!--  and (!item.showField or !showDetails) -->
                     <ui:fragment rendered="#{item.visible}">
                         <goobiio:badge
@@ -30,7 +36,7 @@
             </span>
 
             <div style="grid-column: 1 / span 2; width: 100%" class="form-group metadata-row-area">
-<!--                 <h:outputText value="#{dataVisible}" /> -->
+                <!-- <h:outputText value="#{dataVisible}" /> -->
                 <x:dataList
                     var="item"
                     value="#{itemlist}"

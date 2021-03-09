@@ -57,5 +57,11 @@
             <required>false</required>
             <type>java.lang.Boolean</type>
         </attribute>
+        <attribute>
+            <description>Name of the area where the badge is in to toggle</description>
+            <name>showDetails</name>
+            <required>false</required>
+            <type>java.lang.Boolean</type>
+        </attribute>
     </tag>
 </facelet-taglib>

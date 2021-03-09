@@ -10,10 +10,28 @@
 <h:body>
     <ui:composition>
         <span class="badge #{styleclassname} #{item.valid ? '' : 'validation-error'}">
+            
             <h:commandLink
                 action="#{item.addValue}"
-                rendered="#{item.repeatable}">
-                <i class="fa fa-plus-circle margin-right-5"></i>
+                rendered="#{item.repeatable and item.showField}">
+                <i class="fa fa-plus-circle margin-right-5"/>
+                <h:outputText value="#{fieldname}" />
+                <x:updateActionListener
+                    property="#{item.showField}"
+                    value="true" />
+                <f:actionListener binding="#{AdministrationForm.administrationPlugin.updateAreaDisplay(item.level)}" />
+                <f:ajax
+                    execute="@this"
+                    render=":#{ajaxid} :hierarchy" />
+            </h:commandLink>
+            
+            <h:commandLink
+                rendered="#{!item.repeatable or (item.repeatable and !item.showField)}">
+                <ui:fragment rendered="#{item.repeatable}">
+                    <i class="fa fa-plus-circle margin-right-5"/>
+                </ui:fragment>
+                <h:outputText value="#{fieldname}" />
+                <f:actionListener binding="#{AdministrationForm.administrationPlugin.updateAreaDisplay(item.level)}" />
                 <x:updateActionListener
                     property="#{item.showField}"
                     value="true" />
@@ -21,16 +39,24 @@
                     execute="@this"
                     render=":#{ajaxid} :hierarchy" />
             </h:commandLink>
-            <h:commandLink>
 
-                <h:outputText value="#{fieldname}" />
+<!-- 
+            <h:commandLink>
+                <h:outputText value="alt (#{AdministrationForm.administrationPlugin.displayIdentityStatementArea})" />
                 <x:updateActionListener
-                    property="#{item.showField}"
-                    value="#{!item.showField}" />
-                <f:ajax
-                    execute="@this"
-                    render=":#{ajaxid} :hierarchy" />
+                    property="#{AdministrationForm.administrationPlugin.displayIdentityStatementArea}"
+                    value="true" />
             </h:commandLink>
+            
+            <h:commandLink>
+                <h:outputText value="neu (#{showDetails})" />
+                <x:updateActionListener
+                    property="#{showDetails}"
+                    value="#{not showDetails}" />
+            </h:commandLink>
+-->
+
+
         </span>
 
     </ui:composition>

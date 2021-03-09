@@ -169,7 +169,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
     @Getter
     @Setter
     private boolean displayControlArea;
-
+    
     @Setter
     private Process processTemplate;
     private BeanHelper bhelp = new BeanHelper();
@@ -1242,7 +1242,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         //        processTitleBuilder.append("_");
         processTitleBuilder.append(selectedEntry.getId());
         processTitleBuilder.append("_");
-        processTitleBuilder.append(selectedEntry.getLabel().toLowerCase());
+        processTitleBuilder.append(StringUtils.substring(selectedEntry.getLabel().toLowerCase(), 0, 32));
         String processTitle = processTitleBuilder.toString().replaceAll("[\\W]", "_");
 
         // TODO check if title is unique, abort if not
@@ -1639,4 +1639,30 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         }
     }
 
+    public void showupdateAreaDisplay(int level) {
+        switch (level) {
+            case 1:
+                displayIdentityStatementArea = true;
+                break;
+            case 2:
+                displayContextArea = true;
+                break;
+            case 3:
+                displayContentArea = true;
+                break;
+            case 4:
+                displayAccessArea = true;
+                break;
+            case 5:
+                displayMaterialsArea = true;
+                break;
+            case 6:
+                displayNotesArea = true;
+                break;
+            case 7:
+                displayControlArea = true;
+                break;
+        }
+    }
+    
 }
