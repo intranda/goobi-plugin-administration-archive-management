@@ -759,65 +759,53 @@ div.no-element-selected {
                                                         class="processcreation area_block-border"
                                                         style="margin-top: 0;">
 
-                                                        <h:panelGroup
-                                                            styleClass="form-group "
-                                                            id="process-creation-area">
-                                                            <div class="col-sm-3 control-label">
+                                                        <!-- process title -->
+                                                        <h:panelGroup class="form-group" id="process-creation-area">
+                                                            <div class="col-sm-3 control-label" tabindex="-1" >
                                                                 <h:outputText value="#{msgs.plugin_administration_archive_process}" />
                                                             </div>
-                                                            <h:panelGroup
-                                                                layout="block"
-                                                                styleClass="col-sm-6 node-type-selection"
-                                                                rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
-                                                                <h:outputText value="#{msgs.plugin_administration_archive_process_no_process}" />
-                                                            </h:panelGroup>
-                                                            
-                                                            <!-- no process exists, so allow creation of a process here -->
-                                                            <h:panelGroup
-                                                                layout="block"
-                                                                styleClass="col-sm-3 node-type-selection"
-                                                                rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
-                                                                <h:commandLink
-                                                                    action="#{AdministrationForm.administrationPlugin.createProcess}"
-                                                                    id="process-creation-button"
-                                                                    styleClass="btn btn-primary font-size-s pull-right" 
-                                                                    disabled="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null}">
-                                                                    <f:passThroughAttribute
-                                                                        name="data-toggle"
-                                                                        value="tooltip" />
-                                                                    <h:outputText value="#{msgs.plugin_administration_archive_process_create_process}" />
-                                                                </h:commandLink>
-                                                            </h:panelGroup>
-                                                            <!-- // no process exists, so allow creation of a process here -->
-
-                                                            <!-- process exists -->
-                                                            <h:panelGroup
-                                                                layout="block"
-                                                                styleClass="col-sm-9 node-type-selection"
-                                                                rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null}">
-                                                                <h:outputText value="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle}" />
-                                                                <h:commandLink
-                                                                    styleClass="download-docket pull-right"
-                                                                    action="#{AdministrationForm.administrationPlugin.downloadDocket}"
-                                                                    onclick="preventDoubleSubmit(this);"
-                                                                    title="#{msgs.process_generateDocket}">
-                                                                    <span class="btn margin-left-10 fa fa-print fa-lg width-40" />
-                                                                    <f:passThroughAttribute
-                                                                        name="data-toggle"
-                                                                        value="tooltip" />
-                                                                </h:commandLink>
-                                                            </h:panelGroup>
-                                                            <!-- process exists -->
+                                                            <div class="col-sm-9" style="background-color:#f6f6f6">
+        
+                                                                <!-- no process exists, so allow creation of a process here -->
+                                                                <ui:fragment rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
+                                                                    <h:outputText value="#{msgs.plugin_administration_archive_process_no_process}" />
+                                                                    <h:commandLink
+                                                                        action="#{AdministrationForm.administrationPlugin.createProcess}"
+                                                                        id="process-creation-button" styleClass="btn btn-primary font-size-s pull-right" 
+                                                                        disabled="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null}">
+                                                                        <f:passThroughAttribute name="data-toggle" value="tooltip" />
+                                                                        <h:outputText value="#{msgs.plugin_administration_archive_process_create_process}" />
+                                                                    </h:commandLink>    
+                                                                </ui:fragment>
+                                                                <!-- // no process exists, so allow creation of a process here -->
+        
+                                                                <!-- process exists -->
+                                                                <ui:fragment rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null}">
+                                                                    <h:outputText value="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle}" />
+                                                                    <h:commandLink
+                                                                        styleClass="download-docket pull-right"
+                                                                        action="#{AdministrationForm.administrationPlugin.downloadDocket}"
+                                                                        onclick="preventDoubleSubmit(this);"
+                                                                        title="#{msgs.process_generateDocket}">
+                                                                        <span class="btn margin-left-10 fa fa-print" />
+                                                                        <f:passThroughAttribute
+                                                                            name="data-toggle"
+                                                                            value="tooltip" />
+                                                                    </h:commandLink>
+                                                                </ui:fragment>
+                                                                <!-- // process exists -->
+                                                                
+                                                            </div>
                                                         </h:panelGroup>
+                                                        <!-- //process title -->
 
                                                         <!-- node type as icon -->
-                                                        <h:panelGroup
-                                                            styleClass="form-group metadata-row-area"
-                                                            id="node-type">
-                                                            <div class=" control-label metadata-row-area-content" style="border-top:0">
+                                                        <h:panelGroup class="form-group" id="node-type">
+                                                            <div class="col-sm-3 control-label" tabindex="-1" style="border-top:1px #ddd solid;">
                                                                 <h:outputText value="#{msgs.plugin_administration_archive_nodeType}" />
                                                             </div>
-                                                            <div class=" node-type-selection metadata-row-area-content" style="border-top:0">
+                                                            <div class="col-sm-9" style="background-color:#f6f6f6; border-top:1px #ddd solid;">
+        
                                                                 <x:dataList
                                                                     value="#{AdministrationForm.administrationPlugin.configuredNodes}"
                                                                     var="nodeType">
@@ -835,9 +823,8 @@ div.no-element-selected {
                                                                             name="data-toggle"
                                                                             value="tooltip" />
                                                                     </h:commandLink>
-
                                                                 </x:dataList>
-
+        
                                                             </div>
                                                         </h:panelGroup>
                                                         <!-- // node type as icon -->
