@@ -169,7 +169,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
     @Getter
     @Setter
     private boolean displayControlArea;
-    
+
     @Setter
     private Process processTemplate;
     private BeanHelper bhelp = new BeanHelper();
@@ -199,6 +199,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             if (user != null) {
                 username = user.getNachVorname();
             }
+
         } catch (ConfigurationException e2) {
             log.error(e2);
         }
@@ -315,8 +316,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             if (processinfoElement != null) {
                 Element list = processinfoElement.getChild("list", ns);
                 List<Element> entries = list.getChildren("item", ns);
-                EadMetadataField editor =
-                        new EadMetadataField("editorName", 7, null, null, false, true, true, "readonly", null, false, null, null);
+                EadMetadataField editor = new EadMetadataField("editorName", 7, null, null, false, true, true, "readonly", null, false, null, null);
 
                 for (Element item : entries) {
                     editorList.add(item.getText());
@@ -1212,6 +1212,30 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         flatEntryList = null;
     }
 
+    private List<StringPair> processTemplates = new ArrayList<>();
+    @Getter
+    @Setter
+    private String selectedTemplate;
+
+    public List<StringPair> getProcessTemplates() {
+        if (processTemplates.isEmpty()) {
+            StringBuilder sql = new StringBuilder();
+            sql.append("select ProzesseID, Titel from prozesse where IstTemplate = true and ProjekteID in ");
+            sql.append("(select projekteId from projektbenutzer where BenutzerID=");
+            sql.append(Helper.getCurrentUser().getId());
+            sql.append(") order by titel;");
+            @SuppressWarnings("unchecked")
+            List<Object> rawData = ProcessManager.runSQL(sql.toString());
+            for (int i = 0; i < rawData.size(); i++) {
+                Object[] rowData = (Object[]) rawData.get(i);
+                String processId = (String) rowData[0];
+                String title = (String) rowData[1];
+                processTemplates.add(new StringPair(processId, title));
+            }
+        }
+        return processTemplates;
+    }
+
     public void createProcess() {
         // abort if no node is selected
         if (selectedEntry == null) {
@@ -1220,18 +1244,18 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         if (selectedEntry.getNodeType() == null) {
             return;
         }
-        Integer processTemplateId = selectedEntry.getNodeType().getProcessTemplateId();
-        // abort if process template is not defined
-        if (processTemplateId == null || processTemplateId == 0) {
-            return;
+        Integer processTemplateId = null;
+        if (StringUtils.isBlank(selectedTemplate)) {
+            processTemplateId = selectedEntry.getNodeType().getProcessTemplateId();
+        } else {
+            processTemplateId = Integer.parseInt(selectedTemplate);
         }
+
+        // load process template
+        processTemplate = ProcessManager.getProcessById(processTemplateId);
         if (processTemplate == null) {
-            // load process template
-            processTemplate = ProcessManager.getProcessById(processTemplateId);
-            if (processTemplate == null) {
-                // TODO error
-                return;
-            }
+            // TODO error
+            return;
         }
 
         // TODO configure process title rule?
@@ -1664,5 +1688,5 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 break;
         }
     }
-    
+
 }
