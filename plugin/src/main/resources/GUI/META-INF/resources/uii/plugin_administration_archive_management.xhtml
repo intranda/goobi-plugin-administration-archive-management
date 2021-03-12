@@ -773,55 +773,36 @@ div.no-element-selected {
                                                                 <!-- no process exists, so allow creation of a process here -->
                                                                 <ui:fragment rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
                                                                     <h:outputText value="#{msgs.plugin_administration_archive_process_no_process}" />
-
-                                                                    <h:commandLink
-                                                                        action="#{AdministrationForm.administrationPlugin.createProcess}"
-                                                                        id="process-creation-button"
-                                                                        disabled="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null}"
-                                                                        onclick="preventDoubleSubmit(this);"
-                                                                        pt:aria-label="#{msgs.plugin_administration_archive_process_create_process}"
-                                                                        title="#{msgs.plugin_administration_archive_process_create_process}">
-                                                                        <x:updateActionListener
-                                                                            property="#{AdministrationForm.administrationPlugin.selectedTemplate}"
-                                                                            value="" />
-                                                                        <i class="btn fa fa-file-o btn-primary" style="background: #368ee0;"/>
-                                                                    </h:commandLink>
-
-                                                                    <h:panelGroup>
-                                                                        <div
-                                                                            class="btn-group"
-                                                                            title=""
-                                                                            data-toggle="tooltip">
-                                                                            <button
-                                                                                type="button"
-                                                                                class="btn btn-primary dropdown-toggle fa pull-right"
-                                                                                data-toggle="dropdown"
-                                                                                aria-haspopup="true"
-                                                                                aria-expanded="false"
-                                                                                style="padding-left: 4px; padding-right: 4px;"
-                                                                                title="#{msgs.plugin_administration_archive_process_create_process}">
-                                                                                <span class="caret"></span>
-                                                                            </button>
-                                                                            <ul class="dropdown-menu  pull-right">
-                                                                                <ui:repeat
-                                                                                    var="template"
-                                                                                    value="#{AdministrationForm.administrationPlugin.processTemplates}">
-                                                                                    <li>
-                                                                                        <h:commandLink
-                                                                                            action="#{AdministrationForm.administrationPlugin.createProcess}"
-                                                                                            pt:aria-label="#{template.two}">
-                                                                                            <h:outputText value="#{template.two}" />
-                                                                                            <x:updateActionListener
-                                                                                                property="#{AdministrationForm.administrationPlugin.selectedTemplate}"
-                                                                                                value="#{template.one}" />
-                                                                                        </h:commandLink>
-                                                                                    </li>
-                                                                                </ui:repeat>
-                                                                            </ul>
-
-
-                                                                        </div>
-                                                                    </h:panelGroup>
+                                                                    <div
+                                                                        class="btn-group pull-right"
+                                                                        title="#{msgs.plugin_administration_archive_process_create_process}"
+                                                                        data-toggle="tooltip">
+                                                                        <a
+                                                                            aria-label="#{msgs.plugin_administration_archive_process_create_process}"
+                                                                            href="#"
+                                                                            class="btn btn-blue font-size-s dropdown-toggle"
+                                                                            data-toggle="dropdown"> 
+                                                                            <h:outputText value="#{msgs.plugin_administration_archive_process_create_process}"/>
+                                                                            <span class="caret"></span>
+                                                                        </a>
+                                                                        <ul class="dropdown-menu pull-right">
+                                                                            <ui:repeat
+                                                                                var="template"
+                                                                                value="#{AdministrationForm.administrationPlugin.processTemplates}">
+                                                                                <li>
+                                                                                    <h:commandLink
+                                                                                        action="#{AdministrationForm.administrationPlugin.createProcess}"
+                                                                                        pt:aria-label="#{template.two}">
+                                                                                        <h:outputText value="#{template.two}" />
+                                                                                        <x:updateActionListener
+                                                                                            property="#{AdministrationForm.administrationPlugin.selectedTemplate}"
+                                                                                            value="#{template.one}" />
+                                                                                    </h:commandLink>
+                                                                                </li>
+                                                                            </ui:repeat>
+                                                                            
+                                                                        </ul>
+                                                                    </div>
                                                                 </ui:fragment>
                                                                 <!-- // no process exists, so allow creation of a process here -->
         
