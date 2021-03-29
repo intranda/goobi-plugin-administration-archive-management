@@ -30,8 +30,3 @@ function page:getDatabases() {
     }
   </databases>
 };
-
-
-
-  
-

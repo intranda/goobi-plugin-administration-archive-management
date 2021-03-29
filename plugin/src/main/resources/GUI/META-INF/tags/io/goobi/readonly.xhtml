@@ -15,7 +15,9 @@
                     for="#{fieldid}"
                     value="#{fieldname}" />
             </div>
+            
             <div></div>
+            
             <div class="metadata-row-area-content metadata-row-area-content-white">
                 <h:inputText
                     id="#{fieldid}"
@@ -25,7 +27,11 @@
                     required="false"
                     readonly="true">
                 </h:inputText>
+                
+                <h:outputText styleClass="help-inline font-danger" rendered="#{!item.valid}" value="#{msgs[item.validationError]}"/>
+                
             </div>
+            
     </ui:composition>
 </h:body>
 </html>
