@@ -10,35 +10,37 @@
 <h:body>
     <ui:composition>
         
-            <div class="control-label metadata-row-area-content">
-                <h:outputLabel
-                    for="#{fieldid}"
-                    value="#{fieldname}" />
-</div>
-                <h:commandLink styleClass="metadata-row-area-content close-field pull-right" action="#{item.deleteValue(field)}">
-                    <i class="fa fa-minus-circle"></i>
-                    <f:ajax
-                        execute="@this"
-                        render=":#{ajaxid} :hierarchy" />
-                </h:commandLink>
-
-      
-            <div class="metadata-row-area-content metadata-row-area-content-white">
-                <h:inputText
-                    id="#{fieldid}"
-                    forceId="true"
-                    styleClass="form-control #{item.valid ? '' : 'validation-error'}"
-                    value="#{fieldvalue}"
-                    required="false"
-                    readonly="false">
-                    <f:ajax
-                        execute="@this"
-                        render=":#{ajaxid} :hierarchy"
-                        event="blur" />
-                </h:inputText>
-            </div>
-
-
+	    <div class="control-label metadata-row-area-content">
+	        <h:outputLabel
+	            for="#{fieldid}"
+	            value="#{fieldname}" />
+		</div>
+     
+        <h:commandLink styleClass="metadata-row-area-content close-field pull-right" action="#{item.deleteValue(field)}">
+            <i class="fa fa-minus-circle"></i>
+            <f:ajax
+                execute="@this"
+                render=":#{ajaxid} :hierarchy" />
+        </h:commandLink>
+  
+        <div class="metadata-row-area-content metadata-row-area-content-white">
+            
+            <h:inputText
+                id="#{fieldid}"
+                forceId="true"
+                styleClass="form-control #{item.valid ? '' : 'validation-error'}"
+                value="#{fieldvalue}"
+                required="false"
+                readonly="false">
+                <f:ajax
+                    execute="@this"
+                    render=":#{ajaxid} :hierarchy"
+                    event="blur" />
+            </h:inputText>
+            
+            <h:outputText styleClass="help-inline font-danger" rendered="#{!item.valid}" value="#{msgs[item.validationError]}"/>
+            
+        </div>
     </ui:composition>
 </h:body>
 </html>

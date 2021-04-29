@@ -31,6 +31,9 @@
                     <i class="fa fa-plus-circle margin-right-5"/>
                 </ui:fragment>
                 <h:outputText value="#{fieldname}" />
+                <ui:fragment rendered="#{!item.valid}">
+                    <i class="fa fa-exclamation-triangle margin-left-5"/>
+                </ui:fragment>
                 <f:actionListener binding="#{AdministrationForm.administrationPlugin.updateAreaDisplay(item.level)}" />
                 <x:updateActionListener
                     property="#{item.showField}"

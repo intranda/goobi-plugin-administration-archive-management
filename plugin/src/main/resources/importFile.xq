@@ -16,4 +16,3 @@ updating function page:import($db, $filename) {
     else 
       db:replace($db, $filename, doc($path))
 };
-

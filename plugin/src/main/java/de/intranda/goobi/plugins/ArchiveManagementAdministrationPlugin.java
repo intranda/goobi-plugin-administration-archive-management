@@ -1286,6 +1286,10 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         bhelp.WerkstueckeKopieren(processTemplate, process);
         bhelp.EigenschaftenKopieren(processTemplate, process);
 
+
+        bhelp.EigenschaftHinzufuegen(process, "Template", processTemplate.getTitel());
+        bhelp.EigenschaftHinzufuegen(process, "TemplateID", selectedTemplate);
+
         // save process
         try {
             ProcessManager.saveProcess(process);

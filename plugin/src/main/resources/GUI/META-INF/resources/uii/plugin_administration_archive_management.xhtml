@@ -327,7 +327,8 @@ div.no-element-selected {
 }
 
 .validation-error {
-    border: 1px solid red;
+    background-color: #ff4433;
+    color: #fff !important;
 }
 
 .metadata-row-area {
@@ -550,8 +551,9 @@ div.no-element-selected {
                                                         <h:commandLink
                                                             id="link2"
                                                             immediate="true"
+                                                            style="#{entry.valid ? '' : 'border: 2px solid #ff4433'}"
                                                             styleClass="#{entry.selected ? 'table__structure-link-active' : 'table__structure-link'} #{entry.searchFound ? 'table__structure-link-searched' : ''} #{entry.valid ? '' : 'validation-error'}">
-
+															
                                                             <i
                                                                 class="#{entry.nodeType.icon}"
                                                                 aria-hidden="true"/>
@@ -568,6 +570,10 @@ div.no-element-selected {
                                                                 class="fa fa-cog font-light margin-left-5"
                                                                 aria-hidden="true"/>
                                                             </ui:fragment>
+                                                            
+                                                             <ui:fragment rendered="#{!entry.valid}">
+												                 <i class="fa fa-exclamation-triangle margin-left-5" style="margin-right:5px;"/>
+												             </ui:fragment>
                                                             
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.selectedEntry}"
