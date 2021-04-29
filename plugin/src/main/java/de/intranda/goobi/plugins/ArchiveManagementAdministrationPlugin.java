@@ -1663,7 +1663,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         }
     }
 
-    public void showupdateAreaDisplay(int level) {
+    public void updateAreaDisplay(int level) {
         switch (level) {
             case 1:
                 displayIdentityStatementArea = true;
