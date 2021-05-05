@@ -5,18 +5,23 @@
     <version>1.0.0</version>
     <packaging>pom</packaging>
     
-    <distributionManagement>
-        <repository>
-            <id>intranda-releases</id>
-            <url>https://nexus.intranda.com/repository/maven-releases</url>
-        </repository>
-    </distributionManagement>
-    <repositories>
-        <repository>
-            <id>intranda-public</id>
-            <url>https://nexus.intranda.com/repository/maven-public</url>
-        </repository>
-    </repositories>
+	<repositories>
+		<repository>
+			<id>intranda-public</id>
+			<url>https://nexus.intranda.com/repository/maven-public</url>
+		</repository>
+	</repositories>
+ 
+	<distributionManagement>
+		<repository>
+			<id>intranda-releases</id>
+			<url>https://nexus.intranda.com/repository/maven-releases</url>
+		</repository>
+		<snapshotRepository>
+			<id>intranda-snapshots</id>
+			<url>https://nexus.intranda.com/repository/maven-snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<modules>
 		<module>module-main</module>
