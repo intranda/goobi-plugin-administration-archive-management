@@ -670,6 +670,11 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
     }
 
     public void setSelectedEntry(EadEntry entry) {
+        
+        if (flatEntryList == null) {
+            getFlatEntryList();
+        }
+        
         for (EadEntry other : flatEntryList) {
             other.setSelected(false);
         }
