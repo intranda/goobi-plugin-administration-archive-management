@@ -670,11 +670,11 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
     }
 
     public void setSelectedEntry(EadEntry entry) {
-        
+
         if (flatEntryList == null) {
             getFlatEntryList();
         }
-        
+
         for (EadEntry other : flatEntryList) {
             other.setSelected(false);
         }
@@ -1291,7 +1291,6 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         bhelp.WerkstueckeKopieren(processTemplate, process);
         bhelp.EigenschaftenKopieren(processTemplate, process);
 
-
         bhelp.EigenschaftHinzufuegen(process, "Template", processTemplate.getTitel());
         bhelp.EigenschaftHinzufuegen(process, "TemplateID", selectedTemplate);
 
@@ -1695,6 +1694,37 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             case 7:
                 displayControlArea = true;
                 break;
+        }
+    }
+
+    //Create process for all leaves of the selected node which do not have processes
+    public String createProcesses() {
+
+        // abort if no node is selected
+        if (selectedEntry == null) {
+            Helper.setFehlerMeldung("plugin_administration_archive_please_select_node");
+            return "";
+        }
+        if (selectedEntry.getNodeType() == null) {
+            return "";
+        }
+
+        createProcessesForChildren(selectedEntry);
+
+        return cancelEdition();
+    }
+
+    private void createProcessesForChildren(EadEntry currentEntry) {
+
+        setSelectedEntry(currentEntry);
+        
+        if (!selectedEntry.isHasChildren() && selectedEntry.getGoobiProcessTitle() == null) {
+            createProcess();
+        } else if (currentEntry.isHasChildren()) {
+            
+            for (EadEntry childEntry : currentEntry.getSubEntryList()) {
+                createProcessesForChildren(childEntry);     
+            }
         }
     }
 
