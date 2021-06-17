@@ -1698,32 +1698,79 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
     }
 
     //Create process for all leaves of the selected node which do not have processes
-    public String createProcesses() {
+    public void createProcesses() {
 
         // abort if no node is selected
         if (selectedEntry == null) {
             Helper.setFehlerMeldung("plugin_administration_archive_please_select_node");
-            return "";
+            return;
         }
         if (selectedEntry.getNodeType() == null) {
-            return "";
+            return;
         }
 
         createProcessesForChildren(selectedEntry);
-
-        return cancelEdition();
     }
 
     private void createProcessesForChildren(EadEntry currentEntry) {
 
         setSelectedEntry(currentEntry);
-        
-        if (!selectedEntry.isHasChildren() && selectedEntry.getGoobiProcessTitle() == null) {
-            createProcess();
+
+        if (!currentEntry.isHasChildren() && currentEntry.getGoobiProcessTitle() == null) {
+            try {
+                createProcess();
+                Helper.setMeldung("Created " + currentEntry.getGoobiProcessTitle()+ " for " + currentEntry.getLabel());
+            } catch (Exception e) {
+                Helper.setFehlerMeldung(e.getMessage());
+                log.error(e);
+            }
         } else if (currentEntry.isHasChildren()) {
-            
+
             for (EadEntry childEntry : currentEntry.getSubEntryList()) {
-                createProcessesForChildren(childEntry);     
+                createProcessesForChildren(childEntry);
+            }
+        }
+    }
+
+    //remove goobi ids which have been deleted
+    public void removeInvalidProcessIds() {
+
+        // abort if no node is selected
+        if (selectedEntry == null) {
+            Helper.setFehlerMeldung("plugin_administration_archive_please_select_node");
+            return;
+        }
+        if (selectedEntry.getNodeType() == null) {
+            return;
+        }
+
+        EadEntry currentEntry = selectedEntry;
+        
+        removeInvalidProcessIdsForChildren(selectedEntry);
+        
+        setSelectedEntry(currentEntry);
+    }
+
+    private void removeInvalidProcessIdsForChildren(EadEntry currentEntry) {
+
+        setSelectedEntry(currentEntry);
+
+        if (!currentEntry.isHasChildren() && currentEntry.getGoobiProcessTitle() != null) {
+            try {
+                String strProcessTitle = currentEntry.getGoobiProcessTitle();
+                Process process = ProcessManager.getProcessByTitle(strProcessTitle);
+                if (process == null) {
+                    currentEntry.setGoobiProcessTitle(null);
+                    Helper.setMeldung("Removing " + strProcessTitle + " from " + currentEntry.getLabel());
+                }
+            } catch (Exception e) {
+                Helper.setFehlerMeldung(e.getMessage());
+                log.error(e);
+            }
+        } else if (currentEntry.isHasChildren()) {
+
+            for (EadEntry childEntry : currentEntry.getSubEntryList()) {
+                removeInvalidProcessIdsForChildren(childEntry);
             }
         }
     }
