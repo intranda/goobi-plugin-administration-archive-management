@@ -2,6 +2,8 @@ package de.intranda.goobi.plugins;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,6 +25,8 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
@@ -61,6 +65,8 @@ import de.sub.goobi.helper.ScriptThreadWithoutHibernate;
 import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
+import de.sub.goobi.persistence.managers.MetadataManager;
+import de.sub.goobi.persistence.managers.MySQLHelper;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.VocabularyManager;
 import io.goobi.workflow.locking.LockingBean;
@@ -1719,7 +1725,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         if (!currentEntry.isHasChildren() && currentEntry.getGoobiProcessTitle() == null) {
             try {
                 createProcess();
-                Helper.setMeldung("Created " + currentEntry.getGoobiProcessTitle()+ " for " + currentEntry.getLabel());
+                Helper.setMeldung("Created " + currentEntry.getGoobiProcessTitle() + " for " + currentEntry.getLabel());
             } catch (Exception e) {
                 Helper.setFehlerMeldung(e.getMessage());
                 log.error(e);
@@ -1732,35 +1738,60 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         }
     }
 
-    //remove goobi ids which have been deleted
-    public void removeInvalidProcessIds() {
+    public void updateGoobiIds() {
+
+        EadEntry selected = getSelectedEntry();
+
+        ArrayList<String> lstNodesWithoutIds = removeInvalidProcessIds();
+
+        ArrayList<String> lstNodesWithNewGoobiIds = checkGoobiProcessesForArchiveRefs(lstNodesWithoutIds);
+
+        setSelectedEntry(selected);
+    }
+
+    /**
+     * Remove goobi ids for processes which have been deleted
+     * 
+     * @return A list of all node ids which have no valid goobi Id
+     */
+    public ArrayList<String> removeInvalidProcessIds() {
+
+        ArrayList<String> lstNodesWithoutIds = new ArrayList<String>();
 
         // abort if no node is selected
         if (selectedEntry == null) {
             Helper.setFehlerMeldung("plugin_administration_archive_please_select_node");
-            return;
+            return lstNodesWithoutIds;
         }
         if (selectedEntry.getNodeType() == null) {
-            return;
+            return lstNodesWithoutIds;
         }
 
         EadEntry currentEntry = selectedEntry;
-        
-        removeInvalidProcessIdsForChildren(selectedEntry);
-        
+
+        lstNodesWithoutIds = removeInvalidProcessIdsForChildren(selectedEntry);
+
         setSelectedEntry(currentEntry);
+
+        return lstNodesWithoutIds;
     }
 
-    private void removeInvalidProcessIdsForChildren(EadEntry currentEntry) {
+    private ArrayList<String> removeInvalidProcessIdsForChildren(EadEntry currentEntry) {
+
+        ArrayList<String> lstNodesWithoutIds = new ArrayList<String>();
 
         setSelectedEntry(currentEntry);
 
-        if (!currentEntry.isHasChildren() && currentEntry.getGoobiProcessTitle() != null) {
+        String goobiProcessTitle = currentEntry.getGoobiProcessTitle();
+
+        if (!currentEntry.isHasChildren() && goobiProcessTitle != null) {
             try {
                 String strProcessTitle = currentEntry.getGoobiProcessTitle();
                 Process process = ProcessManager.getProcessByTitle(strProcessTitle);
                 if (process == null) {
                     currentEntry.setGoobiProcessTitle(null);
+                    lstNodesWithoutIds.add(currentEntry.getId());
+
                     Helper.setMeldung("Removing " + strProcessTitle + " from " + currentEntry.getLabel());
                 }
             } catch (Exception e) {
@@ -1770,9 +1801,128 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         } else if (currentEntry.isHasChildren()) {
 
             for (EadEntry childEntry : currentEntry.getSubEntryList()) {
-                removeInvalidProcessIdsForChildren(childEntry);
+                lstNodesWithoutIds.addAll(removeInvalidProcessIdsForChildren(childEntry));
             }
+        } else if (goobiProcessTitle == null) {
+            lstNodesWithoutIds.add(currentEntry.getId());
         }
+
+        return lstNodesWithoutIds;
     }
 
+    /**
+     * For each node id in the list, find if there is a goobi process with that id as metadatum, and if so set the goobi id in the node.
+     * 
+     * @param lstNodesWithoutIds
+     * @return A list of labels for any nodes which have been given a new goobi id
+     */
+    private ArrayList<String> checkGoobiProcessesForArchiveRefs(ArrayList<String> lstNodesWithoutIds) {
+
+        ArrayList<String> lstNodesWithNewIds = new ArrayList<String>();
+
+        if (lstNodesWithoutIds.isEmpty()) {
+            return lstNodesWithNewIds;
+        }
+
+        List<Integer> lstProcessIds = getProcessWithNodeIds(lstNodesWithoutIds);
+
+        //        String strSQLValue = lstNodesWithoutIds.get(0);
+        //
+        //        for (int i = 1; i < lstNodesWithoutIds.size(); i++) {
+        //
+        //            strSQLValue = strSQLValue + " OR " + lstNodesWithoutIds.get(i);
+        //        }
+        //
+        //        //are there any processes?
+        //        List<Integer> lstProcessIds = MetadataManager.getProcessesWithMetadata("NodeId", strSQLValue);
+
+        if (lstProcessIds == null || lstProcessIds.isEmpty()) {
+            return lstNodesWithNewIds;
+        }
+
+        //otherwise
+        for (Integer processId : lstProcessIds) {
+
+            String strNodeId = MetadataManager.getMetadataValue(processId, "NodeId");
+            EadEntry node = getNodeWithId(strNodeId, rootElement);
+            if (node != null) {
+                String strProcessTitle = ProcessManager.getProcessById(processId).getTitel();
+                node.setGoobiProcessTitle(strProcessTitle);
+                lstNodesWithNewIds.add(node.getLabel());
+                Helper.setMeldung("Node " + node.getLabel() + " has been given Goobi process ID " + strProcessTitle);
+            } else {
+
+                //perhaps remove the NodeId from the process?
+            }
+        }
+
+        LockingBean.updateLocking(selectedDatabase);
+
+        return lstNodesWithNewIds;
+    }
+
+    private EadEntry getNodeWithId(String strNodeId, EadEntry node) {
+
+        if (node.getId() != null && node.getId().contentEquals(strNodeId)) {
+            return node;
+        }
+        if (node.getSubEntryList() != null) {
+            for (EadEntry child : node.getSubEntryList()) {
+                EadEntry found = getNodeWithId(strNodeId, child);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+
+        //otherwise
+        return null;
+    }
+
+    public List<Integer> getProcessWithNodeIds(ArrayList<String> lstNodesWithoutIds) {
+
+        List<Integer> processIds = new ArrayList<Integer>();
+
+        String strSQLNodes = "('" + lstNodesWithoutIds.get(0) + "'";
+
+        for (int i = 1; i < lstNodesWithoutIds.size(); i++) {
+
+            strSQLNodes = strSQLNodes + ", " + "'" + lstNodesWithoutIds.get(i) + "'";
+        }
+        strSQLNodes += ")";
+
+        StringBuilder sql = new StringBuilder();
+
+        sql.append("SELECT processid FROM metadata WHERE name = 'NodeId' and value in ");
+        //        sql.append("select Titel, NodeId from prozesse where NodeId in ");
+        sql.append(strSQLNodes);
+        //        sql.append(" and ProjekteID in ");
+        //        sql.append("(select projekteId from projektbenutzer where BenutzerID=");
+        //        sql.append(Helper.getCurrentUser().getId());
+        sql.append(" order by processid;");
+        @SuppressWarnings("unchecked")
+        List<Object> rawData = ProcessManager.runSQL(sql.toString());
+        for (int i = 0; i < rawData.size(); i++) {
+            Object[] rowData = (Object[]) rawData.get(i);
+            String processid = (String) rowData[0];
+            //            String nodeId = (String) rowData[1];
+            processIds.add(Integer.parseInt(processid));
+        }
+
+        return processIds;
+    }
+
+    //    public List<StringPair> getProcessWithNodeIds(ArrayList<String> lstNodesWithoutIds) {
+    //        String sql = "SELECT processid FROM metadata WHERE name = ? and value LIKE '%" + StringEscapeUtils.escapeSql(value) + "%'";
+    //        Object[] param = { name };
+    //        Connection connection = null;
+    //        try {
+    //            connection = MySQLHelper.getInstance().getConnection();
+    //            return new QueryRunner().query(connection, sql, MySQLHelper.resultSetToIntegerListHandler, param);
+    //        } finally {
+    //            if (connection != null) {
+    //                MySQLHelper.closeConnection(connection);
+    //            }
+    //        }
+    //    }
 }
