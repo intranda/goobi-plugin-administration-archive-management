@@ -231,6 +231,32 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 }
             }
         }
+
+        //otherwise
+        return databases;
+    }
+
+    /**
+     * Get the database names without file names from the basex databases
+     * 
+     * @return
+     */
+
+    public List<String> getPossibleDatabaseNames() {
+        List<String> databases = new ArrayList<>();
+        String response = HttpClientHelper.getStringFromUrl(datastoreUrl + "databases");
+        if (StringUtils.isNotBlank(response)) {
+
+            Document document = openDocument(response);
+            if (document != null) {
+                Element root = document.getRootElement();
+                List<Element> databaseList = root.getChildren("database");
+                for (Element db : databaseList) {
+                    String dbName = db.getChildText("name");
+                    databases.add(dbName);
+                }
+            }
+        }
         return databases;
     }
 
@@ -283,6 +309,13 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
     }
 
     public void createNewDatabase() {
+        if (StringUtils.isBlank(databaseName)) {
+            List<String> lstNames = getPossibleDatabaseNames();
+            if (!lstNames.isEmpty() && lstNames.size() == 1) {
+                databaseName = lstNames.get(0);
+            }
+        }
+
         if (StringUtils.isNotBlank(databaseName) && StringUtils.isNotBlank(fileName)) {
             selectedDatabase = databaseName + " - " + fileName;
             readConfiguration();
@@ -670,11 +703,11 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
     }
 
     public void setSelectedEntry(EadEntry entry) {
-        
+
         if (flatEntryList == null) {
             getFlatEntryList();
         }
-        
+
         for (EadEntry other : flatEntryList) {
             other.setSelected(false);
         }
@@ -1290,7 +1323,6 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         bhelp.ScanvorlagenKopieren(processTemplate, process);
         bhelp.WerkstueckeKopieren(processTemplate, process);
         bhelp.EigenschaftenKopieren(processTemplate, process);
-
 
         bhelp.EigenschaftHinzufuegen(process, "Template", processTemplate.getTitel());
         bhelp.EigenschaftHinzufuegen(process, "TemplateID", selectedTemplate);
