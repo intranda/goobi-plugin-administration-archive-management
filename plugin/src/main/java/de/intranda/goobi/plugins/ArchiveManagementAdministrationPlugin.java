@@ -269,28 +269,35 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         User user = Helper.getCurrentUser();
         String username = user != null ? user.getNachVorname() : "-";
 
-        // open selected database
-        if (StringUtils.isNotBlank(selectedDatabase)) {
-            if (!LockingBean.lockObject(selectedDatabase, username)) {
-                Helper.setFehlerMeldung("plugin_administration_archive_databaseLocked");
+        try {
+            // open selected database
+            if (StringUtils.isNotBlank(selectedDatabase)) {
+                if (!LockingBean.lockObject(selectedDatabase, username)) {
+                    Helper.setFehlerMeldung("plugin_administration_archive_databaseLocked");
+                    selectedDatabase = null;
+                    return;
+                }
+
+                String[] parts = selectedDatabase.split(" - ");
+
+                String response = HttpClientHelper.getStringFromUrl(datastoreUrl + "db/" + parts[0] + "/" + parts[1]);
+                // get xml root element
+                Document document = openDocument(response);
+                if (document != null) {
+                    // get field definitions from config file
+                    readConfiguration();
+
+                    // parse ead file
+                    parseEadFile(document);
+                }
+            } else {
                 selectedDatabase = null;
-                return;
             }
-
-            String[] parts = selectedDatabase.split(" - ");
-
-            String response = HttpClientHelper.getStringFromUrl(datastoreUrl + "db/" + parts[0] + "/" + parts[1]);
-            // get xml root element
-            Document document = openDocument(response);
-            if (document != null) {
-                // get field definitions from config file
-                readConfiguration();
-
-                // parse ead file
-                parseEadFile(document);
-            }
-        } else {
+        } catch (Exception e) {
+            log.error(e);
+            Helper.setFehlerMeldung("plugin_administration_archive_databaseCannotBeLoaded");
             selectedDatabase = null;
+            return;
         }
     }
 
