@@ -1826,16 +1826,6 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
         List<Integer> lstProcessIds = getProcessWithNodeIds(lstNodesWithoutIds);
 
-        //        String strSQLValue = lstNodesWithoutIds.get(0);
-        //
-        //        for (int i = 1; i < lstNodesWithoutIds.size(); i++) {
-        //
-        //            strSQLValue = strSQLValue + " OR " + lstNodesWithoutIds.get(i);
-        //        }
-        //
-        //        //are there any processes?
-        //        List<Integer> lstProcessIds = MetadataManager.getProcessesWithMetadata("NodeId", strSQLValue);
-
         if (lstProcessIds == null || lstProcessIds.isEmpty()) {
             return lstNodesWithNewIds;
         }
@@ -1894,35 +1884,16 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         StringBuilder sql = new StringBuilder();
 
         sql.append("SELECT processid FROM metadata WHERE name = 'NodeId' and value in ");
-        //        sql.append("select Titel, NodeId from prozesse where NodeId in ");
         sql.append(strSQLNodes);
-        //        sql.append(" and ProjekteID in ");
-        //        sql.append("(select projekteId from projektbenutzer where BenutzerID=");
-        //        sql.append(Helper.getCurrentUser().getId());
         sql.append(" order by processid;");
         @SuppressWarnings("unchecked")
         List<Object> rawData = ProcessManager.runSQL(sql.toString());
         for (int i = 0; i < rawData.size(); i++) {
             Object[] rowData = (Object[]) rawData.get(i);
             String processid = (String) rowData[0];
-            //            String nodeId = (String) rowData[1];
             processIds.add(Integer.parseInt(processid));
         }
 
         return processIds;
     }
-
-    //    public List<StringPair> getProcessWithNodeIds(ArrayList<String> lstNodesWithoutIds) {
-    //        String sql = "SELECT processid FROM metadata WHERE name = ? and value LIKE '%" + StringEscapeUtils.escapeSql(value) + "%'";
-    //        Object[] param = { name };
-    //        Connection connection = null;
-    //        try {
-    //            connection = MySQLHelper.getInstance().getConnection();
-    //            return new QueryRunner().query(connection, sql, MySQLHelper.resultSetToIntegerListHandler, param);
-    //        } finally {
-    //            if (connection != null) {
-    //                MySQLHelper.closeConnection(connection);
-    //            }
-    //        }
-    //    }
 }
