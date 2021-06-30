@@ -24,6 +24,9 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
 import org.goobi.beans.User;
@@ -230,7 +233,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
                 }
             }
-        }
+        } 
 
         //otherwise
         return databases;
@@ -257,7 +260,44 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 }
             }
         }
+
+        if (databases.isEmpty()) {
+            checkDB();
+        }
+
         return databases;
+    }
+
+    /**
+     * Check if there is a connection to the DB
+     */
+    private void checkDB() {
+
+        String url = datastoreUrl + "databases";
+        HttpGet method = new HttpGet(url);
+        CloseableHttpClient client = HttpClientBuilder.create().build();
+        String response = "";
+        try {
+            response = client.execute(method, HttpClientHelper.stringResponseHandler);
+        } catch (IOException e) {
+            Helper.setFehlerMeldung("plugin_administration_archive_databaseCannotBeLoaded");
+            return;
+        } finally {
+            method.releaseConnection();
+
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException e) {
+                    log.error(e);
+                }
+            }
+        }
+
+        //if there is a connection, but no databases:
+        if (StringUtils.isBlank(response)) {
+            Helper.setFehlerMeldung("plugin_administration_archive_databaseMustBeCreated");
+        }
     }
 
     /**
@@ -291,6 +331,9 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                     parseEadFile(document);
                 }
             } else {
+                //this may write an error message if necessary
+                getPossibleDatabaseNames();
+
                 selectedDatabase = null;
             }
         } catch (Exception e) {
@@ -312,16 +355,14 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             }
         }
 
+        if (answer.isEmpty()) {
+            answer = getPossibleDatabaseNames();
+        }
+
         return answer;
     }
 
     public void createNewDatabase() {
-        if (StringUtils.isBlank(databaseName)) {
-            List<String> lstNames = getPossibleDatabaseNames();
-            if (!lstNames.isEmpty() && lstNames.size() == 1) {
-                databaseName = lstNames.get(0);
-            }
-        }
 
         if (StringUtils.isNotBlank(databaseName) && StringUtils.isNotBlank(fileName)) {
             selectedDatabase = databaseName + " - " + fileName;
@@ -335,6 +376,9 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             selectedEntry = rootElement;
             displayMode = "";
             LockingBean.lockObject(selectedDatabase, username);
+        } else {
+            //this may write an error message if necessary
+            getPossibleDatabaseNames();
         }
     }
 
