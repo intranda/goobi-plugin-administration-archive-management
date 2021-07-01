@@ -233,8 +233,8 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
                 }
             }
-        } 
-
+        }
+        
         //otherwise
         return databases;
     }
@@ -262,16 +262,18 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         }
 
         if (databases.isEmpty()) {
-            checkDB();
+            if (checkDB()) {
+                Helper.setFehlerMeldung("plugin_administration_archive_databaseMustBeCreated");
+            }
         }
 
         return databases;
     }
 
     /**
-     * Check if there is a connection to the DB
+     * Check if there is a connection to the DB, return true if there is
      */
-    private void checkDB() {
+    private boolean checkDB() {
 
         String url = datastoreUrl + "databases";
         HttpGet method = new HttpGet(url);
@@ -281,7 +283,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             response = client.execute(method, HttpClientHelper.stringResponseHandler);
         } catch (IOException e) {
             Helper.setFehlerMeldung("plugin_administration_archive_databaseCannotBeLoaded");
-            return;
+            return false;
         } finally {
             method.releaseConnection();
 
@@ -294,10 +296,8 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             }
         }
 
-        //if there is a connection, but no databases:
-        if (StringUtils.isBlank(response)) {
-            Helper.setFehlerMeldung("plugin_administration_archive_databaseMustBeCreated");
-        }
+        //otherwise
+        return true;
     }
 
     /**
@@ -332,8 +332,13 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 }
             } else {
                 //this may write an error message if necessary
-                getPossibleDatabaseNames();
+                if(!getPossibleDatabaseNames().isEmpty()) {
+                   List<String> databases = getPossibleDatabases();
 
+                    if (databases.isEmpty()) {
+                        Helper.setFehlerMeldung("plugin_administration_archive_databaseFileMustBeCreated");
+                    }
+                }
                 selectedDatabase = null;
             }
         } catch (Exception e) {
