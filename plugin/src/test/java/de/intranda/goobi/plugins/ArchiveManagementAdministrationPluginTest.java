@@ -872,6 +872,7 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.setDatabaseName("db");
         plugin.setFileName("filename");
         plugin.createNewDatabase();
+        
         assertNotNull(plugin.getRootElement());
 
     }

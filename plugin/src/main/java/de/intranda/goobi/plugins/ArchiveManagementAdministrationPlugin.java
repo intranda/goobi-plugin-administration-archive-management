@@ -2,8 +2,6 @@ package de.intranda.goobi.plugins;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,9 +23,10 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
-import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
 import org.goobi.beans.User;
@@ -66,7 +65,6 @@ import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.MetadataManager;
-import de.sub.goobi.persistence.managers.MySQLHelper;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.VocabularyManager;
 import io.goobi.workflow.locking.LockingBean;
@@ -237,7 +235,70 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 }
             }
         }
+        
+        //otherwise
         return databases;
+    }
+
+    /**
+     * Get the database names without file names from the basex databases
+     * 
+     * @return
+     */
+
+    public List<String> getPossibleDatabaseNames() {
+        List<String> databases = new ArrayList<>();
+        String response = HttpClientHelper.getStringFromUrl(datastoreUrl + "databases");
+        if (StringUtils.isNotBlank(response)) {
+
+            Document document = openDocument(response);
+            if (document != null) {
+                Element root = document.getRootElement();
+                List<Element> databaseList = root.getChildren("database");
+                for (Element db : databaseList) {
+                    String dbName = db.getChildText("name");
+                    databases.add(dbName);
+                }
+            }
+        }
+
+        if (databases.isEmpty()) {
+            if (checkDB()) {
+                Helper.setFehlerMeldung("plugin_administration_archive_databaseMustBeCreated");
+            }
+        }
+
+        return databases;
+    }
+
+    /**
+     * Check if there is a connection to the DB, return true if there is
+     */
+    private boolean checkDB() {
+
+        String url = datastoreUrl + "databases";
+        HttpGet method = new HttpGet(url);
+        CloseableHttpClient client = HttpClientBuilder.create().build();
+        String response = "";
+        try {
+            response = client.execute(method, HttpClientHelper.stringResponseHandler);
+        } catch (IOException e) {
+            Helper.setFehlerMeldung("plugin_administration_archive_databaseCannotBeLoaded");
+            return false;
+        } finally {
+            method.releaseConnection();
+
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException e) {
+                    log.error(e);
+                }
+            }
+        }
+
+        //otherwise
+        return true;
     }
 
     /**
@@ -249,28 +310,43 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         User user = Helper.getCurrentUser();
         String username = user != null ? user.getNachVorname() : "-";
 
-        // open selected database
-        if (StringUtils.isNotBlank(selectedDatabase)) {
-            if (!LockingBean.lockObject(selectedDatabase, username)) {
-                Helper.setFehlerMeldung("plugin_administration_archive_databaseLocked");
+        try {
+            // open selected database
+            if (StringUtils.isNotBlank(selectedDatabase)) {
+                if (!LockingBean.lockObject(selectedDatabase, username)) {
+                    Helper.setFehlerMeldung("plugin_administration_archive_databaseLocked");
+                    selectedDatabase = null;
+                    return;
+                }
+
+                String[] parts = selectedDatabase.split(" - ");
+
+                String response = HttpClientHelper.getStringFromUrl(datastoreUrl + "db/" + parts[0] + "/" + parts[1]);
+                // get xml root element
+                Document document = openDocument(response);
+                if (document != null) {
+                    // get field definitions from config file
+                    readConfiguration();
+
+                    // parse ead file
+                    parseEadFile(document);
+                }
+            } else {
+                //this may write an error message if necessary
+                if(!getPossibleDatabaseNames().isEmpty()) {
+                   List<String> databases = getPossibleDatabases();
+
+                    if (databases.isEmpty()) {
+                        Helper.setFehlerMeldung("plugin_administration_archive_databaseFileMustBeCreated");
+                    }
+                }
                 selectedDatabase = null;
-                return;
             }
-
-            String[] parts = selectedDatabase.split(" - ");
-
-            String response = HttpClientHelper.getStringFromUrl(datastoreUrl + "db/" + parts[0] + "/" + parts[1]);
-            // get xml root element
-            Document document = openDocument(response);
-            if (document != null) {
-                // get field definitions from config file
-                readConfiguration();
-
-                // parse ead file
-                parseEadFile(document);
-            }
-        } else {
+        } catch (Exception e) {
+            log.error(e);
+            Helper.setFehlerMeldung("plugin_administration_archive_databaseCannotBeLoaded");
             selectedDatabase = null;
+            return;
         }
     }
 
@@ -285,10 +361,15 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             }
         }
 
+        if (answer.isEmpty()) {
+            answer = getPossibleDatabaseNames();
+        }
+
         return answer;
     }
 
     public void createNewDatabase() {
+
         if (StringUtils.isNotBlank(databaseName) && StringUtils.isNotBlank(fileName)) {
             selectedDatabase = databaseName + " - " + fileName;
             readConfiguration();
@@ -301,6 +382,9 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             selectedEntry = rootElement;
             displayMode = "";
             LockingBean.lockObject(selectedDatabase, username);
+        } else {
+            //this may write an error message if necessary
+            getPossibleDatabaseNames();
         }
     }
 

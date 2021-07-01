@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.intranda.goobi.plugins.administration</groupId>
   <artifactId>archive-management</artifactId>
-  <version>1.0.2-SNAPSHOT</version>
+  <version>1.0.4-SNAPSHOT</version>
   <packaging>pom</packaging>
   <properties>
     <goobi.version>21.06.5</goobi.version>
