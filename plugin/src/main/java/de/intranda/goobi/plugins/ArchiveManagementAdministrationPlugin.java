@@ -235,7 +235,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 }
             }
         }
-        
+
         //otherwise
         return databases;
     }
@@ -333,8 +333,8 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 }
             } else {
                 //this may write an error message if necessary
-                if(!getPossibleDatabaseNames().isEmpty()) {
-                   List<String> databases = getPossibleDatabases();
+                if (!getPossibleDatabaseNames().isEmpty()) {
+                    List<String> databases = getPossibleDatabases();
 
                     if (databases.isEmpty()) {
                         Helper.setFehlerMeldung("plugin_administration_archive_databaseFileMustBeCreated");
@@ -988,8 +988,9 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 }
             }
         }
-        // split xpath on "/"
-        String[] fields = xpath.split("/");
+        // split xpath on "/", unless within square brackets
+        String strRegex = "/(?=[^\\]]*(?:\\[|$))";
+        String[] fields = xpath.split(strRegex);
         boolean written = false;
         for (String field : fields) {
             field = field.trim();
@@ -1025,6 +1026,17 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                     conditions = field.substring(field.indexOf("["));
                     field = field.substring(0, field.indexOf("["));
                 }
+
+//                //p follows a subentry:
+//                if (field.contentEquals("p") && !currentElement.getChildren().isEmpty()) {
+//                    for (Element eltChild : currentElement.getChildren()) {
+//                        if (eltChild.getText().isEmpty()) {
+//                            eltChild.setText(metadataValue);
+//                        }
+//                    }
+//
+//                    continue;
+//                }
 
                 // check if element exists, re-use if possible
                 Element element = currentElement.getChild(field, ns);
@@ -1083,15 +1095,25 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         }
         if (!written) {
             // duplicate current element if not empty
-            if (StringUtils.isNotBlank(currentElement.getText())) {
+            if (StringUtils.isNotBlank(currentElement.getText()) || !currentElement.getChildren().isEmpty()) {
                 Element duplicate = new Element(currentElement.getName(), ns);
                 for (Attribute attr : currentElement.getAttributes()) {
                     duplicate.setAttribute(attr.getName(), attr.getValue());
                 }
+
+                if (!currentElement.getChildren().isEmpty()) {
+                    for (Element child : currentElement.getChildren()) {
+                        Element duplicateChild = new Element(child.getName(), ns);
+                        duplicateChild.setText(child.getText());
+                        duplicate.addContent(duplicateChild);
+                    }
+                }
+
                 currentElement.getParent().addContent(duplicate);
                 currentElement = duplicate;
             }
-            currentElement.setText(metadataValue);
+
+                currentElement.setText(metadataValue);
         }
     }
 
@@ -1106,15 +1128,38 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 if (StringUtils.isBlank(condition) || condition.trim().startsWith("not")) {
                     continue;
                 }
-                if (condition.contains("]")) {
-                    condition = condition.substring(1, condition.lastIndexOf("]"));
-                } else {
-                    condition = condition.substring(1);
-                }
-                condition = condition.trim();
 
-                String[] attr = condition.split("=");
-                element.setAttribute(attr[0], attr[1].replace("'", ""));
+                Boolean boAttribute = condition.startsWith("@");
+                //is it an attribute or a subelement?
+                if (boAttribute) {
+
+                    if (condition.contains("]")) {
+                        condition = condition.substring(1, condition.lastIndexOf("]"));
+                    } else {
+                        condition = condition.substring(1);
+                    }
+                    condition = condition.trim();
+
+                    String[] attr = condition.split("=");
+                    if (attr.length > 1) {
+                        element.setAttribute(attr[0], attr[1].replace("'", ""));
+                    }
+
+                } else {
+
+                    if (condition.contains("]")) {
+                        condition = condition.substring(0, condition.lastIndexOf("]"));
+                    }
+                    condition = condition.trim();
+
+                    String[] attr = condition.split("=");
+                    if (attr.length > 1) {
+                        String strName = attr[1].replace("'", "");
+                        Element eltChild = new Element(attr[0], ns);
+                        eltChild.setText(strName);
+                        element.addContent(eltChild);
+                    }
+                }
             }
 
         }
