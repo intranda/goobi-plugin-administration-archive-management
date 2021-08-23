@@ -235,6 +235,10 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 }
             }
         }
+        else {
+            Helper.setFehlerMeldung("plugin_administration_archive_noConnectionToDatabase");
+            log.error("No connection to baseX database");
+        }
 
         //otherwise
         return databases;
