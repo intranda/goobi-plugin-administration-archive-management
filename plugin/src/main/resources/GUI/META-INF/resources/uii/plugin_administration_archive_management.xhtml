@@ -357,6 +357,14 @@ div.no-element-selected {
 }
 </style>
 
+        <h:head>
+            <f:metadata>
+                <f:viewParam name="name" value="#{AdministrationForm.administrationPlugin.selectedDatabase}" />
+                <f:event type="preRenderView"
+                    listener="#{AdministrationForm.administrationPlugin.checkDBConnection}" />
+            </f:metadata>
+        </h:head>
+        
         <h:panelGroup>
             <div class="row">
                 <div class="col-sm-12">
@@ -409,7 +417,8 @@ div.no-element-selected {
                                                         value="#{AdministrationForm.administrationPlugin.possibleDatabases}" />
                                                 </h:selectOneMenu>
                                                 <h:commandLink
-                                                    styleClass="btn font-size-s  margin-top-10">
+                                                    styleClass="btn font-size-s  margin-top-10"
+                                                    rendered="#{AdministrationForm.administrationPlugin.dbOK}">
                                                     <h:outputText
                                                         value="#{msgs.plugin_administration_archive_createNewArchive}" />
                                                     <f:setPropertyActionListener

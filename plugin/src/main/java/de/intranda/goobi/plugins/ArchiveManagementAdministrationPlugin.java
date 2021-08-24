@@ -186,6 +186,9 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
     private String username;
 
+    @Getter
+    private boolean dbOK;
+    
     /**
      * Constructor
      */
@@ -203,12 +206,19 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             if (user != null) {
                 username = user.getNachVorname();
             }
-
+            
+            dbOK = true;
+            
         } catch (ConfigurationException e2) {
             log.error(e2);
         }
     }
 
+    public String checkDBConnection() {
+        getPossibleDatabases();
+        return null;
+    }
+    
     /**
      * Get the database names and file names from the basex databases
      * 
@@ -234,10 +244,13 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
                 }
             }
+            
+            dbOK = true;
         }
         else {
             Helper.setFehlerMeldung("plugin_administration_archive_noConnectionToDatabase");
             log.error("No connection to baseX database");
+            dbOK = false;
         }
 
         //otherwise
