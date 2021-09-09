@@ -188,7 +188,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
     @Getter
     private boolean dbOK;
-    
+
     /**
      * Constructor
      */
@@ -206,9 +206,9 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             if (user != null) {
                 username = user.getNachVorname();
             }
-            
+
             dbOK = true;
-            
+
         } catch (ConfigurationException e2) {
             log.error(e2);
         }
@@ -218,7 +218,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         getPossibleDatabases();
         return null;
     }
-    
+
     /**
      * Get the database names and file names from the basex databases
      * 
@@ -244,10 +244,9 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
                 }
             }
-            
+
             dbOK = true;
-        }
-        else {
+        } else {
             Helper.setFehlerMeldung("plugin_administration_archive_noConnectionToDatabase");
             log.error("No connection to baseX database");
             dbOK = false;
@@ -401,7 +400,14 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             LockingBean.lockObject(selectedDatabase, username);
         } else {
             //this may write an error message if necessary
-            getPossibleDatabaseNames();
+            List<String> databases = getPossibleDatabaseNames();
+            
+            if (databases.size() > 0 && StringUtils.isBlank(databaseName)) {
+                Helper.setFehlerMeldung("plugin_administration_archive_creation_selectDatabase");
+            }
+            if (StringUtils.isBlank(fileName)) {
+                Helper.setFehlerMeldung("plugin_administration_archive_creation_filename");
+            }
         }
     }
 
@@ -1044,16 +1050,16 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                     field = field.substring(0, field.indexOf("["));
                 }
 
-//                //p follows a subentry:
-//                if (field.contentEquals("p") && !currentElement.getChildren().isEmpty()) {
-//                    for (Element eltChild : currentElement.getChildren()) {
-//                        if (eltChild.getText().isEmpty()) {
-//                            eltChild.setText(metadataValue);
-//                        }
-//                    }
-//
-//                    continue;
-//                }
+                //                //p follows a subentry:
+                //                if (field.contentEquals("p") && !currentElement.getChildren().isEmpty()) {
+                //                    for (Element eltChild : currentElement.getChildren()) {
+                //                        if (eltChild.getText().isEmpty()) {
+                //                            eltChild.setText(metadataValue);
+                //                        }
+                //                    }
+                //
+                //                    continue;
+                //                }
 
                 // check if element exists, re-use if possible
                 Element element = currentElement.getChild(field, ns);
@@ -1130,7 +1136,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 currentElement = duplicate;
             }
 
-                currentElement.setText(metadataValue);
+            currentElement.setText(metadataValue);
         }
     }
 
