@@ -1,5 +1,4 @@
-<ui:composition
-    xmlns="http://www.w3.org/1999/xhtml"
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
     xmlns:composite="http://xmlns.jcp.org/jsf/composite"
     xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -358,46 +357,53 @@ div.no-element-selected {
 }
 </style>
 
+        <h:head>
+            <f:metadata>
+                <f:viewParam name="name" value="#{AdministrationForm.administrationPlugin.selectedDatabase}" />
+                <f:event type="preRenderView"
+                    listener="#{AdministrationForm.administrationPlugin.checkDBConnection}" />
+            </f:metadata>
+        </h:head>
+        
         <h:panelGroup>
             <div class="row">
                 <div class="col-sm-12">
 
                     <!-- Selection area for a record group to load -->
-                    <h:panelGroup
-                        layout="block"
+                    <h:panelGroup layout="block"
                         styleClass="box box-color box-bordered"
                         rendered="#{AdministrationForm.administrationPlugin.selectedDatabase == NULL}">
                         <div class="box-title">
                             <h2>
                                 <i class="fa fa-archive" />
-                                <h:outputText value="#{msgs[AdministrationForm.administrationPlugin.title]}" />
+                                <h:outputText
+                                    value="#{msgs[AdministrationForm.administrationPlugin.title]}" />
                             </h2>
                         </div>
                         <div class="box-content">
 
-                            <h:panelGroup rendered="#{!LoginForm.hasRole('Plugin_Administration_Archive_Management')}">
+                            <h:panelGroup
+                                rendered="#{!LoginForm.hasRole('Plugin_Administration_Archive_Management')}">
                                 <h:outputText
                                     styleClass="alert alert-danger alert-dismissable margin-bottom-10 margin-top-10"
                                     value="#{msgs.plugin_administration_missingPermission} Plugin_Administration_Archive_Management" />
                             </h:panelGroup>
 
-                            <h:panelGroup
-                                id="actionform"
+                            <h:panelGroup id="actionform"
                                 styleClass="col-sm-12"
                                 rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management')}">
-                                <h:panelGroup
-                                    layout="block"
+                                <h:panelGroup layout="block"
                                     styleClass="row"
                                     rendered="#{AdministrationForm.administrationPlugin.selectedDatabase == NULL}">
                                     <h:form>
 
                                         <div class="container">
-                                            <h:panelGroup
-                                                layout="block"
+                                            <h:panelGroup layout="block"
                                                 styleClass="center"
                                                 rendered="#{AdministrationForm.administrationPlugin.displayMode == ''}">
                                                 <h3>#{msgs.plugin_administration_archive_selectionHeading}</h3>
-                                                <p style="margin-top: 20px;">#{msgs.plugin_administration_archive_selectionText}</p>
+                                                <p
+                                                    style="margin-top: 20px;">#{msgs.plugin_administration_archive_selectionText}</p>
 
                                                 <h:selectOneMenu
                                                     id="selectDB"
@@ -407,59 +413,71 @@ div.no-element-selected {
                                                     <f:selectItem
                                                         itemValue=""
                                                         itemLabel="#{msgs.bitteAuswaehlen}" />
-                                                    <f:selectItems value="#{AdministrationForm.administrationPlugin.possibleDatabases}" />
+                                                    <f:selectItems
+                                                        value="#{AdministrationForm.administrationPlugin.possibleDatabases}" />
                                                 </h:selectOneMenu>
-                                                <h:commandLink styleClass="btn font-size-s  margin-top-10">
-                                                    <h:outputText value="#{msgs.plugin_administration_archive_createNewArchive}" />
+                                                <h:commandLink
+                                                    styleClass="btn font-size-s  margin-top-10"
+                                                    rendered="#{AdministrationForm.administrationPlugin.dbOK}">
+                                                    <h:outputText
+                                                        value="#{msgs.plugin_administration_archive_createNewArchive}" />
                                                     <f:setPropertyActionListener
                                                         value="createArchive"
                                                         target="#{AdministrationForm.administrationPlugin.displayMode}" />
-                                                    <f:ajax render="@form" />
+                                                    <f:ajax
+                                                        render="@form" />
                                                 </h:commandLink>
 
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right margin-top-10"
                                                     id="absenden"
                                                     action="#{AdministrationForm.administrationPlugin.loadSelectedDatabase}">
-                                                    <h:outputText value="#{msgs.plugin_administration_archive_loadDatabase}" />
+                                                    <h:outputText
+                                                        value="#{msgs.plugin_administration_archive_loadDatabase}" />
                                                 </h:commandLink>
                                             </h:panelGroup>
 
-                                            <h:panelGroup
-                                                layout="block"
+                                            <h:panelGroup layout="block"
                                                 styleClass="center"
                                                 rendered="#{AdministrationForm.administrationPlugin.displayMode == 'createArchive'}">
 
                                                 <h3>#{msgs.plugin_administration_archive_creationHeading}</h3>
 
-                                                <p style="margin-top: 20px;">#{msgs.plugin_administration_archive_creation_selectDatabase}</p>
+                                                <p
+                                                    style="margin-top: 20px;">#{msgs.plugin_administration_archive_creation_selectDatabase}</p>
                                                 <h:selectOneMenu
                                                     styleClass="form-control"
                                                     value="#{AdministrationForm.administrationPlugin.databaseName}">
                                                     <f:selectItem
                                                         itemValue=""
                                                         itemLabel="#{msgs.bitteAuswaehlen}" />
-                                                    <f:selectItems value="#{AdministrationForm.administrationPlugin.distinctDatabaseNames}" />
+                                                    <f:selectItems
+                                                        value="#{AdministrationForm.administrationPlugin.distinctDatabaseNames}" />
                                                 </h:selectOneMenu>
 
-                                                <p style="margin-top: 20px;">#{msgs.plugin_administration_archive_creation_filename}</p>
+                                                <p
+                                                    style="margin-top: 20px;">#{msgs.plugin_administration_archive_creation_filename}</p>
                                                 <h:inputText
                                                     style="margin-bottom:10px;"
                                                     styleClass="form-control"
                                                     value="#{AdministrationForm.administrationPlugin.fileName}" />
 
-                                                <h:commandLink styleClass="btn  font-size-s  margin-top-10">
+                                                <h:commandLink
+                                                    styleClass="btn  font-size-s  margin-top-10">
                                                     <f:setPropertyActionListener
                                                         value=""
                                                         target="#{AdministrationForm.administrationPlugin.displayMode}" />
-                                                    <f:ajax render="@form" />
-                                                    <h:outputText value="#{msgs.abbrechen}" />
+                                                    <f:ajax
+                                                        render="@form" />
+                                                    <h:outputText
+                                                        value="#{msgs.abbrechen}" />
                                                 </h:commandLink>
 
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right margin-top-10"
                                                     action="#{AdministrationForm.administrationPlugin.createNewDatabase}">
-                                                    <h:outputText value="#{msgs.plugin_administration_archive_createNewArchive}" />
+                                                    <h:outputText
+                                                        value="#{msgs.plugin_administration_archive_createNewArchive}" />
                                                 </h:commandLink>
                                             </h:panelGroup>
                                         </div>
@@ -475,30 +493,28 @@ div.no-element-selected {
 
 
                     <!-- Edition area for the loaded record group -->
-                    <h:panelGroup
-                        id="details"
-                        layout="block"
+                    <h:panelGroup id="details" layout="block"
                         styleClass="row"
                         rendered="#{AdministrationForm.administrationPlugin.selectedDatabase != NULL and AdministrationForm.administrationPlugin.displayMode == ''}">
                         <h:form
                             styleClass="form-horizontal form-bordered"
-                            id="ead-details"
-                            prependId="false">
+                            id="ead-details" prependId="false">
                             <div class="grid-content">
-                                <div class="box-content grid-container leftArea">
+                                <div
+                                    class="box-content grid-container leftArea">
 
-                                    <h:panelGroup
-                                        layout="block"
+                                    <h:panelGroup layout="block"
                                         styleClass="box box-color box-bordered lightgrey">
                                         <div class="box-title">
                                             <h2>
                                                 <i class="fa fa-archive" />
-                                                <h:outputText value="#{AdministrationForm.administrationPlugin.selectedDatabase}" />
+                                                <h:outputText
+                                                    value="#{AdministrationForm.administrationPlugin.selectedDatabase}" />
                                             </h2>
                                             <!-- search box -->
-                                            <div class="searchfilter pull-right">
-                                                <div
-                                                    class="input-group"
+                                            <div
+                                                class="searchfilter pull-right">
+                                                <div class="input-group"
                                                     style="margin-right: 10px; margin-top: 2px;">
                                                     <h:inputText
                                                         onkeydown="return submitEnter('FilterAlle',event)"
@@ -506,13 +522,15 @@ div.no-element-selected {
                                                         id="filterField"
                                                         value="#{AdministrationForm.administrationPlugin.searchValue}" />
 
-                                                    <div class="input-group-btn">
+                                                    <div
+                                                        class="input-group-btn">
                                                         <x:commandLink
                                                             id="FilterAlle2"
                                                             forceId="true"
                                                             styleClass="btn"
                                                             action="#{AdministrationForm.administrationPlugin.search}">
-                                                            <i class="fa fa-search"></i>
+                                                            <i
+                                                                class="fa fa-search"></i>
                                                         </x:commandLink>
                                                     </div>
                                                 </div>
@@ -525,7 +543,8 @@ div.no-element-selected {
                                                     action="#{AdministrationForm.administrationPlugin.search}" />
                                             </div>
                                         </div>
-                                        <div class="box-content leftArea-grid">
+                                        <div
+                                            class="box-content leftArea-grid">
 
                                             <div class="table">
                                                 <x:dataTable
@@ -540,7 +559,8 @@ div.no-element-selected {
                                                             action="#{AdministrationForm.administrationPlugin.resetFlatList}"
                                                             class="#{entry.displayChildren ? 'expand' : 'expanded'}"
                                                             rendered="#{entry.hasChildren and !entry.displaySearch}">
-                                                            <i class="#{entry.displayChildren ? 'fa fa-caret-down fa-lg' : 'fa fa-caret-right fa-lg'}" />
+                                                            <i
+                                                                class="#{entry.displayChildren ? 'fa fa-caret-down fa-lg' : 'fa fa-caret-right fa-lg'}" />
                                                             <x:updateActionListener
                                                                 property="#{entry.displayChildren}"
                                                                 value="#{not entry.displayChildren}" />
@@ -553,10 +573,10 @@ div.no-element-selected {
                                                             immediate="true"
                                                             style="#{entry.valid ? '' : 'border: 2px solid #ff4433'}"
                                                             styleClass="#{entry.selected ? 'table__structure-link-active' : 'table__structure-link'} #{entry.searchFound ? 'table__structure-link-searched' : ''} #{entry.valid ? '' : 'validation-error'}">
-															
+
                                                             <i
                                                                 class="#{entry.nodeType.icon}"
-                                                                aria-hidden="true"/>
+                                                                aria-hidden="true" />
 
                                                             <h:outputText
                                                                 value="#{entry.label}"
@@ -565,16 +585,20 @@ div.no-element-selected {
                                                                 value=" - "
                                                                 rendered="#{entry.label == null}" />
 
-                                                            <ui:fragment rendered="#{entry.goobiProcessTitle != null}">
+                                                            <ui:fragment
+                                                                rendered="#{entry.goobiProcessTitle != null}">
                                                                 <i
-                                                                class="fa fa-cog font-light margin-left-5"
-                                                                aria-hidden="true"/>
+                                                                    class="fa fa-cog font-light margin-left-5"
+                                                                    aria-hidden="true" />
                                                             </ui:fragment>
-                                                            
-                                                             <ui:fragment rendered="#{!entry.valid}">
-												                 <i class="fa fa-exclamation-triangle margin-left-5" style="margin-right:5px;"/>
-												             </ui:fragment>
-                                                            
+
+                                                            <ui:fragment
+                                                                rendered="#{!entry.valid}">
+                                                                <i
+                                                                    class="fa fa-exclamation-triangle margin-left-5"
+                                                                    style="margin-right: 5px;" />
+                                                            </ui:fragment>
+
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.selectedEntry}"
                                                                 value="#{entry}" />
@@ -591,7 +615,8 @@ div.no-element-selected {
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.addNode}"
                                                     title="#{msgs.plugin_administration_archive_newNode}">
-                                                    <i class="fa fa-plus"></i>
+                                                    <i
+                                                        class="fa fa-plus"></i>
                                                     <f:passThroughAttribute
                                                         name="data-toggle"
                                                         value="tooltip" />
@@ -600,12 +625,61 @@ div.no-element-selected {
                                                         render="hierarchy" />
                                                 </h:commandLink>
 
+
+                                                <h:commandLink
+                                                    styleClass="btn font-size-s pull-right leftArea-button"
+                                                    action="#{AdministrationForm.administrationPlugin.updateGoobiIds}"
+                                                    title="#{msgs.plugin_administration_archive_removeInvalidProcessIds}">
+                                                    <i
+                                                        class="fa fa-refresh" />
+                                                    <f:passThroughAttribute
+                                                        name="data-toggle"
+                                                        value="tooltip" />
+                                                    <f:ajax
+                                                        execute="hierarchy"
+                                                        render="hierarchy" />
+                                                </h:commandLink>
+
+                                                <div 
+                                                     class="btn-group pull-right"
+                                                        title="#{msgs.plugin_administration_archive_createProcesses}"
+                                                        data-toggle="tooltip">
+                                                    <button
+                                                        class="btn btn-primary dropdown-toggle fa fa-files-o pull-right leftArea-button"
+                                                        style="margin: 0; padding-left: 4px; padding-right: 4px;"
+                                                        data-toggle="dropdown">
+                                                        <span
+                                                            class="caret"></span>
+                                                    </button>
+
+                                                    <ul
+                                                        class="dropdown-menu pull-right">
+                                                        <ui:repeat
+                                                            var="template"
+                                                            value="#{AdministrationForm.administrationPlugin.processTemplates}">
+                                                            <li><h:commandLink
+                                                                    action="#{AdministrationForm.administrationPlugin.createProcesses}"
+                                                                    pt:aria-label="#{template.two}">
+                                                                    <h:outputText
+                                                                        value="#{template.two}" />
+                                                                    <x:updateActionListener
+                                                                        property="#{AdministrationForm.administrationPlugin.selectedTemplate}"
+                                                                        value="#{template.one}" />
+                                                                </h:commandLink></li>
+                                                        </ui:repeat>
+
+                                                    </ul>
+                                                </div>
+
+
+
                                                 <h:commandLink
                                                     styleClass="btn  btn-danger font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.deleteNode}"
                                                     title="#{msgs.plugin_administration_archive_deleteNode}"
                                                     onclick="if (!confirm('#{msgs.sollDieserEintragWirklichGeloeschtWerden}')) return false">
-                                                    <i class="fa fa-trash-o" />
+                                                    <i
+                                                        class="fa fa-trash-o" />
                                                     <f:passThroughAttribute
                                                         name="data-toggle"
                                                         value="tooltip" />
@@ -618,7 +692,8 @@ div.no-element-selected {
                                                     styleClass="btn btn-success font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.validateArchive}"
                                                     title="#{msgs.plugin_administration_archive_validate}">
-                                                    <i class="fa fa-check"></i>
+                                                    <i
+                                                        class="fa fa-check"></i>
                                                     <f:passThroughAttribute
                                                         name="data-toggle"
                                                         value="tooltip" />
@@ -629,7 +704,8 @@ div.no-element-selected {
                                                     action="#{AdministrationForm.administrationPlugin.moveNodeUp}"
                                                     title="#{msgs.plugin_administration_archive_moveNodeUp}"
                                                     style="margin-top: 150px;">
-                                                    <i class="fa fa-chevron-up" />
+                                                    <i
+                                                        class="fa fa-chevron-up" />
                                                     <f:passThroughAttribute
                                                         name="data-toggle"
                                                         value="tooltip" />
@@ -642,7 +718,8 @@ div.no-element-selected {
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.moveNodeDown}"
                                                     title="#{msgs.plugin_administration_archive_moveNodeDown}">
-                                                    <i class="fa fa-chevron-down" />
+                                                    <i
+                                                        class="fa fa-chevron-down" />
                                                     <f:passThroughAttribute
                                                         name="data-toggle"
                                                         value="tooltip" />
@@ -650,11 +727,13 @@ div.no-element-selected {
                                                         execute="hierarchy"
                                                         render="hierarchy" />
                                                 </h:commandLink>
+
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.moveHierarchyDown}"
                                                     title="#{msgs.plugin_administration_archive_moveHierarchyDown}">
-                                                    <i class="fa fa-chevron-right" />
+                                                    <i
+                                                        class="fa fa-chevron-right" />
                                                     <f:passThroughAttribute
                                                         name="data-toggle"
                                                         value="tooltip" />
@@ -667,7 +746,8 @@ div.no-element-selected {
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.moveHierarchyUp}"
                                                     title="#{msgs.plugin_administration_archive_moveHierarchyUp}">
-                                                    <i class="fa fa-chevron-left" />
+                                                    <i
+                                                        class="fa fa-chevron-left" />
                                                     <f:passThroughAttribute
                                                         name="data-toggle"
                                                         value="tooltip" />
@@ -681,7 +761,8 @@ div.no-element-selected {
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.prepareMoveNode}"
                                                     title="#{msgs.plugin_administration_archive_moveNode}">
-                                                    <i class="fa fa-arrows" />
+                                                    <i
+                                                        class="fa fa-arrows" />
                                                     <f:passThroughAttribute
                                                         name="data-toggle"
                                                         value="tooltip" />
@@ -693,20 +774,27 @@ div.no-element-selected {
                                             </div>
                                         </div>
                                     </h:panelGroup>
+
+
+
                                     <div class="form-actions">
+
+
+
                                         <h:commandLink
-                                            style="margin-left:-15px;"
-                                            styleClass="btn font-size-s"
+                                            styleClass="btn margin-sides-10 font-size-s"
                                             type="submit"
                                             action="#{AdministrationForm.administrationPlugin.downloadArchive}">
-                                            <i class="fa fa-download margin-right-5"></i>
+                                            <i
+                                                class="fa fa-download margin-right-5"></i>
                                             <f:passThroughAttribute
                                                 name="data-toggle"
                                                 value="tooltip" />
-                                            <h:outputText value="#{msgs.plugin_administration_archive_download}" />
+                                            <h:outputText
+                                                value="#{msgs.plugin_administration_archive_download}" />
                                         </h:commandLink>
-                                        
-                                                                    
+
+
                                         <h:commandLink
                                             styleClass="btn margin-sides-10 font-size-s"
                                             type="submit"
@@ -714,26 +802,27 @@ div.no-element-selected {
                                             <f:passThroughAttribute
                                                 name="data-toggle"
                                                 value="tooltip" />
-                                            <h:outputText value="#{msgs.abbrechen}" />
+                                            <h:outputText
+                                                value="#{msgs.abbrechen}" />
                                         </h:commandLink>
+
                                     </div>
                                 </div>
 
                                 <!-- Right area for loaded node -->
                                 <div class="grid-container rightArea">
 
-                                    <div
-                                        class="container"
+                                    <div class="container"
                                         style="width: 100%">
 
                                         <!-- no node selected currently -->
-                                        <h:panelGroup
-                                            layout="block"
+                                        <h:panelGroup layout="block"
                                             styleClass="box box-color box-bordered orange"
                                             rendered="#{AdministrationForm.administrationPlugin.selectedEntry == null}">
                                             <div class="box-title">
                                                 <h3>
-                                                    <h:outputText value="#{msgs.details} - #{msgs.plugin_administration_archive_noElementSelectedHeading}" />
+                                                    <h:outputText
+                                                        value="#{msgs.details} - #{msgs.plugin_administration_archive_noElementSelectedHeading}" />
                                                 </h3>
                                             </div>
                                             <div class="box-content">
@@ -745,12 +834,10 @@ div.no-element-selected {
                                         <!-- // no node selected currently -->
 
                                         <!-- a node was selected -->
-                                        <h:panelGroup
-                                            layout="block"
+                                        <h:panelGroup layout="block"
                                             rendered="#{AdministrationForm.administrationPlugin.selectedEntry != null}">
 
-                                            <h:panelGroup
-                                                layout="block"
+                                            <h:panelGroup layout="block"
                                                 styleClass="box box-color box-bordered orange">
                                                 <div class="box-title">
                                                     <h3>
@@ -770,15 +857,24 @@ div.no-element-selected {
                                                         style="margin-top: 0;">
 
                                                         <!-- process title -->
-                                                        <h:panelGroup class="form-group" id="process-creation-area">
-                                                            <div class="col-sm-3 control-label" tabindex="-1" >
-                                                                <h:outputText value="#{msgs.plugin_administration_archive_process}" />
+                                                        <h:panelGroup
+                                                            class="form-group"
+                                                            id="process-creation-area">
+                                                            <div
+                                                                class="col-sm-3 control-label"
+                                                                tabindex="-1">
+                                                                <h:outputText
+                                                                    value="#{msgs.plugin_administration_archive_process}" />
                                                             </div>
-                                                            <div class="col-sm-9" style="background-color:#f6f6f6">
-        
+                                                            <div
+                                                                class="col-sm-9"
+                                                                style="background-color: #f6f6f6">
+
                                                                 <!-- no process exists, so allow creation of a process here -->
-                                                                <ui:fragment rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
-                                                                    <h:outputText value="#{msgs.plugin_administration_archive_process_no_process}" />
+                                                                <ui:fragment
+                                                                    rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
+                                                                    <h:outputText
+                                                                        value="#{msgs.plugin_administration_archive_process_no_process}" />
                                                                     <div
                                                                         class="btn-group pull-right"
                                                                         title="#{msgs.plugin_administration_archive_process_create_process}"
@@ -787,11 +883,14 @@ div.no-element-selected {
                                                                             aria-label="#{msgs.plugin_administration_archive_process_create_process}"
                                                                             href="#"
                                                                             class="btn btn-blue font-size-s dropdown-toggle"
-                                                                            data-toggle="dropdown"> 
-                                                                            <h:outputText value="#{msgs.plugin_administration_archive_process_create_process}"/>
-                                                                            <span class="caret"></span>
+                                                                            data-toggle="dropdown">
+                                                                            <h:outputText
+                                                                                value="#{msgs.plugin_administration_archive_process_create_process}" />
+                                                                            <span
+                                                                            class="caret"></span>
                                                                         </a>
-                                                                        <ul class="dropdown-menu pull-right">
+                                                                        <ul
+                                                                            class="dropdown-menu pull-right">
                                                                             <ui:repeat
                                                                                 var="template"
                                                                                 value="#{AdministrationForm.administrationPlugin.processTemplates}">
@@ -799,46 +898,58 @@ div.no-element-selected {
                                                                                     <h:commandLink
                                                                                         action="#{AdministrationForm.administrationPlugin.createProcess}"
                                                                                         pt:aria-label="#{template.two}">
-                                                                                        <h:outputText value="#{template.two}" />
+                                                                                        <h:outputText
+                                                                                            value="#{template.two}" />
                                                                                         <x:updateActionListener
                                                                                             property="#{AdministrationForm.administrationPlugin.selectedTemplate}"
                                                                                             value="#{template.one}" />
                                                                                     </h:commandLink>
                                                                                 </li>
                                                                             </ui:repeat>
-                                                                            
+
                                                                         </ul>
                                                                     </div>
                                                                 </ui:fragment>
                                                                 <!-- // no process exists, so allow creation of a process here -->
-        
+
                                                                 <!-- process exists -->
-                                                                <ui:fragment rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null}">
-                                                                    <h:outputText value="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle}" />
+                                                                <ui:fragment
+                                                                    rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null}">
+                                                                    <h:outputText
+                                                                        value="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle}" />
                                                                     <h:commandLink
                                                                         styleClass="download-docket pull-right"
                                                                         action="#{AdministrationForm.administrationPlugin.downloadDocket}"
                                                                         onclick="preventDoubleSubmit(this);"
                                                                         title="#{msgs.process_generateDocket}">
-                                                                        <span class="btn margin-left-10 fa fa-print" />
+                                                                        <span
+                                                                            class="btn margin-left-10 fa fa-print" />
                                                                         <f:passThroughAttribute
                                                                             name="data-toggle"
                                                                             value="tooltip" />
                                                                     </h:commandLink>
                                                                 </ui:fragment>
                                                                 <!-- // process exists -->
-                                                                
+
                                                             </div>
                                                         </h:panelGroup>
                                                         <!-- //process title -->
 
                                                         <!-- node type as icon -->
-                                                        <h:panelGroup class="form-group" id="node-type">
-                                                            <div class="col-sm-3 control-label" tabindex="-1" style="border-top:1px #ddd solid;">
-                                                                <h:outputText value="#{msgs.plugin_administration_archive_nodeType}" />
+                                                        <h:panelGroup
+                                                            class="form-group"
+                                                            id="node-type">
+                                                            <div
+                                                                class="col-sm-3 control-label"
+                                                                tabindex="-1"
+                                                                style="border-top: 1px #ddd solid;">
+                                                                <h:outputText
+                                                                    value="#{msgs.plugin_administration_archive_nodeType}" />
                                                             </div>
-                                                            <div class="col-sm-9" style="background-color:#f6f6f6; border-top:1px #ddd solid;">
-        
+                                                            <div
+                                                                class="col-sm-9"
+                                                                style="background-color: #f6f6f6; border-top: 1px #ddd solid;">
+
                                                                 <x:dataList
                                                                     value="#{AdministrationForm.administrationPlugin.configuredNodes}"
                                                                     var="nodeType">
@@ -851,13 +962,14 @@ div.no-element-selected {
                                                                         <f:setPropertyActionListener
                                                                             value="#{nodeType}"
                                                                             target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
-                                                                        <f:ajax render="node-type :hierarchy" />
+                                                                        <f:ajax
+                                                                            render="node-type :hierarchy" />
                                                                         <f:passThroughAttribute
                                                                             name="data-toggle"
                                                                             value="tooltip" />
                                                                     </h:commandLink>
                                                                 </x:dataList>
-        
+
                                                             </div>
                                                         </h:panelGroup>
                                                         <!-- // node type as icon -->
@@ -868,15 +980,18 @@ div.no-element-selected {
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border form-group"
                                                         id="identity-statement-area">
-                                                        <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
-                                                            <i class="fa #{AdministrationForm.administrationPlugin.displayIdentityStatementArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
+                                                        <h:commandLink
+                                                            title="#{msgs.plugin_administration_archive_show_details}">
+                                                            <i
+                                                                class="fa #{AdministrationForm.administrationPlugin.displayIdentityStatementArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
                                                             <h:outputText
                                                                 styleClass="font-black"
                                                                 value="#{msgs.plugin_administration_archive_area_identity}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayIdentityStatementArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayIdentityStatementArea}" />
-                                                            <f:ajax render="identity-statement-area" />
+                                                            <f:ajax
+                                                                render="identity-statement-area" />
                                                         </h:commandLink>
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.identityStatementAreaList}"
@@ -886,21 +1001,24 @@ div.no-element-selected {
                                                             dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.identityStatementAreaVisible}" />
                                                     </h:panelGroup>
                                                     <!-- // Group: Identifikation / Identity Statement Area -->
-                                                    
+
                                                     <!-- Group: Kontext / Context Area -->
                                                     <h:panelGroup
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border form-group"
                                                         id="context-area">
-                                                        <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
-                                                            <i class="fa #{AdministrationForm.administrationPlugin.displayContextArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
+                                                        <h:commandLink
+                                                            title="#{msgs.plugin_administration_archive_show_details}">
+                                                            <i
+                                                                class="fa #{AdministrationForm.administrationPlugin.displayContextArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
                                                             <h:outputText
                                                                 styleClass="font-black"
                                                                 value="#{msgs.plugin_administration_archive_area_context}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayContextArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayContextArea}" />
-                                                            <f:ajax render="context-area" />
+                                                            <f:ajax
+                                                                render="context-area" />
                                                         </h:commandLink>
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.contextAreaList}"
@@ -910,21 +1028,24 @@ div.no-element-selected {
                                                             dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.contextAreaVisible}" />
                                                     </h:panelGroup>
                                                     <!-- // Group: Kontext / Context Area -->
-                                                    
+
                                                     <!-- Group: Inhalt und innere Ordnung / Content and Structure Area -->
                                                     <h:panelGroup
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border form-group"
                                                         id="content-area">
-                                                        <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
-                                                            <i class="fa #{AdministrationForm.administrationPlugin.displayContentArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
+                                                        <h:commandLink
+                                                            title="#{msgs.plugin_administration_archive_show_details}">
+                                                            <i
+                                                                class="fa #{AdministrationForm.administrationPlugin.displayContentArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
                                                             <h:outputText
                                                                 styleClass="font-black"
                                                                 value="#{msgs.plugin_administration_archive_area_content}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayContentArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayContentArea}" />
-                                                            <f:ajax render="content-area" />
+                                                            <f:ajax
+                                                                render="content-area" />
                                                         </h:commandLink>
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.contentAndStructureAreaAreaList}"
@@ -934,21 +1055,24 @@ div.no-element-selected {
                                                             dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.contentAndStructureAreaAreaVisible}" />
                                                     </h:panelGroup>
                                                     <!-- // Group: Inhalt und innere Ordnung / Content and Structure Area -->
-                                                    
+
                                                     <!-- Group: Zugangs- und Benutzungsbedingungen / Conditions of Access and Use Area -->
                                                     <h:panelGroup
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border form-group"
                                                         id="access-area">
-                                                        <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
-                                                            <i class="fa #{AdministrationForm.administrationPlugin.displayAccessArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
+                                                        <h:commandLink
+                                                            title="#{msgs.plugin_administration_archive_show_details}">
+                                                            <i
+                                                                class="fa #{AdministrationForm.administrationPlugin.displayAccessArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
                                                             <h:outputText
                                                                 styleClass="font-black"
                                                                 value="#{msgs.plugin_administration_archive_area_access}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayAccessArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayAccessArea}" />
-                                                            <f:ajax render="access-area" />
+                                                            <f:ajax
+                                                                render="access-area" />
                                                         </h:commandLink>
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.accessAndUseAreaList}"
@@ -958,21 +1082,24 @@ div.no-element-selected {
                                                             dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.accessAndUseAreaVisible}" />
                                                     </h:panelGroup>
                                                     <!-- // Group: Zugangs- und Benutzungsbedingungen / Conditions of Access and Use Area -->
-                                                    
+
                                                     <!-- Group: Sachverwandte Unterlagen / Allied Material Area -->
                                                     <h:panelGroup
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border form-group"
                                                         id="materials-area">
-                                                        <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
-                                                            <i class="fa #{AdministrationForm.administrationPlugin.displayMaterialsArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
+                                                        <h:commandLink
+                                                            title="#{msgs.plugin_administration_archive_show_details}">
+                                                            <i
+                                                                class="fa #{AdministrationForm.administrationPlugin.displayMaterialsArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
                                                             <h:outputText
                                                                 styleClass="font-black"
                                                                 value="#{msgs.plugin_administration_archive_area_materials}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayMaterialsArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayMaterialsArea}" />
-                                                            <f:ajax render="materials-area" />
+                                                            <f:ajax
+                                                                render="materials-area" />
                                                         </h:commandLink>
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.alliedMaterialsAreaList}"
@@ -982,21 +1109,24 @@ div.no-element-selected {
                                                             dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.alliedMaterialsAreaVisible}" />
                                                     </h:panelGroup>
                                                     <!-- // Group: Sachverwandte Unterlagen / Allied Material Area -->
-                                                    
+
                                                     <!-- Group: Anmerkungen / Note Area -->
                                                     <h:panelGroup
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border form-group"
                                                         id="notes-area">
-                                                        <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
-                                                            <i class="fa #{AdministrationForm.administrationPlugin.displayNotesArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
+                                                        <h:commandLink
+                                                            title="#{msgs.plugin_administration_archive_show_details}">
+                                                            <i
+                                                                class="fa #{AdministrationForm.administrationPlugin.displayNotesArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
                                                             <h:outputText
                                                                 styleClass="font-black"
                                                                 value="#{msgs.plugin_administration_archive_area_notes}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayNotesArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayNotesArea}" />
-                                                            <f:ajax render="notes-area" />
+                                                            <f:ajax
+                                                                render="notes-area" />
                                                         </h:commandLink>
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.notesAreaList}"
@@ -1006,21 +1136,24 @@ div.no-element-selected {
                                                             dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.notesAreaVisible}" />
                                                     </h:panelGroup>
                                                     <!-- // Group: Anmerkungen / Note Area -->
-                                                    
+
                                                     <!-- Group: Verzeichnungskontrolle / Description Control Area -->
                                                     <h:panelGroup
                                                         layout="block"
                                                         styleClass="metadata-area area_block-border form-group"
                                                         id="control-area">
-                                                        <h:commandLink title="#{msgs.plugin_administration_archive_show_details}">
-                                                            <i class="fa #{AdministrationForm.administrationPlugin.displayControlArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
+                                                        <h:commandLink
+                                                            title="#{msgs.plugin_administration_archive_show_details}">
+                                                            <i
+                                                                class="fa #{AdministrationForm.administrationPlugin.displayControlArea?'fa-chevron-down':'fa-chevron-right'}  margin-left-5 margin-right-5" />
                                                             <h:outputText
                                                                 styleClass="font-black"
                                                                 value="#{msgs.plugin_administration_archive_area_descriptionControl}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.displayControlArea}"
                                                                 value="#{not AdministrationForm.administrationPlugin.displayControlArea}" />
-                                                            <f:ajax render="control-area" />
+                                                            <f:ajax
+                                                                render="control-area" />
                                                         </h:commandLink>
                                                         <goobiio:area
                                                             itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.descriptionControlAreaList}"
@@ -1041,22 +1174,26 @@ div.no-element-selected {
                                             styleClass="btn btn-success font-size-s margin-bottom-most"
                                             id="saveAndExit"
                                             action="#{AdministrationForm.administrationPlugin.saveArchiveAndLeave}">
-                                            <i class="fa fa-save margin-right-5"></i>
+                                            <i
+                                                class="fa fa-save margin-right-5"></i>
                                             <f:passThroughAttribute
                                                 name="data-toggle"
                                                 value="tooltip" />
-                                            <h:outputText value="#{msgs.plugin_administration_archive_saveAndExit}" />
+                                            <h:outputText
+                                                value="#{msgs.plugin_administration_archive_saveAndExit}" />
                                         </h:commandLink>
                                         <h:commandLink
                                             styleClass="btn btn-success submitOnEnter pull-right font-size-s margin-bottom-most"
                                             type="submit" id="absenden"
                                             action="#{AdministrationForm.administrationPlugin.createEadDocument}">
-                                            <i class="fa fa-save margin-right-5"></i>
+                                            <i
+                                                class="fa fa-save margin-right-5"></i>
                                             <f:passThroughAttribute
                                                 name="data-toggle"
                                                 value="tooltip" />
-                                            <h:outputText value="#{msgs.save}" />
-                                        </h:commandLink>                                  
+                                            <h:outputText
+                                                value="#{msgs.save}" />
+                                        </h:commandLink>
                                     </div>
                                     <!-- // Button Area on the bottom -->
 
@@ -1072,9 +1209,7 @@ div.no-element-selected {
 
 
                     <!-- Area to move a selected node into another area -->
-                    <h:panelGroup
-                        id="moveNodeArea"
-                        layout="block"
+                    <h:panelGroup id="moveNodeArea" layout="block"
                         styleClass="row"
                         rendered="#{AdministrationForm.administrationPlugin.selectedDatabase != NULL and AdministrationForm.administrationPlugin.displayMode == 'moveNode'}">
 
@@ -1082,7 +1217,8 @@ div.no-element-selected {
                             <div class="box box-color box-bordered">
                                 <div class="box-title">
                                     <h3>
-                                        <h:outputText value="#{msgs.plugin_administration_archive_moveNode}" />
+                                        <h:outputText
+                                            value="#{msgs.plugin_administration_archive_moveNode}" />
                                     </h3>
                                     <h:form>
                                         <h:commandLink
@@ -1092,7 +1228,8 @@ div.no-element-selected {
                                             <x:updateActionListener
                                                 property="#{AdministrationForm.administrationPlugin.displayMode}"
                                                 value="" />
-                                            <h:outputText value="#{msgs.abbrechen}" />
+                                            <h:outputText
+                                                value="#{msgs.abbrechen}" />
                                         </h:commandLink>
                                     </h:form>
                                 </div>
@@ -1141,7 +1278,8 @@ div.no-element-selected {
                                                 <x:updateActionListener
                                                     property="#{AdministrationForm.administrationPlugin.displayMode}"
                                                     value="" />
-                                                <h:outputText value="#{msgs.abbrechen}" />
+                                                <h:outputText
+                                                    value="#{msgs.abbrechen}" />
                                             </h:commandLink>
                                         </h:form>
                                     </div>

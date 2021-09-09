@@ -64,6 +64,7 @@ import de.sub.goobi.helper.ScriptThreadWithoutHibernate;
 import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
+import de.sub.goobi.persistence.managers.MetadataManager;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.VocabularyManager;
 import io.goobi.workflow.locking.LockingBean;
@@ -185,6 +186,9 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
     private String username;
 
+    @Getter
+    private boolean dbOK;
+
     /**
      * Constructor
      */
@@ -203,9 +207,16 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 username = user.getNachVorname();
             }
 
+            dbOK = true;
+
         } catch (ConfigurationException e2) {
             log.error(e2);
         }
+    }
+
+    public String checkDBConnection() {
+        getPossibleDatabases();
+        return null;
     }
 
     /**
@@ -233,8 +244,14 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
                 }
             }
+
+            dbOK = true;
+        } else {
+            Helper.setFehlerMeldung("plugin_administration_archive_noConnectionToDatabase");
+            log.error("No connection to baseX database");
+            dbOK = false;
         }
-        
+
         //otherwise
         return databases;
     }
@@ -331,9 +348,11 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                     parseEadFile(document);
                 }
             } else {
+        	    Helper.setFehlerMeldung("plugin_administration_archive_creation_noRecordGroupSelected");
+                
                 //this may write an error message if necessary
-                if(!getPossibleDatabaseNames().isEmpty()) {
-                   List<String> databases = getPossibleDatabases();
+                if (!getPossibleDatabaseNames().isEmpty()) {
+                    List<String> databases = getPossibleDatabases();
 
                     if (databases.isEmpty()) {
                         Helper.setFehlerMeldung("plugin_administration_archive_databaseFileMustBeCreated");
@@ -383,7 +402,14 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
             LockingBean.lockObject(selectedDatabase, username);
         } else {
             //this may write an error message if necessary
-            getPossibleDatabaseNames();
+            List<String> databases = getPossibleDatabaseNames();
+            
+            if (databases.size() > 0 && StringUtils.isBlank(databaseName)) {
+                Helper.setFehlerMeldung("plugin_administration_archive_creation_selectDatabase");
+            }
+            if (StringUtils.isBlank(fileName)) {
+                Helper.setFehlerMeldung("plugin_administration_archive_creation_filename");
+            }
         }
     }
 
@@ -987,8 +1013,9 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 }
             }
         }
-        // split xpath on "/"
-        String[] fields = xpath.split("/");
+        // split xpath on "/", unless within square brackets
+        String strRegex = "/(?=[^\\]]*(?:\\[|$))";
+        String[] fields = xpath.split(strRegex);
         boolean written = false;
         for (String field : fields) {
             field = field.trim();
@@ -1024,6 +1051,17 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                     conditions = field.substring(field.indexOf("["));
                     field = field.substring(0, field.indexOf("["));
                 }
+
+                //                //p follows a subentry:
+                //                if (field.contentEquals("p") && !currentElement.getChildren().isEmpty()) {
+                //                    for (Element eltChild : currentElement.getChildren()) {
+                //                        if (eltChild.getText().isEmpty()) {
+                //                            eltChild.setText(metadataValue);
+                //                        }
+                //                    }
+                //
+                //                    continue;
+                //                }
 
                 // check if element exists, re-use if possible
                 Element element = currentElement.getChild(field, ns);
@@ -1082,14 +1120,24 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         }
         if (!written) {
             // duplicate current element if not empty
-            if (StringUtils.isNotBlank(currentElement.getText())) {
+            if (StringUtils.isNotBlank(currentElement.getText()) || !currentElement.getChildren().isEmpty()) {
                 Element duplicate = new Element(currentElement.getName(), ns);
                 for (Attribute attr : currentElement.getAttributes()) {
                     duplicate.setAttribute(attr.getName(), attr.getValue());
                 }
+
+                if (!currentElement.getChildren().isEmpty()) {
+                    for (Element child : currentElement.getChildren()) {
+                        Element duplicateChild = new Element(child.getName(), ns);
+                        duplicateChild.setText(child.getText());
+                        duplicate.addContent(duplicateChild);
+                    }
+                }
+
                 currentElement.getParent().addContent(duplicate);
                 currentElement = duplicate;
             }
+
             currentElement.setText(metadataValue);
         }
     }
@@ -1105,15 +1153,38 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                 if (StringUtils.isBlank(condition) || condition.trim().startsWith("not")) {
                     continue;
                 }
-                if (condition.contains("]")) {
-                    condition = condition.substring(1, condition.lastIndexOf("]"));
-                } else {
-                    condition = condition.substring(1);
-                }
-                condition = condition.trim();
 
-                String[] attr = condition.split("=");
-                element.setAttribute(attr[0], attr[1].replace("'", ""));
+                Boolean boAttribute = condition.startsWith("@");
+                //is it an attribute or a subelement?
+                if (boAttribute) {
+
+                    if (condition.contains("]")) {
+                        condition = condition.substring(1, condition.lastIndexOf("]"));
+                    } else {
+                        condition = condition.substring(1);
+                    }
+                    condition = condition.trim();
+
+                    String[] attr = condition.split("=");
+                    if (attr.length > 1) {
+                        element.setAttribute(attr[0], attr[1].replace("'", ""));
+                    }
+
+                } else {
+
+                    if (condition.contains("]")) {
+                        condition = condition.substring(0, condition.lastIndexOf("]"));
+                    }
+                    condition = condition.trim();
+
+                    String[] attr = condition.split("=");
+                    if (attr.length > 1) {
+                        String strName = attr[1].replace("'", "");
+                        Element eltChild = new Element(attr[0], ns);
+                        eltChild.setText(strName);
+                        element.addContent(eltChild);
+                    }
+                }
             }
 
         }
@@ -1786,4 +1857,197 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         }
     }
 
+    //Create process for all leaves of the selected node which do not have processes
+    public void createProcesses() {
+
+        // abort if no node is selected
+        if (selectedEntry == null) {
+            Helper.setFehlerMeldung("plugin_administration_archive_please_select_node");
+            return;
+        }
+        if (selectedEntry.getNodeType() == null) {
+            return;
+        }
+
+        createProcessesForChildren(selectedEntry);
+    }
+
+    private void createProcessesForChildren(EadEntry currentEntry) {
+
+        setSelectedEntry(currentEntry);
+
+        if (!currentEntry.isHasChildren() && currentEntry.getGoobiProcessTitle() == null) {
+            try {
+                createProcess();
+                Helper.setMeldung("Created " + currentEntry.getGoobiProcessTitle() + " for " + currentEntry.getLabel());
+            } catch (Exception e) {
+                Helper.setFehlerMeldung(e.getMessage());
+                log.error(e);
+            }
+        } else if (currentEntry.isHasChildren()) {
+
+            for (EadEntry childEntry : currentEntry.getSubEntryList()) {
+                createProcessesForChildren(childEntry);
+            }
+        }
+    }
+
+    public void updateGoobiIds() {
+
+        EadEntry selected = getSelectedEntry();
+
+        ArrayList<String> lstNodesWithoutIds = removeInvalidProcessIds();
+
+        ArrayList<String> lstNodesWithNewGoobiIds = checkGoobiProcessesForArchiveRefs(lstNodesWithoutIds);
+
+        setSelectedEntry(selected);
+    }
+
+    /**
+     * Remove goobi ids for processes which have been deleted
+     * 
+     * @return A list of all node ids which have no valid goobi Id
+     */
+    public ArrayList<String> removeInvalidProcessIds() {
+
+        ArrayList<String> lstNodesWithoutIds = new ArrayList<String>();
+
+        // abort if no node is selected
+        if (selectedEntry == null) {
+            Helper.setFehlerMeldung("plugin_administration_archive_please_select_node");
+            return lstNodesWithoutIds;
+        }
+        if (selectedEntry.getNodeType() == null) {
+            return lstNodesWithoutIds;
+        }
+
+        EadEntry currentEntry = selectedEntry;
+
+        lstNodesWithoutIds = removeInvalidProcessIdsForChildren(selectedEntry);
+
+        setSelectedEntry(currentEntry);
+
+        return lstNodesWithoutIds;
+    }
+
+    private ArrayList<String> removeInvalidProcessIdsForChildren(EadEntry currentEntry) {
+
+        ArrayList<String> lstNodesWithoutIds = new ArrayList<String>();
+
+        setSelectedEntry(currentEntry);
+
+        String goobiProcessTitle = currentEntry.getGoobiProcessTitle();
+
+        if (!currentEntry.isHasChildren() && goobiProcessTitle != null) {
+            try {
+                String strProcessTitle = currentEntry.getGoobiProcessTitle();
+                Process process = ProcessManager.getProcessByTitle(strProcessTitle);
+                if (process == null) {
+                    currentEntry.setGoobiProcessTitle(null);
+                    lstNodesWithoutIds.add(currentEntry.getId());
+
+                    Helper.setMeldung("Removing " + strProcessTitle + " from " + currentEntry.getLabel());
+                }
+            } catch (Exception e) {
+                Helper.setFehlerMeldung(e.getMessage());
+                log.error(e);
+            }
+        } else if (currentEntry.isHasChildren()) {
+
+            for (EadEntry childEntry : currentEntry.getSubEntryList()) {
+                lstNodesWithoutIds.addAll(removeInvalidProcessIdsForChildren(childEntry));
+            }
+        } else if (goobiProcessTitle == null) {
+            lstNodesWithoutIds.add(currentEntry.getId());
+        }
+
+        return lstNodesWithoutIds;
+    }
+
+    /**
+     * For each node id in the list, find if there is a goobi process with that id as metadatum, and if so set the goobi id in the node.
+     * 
+     * @param lstNodesWithoutIds
+     * @return A list of labels for any nodes which have been given a new goobi id
+     */
+    private ArrayList<String> checkGoobiProcessesForArchiveRefs(ArrayList<String> lstNodesWithoutIds) {
+
+        ArrayList<String> lstNodesWithNewIds = new ArrayList<String>();
+
+        if (lstNodesWithoutIds.isEmpty()) {
+            return lstNodesWithNewIds;
+        }
+
+        List<Integer> lstProcessIds = getProcessWithNodeIds(lstNodesWithoutIds);
+
+        if (lstProcessIds == null || lstProcessIds.isEmpty()) {
+            return lstNodesWithNewIds;
+        }
+
+        //otherwise
+        for (Integer processId : lstProcessIds) {
+
+            String strNodeId = MetadataManager.getMetadataValue(processId, "NodeId");
+            EadEntry node = getNodeWithId(strNodeId, rootElement);
+            if (node != null) {
+                String strProcessTitle = ProcessManager.getProcessById(processId).getTitel();
+                node.setGoobiProcessTitle(strProcessTitle);
+                lstNodesWithNewIds.add(node.getLabel());
+                Helper.setMeldung("Node " + node.getLabel() + " has been given Goobi process ID " + strProcessTitle);
+            } else {
+
+                //perhaps remove the NodeId from the process?
+            }
+        }
+
+        LockingBean.updateLocking(selectedDatabase);
+
+        return lstNodesWithNewIds;
+    }
+
+    private EadEntry getNodeWithId(String strNodeId, EadEntry node) {
+
+        if (node.getId() != null && node.getId().contentEquals(strNodeId)) {
+            return node;
+        }
+        if (node.getSubEntryList() != null) {
+            for (EadEntry child : node.getSubEntryList()) {
+                EadEntry found = getNodeWithId(strNodeId, child);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+
+        //otherwise
+        return null;
+    }
+
+    public List<Integer> getProcessWithNodeIds(ArrayList<String> lstNodesWithoutIds) {
+
+        List<Integer> processIds = new ArrayList<Integer>();
+
+        String strSQLNodes = "('" + lstNodesWithoutIds.get(0) + "'";
+
+        for (int i = 1; i < lstNodesWithoutIds.size(); i++) {
+
+            strSQLNodes = strSQLNodes + ", " + "'" + lstNodesWithoutIds.get(i) + "'";
+        }
+        strSQLNodes += ")";
+
+        StringBuilder sql = new StringBuilder();
+
+        sql.append("SELECT processid FROM metadata WHERE name = 'NodeId' and value in ");
+        sql.append(strSQLNodes);
+        sql.append(" order by processid;");
+        @SuppressWarnings("unchecked")
+        List<Object> rawData = ProcessManager.runSQL(sql.toString());
+        for (int i = 0; i < rawData.size(); i++) {
+            Object[] rowData = (Object[]) rawData.get(i);
+            String processid = (String) rowData[0];
+            processIds.add(Integer.parseInt(processid));
+        }
+
+        return processIds;
+    }
 }
