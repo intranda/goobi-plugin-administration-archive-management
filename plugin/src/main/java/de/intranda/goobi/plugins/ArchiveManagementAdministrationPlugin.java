@@ -348,6 +348,8 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                     parseEadFile(document);
                 }
             } else {
+        	    Helper.setFehlerMeldung("plugin_administration_archive_creation_noRecordGroupSelected");
+                
                 //this may write an error message if necessary
                 if (!getPossibleDatabaseNames().isEmpty()) {
                     List<String> databases = getPossibleDatabases();
