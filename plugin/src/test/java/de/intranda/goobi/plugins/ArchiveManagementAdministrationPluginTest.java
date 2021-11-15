@@ -41,8 +41,7 @@ import de.sub.goobi.persistence.managers.VocabularyManager;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ ConfigurationHelper.class, HttpClientHelper.class, VocabularyManager.class, ProcessManager.class })
-@PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*" })
-
+@PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.*"})
 public class ArchiveManagementAdministrationPluginTest {
 
     private String resourcesFolder;
@@ -872,7 +871,7 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.setDatabaseName("db");
         plugin.setFileName("filename");
         plugin.createNewDatabase();
-        
+
         assertNotNull(plugin.getRootElement());
 
     }

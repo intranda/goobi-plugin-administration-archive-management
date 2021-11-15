@@ -36,6 +36,7 @@
         <version>2.22.1</version>
         <configuration>
           <useSystemClassLoader>false</useSystemClassLoader>
+          <argLine>--add-exports java.base/jdk.internal.loader=ALL-UNNAMED</argLine>
         </configuration>
       </plugin>
       <plugin>
