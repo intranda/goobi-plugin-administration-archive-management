@@ -45,13 +45,13 @@
                 <x:dataList
                     value="#{selectedItems}"
                     var="selection">
-                    <h:commandLink action="#{item.removeSelectedValue(selection)}">
+                    <h:commandLink action="#{field.removeSelectedValue(selection)}">
                         <span class="badge margin-top-10">
                             <h:outputText value="#{msgs[selection]}" />
                         </span>
                         <f:ajax
                             execute="@this"
-                            render=":#{area}" />
+                            render=":#{ajaxid} :hierarchy" />
                     </h:commandLink>
                 </x:dataList>
             </div>
