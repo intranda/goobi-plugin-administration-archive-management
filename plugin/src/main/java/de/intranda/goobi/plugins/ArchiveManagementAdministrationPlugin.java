@@ -1,7 +1,11 @@
 package de.intranda.goobi.plugins;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,6 +21,7 @@ import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
@@ -189,6 +194,9 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
     @Getter
     private boolean dbOK;
 
+    @Getter @Setter
+    private Part uploadFile;
+
     /**
      * Constructor
      */
@@ -348,8 +356,8 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                     parseEadFile(document);
                 }
             } else {
-        	    Helper.setFehlerMeldung("plugin_administration_archive_creation_noRecordGroupSelected");
-                
+                Helper.setFehlerMeldung("plugin_administration_archive_creation_noRecordGroupSelected");
+
                 //this may write an error message if necessary
                 if (!getPossibleDatabaseNames().isEmpty()) {
                     List<String> databases = getPossibleDatabases();
@@ -403,7 +411,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         } else {
             //this may write an error message if necessary
             List<String> databases = getPossibleDatabaseNames();
-            
+
             if (databases.size() > 0 && StringUtils.isBlank(databaseName)) {
                 Helper.setFehlerMeldung("plugin_administration_archive_creation_selectDatabase");
             }
@@ -874,6 +882,29 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
         LockingBean.updateLocking(selectedDatabase);
     }
+
+
+
+
+    public void upload() {
+        String fileName = Paths.get(uploadFile.getSubmittedFileName()).getFileName().toString(); // MSIE fix.
+        Path savedFile = Paths.get(exportFolder, fileName);
+
+        try (InputStream input = uploadFile.getInputStream()) {
+            Files.copy(input, savedFile);
+        }
+        catch (IOException e) {
+            log.error(e);
+        }
+        String importUrl = datastoreUrl + "import/" + databaseName + "/" + fileName;
+
+        HttpClientHelper.getStringFromUrl(importUrl);
+
+        selectedDatabase = databaseName + " - " + fileName;
+        displayMode = "";
+        loadSelectedDatabase();
+    }
+
 
     private void addMetadata(Element xmlElement, EadEntry node) {
         boolean isMainElement = false;
@@ -1910,7 +1941,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
      */
     public ArrayList<String> removeInvalidProcessIds() {
 
-        ArrayList<String> lstNodesWithoutIds = new ArrayList<String>();
+        ArrayList<String> lstNodesWithoutIds = new ArrayList<>();
 
         // abort if no node is selected
         if (selectedEntry == null) {
@@ -1932,7 +1963,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
     private ArrayList<String> removeInvalidProcessIdsForChildren(EadEntry currentEntry) {
 
-        ArrayList<String> lstNodesWithoutIds = new ArrayList<String>();
+        ArrayList<String> lstNodesWithoutIds = new ArrayList<>();
 
         setSelectedEntry(currentEntry);
 
@@ -1972,7 +2003,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
      */
     private ArrayList<String> checkGoobiProcessesForArchiveRefs(ArrayList<String> lstNodesWithoutIds) {
 
-        ArrayList<String> lstNodesWithNewIds = new ArrayList<String>();
+        ArrayList<String> lstNodesWithNewIds = new ArrayList<>();
 
         if (lstNodesWithoutIds.isEmpty()) {
             return lstNodesWithNewIds;
@@ -2025,7 +2056,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
     public List<Integer> getProcessWithNodeIds(ArrayList<String> lstNodesWithoutIds) {
 
-        List<Integer> processIds = new ArrayList<Integer>();
+        List<Integer> processIds = new ArrayList<>();
 
         String strSQLNodes = "('" + lstNodesWithoutIds.get(0) + "'";
 
@@ -2050,4 +2081,6 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
         return processIds;
     }
+
+
 }

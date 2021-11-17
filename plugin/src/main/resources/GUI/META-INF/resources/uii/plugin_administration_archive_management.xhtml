@@ -355,6 +355,56 @@ div.no-element-selected {
 .processcreation {
     background: #f6f6f6;
 }
+
+
+#upload .ui-widget-content {
+                border: none;
+            }
+            
+            #upload .ui-widget-header {
+                background: #fff none repeat scroll 0 0;
+            }
+            
+            #upload .ui-fileupload-choose {
+                background: #368ee0 none repeat scroll 0 0;
+                color: #fff;
+                text-shadow: none;
+                border: 0 none;
+                padding: 0.3em 1em;
+                font-weight: 400;
+            }
+            
+            #upload .ui-fileupload-buttonbar span.ui-button .ui-button-text {
+                padding: 0.3em 1em;
+            }
+            
+            #upload .ui-fileupload-buttonbar span.ui-button span.ui-button-icon-left {
+                display: none;
+            }
+            
+            #upload .ui-fileupload-files {
+                width: 100%;
+            }
+            
+            .ui-fileupload-content .ui-progressbar {
+                width: 100px;
+                height: 20px;
+                margin: 0px;
+            }
+
+            #upload .ui-fileupload-files td:first-child {
+                display: none;
+            }
+            
+            .draganddroparea {
+                border: 2px dashed silver;
+                padding-top:20px;
+                
+            }
+            
+            #upload .ui-fileupload-preview{
+                display: none;
+            }
 </style>
 
         <h:head>
@@ -395,7 +445,7 @@ div.no-element-selected {
                                 <h:panelGroup layout="block"
                                     styleClass="row"
                                     rendered="#{AdministrationForm.administrationPlugin.selectedDatabase == NULL}">
-                                    <h:form>
+                                    <h:form enctype="multipart/form-data">
 
                                         <div class="container">
                                             <h:panelGroup layout="block"
@@ -423,6 +473,18 @@ div.no-element-selected {
                                                         value="#{msgs.plugin_administration_archive_createNewArchive}" />
                                                     <f:setPropertyActionListener
                                                         value="createArchive"
+                                                        target="#{AdministrationForm.administrationPlugin.displayMode}" />
+                                                    <f:ajax
+                                                        render="@form" />
+                                                </h:commandLink>
+
+                                                <h:commandLink
+                                                    styleClass="btn font-size-s  margin-top-10"
+                                                    rendered="#{AdministrationForm.administrationPlugin.dbOK}">
+                                                    <h:outputText
+                                                        value="#{msgs.plugin_administration_archive_uploadEadFile}" />
+                                                    <f:setPropertyActionListener
+                                                        value="uploadFile"
                                                         target="#{AdministrationForm.administrationPlugin.displayMode}" />
                                                     <f:ajax
                                                         render="@form" />
@@ -480,6 +542,52 @@ div.no-element-selected {
                                                         value="#{msgs.plugin_administration_archive_createNewArchive}" />
                                                 </h:commandLink>
                                             </h:panelGroup>
+                                            
+                                            
+                                            <h:panelGroup layout="block"
+                                                styleClass="center"
+                                                rendered="#{AdministrationForm.administrationPlugin.displayMode == 'uploadFile'}">
+
+                                                <h3>#{msgs.plugin_administration_archive_uploadHeading}</h3>
+
+                                                <p
+                                                    style="margin-top: 20px;">#{msgs.plugin_administration_archive_creation_selectDatabase}</p>
+                                                <h:selectOneMenu
+                                                    styleClass="form-control"
+                                                    value="#{AdministrationForm.administrationPlugin.databaseName}">
+                                                    <f:selectItem
+                                                        itemValue=""
+                                                        itemLabel="#{msgs.bitteAuswaehlen}" />
+                                                    <f:selectItems
+                                                        value="#{AdministrationForm.administrationPlugin.distinctDatabaseNames}" />
+                                                </h:selectOneMenu>
+
+                                                <p
+                                                    style="margin-top: 20px;">#{msgs.plugin_administration_archive_creation_uploadFile}</p>
+                                          
+ <h:inputFile value="#{AdministrationForm.administrationPlugin.uploadFile}">
+<!--         <f:ajax listener="#{AdministrationForm.administrationPlugin.upload}" /> -->
+    </h:inputFile>
+
+                                                <h:commandLink
+                                                    styleClass="btn  font-size-s  margin-top-10">
+                                                    <f:setPropertyActionListener
+                                                        value=""
+                                                        target="#{AdministrationForm.administrationPlugin.displayMode}" />
+                                                    <f:ajax
+                                                        render="@form" />
+                                                    <h:outputText
+                                                        value="#{msgs.abbrechen}" />
+                                                </h:commandLink>
+
+                                                <h:commandLink
+                                                    styleClass="btn btn-primary font-size-s pull-right margin-top-10"
+                                                    action="#{AdministrationForm.administrationPlugin.upload}">
+                                                    <h:outputText
+                                                        value="#{msgs.plugin_administration_archive_uploadDatabase}" />
+                                                </h:commandLink>
+                                            </h:panelGroup>
+                                            
                                         </div>
 
 
