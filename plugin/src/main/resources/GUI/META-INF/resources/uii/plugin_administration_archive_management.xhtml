@@ -26,7 +26,8 @@ div.center {
     margin-right: -50%;
     padding: 20px 60px 40px 60px;
     border: 1px solid #ddd;
-    transform: translate(-50%, -50%)
+    transform: translate(-50%, -50%);
+    width: 60%;
 }
 
 div.grid-content {
@@ -429,7 +430,7 @@ div.no-element-selected {
                                                 </h:commandLink>
 
                                                 <h:commandLink
-                                                    styleClass="btn font-size-s  margin-top-10"
+                                                    styleClass="btn font-size-s  margin-top-10 margin-left-10"
                                                     rendered="#{AdministrationForm.administrationPlugin.dbOK}">
                                                     <h:outputText
                                                         value="#{msgs.plugin_administration_archive_uploadEadFile}" />
