@@ -887,6 +887,11 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
 
     public void upload() {
+        if (uploadFile == null || StringUtils.isBlank(databaseName)) {
+            Helper.setFehlerMeldung("plugin_administration_archive_missing_Data");
+            return;
+        }
+
         String fileName = Paths.get(uploadFile.getSubmittedFileName()).getFileName().toString(); // MSIE fix.
         Path savedFile = Paths.get(exportFolder, fileName);
 
