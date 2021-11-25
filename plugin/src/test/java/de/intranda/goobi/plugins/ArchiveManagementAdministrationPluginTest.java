@@ -41,7 +41,7 @@ import de.sub.goobi.persistence.managers.VocabularyManager;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ ConfigurationHelper.class, HttpClientHelper.class, VocabularyManager.class, ProcessManager.class })
-@PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.*"})
+@PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.*", "jdk.internal.loader.*"})
 public class ArchiveManagementAdministrationPluginTest {
 
     private String resourcesFolder;

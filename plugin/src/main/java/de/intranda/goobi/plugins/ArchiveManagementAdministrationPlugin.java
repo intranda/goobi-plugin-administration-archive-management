@@ -1039,11 +1039,11 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
             for (String part : parts) {
                 if (isMainElement) {
-                    if (part.contains("archdesc")) {
+                    if (part.contains("archdesc") || part.contains("eadheader")) {
                         xpath = part;
                     }
                 } else {
-                    if (!part.contains("archdesc")) {
+                    if (!part.contains("archdesc") && !part.contains("eadheader")) {
                         xpath = part;
                     }
                 }
