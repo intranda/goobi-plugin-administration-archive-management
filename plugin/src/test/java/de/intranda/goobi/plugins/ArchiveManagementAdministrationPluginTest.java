@@ -41,7 +41,7 @@ import de.sub.goobi.persistence.managers.VocabularyManager;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ ConfigurationHelper.class, HttpClientHelper.class, VocabularyManager.class, ProcessManager.class })
-@PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.*", "jdk.internal.loader.*"})
+@PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*",  "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.*"})
 public class ArchiveManagementAdministrationPluginTest {
 
     private String resourcesFolder;
@@ -167,7 +167,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
         List<EadMetadataField> fieldList = entry.getIdentityStatementAreaList();
         EadMetadataField agencycode = null;
-        EadMetadataField eadid = null;
+        //        EadMetadataField eadid = null;
         EadMetadataField recordid = null;
         EadMetadataField unitid = null;
         EadMetadataField unittitle = null;
@@ -182,9 +182,9 @@ public class ArchiveManagementAdministrationPluginTest {
                 case "agencycode":
                     agencycode = emf;
                     break;
-                case "eadid":
-                    eadid = emf;
-                    break;
+                    //                case "eadid":
+                    //                    eadid = emf;
+                    //                    break;
                 case "recordid":
                     recordid = emf;
                     break;
@@ -319,7 +319,7 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals(0, entry.getHierarchy().intValue());
         assertEquals("archive header title", entry.getLabel());
 
-        assertEquals("eadid", eadid.getValues().get(0).getValue());
+        //        assertEquals("eadid", eadid.getValues().get(0).getValue());
         assertEquals("recordid", recordid.getValues().get(0).getValue());
         assertEquals("agencycode", agencycode.getValues().get(0).getValue());
         assertEquals("unitid", unitid.getValues().get(0).getValue());
@@ -503,7 +503,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
         Element ead = doc.getRootElement();
         Element eadHeader = ead.getChild("eadheader", ArchiveManagementAdministrationPlugin.ns);
-        assertEquals("eadid", eadHeader.getChildText("eadid", ArchiveManagementAdministrationPlugin.ns));
+        //        assertEquals("eadid", eadHeader.getChildText("eadid", ArchiveManagementAdministrationPlugin.ns));
 
         assertEquals("archive header title",
                 eadHeader.getChild("filedesc", ArchiveManagementAdministrationPlugin.ns)
