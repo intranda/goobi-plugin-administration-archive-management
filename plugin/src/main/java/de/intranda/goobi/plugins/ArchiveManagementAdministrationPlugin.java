@@ -194,7 +194,8 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
     @Getter
     private boolean dbOK;
 
-    @Getter @Setter
+    @Getter
+    @Setter
     private Part uploadFile;
 
     /**
@@ -883,9 +884,6 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         LockingBean.updateLocking(selectedDatabase);
     }
 
-
-
-
     public void upload() {
         if (uploadFile == null || StringUtils.isBlank(databaseName)) {
             Helper.setFehlerMeldung("plugin_administration_archive_missing_Data");
@@ -897,8 +895,7 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
         try (InputStream input = uploadFile.getInputStream()) {
             Files.copy(input, savedFile);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             log.error(e);
         }
         String importUrl = datastoreUrl + "import/" + databaseName + "/" + fileName;
@@ -909,7 +906,6 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         displayMode = "";
         loadSelectedDatabase();
     }
-
 
     private void addMetadata(Element xmlElement, EadEntry node) {
         boolean isMainElement = false;
@@ -1112,7 +1108,9 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
                         if (StringUtils.isBlank(condition)) {
                             continue;
                         } else if (condition.trim().startsWith("not")) {
-                            condition = condition.substring(condition.indexOf("(" + 2), condition.indexOf(")"));
+                            int start = condition.indexOf("(");
+                            int end = condition.indexOf(")");
+                            condition = condition.substring(start + 2, end);
                             if (condition.contains("=")) {
                                 // [not(@type='abc')]
                                 String value = element.getAttributeValue(condition.substring(0, condition.indexOf("=")));
@@ -2086,6 +2084,5 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
 
         return processIds;
     }
-
 
 }
