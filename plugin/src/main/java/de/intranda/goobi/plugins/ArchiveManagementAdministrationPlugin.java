@@ -900,6 +900,32 @@ public class ArchiveManagementAdministrationPlugin implements IAdministrationPlu
         }
         String importUrl = datastoreUrl + "import/" + databaseName + "/" + fileName;
 
+        // validate uploaded file
+        SAXBuilder builder = new SAXBuilder(XMLReaders.NONVALIDATING);
+        builder.setFeature("http://xml.org/sax/features/validation", false);
+        builder.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
+        builder.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+
+        try {
+            // file is valid xml
+            Document document = builder.build(savedFile.toFile());
+            // file is an ead file
+            Element rootElement = document.getRootElement();
+            if (!"ead".equals(rootElement.getName())) {
+                // error, delete file, show error message
+                Helper.setFehlerMeldung("TODO"); //TODO
+                return;
+            }
+        } catch (Exception e) {
+            log.error(e);
+            //  error, delete file, show error message
+            Helper.setFehlerMeldung("TODO"); //TODO
+            return;
+        }
+        // check if filename is not used yet
+
+
+
         HttpClientHelper.getStringFromUrl(importUrl);
 
         selectedDatabase = databaseName + " - " + fileName;
