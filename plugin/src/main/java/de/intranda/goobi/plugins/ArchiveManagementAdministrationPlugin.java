@@ -37,7 +37,6 @@ import org.goobi.beans.Step;
 import org.goobi.beans.User;
 import org.goobi.production.cli.helper.StringPair;
 import org.goobi.production.enums.PluginType;
-import org.goobi.production.plugin.interfaces.IAdministrationPlugin;
 import org.goobi.vocabulary.Field;
 import org.goobi.vocabulary.VocabRecord;
 import org.goobi.vocabulary.Vocabulary;
@@ -88,7 +87,7 @@ import ugh.fileformats.mets.MetsMods;
 
 @PluginImplementation
 @Log4j2
-public class ArchiveManagementAdministrationPlugin implements IAdministrationPlugin {
+public class ArchiveManagementAdministrationPlugin implements org.goobi.interfaces.IArchiveManagementAdministrationPlugin {
 
     @Getter
     @Setter

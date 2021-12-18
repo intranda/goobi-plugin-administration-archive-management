@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.intranda.goobi.plugins.administration</groupId>
   <artifactId>archive-management-main</artifactId>
-  <version>1.1.1-SNAPSHOT</version>
+  <version>1.1.2</version>
   <properties>
     <jar.name>plugin_intranda_administration_archive_management</jar.name>
     <dest.folder>/opt/digiverso/goobi/plugins/administration/</dest.folder>
@@ -10,7 +10,7 @@
   <parent>
     <groupId>de.intranda.goobi.plugins.administration</groupId>
     <artifactId>archive-management</artifactId>
-    <version>1.1.1-SNAPSHOT</version>
+    <version>1.1.2</version>
   </parent>
   <build>
     <finalName>${jar.name}</finalName>
@@ -21,13 +21,22 @@
         <directory>${project.basedir}/../src/test/resources</directory>
       </testResource>
     </testResources>
+    <resources>
+       <resource>
+         <directory>src/main/java</directory>
+         <excludes>
+            <exclude>**/org/goobi/interfaces/*</exclude>
+         </excludes>
+       </resource>
+    </resources>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.7.0</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+                    <excludes>
+                        <exclude>**/org/goobi/interfaces/*</exclude>
+                    </excludes>
         </configuration>
       </plugin>
       <plugin>
@@ -79,6 +88,9 @@
         <artifactId>maven-jar-plugin</artifactId>
         <version>3.1.0</version>
         <configuration>
+        <excludes>
+         <exclude>**/org/goobi/interfaces/*</exclude>
+        </excludes>
           <archive>
             <manifestEntries>
               <Build-Time>${maven.build.timestamp}</Build-Time>

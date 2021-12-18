@@ -2,10 +2,12 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.intranda.goobi.plugins.administration</groupId>
   <artifactId>archive-management</artifactId>
-  <version>1.1.1-SNAPSHOT</version>
+  <version>1.1.2</version>
   <packaging>pom</packaging>
   <properties>
     <goobi.version>21.11.5</goobi.version>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
   <repositories>
     <repository>
