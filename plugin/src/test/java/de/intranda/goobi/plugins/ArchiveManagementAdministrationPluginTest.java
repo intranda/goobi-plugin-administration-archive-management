@@ -22,6 +22,7 @@ import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.input.sax.XMLReaders;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -44,18 +45,26 @@ import de.sub.goobi.persistence.managers.VocabularyManager;
 @PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*",  "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.*"})
 public class ArchiveManagementAdministrationPluginTest {
 
-    private String resourcesFolder;
-
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
-    @Before
-    public void setUp() throws Exception {
-        resourcesFolder = "src/test/resources/"; // for junit tests in eclipse
 
+    private static String resourcesFolder;
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        resourcesFolder = "src/test/resources/"; // for junit tests in eclipse
         if (!Files.exists(Paths.get(resourcesFolder))) {
             resourcesFolder = "target/test-classes/"; // to run mvn test from cli or in jenkins
         }
+        String log4jFile = resourcesFolder + "log4j2.xml"; // for junit tests in eclipse
+        System.setProperty("log4j.configurationFile", log4jFile);
+    }
+
+
+    @Before
+    public void setUp() throws Exception {
+
         PowerMock.mockStatic(HttpClientHelper.class);
         EasyMock.expect(HttpClientHelper.getStringFromUrl("http://localhost:8984/databases")).andReturn(getDatabaseResponse()).anyTimes();
         EasyMock.expect(HttpClientHelper.getStringFromUrl("http://localhost:8984/db/fixture/ead.xml")).andReturn(readDatabaseResponse()).anyTimes();
