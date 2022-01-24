@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.easymock.EasyMock;
+import org.goobi.interfaces.IEadEntry;
+import org.goobi.interfaces.IFieldValue;
+import org.goobi.interfaces.IMetadataField;
 import org.goobi.vocabulary.VocabRecord;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -33,8 +36,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import de.intranda.goobi.plugins.model.EadEntry;
-import de.intranda.goobi.plugins.model.EadMetadataField;
-import de.intranda.goobi.plugins.model.FieldValue;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.HttpClientHelper;
 import de.sub.goobi.persistence.managers.ProcessManager;
@@ -151,10 +152,10 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.setSelectedDatabase("fixture - ead.xml");
         plugin.loadSelectedDatabase();
         //  hierarchy contains only root element
-        EadEntry root = plugin.getRootElement();
+        IEadEntry root = plugin.getRootElement();
         root.setDisplayChildren(true);
         // flat list contains root element + first hierarchy
-        List<EadEntry> flat = plugin.getFlatEntryList();
+        List<IEadEntry> flat = plugin.getFlatEntryList();
         assertEquals(2, flat.size());
         // display second hierarchy
         flat.get(1).setDisplayChildren(true);
@@ -172,21 +173,21 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.setSelectedDatabase("fixture - ead.xml");
         plugin.loadSelectedDatabase();
 
-        EadEntry entry = plugin.getRootElement();
+        IEadEntry entry = plugin.getRootElement();
 
-        List<EadMetadataField> fieldList = entry.getIdentityStatementAreaList();
-        EadMetadataField agencycode = null;
-        //        EadMetadataField eadid = null;
-        EadMetadataField recordid = null;
-        EadMetadataField unitid = null;
-        EadMetadataField unittitle = null;
-        EadMetadataField unitdate = null;
-        EadMetadataField unitdatestructured = null;
-        EadMetadataField descriptionLevel = null;
-        EadMetadataField physdesc = null;
-        EadMetadataField physdescstructured = null;
+        List<IMetadataField> fieldList = entry.getIdentityStatementAreaList();
+        IMetadataField agencycode = null;
+        //        IMetadataField eadid = null;
+        IMetadataField recordid = null;
+        IMetadataField unitid = null;
+        IMetadataField unittitle = null;
+        IMetadataField unitdate = null;
+        IMetadataField unitdatestructured = null;
+        IMetadataField descriptionLevel = null;
+        IMetadataField physdesc = null;
+        IMetadataField physdescstructured = null;
 
-        for (EadMetadataField emf : entry.getIdentityStatementAreaList()) {
+        for (IMetadataField emf : entry.getIdentityStatementAreaList()) {
             switch (emf.getName()) {
                 case "agencycode":
                     agencycode = emf;
@@ -220,11 +221,11 @@ public class ArchiveManagementAdministrationPluginTest {
                     break;
             }
         }
-        EadMetadataField origination = null;
-        EadMetadataField bioghist = null;
-        EadMetadataField custodhist = null;
-        EadMetadataField acqinfo = null;
-        for (EadMetadataField emf : entry.getContextAreaList()) {
+        IMetadataField origination = null;
+        IMetadataField bioghist = null;
+        IMetadataField custodhist = null;
+        IMetadataField acqinfo = null;
+        for (IMetadataField emf : entry.getContextAreaList()) {
             switch (emf.getName()) {
                 case "origination":
                     origination = emf;
@@ -241,11 +242,11 @@ public class ArchiveManagementAdministrationPluginTest {
             }
         }
 
-        EadMetadataField scopecontent = null;
-        EadMetadataField appraisal = null;
-        EadMetadataField accruals = null;
-        EadMetadataField arrangement = null;
-        for (EadMetadataField emf : entry.getContentAndStructureAreaAreaList()) {
+        IMetadataField scopecontent = null;
+        IMetadataField appraisal = null;
+        IMetadataField accruals = null;
+        IMetadataField arrangement = null;
+        for (IMetadataField emf : entry.getContentAndStructureAreaAreaList()) {
             switch (emf.getName()) {
                 case "scopecontent":
                     scopecontent = emf;
@@ -261,13 +262,13 @@ public class ArchiveManagementAdministrationPluginTest {
                     break;
             }
         }
-        EadMetadataField accessrestrict = null;
-        EadMetadataField userestrict = null;
-        EadMetadataField langmaterial = null;
-        EadMetadataField fonttype = null;
-        EadMetadataField phystech = null;
-        EadMetadataField otherfindaid = null;
-        for (EadMetadataField emf : entry.getAccessAndUseAreaList()) {
+        IMetadataField accessrestrict = null;
+        IMetadataField userestrict = null;
+        IMetadataField langmaterial = null;
+        IMetadataField fonttype = null;
+        IMetadataField phystech = null;
+        IMetadataField otherfindaid = null;
+        for (IMetadataField emf : entry.getAccessAndUseAreaList()) {
             switch (emf.getName()) {
                 case "accessrestrict":
                     accessrestrict = emf;
@@ -290,11 +291,11 @@ public class ArchiveManagementAdministrationPluginTest {
             }
 
         }
-        EadMetadataField originalsloc = null;
-        EadMetadataField altformavail = null;
-        EadMetadataField separatedmaterial = null;
-        EadMetadataField bibliography = null;
-        for (EadMetadataField emf : entry.getAlliedMaterialsAreaList()) {
+        IMetadataField originalsloc = null;
+        IMetadataField altformavail = null;
+        IMetadataField separatedmaterial = null;
+        IMetadataField bibliography = null;
+        for (IMetadataField emf : entry.getAlliedMaterialsAreaList()) {
             switch (emf.getName()) {
                 case "originalsloc":
                     originalsloc = emf;
@@ -311,9 +312,9 @@ public class ArchiveManagementAdministrationPluginTest {
             }
         }
 
-        EadMetadataField didnote = null;
-        EadMetadataField odd = null;
-        for (EadMetadataField emf : entry.getNotesAreaList()) {
+        IMetadataField didnote = null;
+        IMetadataField odd = null;
+        for (IMetadataField emf : entry.getNotesAreaList()) {
             switch (emf.getName()) {
                 case "didnote":
                     didnote = emf;
@@ -365,11 +366,11 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals("bibliography", bibliography.getValues().get(0).getValue());
         assertEquals("odd", odd.getValues().get(0).getValue());
 
-        EadEntry firstSub = entry.getSubEntryList().get(0);
+        IEadEntry firstSub = entry.getSubEntryList().get(0);
         assertEquals(0, firstSub.getOrderNumber().intValue());
         assertEquals(1, firstSub.getHierarchy().intValue());
         fieldList = firstSub.getIdentityStatementAreaList();
-        for (EadMetadataField emf : fieldList) {
+        for (IMetadataField emf : fieldList) {
             switch (emf.getName()) {
                 case "unitid":
                     unitid = emf;
@@ -388,13 +389,13 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals("first level id", unitid.getValues().get(0).getValue());
         assertEquals("first level title", unittitle.getValues().get(0).getValue());
 
-        List<EadEntry> secondSubList = firstSub.getSubEntryList();
+        List<IEadEntry> secondSubList = firstSub.getSubEntryList();
 
-        EadEntry second = secondSubList.get(0);
+        IEadEntry second = secondSubList.get(0);
         assertEquals(0, second.getOrderNumber().intValue());
         assertEquals(2, second.getHierarchy().intValue());
         fieldList = second.getIdentityStatementAreaList();
-        for (EadMetadataField emf : fieldList) {
+        for (IMetadataField emf : fieldList) {
             switch (emf.getName()) {
                 case "unitid":
                     unitid = emf;
@@ -410,7 +411,7 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals(1, second.getOrderNumber().intValue());
         assertEquals(2, second.getHierarchy().intValue());
         fieldList = second.getIdentityStatementAreaList();
-        for (EadMetadataField emf : fieldList) {
+        for (IMetadataField emf : fieldList) {
             switch (emf.getName()) {
                 case "unitid":
                     unitid = emf;
@@ -426,7 +427,7 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals(4, second.getOrderNumber().intValue());
         assertEquals(2, second.getHierarchy().intValue());
         fieldList = second.getIdentityStatementAreaList();
-        for (EadMetadataField emf : fieldList) {
+        for (IMetadataField emf : fieldList) {
             switch (emf.getName()) {
                 case "unitid":
                     unitid = emf;
@@ -438,11 +439,11 @@ public class ArchiveManagementAdministrationPluginTest {
         }
         assertEquals("5 Sammlungen / Objekte", unittitle.getValues().get(0).getValue());
 
-        EadEntry third = second.getSubEntryList().get(2);
+        IEadEntry third = second.getSubEntryList().get(2);
         assertEquals(2, third.getOrderNumber().intValue());
         assertEquals(3, third.getHierarchy().intValue());
         fieldList = third.getIdentityStatementAreaList();
-        for (EadMetadataField emf : fieldList) {
+        for (IMetadataField emf : fieldList) {
             switch (emf.getName()) {
                 case "unitid":
                     unitid = emf;
@@ -454,9 +455,9 @@ public class ArchiveManagementAdministrationPluginTest {
         }
         assertEquals("5.3 Fotosammlung", unittitle.getValues().get(0).getValue());
 
-        EadEntry fourth = third.getSubEntryList().get(2);
+        IEadEntry fourth = third.getSubEntryList().get(2);
         fieldList = fourth.getIdentityStatementAreaList();
-        for (EadMetadataField emf : fieldList) {
+        for (IMetadataField emf : fieldList) {
             switch (emf.getName()) {
                 case "unitid":
                     unitid = emf;
@@ -472,10 +473,10 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals("5.3.3 Porträts, andere", unittitle.getValues().get(0).getValue());
         assertEquals("class", descriptionLevel.getValues().get(0).getValue());
 
-        EadEntry fifth = fourth.getSubEntryList().get(0);
+        IEadEntry fifth = fourth.getSubEntryList().get(0);
 
         fieldList = fifth.getIdentityStatementAreaList();
-        for (EadMetadataField emf : fieldList) {
+        for (IMetadataField emf : fieldList) {
             switch (emf.getName()) {
                 case "unitid":
                     unitid = emf;
@@ -547,17 +548,17 @@ public class ArchiveManagementAdministrationPluginTest {
     public void testSetSelectedEntry() {
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
 
-        EadEntry root = new EadEntry(0, 0);
-        EadEntry firstRootChild = new EadEntry(0, 1);
-        EadEntry secondRootChild = new EadEntry(1, 1);
+        IEadEntry root = new EadEntry(0, 0);
+        IEadEntry firstRootChild = new EadEntry(0, 1);
+        IEadEntry secondRootChild = new EadEntry(1, 1);
         root.addSubEntry(firstRootChild);
         root.addSubEntry(secondRootChild);
-        EadEntry sub1 = new EadEntry(0, 2);
-        EadEntry sub2 = new EadEntry(1, 2);
+        IEadEntry sub1 = new EadEntry(0, 2);
+        IEadEntry sub2 = new EadEntry(1, 2);
         firstRootChild.addSubEntry(sub1);
         firstRootChild.addSubEntry(sub2);
-        EadEntry sub3 = new EadEntry(0, 2);
-        EadEntry sub4 = new EadEntry(1, 2);
+        IEadEntry sub3 = new EadEntry(0, 2);
+        IEadEntry sub4 = new EadEntry(1, 2);
         secondRootChild.addSubEntry(sub3);
         secondRootChild.addSubEntry(sub4);
         root.setDisplayChildren(true);
@@ -582,7 +583,7 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
         plugin.loadSelectedDatabase();
-        EadEntry root = plugin.getRootElement();
+        IEadEntry root = plugin.getRootElement();
         // do nothing
         plugin.addNode();
 
@@ -594,7 +595,7 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.setSelectedEntry(root);
         plugin.addNode();
 
-        EadEntry fixture = plugin.getSelectedEntry();
+        IEadEntry fixture = plugin.getSelectedEntry();
         assertEquals(root, fixture.getParentNode());
     }
 
@@ -606,9 +607,9 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.setSelectedDatabase("fixture - ead.xml");
         plugin.loadSelectedDatabase();
 
-        EadEntry root = plugin.getRootElement();
+        IEadEntry root = plugin.getRootElement();
         root.setDisplayChildren(true);
-        EadEntry firstChild = root.getSubEntryList().get(0);
+        IEadEntry firstChild = root.getSubEntryList().get(0);
         // do nothing
         plugin.deleteNode();
 
@@ -634,8 +635,8 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.prepareMoveNode();
         assertEquals("", plugin.getDisplayMode());
 
-        EadEntry root = plugin.getRootElement();
-        EadEntry firstChild = root.getSubEntryList().get(0);
+        IEadEntry root = plugin.getRootElement();
+        IEadEntry firstChild = root.getSubEntryList().get(0);
         root.setDisplayChildren(true);
         firstChild.setDisplayChildren(true);
         plugin.getFlatEntryList();
@@ -669,12 +670,12 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.setSelectedDatabase("fixture - ead.xml");
         plugin.loadSelectedDatabase();
         plugin.setDisplayMode("move");
-        EadEntry root = plugin.getRootElement();
-        EadEntry firstChild = root.getSubEntryList().get(0);
+        IEadEntry root = plugin.getRootElement();
+        IEadEntry firstChild = root.getSubEntryList().get(0);
         root.setDisplayChildren(true);
         firstChild.setDisplayChildren(true);
         plugin.getFlatEntryList();
-        EadEntry second = firstChild.getSubEntryList().get(0);
+        IEadEntry second = firstChild.getSubEntryList().get(0);
         plugin.setSelectedEntry(second);
         assertEquals("move", plugin.getDisplayMode());
 
@@ -692,13 +693,13 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
         plugin.loadSelectedDatabase();
-        EadEntry root = plugin.getRootElement();
+        IEadEntry root = plugin.getRootElement();
         root.setDisplayChildren(true);
-        EadEntry firstChild = root.getSubEntryList().get(0);
+        IEadEntry firstChild = root.getSubEntryList().get(0);
         firstChild.setDisplayChildren(true);
-        EadEntry firstInSecond = firstChild.getSubEntryList().get(0);
+        IEadEntry firstInSecond = firstChild.getSubEntryList().get(0);
         firstInSecond.setDisplayChildren(true);
-        EadEntry secondInSecond = firstChild.getSubEntryList().get(1);
+        IEadEntry secondInSecond = firstChild.getSubEntryList().get(1);
         secondInSecond.setDisplayChildren(true);
         plugin.getFlatEntryList();
 
@@ -731,13 +732,13 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
         plugin.loadSelectedDatabase();
-        EadEntry root = plugin.getRootElement();
+        IEadEntry root = plugin.getRootElement();
         root.setDisplayChildren(true);
-        EadEntry firstChild = root.getSubEntryList().get(0);
+        IEadEntry firstChild = root.getSubEntryList().get(0);
         firstChild.setDisplayChildren(true);
-        EadEntry firstInSecond = firstChild.getSubEntryList().get(0);
+        IEadEntry firstInSecond = firstChild.getSubEntryList().get(0);
         firstInSecond.setDisplayChildren(true);
-        EadEntry lastInSecond = firstChild.getSubEntryList().get(4);
+        IEadEntry lastInSecond = firstChild.getSubEntryList().get(4);
         lastInSecond.setDisplayChildren(true);
         plugin.getFlatEntryList();
 
@@ -770,13 +771,13 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
         plugin.loadSelectedDatabase();
-        EadEntry root = plugin.getRootElement();
+        IEadEntry root = plugin.getRootElement();
         root.setDisplayChildren(true);
-        EadEntry firstChild = root.getSubEntryList().get(0);
+        IEadEntry firstChild = root.getSubEntryList().get(0);
         firstChild.setDisplayChildren(true);
-        EadEntry firstInSecond = firstChild.getSubEntryList().get(0);
+        IEadEntry firstInSecond = firstChild.getSubEntryList().get(0);
         firstInSecond.setDisplayChildren(true);
-        EadEntry secondInSecond = firstChild.getSubEntryList().get(1);
+        IEadEntry secondInSecond = firstChild.getSubEntryList().get(1);
         secondInSecond.setDisplayChildren(true);
         plugin.getFlatEntryList();
         // no node selected - do nothing
@@ -804,13 +805,13 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
         plugin.loadSelectedDatabase();
-        EadEntry root = plugin.getRootElement();
+        IEadEntry root = plugin.getRootElement();
         root.setDisplayChildren(true);
-        EadEntry firstChild = root.getSubEntryList().get(0);
+        IEadEntry firstChild = root.getSubEntryList().get(0);
         firstChild.setDisplayChildren(true);
-        EadEntry firstInSecond = firstChild.getSubEntryList().get(0);
+        IEadEntry firstInSecond = firstChild.getSubEntryList().get(0);
         firstInSecond.setDisplayChildren(true);
-        EadEntry thirdInSecond = firstChild.getSubEntryList().get(3);
+        IEadEntry thirdInSecond = firstChild.getSubEntryList().get(3);
         thirdInSecond.setDisplayChildren(true);
         plugin.getFlatEntryList();
         // no node selected - do nothing
@@ -893,7 +894,7 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.setSelectedDatabase("fixture - ead.xml");
         plugin.loadSelectedDatabase();
         plugin.getFlatEntryList();
-        EadEntry entry = plugin.getRootElement();
+        IEadEntry entry = plugin.getRootElement();
         plugin.setSelectedEntry(entry);
         plugin.setDisplayMode("something");
         plugin.setSearchValue("something");
@@ -948,16 +949,16 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.setSelectedDatabase("fixture - ead.xml");
         plugin.loadSelectedDatabase();
         plugin.getFlatEntryList();
-        EadEntry entry = plugin.getRootElement();
+        IEadEntry entry = plugin.getRootElement();
         entry.setDisplayChildren(true);
-        EadEntry firstChild = entry.getSubEntryList().get(0);
+        IEadEntry firstChild = entry.getSubEntryList().get(0);
         firstChild.setDisplayChildren(true);
 
-        EadMetadataField rootMetadata = entry.getIdentityStatementAreaList().get(0);
-        EadMetadataField childMetadata = firstChild.getIdentityStatementAreaList().get(0);
+        IMetadataField rootMetadata = entry.getIdentityStatementAreaList().get(0);
+        IMetadataField childMetadata = firstChild.getIdentityStatementAreaList().get(0);
         assertEquals(rootMetadata.getName(), childMetadata.getName());
-        FieldValue rootValue = rootMetadata.getValues().get(0);
-        FieldValue childValue = childMetadata.getValues().get(0);
+        IFieldValue rootValue = rootMetadata.getValues().get(0);
+        IFieldValue childValue = childMetadata.getValues().get(0);
         // no validation rules - fields are valid
         plugin.validateArchive();
         assertTrue(rootMetadata.isValid());

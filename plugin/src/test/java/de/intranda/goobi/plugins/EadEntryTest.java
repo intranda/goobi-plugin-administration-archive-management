@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
+import org.goobi.interfaces.IEadEntry;
 import org.junit.Test;
 
 import de.intranda.goobi.plugins.model.EadEntry;
@@ -19,7 +20,7 @@ public class EadEntryTest {
 
     @Test
     public void testConstructor() {
-        EadEntry entry = new EadEntry(0, 0);
+        IEadEntry entry = new EadEntry(0, 0);
         assertNotNull(entry);
     }
 
@@ -147,10 +148,10 @@ public class EadEntryTest {
         secondRootChild.addSubEntry(sub3);
         secondRootChild.addSubEntry(sub4);
 
-        List<EadEntry> firstRootChildDestinations = root.getMoveToDestinationList(firstRootChild);
+        List<IEadEntry> firstRootChildDestinations = root.getMoveToDestinationList(firstRootChild);
         assertEquals(5, firstRootChildDestinations.size());
 
-        List<EadEntry> sub4Destinations = root.getMoveToDestinationList(sub4);
+        List<IEadEntry> sub4Destinations = root.getMoveToDestinationList(sub4);
         assertEquals(7, sub4Destinations.size());
     }
 
@@ -171,7 +172,7 @@ public class EadEntryTest {
         EadEntry sub4 = new EadEntry(1, 2);
         secondRootChild.addSubEntry(sub3);
         secondRootChild.addSubEntry(sub4);
-        List<EadEntry> flatList = root.getAsFlatList();
+        List<IEadEntry> flatList = root.getAsFlatList();
         assertEquals(1, flatList.size());
         root.setDisplayChildren(true);
         flatList = root.getAsFlatList();
@@ -223,7 +224,7 @@ public class EadEntryTest {
 
     @Test
     public void testEadMetadataFieldAddFieldValue() {
-        EadEntry entry = new EadEntry(0, 0);
+        IEadEntry entry = new EadEntry(0, 0);
         EadMetadataField title = new EadMetadataField("input", 1, "something", "element", false, true, true, "input", null, false, null, null);
         title.setEadEntry(entry);
         assertFalse(title.isFilled());

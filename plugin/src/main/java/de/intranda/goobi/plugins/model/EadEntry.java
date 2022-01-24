@@ -4,16 +4,20 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.goobi.interfaces.IEadEntry;
+import org.goobi.interfaces.IMetadataField;
+import org.goobi.interfaces.INodeType;
+
 import lombok.Data;
 
 @Data
-public class EadEntry {
+public class EadEntry implements IEadEntry {
 
     // parent node
-    private EadEntry parentNode;
+    private IEadEntry parentNode;
 
     // list contains all child elements
-    private List<EadEntry> subEntryList = new ArrayList<>();
+    private List<IEadEntry> subEntryList = new ArrayList<>();
 
     // order number of the current element within the current hierarchy
     private Integer orderNumber;
@@ -34,7 +38,7 @@ public class EadEntry {
     private boolean selectable;
 
     // node type -  @level
-    private NodeType nodeType;
+    private INodeType nodeType;
 
     // display node in a search result
     private boolean displaySearch;
@@ -47,21 +51,21 @@ public class EadEntry {
     //    Date(s)
     //    Level of description
     //    Extent and medium of the unit of description (quantity, bulk, or size)
-    private List<EadMetadataField> identityStatementAreaList = new ArrayList<>();
+    private List<IMetadataField> identityStatementAreaList = new ArrayList<>();
 
     /* 2. Context Area */
     //    Name of creator(s)
     //    Administrative | Biographical history
     //    Archival history
     //    Immediate source of acquisition or transfer
-    private List<EadMetadataField> contextAreaList = new ArrayList<>();
+    private List<IMetadataField> contextAreaList = new ArrayList<>();
 
     /* 3. Content and Structure Area */
     //    Scope and content
     //    Appraisal, destruction and scheduling information
     //    Accruals
     //    System of arrangement
-    private List<EadMetadataField> contentAndStructureAreaAreaList = new ArrayList<>();
+    private List<IMetadataField> contentAndStructureAreaAreaList = new ArrayList<>();
 
     /* 4. Condition of Access and Use Area */
     //    Conditions governing access
@@ -69,24 +73,24 @@ public class EadEntry {
     //    Language | Scripts of material
     //    Physical characteristics and technical requirements
     //    Finding aids
-    private List<EadMetadataField> accessAndUseAreaList = new ArrayList<>();
+    private List<IMetadataField> accessAndUseAreaList = new ArrayList<>();
 
     /* 5. Allied Materials Area */
     //    Existence and location of originals
     //    Existence and location of copies
     //    Related units of description
     //    Publication note
-    private List<EadMetadataField> alliedMaterialsAreaList = new ArrayList<>();
+    private List<IMetadataField> alliedMaterialsAreaList = new ArrayList<>();
 
     /* 6. Note Area */
     //    Note
-    private List<EadMetadataField> notesAreaList = new ArrayList<>();
+    private List<IMetadataField> notesAreaList = new ArrayList<>();
 
     /* 7. Description Control Area */
     //    Archivist's Note
     //    Rules or Conventions
     //    Date(s) of descriptions
-    private List<EadMetadataField> descriptionControlAreaList = new ArrayList<>();
+    private List<IMetadataField> descriptionControlAreaList = new ArrayList<>();
 
     // empty if no process was created, otherwise the name of othe process is stored
     private String goobiProcessTitle;
@@ -99,29 +103,33 @@ public class EadEntry {
         this.hierarchy = hierarchy;
     }
 
-    public void addSubEntry(EadEntry other) {
+    @Override
+    public void addSubEntry(IEadEntry other) {
         subEntryList.add(other);
         other.setParentNode(this);
     }
 
-    public void removeSubEntry(EadEntry other) {
+    @Override
+    public void removeSubEntry(IEadEntry other) {
         subEntryList.remove(other);
         reOrderElements();
     }
 
+    @Override
     public void reOrderElements() {
         int order = 0;
-        for (EadEntry entry : subEntryList) {
+        for (IEadEntry entry : subEntryList) {
             entry.setOrderNumber(order++);
         }
     }
 
-    public List<EadEntry> getAsFlatList() {
-        List<EadEntry> list = new LinkedList<>();
+    @Override
+    public List<IEadEntry> getAsFlatList() {
+        List<IEadEntry> list = new LinkedList<>();
         list.add(this);
         if (displayChildren) {
             if (subEntryList != null) {
-                for (EadEntry ds : subEntryList) {
+                for (IEadEntry ds : subEntryList) {
                     list.addAll(ds.getAsFlatList());
                 }
             }
@@ -129,19 +137,21 @@ public class EadEntry {
         return list;
     }
 
+    @Override
     public boolean isHasChildren() {
         return !subEntryList.isEmpty();
     }
 
-    public List<EadEntry> getMoveToDestinationList(EadEntry entry) {
-        List<EadEntry> list = new LinkedList<>();
+    @Override
+    public List<IEadEntry> getMoveToDestinationList(IEadEntry entry) {
+        List<IEadEntry> list = new LinkedList<>();
         list.add(this);
 
         if (entry.equals(this)) {
             setSelectable(false);
             parentNode.setSelectable(false);
         } else if (subEntryList != null) {
-            for (EadEntry ds : subEntryList) {
+            for (IEadEntry ds : subEntryList) {
                 list.addAll(ds.getMoveToDestinationList(entry));
             }
         }
@@ -206,6 +216,7 @@ public class EadEntry {
         return result;
     }
 
+    @Override
     public void updateHierarchy() {
         // root node
         if (parentNode == null) {
@@ -214,44 +225,47 @@ public class EadEntry {
             hierarchy = parentNode.getHierarchy() + 1;
         }
 
-        for (EadEntry child : subEntryList) {
+        for (IEadEntry child : subEntryList) {
             child.updateHierarchy();
         }
     }
 
+    @Override
     public void markAsFound() {
         displaySearch = true;
         //      selected = true;
         searchFound = true;
 
         if (parentNode != null) {
-            EadEntry node = parentNode;
+            IEadEntry node = parentNode;
             while (!node.isDisplaySearch()) {
                 node.setDisplaySearch(true);
-                if (node.parentNode != null) {
-                    node = node.parentNode;
+                if (node.getParentNode() != null) {
+                    node = node.getParentNode();
                 }
             }
         }
     }
 
+    @Override
     public void resetFoundList() {
         displaySearch = false;
         //        selected = false;
         searchFound = false;
         if (subEntryList != null) {
-            for (EadEntry ds : subEntryList) {
+            for (IEadEntry ds : subEntryList) {
                 ds.resetFoundList();
             }
         }
     }
 
-    public List<EadEntry> getSearchList() {
-        List<EadEntry> list = new LinkedList<>();
+    @Override
+    public List<IEadEntry> getSearchList() {
+        List<IEadEntry> list = new LinkedList<>();
         if (displaySearch) {
             list.add(this);
             if (subEntryList != null) {
-                for (EadEntry child : subEntryList) {
+                for (IEadEntry child : subEntryList) {
                     list.addAll(child.getSearchList());
                 }
             }
@@ -259,8 +273,9 @@ public class EadEntry {
         return list;
     }
 
+    @Override
     public boolean isIdentityStatementAreaVisible() {
-        for (EadMetadataField emf : identityStatementAreaList) {
+        for (IMetadataField emf : identityStatementAreaList) {
             if (emf.isVisible() && emf.isShowField()) {
                 return true;
             }
@@ -268,8 +283,9 @@ public class EadEntry {
         return false;
     }
 
+    @Override
     public boolean isContextAreaVisible() {
-        for (EadMetadataField emf : contextAreaList) {
+        for (IMetadataField emf : contextAreaList) {
             if (emf.isVisible() && emf.isShowField()) {
                 return true;
             }
@@ -277,9 +293,9 @@ public class EadEntry {
         return false;
     }
 
-
+    @Override
     public boolean isContentAndStructureAreaAreaVisible() {
-        for (EadMetadataField emf : contentAndStructureAreaAreaList) {
+        for (IMetadataField emf : contentAndStructureAreaAreaList) {
             if (emf.isVisible() && emf.isShowField()) {
                 return true;
             }
@@ -287,8 +303,9 @@ public class EadEntry {
         return false;
     }
 
+    @Override
     public boolean isAccessAndUseAreaVisible() {
-        for (EadMetadataField emf : accessAndUseAreaList) {
+        for (IMetadataField emf : accessAndUseAreaList) {
             if (emf.isVisible() && emf.isShowField()) {
                 return true;
             }
@@ -296,8 +313,9 @@ public class EadEntry {
         return false;
     }
 
+    @Override
     public boolean isAlliedMaterialsAreaVisible() {
-        for (EadMetadataField emf : alliedMaterialsAreaList) {
+        for (IMetadataField emf : alliedMaterialsAreaList) {
             if (emf.isVisible() && emf.isShowField()) {
                 return true;
             }
@@ -305,8 +323,9 @@ public class EadEntry {
         return false;
     }
 
+    @Override
     public boolean isNotesAreaVisible() {
-        for (EadMetadataField emf : notesAreaList) {
+        for (IMetadataField emf : notesAreaList) {
             if (emf.isVisible() && emf.isShowField()) {
                 return true;
             }
@@ -314,8 +333,9 @@ public class EadEntry {
         return false;
     }
 
+    @Override
     public boolean isDescriptionControlAreaVisible() {
-        for (EadMetadataField emf : descriptionControlAreaList) {
+        for (IMetadataField emf : descriptionControlAreaList) {
             if (emf.isVisible() && emf.isShowField()) {
                 return true;
             }

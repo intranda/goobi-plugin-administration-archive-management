@@ -35,6 +35,10 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
 import org.goobi.beans.User;
+import org.goobi.interfaces.IEadEntry;
+import org.goobi.interfaces.IFieldValue;
+import org.goobi.interfaces.IMetadataField;
+import org.goobi.interfaces.INodeType;
 import org.goobi.production.cli.helper.StringPair;
 import org.goobi.production.enums.PluginType;
 import org.goobi.vocabulary.Field;
@@ -123,28 +127,28 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
     @Getter
     @Setter
-    private EadEntry rootElement = null;
+    private IEadEntry rootElement = null;
 
-    private List<EadEntry> flatEntryList;
-
-    @Getter
-    private EadEntry selectedEntry;
+    private List<IEadEntry> flatEntryList;
 
     @Getter
-    private List<EadEntry> moveList;
+    private IEadEntry selectedEntry;
+
+    @Getter
+    private List<IEadEntry> moveList;
 
     @Getter
     @Setter
-    private EadEntry destinationEntry;
+    private IEadEntry destinationEntry;
 
     public static final Namespace ns = Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9");
     private static XPathFactory xFactory = XPathFactory.instance();
 
     private XMLConfiguration xmlConfig;
-    private List<EadMetadataField> configuredFields;
+    private List<IMetadataField> configuredFields;
 
     @Getter
-    private List<NodeType> configuredNodes;
+    private List<INodeType> configuredNodes;
 
     @Getter
     @Setter
@@ -197,6 +201,11 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     @Setter
     private Part uploadFile;
 
+    private List<StringPair> processTemplates = new ArrayList<>();
+    @Getter
+    @Setter
+    private String selectedTemplate;
+
     /**
      * Constructor
      */
@@ -233,6 +242,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
      * @return
      */
 
+    @Override
     public List<String> getPossibleDatabases() {
         List<String> databases = new ArrayList<>();
         String response = HttpClientHelper.getStringFromUrl(datastoreUrl + "databases");
@@ -329,6 +339,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
      * open the selected database and load the file
      */
 
+    @Override
     public void loadSelectedDatabase() {
 
         User user = Helper.getCurrentUser();
@@ -439,11 +450,11 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             if (processinfoElement != null) {
                 Element list = processinfoElement.getChild("list", ns);
                 List<Element> entries = list.getChildren("item", ns);
-                EadMetadataField editor = new EadMetadataField("editorName", 7, null, null, false, true, true, "readonly", null, false, null, null);
+                IMetadataField editor = new EadMetadataField("editorName", 7, null, null, false, true, true, "readonly", null, false, null, null);
 
                 for (Element item : entries) {
                     editorList.add(item.getText());
-                    FieldValue fv = new FieldValue(editor);
+                    IFieldValue fv = new FieldValue(editor);
                     fv.setValue(item.getText());
                     editor.addFieldValue(fv);
                 }
@@ -471,7 +482,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     private EadEntry parseElement(int order, int hierarchy, Element element) {
         EadEntry entry = new EadEntry(order, hierarchy);
 
-        for (EadMetadataField emf : configuredFields) {
+        for (IMetadataField emf : configuredFields) {
 
             List<String> stringValues = new ArrayList<>();
             if ("text".equalsIgnoreCase(emf.getXpathType())) {
@@ -529,7 +540,14 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         entry.setId(element.getAttributeValue("id"));
         if (eadheader != null) {
             try {
-                entry.setLabel(eadheader.getChild("filedesc", ns).getChild("titlestmt", ns).getChildText("titleproper", ns));
+                Element filedesc = eadheader.getChild("filedesc", ns);
+                if (filedesc != null) {
+                    Element titlestmt = filedesc.getChild("titlestmt", ns);
+                    if (titlestmt != null) {
+                        String titleproper = titlestmt.getChildText("titleproper", ns);
+                        entry.setLabel(titleproper);
+                    }
+                }
             } catch (Exception e) {
                 log.error("Error while setting the label", e);
             }
@@ -541,7 +559,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         Element archdesc = element.getChild("archdesc", ns);
         if (archdesc != null) {
             String nodeTypeName = archdesc.getAttributeValue("localtype");
-            for (NodeType nt : configuredNodes) {
+            for (INodeType nt : configuredNodes) {
                 if (nt.getNodeName().equals(nodeTypeName)) {
                     entry.setNodeType(nt);
                 }
@@ -560,7 +578,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
         } else {
             String nodeTypeName = element.getAttributeValue("otherlevel");
-            for (NodeType nt : configuredNodes) {
+            for (INodeType nt : configuredNodes) {
                 if (nt.getNodeName().equals(nodeTypeName)) {
                     entry.setNodeType(nt);
                 }
@@ -606,11 +624,11 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
      * @param stringValue
      */
 
-    private void addFieldToEntry(EadEntry entry, EadMetadataField emf, List<String> stringValues) {
+    private void addFieldToEntry(EadEntry entry, IMetadataField emf, List<String> stringValues) {
         if (StringUtils.isBlank(entry.getLabel()) && emf.getXpath().contains("unittitle") && stringValues != null && !stringValues.isEmpty()) {
             entry.setLabel(stringValues.get(0));
         }
-        EadMetadataField toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable(),
+        IMetadataField toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable(),
                 emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild(), emf.getValidationType(),
                 emf.getRegularExpression());
         toAdd.setValidationError(emf.getValidationError());
@@ -622,7 +640,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
             // split single value into multiple fields
             for (String stringValue : stringValues) {
-                FieldValue fv = new FieldValue(toAdd);
+                IFieldValue fv = new FieldValue(toAdd);
 
                 if (toAdd.getFieldType().equals("multiselect") && StringUtils.isNotBlank(stringValue)) {
                     String[] splittedValues = stringValue.split("; ");
@@ -635,7 +653,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                 toAdd.addFieldValue(fv);
             }
         } else {
-            FieldValue fv = new FieldValue(toAdd);
+            IFieldValue fv = new FieldValue(toAdd);
             toAdd.addFieldValue(fv);
         }
 
@@ -710,12 +728,12 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
         nodeDefaultTitle = config.getString("/nodeDefaultTitle", "-");
         for (HierarchicalConfiguration hc : config.configurationsAt("/node")) {
-            NodeType nt = new NodeType(hc.getString("@name"), hc.getString("@ruleset"), hc.getString("@icon"), hc.getInt("@processTemplateId"));
+            INodeType nt = new NodeType(hc.getString("@name"), hc.getString("@ruleset"), hc.getString("@icon"), hc.getInt("@processTemplateId"));
             configuredNodes.add(nt);
         }
 
         for (HierarchicalConfiguration hc : config.configurationsAt("/metadata")) {
-            EadMetadataField field = new EadMetadataField(hc.getString("@name"), hc.getInt("@level"), hc.getString("@xpath"),
+            IMetadataField field = new EadMetadataField(hc.getString("@name"), hc.getInt("@level"), hc.getString("@xpath"),
                     hc.getString("@xpathType", "element"), hc.getBoolean("@repeatable", false), hc.getBoolean("@visible", true),
                     hc.getBoolean("@showField", false), hc.getString("@fieldType", "input"), hc.getString("@rulesetName", null),
                     hc.getBoolean("@importMetadataInChild", false), hc.getString("@validationType", null), hc.getString("@regularExpression"));
@@ -727,7 +745,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             } else if (field.getFieldType().equals("vocabulary")) {
                 String vocabularyName = hc.getString("/vocabulary");
                 List<String> searchParameter = Arrays.asList(hc.getStringArray("/searchParameter"));
-                List<String> fieldValueList = new ArrayList<>();
+                List<String> IFieldValueList = new ArrayList<>();
                 if (searchParameter == null) {
                     Vocabulary currentVocabulary = VocabularyManager.getVocabularyByTitle(vocabularyName);
                     if (currentVocabulary != null) {
@@ -736,7 +754,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                             for (VocabRecord vr : currentVocabulary.getRecords()) {
                                 for (Field f : vr.getFields()) {
                                     if (f.getDefinition().isMainEntry()) {
-                                        fieldValueList.add(f.getValue());
+                                        IFieldValueList.add(f.getValue());
                                         break;
                                     }
                                 }
@@ -759,14 +777,14 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                         for (VocabRecord vr : records) {
                             for (Field f : vr.getFields()) {
                                 if (f.getDefinition().isMainEntry()) {
-                                    fieldValueList.add(f.getValue());
+                                    IFieldValueList.add(f.getValue());
                                     break;
                                 }
                             }
                         }
                     }
                 }
-                field.setSelectItemList(fieldValueList);
+                field.setSelectItemList(IFieldValueList);
             }
 
         }
@@ -782,7 +800,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
      * @return
      */
 
-    public List<EadEntry> getFlatEntryList() {
+    public List<IEadEntry> getFlatEntryList() {
         if (flatEntryList == null) {
             if (rootElement != null) {
                 flatEntryList = new LinkedList<>();
@@ -792,13 +810,13 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         return flatEntryList;
     }
 
-    public void setSelectedEntry(EadEntry entry) {
+    public void setSelectedEntry(IEadEntry entry) {
 
         if (flatEntryList == null) {
             getFlatEntryList();
         }
 
-        for (EadEntry other : flatEntryList) {
+        for (IEadEntry other : flatEntryList) {
             other.setSelected(false);
         }
         entry.setSelected(true);
@@ -816,7 +834,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                 titleData.add(nodeDefaultTitle);
                 entry.setLabel(nodeDefaultTitle);
             }
-            for (EadMetadataField emf : configuredFields) {
+            for (IMetadataField emf : configuredFields) {
                 if (emf.getXpath().contains("unittitle")) {
                     addFieldToEntry(entry, emf, titleData);
                 } else {
@@ -838,7 +856,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     public void deleteNode() {
         if (selectedEntry != null) {
             // find parent node
-            EadEntry parentNode = selectedEntry.getParentNode();
+            IEadEntry parentNode = selectedEntry.getParentNode();
             if (parentNode == null) {
                 // we found the root node, this node cant be deleted
                 return;
@@ -923,8 +941,6 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         }
         // check if filename is not used yet
 
-
-
         HttpClientHelper.getStringFromUrl(importUrl);
 
         selectedDatabase = databaseName + " - " + fileName;
@@ -932,62 +948,62 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         loadSelectedDatabase();
     }
 
-    private void addMetadata(Element xmlElement, EadEntry node) {
+    private void addMetadata(Element xmlElement, IEadEntry node) {
         boolean isMainElement = false;
         if (xmlElement.getName().equals("ead")) {
             isMainElement = true;
         }
 
-        for (EadMetadataField emf : node.getIdentityStatementAreaList()) {
-            for (FieldValue fv : emf.getValues()) {
+        for (IMetadataField emf : node.getIdentityStatementAreaList()) {
+            for (IFieldValue fv : emf.getValues()) {
                 if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
                     createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
 
                 }
             }
         }
-        for (EadMetadataField emf : node.getContextAreaList()) {
-            for (FieldValue fv : emf.getValues()) {
+        for (IMetadataField emf : node.getContextAreaList()) {
+            for (IFieldValue fv : emf.getValues()) {
                 if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
                     createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
 
                 }
             }
         }
-        for (EadMetadataField emf : node.getContentAndStructureAreaAreaList()) {
-            for (FieldValue fv : emf.getValues()) {
+        for (IMetadataField emf : node.getContentAndStructureAreaAreaList()) {
+            for (IFieldValue fv : emf.getValues()) {
                 if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
                     createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
 
                 }
             }
         }
-        for (EadMetadataField emf : node.getAccessAndUseAreaList()) {
-            for (FieldValue fv : emf.getValues()) {
+        for (IMetadataField emf : node.getAccessAndUseAreaList()) {
+            for (IFieldValue fv : emf.getValues()) {
                 if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
                     createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
 
                 }
             }
         }
-        for (EadMetadataField emf : node.getAlliedMaterialsAreaList()) {
-            for (FieldValue fv : emf.getValues()) {
+        for (IMetadataField emf : node.getAlliedMaterialsAreaList()) {
+            for (IFieldValue fv : emf.getValues()) {
                 if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
                     createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
 
                 }
             }
         }
-        for (EadMetadataField emf : node.getNotesAreaList()) {
-            for (FieldValue fv : emf.getValues()) {
+        for (IMetadataField emf : node.getNotesAreaList()) {
+            for (IFieldValue fv : emf.getValues()) {
                 if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
                     createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
 
                 }
             }
         }
-        for (EadMetadataField emf : node.getDescriptionControlAreaList()) {
-            for (FieldValue fv : emf.getValues()) {
+        for (IMetadataField emf : node.getDescriptionControlAreaList()) {
+            for (IFieldValue fv : emf.getValues()) {
                 if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
                     createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
 
@@ -1029,7 +1045,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             }
         }
 
-        for (EadEntry subNode : node.getSubEntryList()) {
+        for (IEadEntry subNode : node.getSubEntryList()) {
             if (dsc == null) {
                 dsc = new Element("dsc", ns);
                 xmlElement.addContent(dsc);
@@ -1049,7 +1065,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
     }
 
-    private void createEadXmlField(Element xmlElement, boolean isMainElement, EadMetadataField emf, String metadataValue) {
+    private void createEadXmlField(Element xmlElement, boolean isMainElement, IMetadataField emf, String metadataValue) {
         Element currentElement = xmlElement;
         String xpath = emf.getXpath();
         if (xpath.endsWith("[1]")) {
@@ -1279,7 +1295,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     public void moveNode() {
 
         // remove element from parent node
-        EadEntry parentNode = selectedEntry.getParentNode();
+        IEadEntry parentNode = selectedEntry.getParentNode();
         parentNode.removeSubEntry(selectedEntry);
 
         // add it to new parent
@@ -1362,7 +1378,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         }
 
         // find previous sibling
-        EadEntry previousNode = selectedEntry.getParentNode().getSubEntryList().get(selectedEntry.getOrderNumber().intValue() - 1);
+        IEadEntry previousNode = selectedEntry.getParentNode().getSubEntryList().get(selectedEntry.getOrderNumber().intValue() - 1);
         // move node to prev.
         destinationEntry = previousNode;
         moveNode();
@@ -1385,8 +1401,8 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         }
 
         // get parent node of parent
-        EadEntry oldParent = selectedEntry.getParentNode();
-        EadEntry newParent = oldParent.getParentNode();
+        IEadEntry oldParent = selectedEntry.getParentNode();
+        IEadEntry newParent = oldParent.getParentNode();
 
         // move current node to parents parent
         destinationEntry = newParent;
@@ -1417,13 +1433,13 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         LockingBean.updateLocking(selectedDatabase);
     }
 
-    private void searchInNode(EadEntry node) {
+    private void searchInNode(IEadEntry node) {
         if (node.getLabel() != null && node.getLabel().toLowerCase().contains(searchValue.toLowerCase())) {
             // mark element + all parents as displayable
             node.markAsFound();
         }
         if (node.getSubEntryList() != null) {
-            for (EadEntry child : node.getSubEntryList()) {
+            for (IEadEntry child : node.getSubEntryList()) {
                 searchInNode(child);
             }
         }
@@ -1435,11 +1451,6 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         rootElement.resetFoundList();
         flatEntryList = null;
     }
-
-    private List<StringPair> processTemplates = new ArrayList<>();
-    @Getter
-    @Setter
-    private String selectedTemplate;
 
     public List<StringPair> getProcessTemplates() {
         if (processTemplates.isEmpty()) {
@@ -1546,60 +1557,60 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             }
 
             // import configured metadata
-            for (EadMetadataField emf : selectedEntry.getIdentityStatementAreaList()) {
+            for (IMetadataField emf : selectedEntry.getIdentityStatementAreaList()) {
                 createModsMetadata(prefs, emf, logical);
             }
-            for (EadMetadataField emf : selectedEntry.getContextAreaList()) {
+            for (IMetadataField emf : selectedEntry.getContextAreaList()) {
                 createModsMetadata(prefs, emf, logical);
             }
-            for (EadMetadataField emf : selectedEntry.getContentAndStructureAreaAreaList()) {
+            for (IMetadataField emf : selectedEntry.getContentAndStructureAreaAreaList()) {
                 createModsMetadata(prefs, emf, logical);
             }
-            for (EadMetadataField emf : selectedEntry.getAccessAndUseAreaList()) {
+            for (IMetadataField emf : selectedEntry.getAccessAndUseAreaList()) {
                 createModsMetadata(prefs, emf, logical);
             }
-            for (EadMetadataField emf : selectedEntry.getAlliedMaterialsAreaList()) {
+            for (IMetadataField emf : selectedEntry.getAlliedMaterialsAreaList()) {
                 createModsMetadata(prefs, emf, logical);
             }
-            for (EadMetadataField emf : selectedEntry.getNotesAreaList()) {
+            for (IMetadataField emf : selectedEntry.getNotesAreaList()) {
                 createModsMetadata(prefs, emf, logical);
             }
-            for (EadMetadataField emf : selectedEntry.getDescriptionControlAreaList()) {
+            for (IMetadataField emf : selectedEntry.getDescriptionControlAreaList()) {
                 createModsMetadata(prefs, emf, logical);
             }
-            EadEntry parent = selectedEntry.getParentNode();
+            IEadEntry parent = selectedEntry.getParentNode();
             while (parent != null) {
-                for (EadMetadataField emf : parent.getIdentityStatementAreaList()) {
+                for (IMetadataField emf : parent.getIdentityStatementAreaList()) {
                     if (emf.isImportMetadataInChild()) {
                         createModsMetadata(prefs, emf, logical);
                     }
                 }
-                for (EadMetadataField emf : parent.getContextAreaList()) {
+                for (IMetadataField emf : parent.getContextAreaList()) {
                     if (emf.isImportMetadataInChild()) {
                         createModsMetadata(prefs, emf, logical);
                     }
                 }
-                for (EadMetadataField emf : parent.getContentAndStructureAreaAreaList()) {
+                for (IMetadataField emf : parent.getContentAndStructureAreaAreaList()) {
                     if (emf.isImportMetadataInChild()) {
                         createModsMetadata(prefs, emf, logical);
                     }
                 }
-                for (EadMetadataField emf : parent.getAccessAndUseAreaList()) {
+                for (IMetadataField emf : parent.getAccessAndUseAreaList()) {
                     if (emf.isImportMetadataInChild()) {
                         createModsMetadata(prefs, emf, logical);
                     }
                 }
-                for (EadMetadataField emf : parent.getAlliedMaterialsAreaList()) {
+                for (IMetadataField emf : parent.getAlliedMaterialsAreaList()) {
                     if (emf.isImportMetadataInChild()) {
                         createModsMetadata(prefs, emf, logical);
                     }
                 }
-                for (EadMetadataField emf : parent.getNotesAreaList()) {
+                for (IMetadataField emf : parent.getNotesAreaList()) {
                     if (emf.isImportMetadataInChild()) {
                         createModsMetadata(prefs, emf, logical);
                     }
                 }
-                for (EadMetadataField emf : parent.getDescriptionControlAreaList()) {
+                for (IMetadataField emf : parent.getDescriptionControlAreaList()) {
                     if (emf.isImportMetadataInChild()) {
                         createModsMetadata(prefs, emf, logical);
                     }
@@ -1632,9 +1643,9 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     }
 
     //  create metadata, add it to logical element
-    private void createModsMetadata(Prefs prefs, EadMetadataField emf, DocStruct logical) {
+    private void createModsMetadata(Prefs prefs, IMetadataField emf, DocStruct logical) {
         if (StringUtils.isNotBlank(emf.getMetadataName())) {
-            for (FieldValue fv : emf.getValues()) {
+            for (IFieldValue fv : emf.getValues()) {
                 if (!fv.getMultiselectSelectedValues().isEmpty()) {
                     for (String value : fv.getMultiselectSelectedValues()) {
                         try {
@@ -1813,41 +1824,41 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         LockingBean.updateLocking(selectedDatabase);
     }
 
-    private void validateNode(EadEntry node, Map<String, List<String>> valueMap) {
+    private void validateNode(IEadEntry node, Map<String, List<String>> valueMap) {
         node.setValid(true);
-        for (EadMetadataField emf : node.getIdentityStatementAreaList()) {
+        for (IMetadataField emf : node.getIdentityStatementAreaList()) {
             validateMetadataField(node, valueMap, emf);
         }
-        for (EadMetadataField emf : node.getContextAreaList()) {
+        for (IMetadataField emf : node.getContextAreaList()) {
             validateMetadataField(node, valueMap, emf);
         }
-        for (EadMetadataField emf : node.getContentAndStructureAreaAreaList()) {
+        for (IMetadataField emf : node.getContentAndStructureAreaAreaList()) {
             validateMetadataField(node, valueMap, emf);
         }
-        for (EadMetadataField emf : node.getAccessAndUseAreaList()) {
+        for (IMetadataField emf : node.getAccessAndUseAreaList()) {
             validateMetadataField(node, valueMap, emf);
         }
-        for (EadMetadataField emf : node.getAlliedMaterialsAreaList()) {
+        for (IMetadataField emf : node.getAlliedMaterialsAreaList()) {
             validateMetadataField(node, valueMap, emf);
         }
-        for (EadMetadataField emf : node.getNotesAreaList()) {
+        for (IMetadataField emf : node.getNotesAreaList()) {
             validateMetadataField(node, valueMap, emf);
         }
-        for (EadMetadataField emf : node.getDescriptionControlAreaList()) {
+        for (IMetadataField emf : node.getDescriptionControlAreaList()) {
             validateMetadataField(node, valueMap, emf);
         }
 
-        for (EadEntry child : node.getSubEntryList()) {
+        for (IEadEntry child : node.getSubEntryList()) {
             validateNode(child, valueMap);
         }
 
     }
 
-    private void validateMetadataField(EadEntry node, Map<String, List<String>> valueMap, EadMetadataField emf) {
+    private void validateMetadataField(IEadEntry node, Map<String, List<String>> valueMap, IMetadataField emf) {
         emf.setValid(true);
         if (emf.getValidationType() != null) {
             if (emf.getValidationType().contains("unique")) {
-                for (FieldValue fv : emf.getValues()) {
+                for (IFieldValue fv : emf.getValues()) {
                     if (StringUtils.isNotBlank(fv.getValue())) {
                         List<String> values = valueMap.get(emf.getName());
                         if (values == null) {
@@ -1866,7 +1877,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             }
             if (emf.getValidationType().contains("required")) {
                 boolean filled = false;
-                for (FieldValue fv : emf.getValues()) {
+                for (IFieldValue fv : emf.getValues()) {
                     if (StringUtils.isNotBlank(fv.getValue())) {
                         filled = true;
                     }
@@ -1878,7 +1889,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             }
             if (emf.getValidationType().contains("regex")) {
                 String regex = emf.getRegularExpression();
-                for (FieldValue fv : emf.getValues()) {
+                for (IFieldValue fv : emf.getValues()) {
                     if (StringUtils.isNotBlank(fv.getValue())) {
                         if (!fv.getValue().matches(regex)) {
                             emf.setValid(false);
@@ -1931,7 +1942,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         createProcessesForChildren(selectedEntry);
     }
 
-    private void createProcessesForChildren(EadEntry currentEntry) {
+    private void createProcessesForChildren(IEadEntry currentEntry) {
 
         setSelectedEntry(currentEntry);
 
@@ -1945,7 +1956,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             }
         } else if (currentEntry.isHasChildren()) {
 
-            for (EadEntry childEntry : currentEntry.getSubEntryList()) {
+            for (IEadEntry childEntry : currentEntry.getSubEntryList()) {
                 createProcessesForChildren(childEntry);
             }
         }
@@ -1953,11 +1964,11 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
     public void updateGoobiIds() {
 
-        EadEntry selected = getSelectedEntry();
+        IEadEntry selected = getSelectedEntry();
 
-        ArrayList<String> lstNodesWithoutIds = removeInvalidProcessIds();
+        List<String> lstNodesWithoutIds = removeInvalidProcessIds();
 
-        ArrayList<String> lstNodesWithNewGoobiIds = checkGoobiProcessesForArchiveRefs(lstNodesWithoutIds);
+        List<String> lstNodesWithNewGoobiIds = checkGoobiProcessesForArchiveRefs(lstNodesWithoutIds);
 
         setSelectedEntry(selected);
     }
@@ -1967,9 +1978,9 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
      * 
      * @return A list of all node ids which have no valid goobi Id
      */
-    public ArrayList<String> removeInvalidProcessIds() {
+    public List<String> removeInvalidProcessIds() {
 
-        ArrayList<String> lstNodesWithoutIds = new ArrayList<>();
+        List<String> lstNodesWithoutIds = new ArrayList<>();
 
         // abort if no node is selected
         if (selectedEntry == null) {
@@ -1980,7 +1991,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             return lstNodesWithoutIds;
         }
 
-        EadEntry currentEntry = selectedEntry;
+        IEadEntry currentEntry = selectedEntry;
 
         lstNodesWithoutIds = removeInvalidProcessIdsForChildren(selectedEntry);
 
@@ -1989,9 +2000,9 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         return lstNodesWithoutIds;
     }
 
-    private ArrayList<String> removeInvalidProcessIdsForChildren(EadEntry currentEntry) {
+    private List<String> removeInvalidProcessIdsForChildren(IEadEntry currentEntry) {
 
-        ArrayList<String> lstNodesWithoutIds = new ArrayList<>();
+        List<String> lstNodesWithoutIds = new ArrayList<>();
 
         setSelectedEntry(currentEntry);
 
@@ -2013,7 +2024,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             }
         } else if (currentEntry.isHasChildren()) {
 
-            for (EadEntry childEntry : currentEntry.getSubEntryList()) {
+            for (IEadEntry childEntry : currentEntry.getSubEntryList()) {
                 lstNodesWithoutIds.addAll(removeInvalidProcessIdsForChildren(childEntry));
             }
         } else if (goobiProcessTitle == null) {
@@ -2029,9 +2040,9 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
      * @param lstNodesWithoutIds
      * @return A list of labels for any nodes which have been given a new goobi id
      */
-    private ArrayList<String> checkGoobiProcessesForArchiveRefs(ArrayList<String> lstNodesWithoutIds) {
+    private List<String> checkGoobiProcessesForArchiveRefs(List<String> lstNodesWithoutIds) {
 
-        ArrayList<String> lstNodesWithNewIds = new ArrayList<>();
+        List<String> lstNodesWithNewIds = new ArrayList<>();
 
         if (lstNodesWithoutIds.isEmpty()) {
             return lstNodesWithNewIds;
@@ -2047,7 +2058,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         for (Integer processId : lstProcessIds) {
 
             String strNodeId = MetadataManager.getMetadataValue(processId, "NodeId");
-            EadEntry node = getNodeWithId(strNodeId, rootElement);
+            IEadEntry node = getNodeWithId(strNodeId, rootElement);
             if (node != null) {
                 String strProcessTitle = ProcessManager.getProcessById(processId).getTitel();
                 node.setGoobiProcessTitle(strProcessTitle);
@@ -2064,14 +2075,14 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         return lstNodesWithNewIds;
     }
 
-    private EadEntry getNodeWithId(String strNodeId, EadEntry node) {
+    private IEadEntry getNodeWithId(String strNodeId, IEadEntry node) {
 
         if (node.getId() != null && node.getId().contentEquals(strNodeId)) {
             return node;
         }
         if (node.getSubEntryList() != null) {
-            for (EadEntry child : node.getSubEntryList()) {
-                EadEntry found = getNodeWithId(strNodeId, child);
+            for (IEadEntry child : node.getSubEntryList()) {
+                IEadEntry found = getNodeWithId(strNodeId, child);
                 if (found != null) {
                     return found;
                 }
@@ -2082,7 +2093,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         return null;
     }
 
-    public List<Integer> getProcessWithNodeIds(ArrayList<String> lstNodesWithoutIds) {
+    public List<Integer> getProcessWithNodeIds(List<String> lstNodesWithoutIds) {
 
         List<Integer> processIds = new ArrayList<>();
 

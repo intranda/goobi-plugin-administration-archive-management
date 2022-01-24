@@ -4,24 +4,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.goobi.interfaces.IFieldValue;
+import org.goobi.interfaces.IMetadataField;
 
 import lombok.Data;
 import lombok.ToString;
 
 @Data
 @ToString
-public class FieldValue {
+public class FieldValue implements IFieldValue {
 
     private String value;
     /** contains the list of selected values in multiselect */
     private List<String> multiselectSelectedValues = new ArrayList<>();
     @ToString.Exclude
-    private EadMetadataField field;
+    private IMetadataField field;
 
-    public FieldValue(EadMetadataField field) {
+    public FieldValue(IMetadataField field) {
         this.field = field;
     }
 
+    @Override
     public List<String> getPossibleValues() {
         List<String> answer = new ArrayList<>();
         for (String possibleValue : field.getSelectItemList()) {
@@ -32,20 +35,24 @@ public class FieldValue {
         return answer;
     }
 
+    @Override
     public String getMultiselectValue() {
         return "";
     }
 
+    @Override
     public void setMultiselectValue(String value) {
         if (StringUtils.isNotBlank(value)) {
             multiselectSelectedValues.add(value);
         }
     }
 
+    @Override
     public void removeSelectedValue(String value) {
         multiselectSelectedValues.remove(value);
     }
 
+    @Override
     public String getValuesForXmlExport() {
         if (StringUtils.isBlank(field.getXpath())) {
             return null;
@@ -63,10 +70,12 @@ public class FieldValue {
         }
     }
 
+    @Override
     public List<String> getSelectItemList() {
         return field.getSelectItemList();
     }
 
+    @Override
     public void setValue(String value) {
         this.value = value;
         if (field.getXpath()!= null && field.getXpath().contains("unittitle")) {

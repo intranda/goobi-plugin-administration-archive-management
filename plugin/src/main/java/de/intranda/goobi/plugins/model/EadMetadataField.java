@@ -4,13 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.goobi.interfaces.IEadEntry;
+import org.goobi.interfaces.IFieldValue;
+import org.goobi.interfaces.IMetadataField;
 
 import lombok.Data;
 import lombok.ToString;
 
 @Data
-
-public class EadMetadataField {
+public class EadMetadataField implements IMetadataField {
 
     /** contains the internal name of the field. The value can be used to translate the field in the messages files */
     private String name;
@@ -39,7 +41,7 @@ public class EadMetadataField {
     private boolean repeatable;
 
     /** contains the metadata values */
-    private List<FieldValue> values;
+    private List<IFieldValue> values;
 
     /** defines if the field is displayed on the UI, values can be true/false, default is true */
     private boolean visible;
@@ -55,7 +57,7 @@ public class EadMetadataField {
 
     /** links to the ead node */
     @ToString.Exclude
-    private EadEntry eadEntry;
+    private IEadEntry eadEntry;
 
     /** internal name of the metadata field */
     private String metadataName;
@@ -91,11 +93,12 @@ public class EadMetadataField {
         this.regularExpression = regularExpression;
     }
 
+    @Override
     public boolean isFilled() {
         if (values == null || values.isEmpty()) {
             return false;
         }
-        for (FieldValue val : values) {
+        for (IFieldValue val : values) {
             if (StringUtils.isNotBlank(val.getValue())) {
                 return true;
             }
@@ -103,7 +106,8 @@ public class EadMetadataField {
         return false;
     }
 
-    public void addFieldValue(FieldValue value) {
+    @Override
+    public void addFieldValue(IFieldValue value) {
         if (values == null) {
             values = new ArrayList<>();
         }
@@ -112,6 +116,7 @@ public class EadMetadataField {
         }
     }
 
+    @Override
     public void addValue() {
         if (values == null) {
             values = new ArrayList<>();
@@ -121,9 +126,10 @@ public class EadMetadataField {
         }
     }
 
-    public void deleteValue(FieldValue value) {
-        FieldValue valueToDelete = null;
-        for (FieldValue fv : values) {
+    @Override
+    public void deleteValue(IFieldValue value) {
+        IFieldValue valueToDelete = null;
+        for (IFieldValue fv : values) {
             if (fv.getValue() == null && value.getValue() == null) {
                 valueToDelete = fv;
                 break;
@@ -142,5 +148,4 @@ public class EadMetadataField {
         }
 
     }
-    
 }
