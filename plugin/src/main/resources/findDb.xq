@@ -17,7 +17,7 @@ function page:getDatabase($identifier) {
       return
       let $ead := db:open($c, $filename)/ead
         return
-        if (exists($ead[//c[@level="file"][@id=$identifier]])) then (
+        if (exists($ead[//c[@id=$identifier]])) then (
           <record database="{$c}" filename="{$filename}" />
         ) else ()
     }
