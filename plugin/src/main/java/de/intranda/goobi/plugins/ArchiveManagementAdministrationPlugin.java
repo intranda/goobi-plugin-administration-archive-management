@@ -408,6 +408,12 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     public void createNewDatabase() {
 
         if (StringUtils.isNotBlank(databaseName) && StringUtils.isNotBlank(fileName)) {
+            // filename must end with xml
+            if (!fileName.endsWith(".xml")) {
+                fileName = fileName + ".xml";
+            }
+            // remove whitespaces from filename
+            fileName = fileName.replace(" ", "_");
             selectedDatabase = databaseName + " - " + fileName;
             readConfiguration();
 
@@ -908,6 +914,14 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         }
 
         String fileName = Paths.get(uploadFile.getSubmittedFileName()).getFileName().toString(); // MSIE fix.
+
+        // filename must end with xml
+        if (!fileName.endsWith(".xml")) {
+            fileName = fileName + ".xml";
+        }
+        // remove whitespaces from filename
+        fileName = fileName.replace(" ", "_");
+
         Path savedFile = Paths.get(exportFolder, fileName);
 
         try (InputStream input = uploadFile.getInputStream()) {
@@ -1696,7 +1710,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         addMetadata(eadRoot, rootElement);
         createEventFields(eadRoot);
         //  write document to servlet output stream
-        String fileName = selectedDatabase.replaceAll("[\\W]", "_");
+        String fileName = selectedDatabase.replace(" ", "_");
         if (!fileName.endsWith(".xml")) {
             fileName = fileName + ".xml";
         }
