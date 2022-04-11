@@ -313,9 +313,8 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         String url = datastoreUrl + "databases";
         HttpGet method = new HttpGet(url);
         CloseableHttpClient client = HttpClientBuilder.create().build();
-        String response = "";
         try {
-            response = client.execute(method, HttpClientHelper.stringResponseHandler);
+            client.execute(method, HttpClientHelper.stringResponseHandler);
         } catch (IOException e) {
             Helper.setFehlerMeldung("plugin_administration_archive_databaseCannotBeLoaded");
             return false;
@@ -422,6 +421,8 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             document.setRootElement(eadElement);
             rootElement = parseElement(1, 0, eadElement);
             rootElement.setDisplayChildren(true);
+            INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
+            rootElement.setNodeType(rootType);
             selectedEntry = rootElement;
             displayMode = "";
             LockingBean.lockObject(selectedDatabase, username);
@@ -448,6 +449,8 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         Element collection = document.getRootElement();
         Element eadElement = collection.getChild("ead", ns);
         rootElement = parseElement(1, 0, eadElement);
+        INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
+        rootElement.setNodeType(rootType);
         rootElement.setDisplayChildren(true);
         selectedEntry = rootElement;
         Element archdesc = eadElement.getChild("archdesc", ns);
@@ -1039,9 +1042,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             if (StringUtils.isNotBlank(node.getId())) {
                 archdesc.setAttribute("id", node.getId());
             }
-            if (node.getNodeType() != null) {
-                archdesc.setAttribute("type", node.getNodeType().getNodeName());
-            }
+
             if (StringUtils.isNotBlank(node.getGoobiProcessTitle())) {
                 Element altformavail = new Element("altformavail", ns);
                 altformavail.setAttribute("localtype", "goobi_process");
