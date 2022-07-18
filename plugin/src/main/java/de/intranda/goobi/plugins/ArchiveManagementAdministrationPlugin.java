@@ -873,7 +873,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             // remove current element from parent node
             parentNode.removeSubEntry(selectedEntry);
             // set selectedEntry to parent node
-            selectedEntry = parentNode;
+            setSelectedEntry( parentNode);
             flatEntryList = null;
         }
         LockingBean.updateLocking(selectedDatabase);
