@@ -873,7 +873,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             // remove current element from parent node
             parentNode.removeSubEntry(selectedEntry);
             // set selectedEntry to parent node
-            setSelectedEntry( parentNode);
+            setSelectedEntry(parentNode);
             flatEntryList = null;
         }
         LockingBean.updateLocking(selectedDatabase);
@@ -1641,7 +1641,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             physical.addMetadata(imageFiles);
             // save fileformat
             process.writeMetadataFile(fileformat);
-        } catch (UGHException | IOException | InterruptedException | SwapException | DAOException e) {
+        } catch (UGHException | IOException | SwapException e) {
             log.error(e);
         }
         // save ead file
