@@ -69,6 +69,7 @@ import de.sub.goobi.helper.FacesContextHelper;
 import de.sub.goobi.helper.Helper;
 import de.sub.goobi.helper.HttpClientHelper;
 import de.sub.goobi.helper.ScriptThreadWithoutHibernate;
+import de.sub.goobi.helper.StorageProvider;
 import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
@@ -92,6 +93,8 @@ import ugh.fileformats.mets.MetsMods;
 @PluginImplementation
 @Log4j2
 public class ArchiveManagementAdministrationPlugin implements org.goobi.interfaces.IArchiveManagementAdministrationPlugin {
+
+    private static final long serialVersionUID = -6745728159636602782L;
 
     @Getter
     @Setter
@@ -127,28 +130,28 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
     @Getter
     @Setter
-    private IEadEntry rootElement = null;
+    private transient IEadEntry rootElement = null;
 
-    private List<IEadEntry> flatEntryList;
-
-    @Getter
-    private IEadEntry selectedEntry;
+    private transient List<IEadEntry> flatEntryList;
 
     @Getter
-    private List<IEadEntry> moveList;
+    private transient IEadEntry selectedEntry;
+
+    @Getter
+    private transient List<IEadEntry> moveList;
 
     @Getter
     @Setter
-    private IEadEntry destinationEntry;
+    private transient IEadEntry destinationEntry;
 
     public static final Namespace ns = Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9");
     private static XPathFactory xFactory = XPathFactory.instance();
 
     private XMLConfiguration xmlConfig;
-    private List<IMetadataField> configuredFields;
+    private transient List<IMetadataField> configuredFields;
 
     @Getter
-    private List<INodeType> configuredNodes;
+    private transient List<INodeType> configuredNodes;
 
     @Getter
     @Setter
@@ -199,7 +202,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
     @Getter
     @Setter
-    private Part uploadFile;
+    private transient Part uploadFile;
 
     private List<StringPair> processTemplates = new ArrayList<>();
     @Getter
@@ -296,10 +299,8 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             }
         }
 
-        if (databases.isEmpty()) {
-            if (checkDB()) {
-                Helper.setFehlerMeldung("plugin_administration_archive_databaseMustBeCreated");
-            }
+        if (databases.isEmpty() && checkDB()) {
+            Helper.setFehlerMeldung("plugin_administration_archive_databaseMustBeCreated");
         }
 
         return databases;
@@ -320,13 +321,10 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             return false;
         } finally {
             method.releaseConnection();
-
-            if (client != null) {
-                try {
-                    client.close();
-                } catch (IOException e) {
-                    log.error(e);
-                }
+            try {
+                client.close();
+            } catch (IOException e) {
+                log.error(e);
             }
         }
 
@@ -342,12 +340,12 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     public void loadSelectedDatabase() {
 
         User user = Helper.getCurrentUser();
-        String username = user != null ? user.getNachVorname() : "-";
+        String userName = user != null ? user.getNachVorname() : "-";
 
         try {
             // open selected database
             if (StringUtils.isNotBlank(selectedDatabase)) {
-                if (!LockingBean.lockObject(selectedDatabase, username)) {
+                if (!LockingBean.lockObject(selectedDatabase, userName)) {
                     Helper.setFehlerMeldung("plugin_administration_archive_databaseLocked");
                     selectedDatabase = null;
                     return;
@@ -382,7 +380,6 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             log.error(e);
             Helper.setFehlerMeldung("plugin_administration_archive_databaseCannotBeLoaded");
             selectedDatabase = null;
-            return;
         }
     }
 
@@ -430,7 +427,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             //this may write an error message if necessary
             List<String> databases = getPossibleDatabaseNames();
 
-            if (databases.size() > 0 && StringUtils.isBlank(databaseName)) {
+            if (!databases.isEmpty() && StringUtils.isBlank(databaseName)) {
                 Helper.setFehlerMeldung("plugin_administration_archive_creation_selectDatabase");
             }
             if (StringUtils.isBlank(fileName)) {
@@ -476,9 +473,9 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             if (maintenancehistory != null) {
                 List<Element> events = maintenancehistory.getChildren("maintenanceevent", ns);
                 for (Element event : events) {
-                    String type = event.getChildText("eventtype", ns);
-                    String date = event.getChildText("eventdatetime", ns);
-                    eventList.add(new StringPair(type, date));
+                    String eventtype = event.getChildText("eventtype", ns);
+                    String eventdatetime = event.getChildText("eventdatetime", ns);
+                    eventList.add(new StringPair(eventtype, eventdatetime));
                 }
             }
         }
@@ -688,6 +685,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             case 7:
                 entry.getDescriptionControlAreaList().add(toAdd);
                 break;
+            default:
         }
 
     }
@@ -700,14 +698,13 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
      */
     private Document openDocument(String response) {
         // read response
-        SAXBuilder builder = new SAXBuilder(XMLReaders.NONVALIDATING);
+        SAXBuilder builder = new SAXBuilder(XMLReaders.NONVALIDATING); // NOSONAR
         builder.setFeature("http://xml.org/sax/features/validation", false);
         builder.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
         builder.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
 
         try {
-            Document document = builder.build(new StringReader(response), "utf-8");
-            return document;
+            return builder.build(new StringReader(response), "utf-8");
 
         } catch (JDOMException | IOException e) {
             log.error(e);
@@ -731,7 +728,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             try {
                 config = xmlConfig.configurationAt("//config[./archive = '*']");
             } catch (IllegalArgumentException e1) {
-
+                // do nothing
             }
         }
 
@@ -754,7 +751,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             } else if (field.getFieldType().equals("vocabulary")) {
                 String vocabularyName = hc.getString("/vocabulary");
                 List<String> searchParameter = Arrays.asList(hc.getStringArray("/searchParameter"));
-                List<String> IFieldValueList = new ArrayList<>();
+                List<String> iFieldValueList = new ArrayList<>();
                 if (searchParameter == null) {
                     Vocabulary currentVocabulary = VocabularyManager.getVocabularyByTitle(vocabularyName);
                     if (currentVocabulary != null) {
@@ -763,7 +760,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                             for (VocabRecord vr : currentVocabulary.getRecords()) {
                                 for (Field f : vr.getFields()) {
                                     if (f.getDefinition().isMainEntry()) {
-                                        IFieldValueList.add(f.getValue());
+                                        iFieldValueList.add(f.getValue());
                                         break;
                                     }
                                 }
@@ -782,18 +779,18 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                         }
                     }
                     List<VocabRecord> records = VocabularyManager.findRecords(vocabularyName, vocabularySearchFields);
-                    if (records != null && records.size() > 0) {
+                    if (records != null && !records.isEmpty()) {
                         for (VocabRecord vr : records) {
                             for (Field f : vr.getFields()) {
                                 if (f.getDefinition().isMainEntry()) {
-                                    IFieldValueList.add(f.getValue());
+                                    iFieldValueList.add(f.getValue());
                                     break;
                                 }
                             }
                         }
                     }
                 }
-                field.setSelectItemList(IFieldValueList);
+                field.setSelectItemList(iFieldValueList);
             }
 
         }
@@ -810,11 +807,9 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
      */
 
     public List<IEadEntry> getFlatEntryList() {
-        if (flatEntryList == null) {
-            if (rootElement != null) {
-                flatEntryList = new LinkedList<>();
-                flatEntryList.addAll(rootElement.getAsFlatList());
-            }
+        if (flatEntryList == null && rootElement != null) {
+            flatEntryList = new LinkedList<>();
+            flatEntryList.addAll(rootElement.getAsFlatList());
         }
         return flatEntryList;
     }
@@ -887,6 +882,14 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
     public void createEadDocument() {
 
+        if (!StorageProvider.getInstance().isFileExists(Paths.get(exportFolder))) {
+            try {
+                StorageProvider.getInstance().createDirectories(Paths.get(exportFolder));
+            } catch (IOException e) {
+                log.error(e);
+            }
+        }
+
         Document document = new Document();
 
         Element eadRoot = new Element("ead", ns);
@@ -916,23 +919,23 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             return;
         }
 
-        String fileName = Paths.get(uploadFile.getSubmittedFileName()).getFileName().toString(); // MSIE fix.
+        String uploadedFileName = Paths.get(uploadFile.getSubmittedFileName()).getFileName().toString(); // MSIE fix.
 
         // filename must end with xml
-        if (!fileName.endsWith(".xml")) {
-            fileName = fileName + ".xml";
+        if (!uploadedFileName.endsWith(".xml")) {
+            uploadedFileName = uploadedFileName + ".xml";
         }
         // remove whitespaces from filename
-        fileName = fileName.replace(" ", "_");
+        uploadedFileName = uploadedFileName.replace(" ", "_");
 
-        Path savedFile = Paths.get(exportFolder, fileName);
+        Path savedFile = Paths.get(exportFolder, uploadedFileName);
 
         try (InputStream input = uploadFile.getInputStream()) {
             Files.copy(input, savedFile);
         } catch (IOException e) {
             log.error(e);
         }
-        String importUrl = datastoreUrl + "import/" + databaseName + "/" + fileName;
+        String importUrl = datastoreUrl + "import/" + databaseName + "/" + uploadedFileName;
 
         // validate uploaded file
         SAXBuilder builder = new SAXBuilder(XMLReaders.NONVALIDATING);
@@ -960,7 +963,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
         HttpClientHelper.getStringFromUrl(importUrl);
 
-        selectedDatabase = databaseName + " - " + fileName;
+        selectedDatabase = databaseName + " - " + uploadedFileName;
         displayMode = "";
         loadSelectedDatabase();
     }
@@ -1140,17 +1143,6 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                     field = field.substring(0, field.indexOf("["));
                 }
 
-                //                //p follows a subentry:
-                //                if (field.contentEquals("p") && !currentElement.getChildren().isEmpty()) {
-                //                    for (Element eltChild : currentElement.getChildren()) {
-                //                        if (eltChild.getText().isEmpty()) {
-                //                            eltChild.setText(metadataValue);
-                //                        }
-                //                    }
-                //
-                //                    continue;
-                //                }
-
                 // check if element exists, re-use if possible
                 Element element = currentElement.getChild(field, ns);
                 if (element == null) {
@@ -1244,7 +1236,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                     continue;
                 }
 
-                Boolean boAttribute = condition.startsWith("@");
+                boolean boAttribute = condition.startsWith("@");
                 //is it an attribute or a subelement?
                 if (boAttribute) {
 
@@ -1479,8 +1471,8 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             for (int i = 0; i < rawData.size(); i++) {
                 Object[] rowData = (Object[]) rawData.get(i);
                 String processId = (String) rowData[0];
-                String title = (String) rowData[1];
-                processTemplates.add(new StringPair(processId, title));
+                String processTitle = (String) rowData[1];
+                processTemplates.add(new StringPair(processId, processTitle));
             }
         }
         return processTemplates;
@@ -1504,16 +1496,12 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         // load process template
         processTemplate = ProcessManager.getProcessById(processTemplateId);
         if (processTemplate == null) {
-            // TODO error
             return;
         }
 
-        // TODO configure process title rule?
+        // TODO change process title generation, see #23816
         StringBuilder processTitleBuilder = new StringBuilder();
-        //        processTitleBuilder.append(selectedEntry.getHierarchy());
-        //        processTitleBuilder.append("_");
-        //        processTitleBuilder.append(selectedEntry.getOrderNumber());
-        //        processTitleBuilder.append("_");
+
         processTitleBuilder.append(selectedEntry.getId());
         processTitleBuilder.append("_");
         processTitleBuilder.append(StringUtils.substring(selectedEntry.getLabel().toLowerCase(), 0, 32));
@@ -1711,18 +1699,18 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         addMetadata(eadRoot, rootElement);
         createEventFields(eadRoot);
         //  write document to servlet output stream
-        String fileName = selectedDatabase.replace(" ", "_");
-        if (!fileName.endsWith(".xml")) {
-            fileName = fileName + ".xml";
+        String downloadFileName = selectedDatabase.replace(" ", "_");
+        if (!downloadFileName.endsWith(".xml")) {
+            downloadFileName = downloadFileName + ".xml";
         }
         FacesContext facesContext = FacesContextHelper.getCurrentFacesContext();
         if (!facesContext.getResponseComplete()) {
             HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
             ServletContext servletContext = (ServletContext) facesContext.getExternalContext().getContext();
-            String contentType = servletContext.getMimeType(fileName);
+            String contentType = servletContext.getMimeType(downloadFileName);
             response.setContentType(contentType);
 
-            response.setHeader("Content-Disposition", "attachment;filename=\"" + fileName + "\"");
+            response.setHeader("Content-Disposition", "attachment;filename=\"" + downloadFileName + "\"");
 
             try {
                 ServletOutputStream out = response.getOutputStream();
@@ -1767,14 +1755,14 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             item.setText(editor);
             list.addContent(item);
         }
-        String type;
+        String eventType;
         if (eventList.isEmpty()) {
-            type = "Created";
+            eventType = "Created";
         } else {
-            type = "Modified";
+            eventType = "Modified";
         }
         String date = formatter.format(new Date());
-        eventList.add(new StringPair(type, date));
+        eventList.add(new StringPair(eventType, date));
 
         Element control = eadElement.getChild("control", ns);
         if (control == null) {
@@ -1905,11 +1893,9 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             if (emf.getValidationType().contains("regex")) {
                 String regex = emf.getRegularExpression();
                 for (IFieldValue fv : emf.getValues()) {
-                    if (StringUtils.isNotBlank(fv.getValue())) {
-                        if (!fv.getValue().matches(regex)) {
-                            emf.setValid(false);
-                            node.setValid(false);
-                        }
+                    if (StringUtils.isNotBlank(fv.getValue()) && !fv.getValue().matches(regex)) {
+                        emf.setValid(false);
+                        node.setValid(false);
                     }
                 }
             }
@@ -1939,6 +1925,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             case 7:
                 displayControlArea = true;
                 break;
+            default:
         }
     }
 
