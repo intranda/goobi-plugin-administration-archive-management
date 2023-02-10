@@ -43,12 +43,12 @@ import de.sub.goobi.persistence.managers.VocabularyManager;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ ConfigurationHelper.class, HttpClientHelper.class, VocabularyManager.class, ProcessManager.class })
-@PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*",  "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.*"})
+@PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*",
+        "org.w3c.*" })
 public class ArchiveManagementAdministrationPluginTest {
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
-
 
     private static String resourcesFolder;
 
@@ -62,7 +62,6 @@ public class ArchiveManagementAdministrationPluginTest {
         System.setProperty("log4j.configurationFile", log4jFile);
     }
 
-
     @Before
     public void setUp() throws Exception {
 
@@ -70,15 +69,15 @@ public class ArchiveManagementAdministrationPluginTest {
         EasyMock.expect(HttpClientHelper.getStringFromUrl("http://localhost:8984/databases")).andReturn(getDatabaseResponse()).anyTimes();
         EasyMock.expect(HttpClientHelper.getStringFromUrl("http://localhost:8984/db/fixture/ead.xml")).andReturn(readDatabaseResponse()).anyTimes();
         EasyMock.expect(HttpClientHelper.getStringFromUrl("http://localhost:8984/import/fixture/ead.xml"))
-        .andReturn(readDatabaseResponse())
-        .anyTimes();
+                .andReturn(readDatabaseResponse())
+                .anyTimes();
         PowerMock.replay(HttpClientHelper.class);
 
         PowerMock.mockStatic(ConfigurationHelper.class);
         ConfigurationHelper configurationHelper = EasyMock.createMock(ConfigurationHelper.class);
         EasyMock.expect(ConfigurationHelper.getInstance()).andReturn(configurationHelper).anyTimes();
         EasyMock.expect(configurationHelper.getConfigurationFolder()).andReturn(resourcesFolder).anyTimes();
-
+        EasyMock.expect(configurationHelper.useS3()).andReturn(false).anyTimes();
         PowerMock.mockStatic(VocabularyManager.class);
 
         List<VocabRecord> recordList = new ArrayList<>();
@@ -192,9 +191,9 @@ public class ArchiveManagementAdministrationPluginTest {
                 case "agencycode":
                     agencycode = emf;
                     break;
-                    //                case "eadid":
-                    //                    eadid = emf;
-                    //                    break;
+                //                case "eadid":
+                //                    eadid = emf;
+                //                    break;
                 case "recordid":
                     recordid = emf;
                     break;
@@ -517,8 +516,8 @@ public class ArchiveManagementAdministrationPluginTest {
 
         assertEquals("archive header title",
                 eadHeader.getChild("filedesc", ArchiveManagementAdministrationPlugin.ns)
-                .getChild("titlestmt", ArchiveManagementAdministrationPlugin.ns)
-                .getChildText("titleproper", ArchiveManagementAdministrationPlugin.ns));
+                        .getChild("titlestmt", ArchiveManagementAdministrationPlugin.ns)
+                        .getChildText("titleproper", ArchiveManagementAdministrationPlugin.ns));
         Element archdesc = ead.getChild("archdesc", ArchiveManagementAdministrationPlugin.ns);
         Element did = archdesc.getChild("did", ArchiveManagementAdministrationPlugin.ns);
         Element dsc = archdesc.getChild("dsc", ArchiveManagementAdministrationPlugin.ns);
