@@ -67,7 +67,6 @@ import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.BeanHelper;
 import de.sub.goobi.helper.FacesContextHelper;
 import de.sub.goobi.helper.Helper;
-import de.sub.goobi.helper.HttpClientHelper;
 import de.sub.goobi.helper.ScriptThreadWithoutHibernate;
 import de.sub.goobi.helper.StorageProvider;
 import de.sub.goobi.helper.enums.StepStatus;
@@ -76,6 +75,7 @@ import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.MetadataManager;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.VocabularyManager;
+import io.goobi.workflow.api.connection.HttpUtils;
 import io.goobi.workflow.locking.LockingBean;
 import lombok.Getter;
 import lombok.Setter;
@@ -248,7 +248,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     @Override
     public List<String> getPossibleDatabases() {
         List<String> databases = new ArrayList<>();
-        String response = HttpClientHelper.getStringFromUrl(datastoreUrl + "databases");
+        String response = HttpUtils.getStringFromUrl(datastoreUrl + "databases");
         if (StringUtils.isNotBlank(response)) {
 
             Document document = openDocument(response);
@@ -285,7 +285,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
     public List<String> getPossibleDatabaseNames() {
         List<String> databases = new ArrayList<>();
-        String response = HttpClientHelper.getStringFromUrl(datastoreUrl + "databases");
+        String response = HttpUtils.getStringFromUrl(datastoreUrl + "databases");
         if (StringUtils.isNotBlank(response)) {
 
             Document document = openDocument(response);
@@ -315,7 +315,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         HttpGet method = new HttpGet(url);
         CloseableHttpClient client = HttpClientBuilder.create().build();
         try {
-            client.execute(method, HttpClientHelper.stringResponseHandler);
+            client.execute(method, HttpUtils.stringResponseHandler);
         } catch (IOException e) {
             Helper.setFehlerMeldung("plugin_administration_archive_databaseCannotBeLoaded");
             return false;
@@ -353,7 +353,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
                 String[] parts = selectedDatabase.split(" - ");
 
-                String response = HttpClientHelper.getStringFromUrl(datastoreUrl + "db/" + parts[0] + "/" + parts[1]);
+                String response = HttpUtils.getStringFromUrl(datastoreUrl + "db/" + parts[0] + "/" + parts[1]);
                 // get xml root element
                 Document document = openDocument(response);
                 if (document != null) {
@@ -499,12 +499,10 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                         String stringValue = value.getValue();
                         stringValues.add(stringValue);
                     }
-                } else {
-                    if (!values.isEmpty()) {
-                        Text value = values.get(0);
-                        String stringValue = value.getValue();
-                        stringValues.add(stringValue);
-                    }
+                } else if (!values.isEmpty()) {
+                    Text value = values.get(0);
+                    String stringValue = value.getValue();
+                    stringValues.add(stringValue);
                 }
             } else if ("attribute".equalsIgnoreCase(emf.getXpathType())) {
                 XPathExpression<Attribute> engine = xFactory.compile(emf.getXpath(), Filters.attribute(), null, ns);
@@ -515,12 +513,10 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                         String stringValue = value.getValue();
                         stringValues.add(stringValue);
                     }
-                } else {
-                    if (!values.isEmpty()) {
-                        Attribute value = values.get(0);
-                        String stringValue = value.getValue();
-                        stringValues.add(stringValue);
-                    }
+                } else if (!values.isEmpty()) {
+                    Attribute value = values.get(0);
+                    String stringValue = value.getValue();
+                    stringValues.add(stringValue);
                 }
             } else {
                 XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, ns);
@@ -530,12 +526,10 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                         String stringValue = value.getValue();
                         stringValues.add(stringValue);
                     }
-                } else {
-                    if (!values.isEmpty()) {
-                        Element value = values.get(0);
-                        String stringValue = value.getValue();
-                        stringValues.add(stringValue);
-                    }
+                } else if (!values.isEmpty()) {
+                    Element value = values.get(0);
+                    String stringValue = value.getValue();
+                    stringValues.add(stringValue);
                 }
             }
             addFieldToEntry(entry, emf, stringValues);
@@ -648,7 +642,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             for (String stringValue : stringValues) {
                 IFieldValue fv = new FieldValue(toAdd);
 
-                if (toAdd.getFieldType().equals("multiselect") && StringUtils.isNotBlank(stringValue)) {
+                if ("multiselect".equals(toAdd.getFieldType()) && StringUtils.isNotBlank(stringValue)) {
                     String[] splittedValues = stringValue.split("; ");
                     for (String val : splittedValues) {
                         fv.setMultiselectValue(val);
@@ -745,10 +739,10 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                     hc.getBoolean("@importMetadataInChild", false), hc.getString("@validationType", null), hc.getString("@regularExpression"));
             configuredFields.add(field);
             field.setValidationError(hc.getString("/validationError"));
-            if (field.getFieldType().equals("dropdown") || field.getFieldType().equals("multiselect")) {
+            if ("dropdown".equals(field.getFieldType()) || "multiselect".equals(field.getFieldType())) {
                 List<String> valueList = Arrays.asList(hc.getStringArray("/value"));
                 field.setSelectItemList(valueList);
-            } else if (field.getFieldType().equals("vocabulary")) {
+            } else if ("vocabulary".equals(field.getFieldType())) {
                 String vocabularyName = hc.getString("/vocabulary");
                 List<String> searchParameter = Arrays.asList(hc.getStringArray("/searchParameter"));
                 List<String> iFieldValueList = new ArrayList<>();
@@ -908,7 +902,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         // call function to import created ead file
         String importUrl = datastoreUrl + "import/" + nameParts[0] + "/" + nameParts[1];
 
-        HttpClientHelper.getStringFromUrl(importUrl);
+        HttpUtils.getStringFromUrl(importUrl);
 
         LockingBean.updateLocking(selectedDatabase);
     }
@@ -961,7 +955,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         }
         // check if filename is not used yet
 
-        HttpClientHelper.getStringFromUrl(importUrl);
+        HttpUtils.getStringFromUrl(importUrl);
 
         selectedDatabase = databaseName + " - " + uploadedFileName;
         displayMode = "";
@@ -970,7 +964,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
     private void addMetadata(Element xmlElement, IEadEntry node) {
         boolean isMainElement = false;
-        if (xmlElement.getName().equals("ead")) {
+        if ("ead".equals(xmlElement.getName())) {
             isMainElement = true;
         }
 
@@ -1097,10 +1091,8 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                     if (part.contains("archdesc") || part.contains("eadheader")) {
                         xpath = part;
                     }
-                } else {
-                    if (!part.contains("archdesc") && !part.contains("eadheader")) {
-                        xpath = part;
-                    }
+                } else if (!part.contains("archdesc") && !part.contains("eadheader")) {
+                    xpath = part;
                 }
             }
         }
@@ -1112,7 +1104,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             field = field.trim();
 
             // ignore .
-            if (field.equals(".")) {
+            if (".".equals(field)) {
                 continue;
             }
             // check if its an element or attribute
@@ -1637,7 +1629,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
         // start any open automatic tasks
         for (Step s : process.getSchritteList()) {
-            if (s.getBearbeitungsstatusEnum().equals(StepStatus.OPEN) && s.isTypAutomatisch()) {
+            if (StepStatus.OPEN.equals(s.getBearbeitungsstatusEnum()) && s.isTypAutomatisch()) {
                 ScriptThreadWithoutHibernate myThread = new ScriptThreadWithoutHibernate(s);
                 myThread.startOrPutToQueue();
             }
@@ -2099,18 +2091,18 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
         List<Integer> processIds = new ArrayList<>();
 
-        String strSQLNodes = "('" + lstNodesWithoutIds.get(0) + "'";
+        StringBuilder strSQLNodes = new StringBuilder("('").append(lstNodesWithoutIds.get(0)).append("'");
 
         for (int i = 1; i < lstNodesWithoutIds.size(); i++) {
 
-            strSQLNodes = strSQLNodes + ", " + "'" + lstNodesWithoutIds.get(i) + "'";
+            strSQLNodes.append(", ").append("'").append(lstNodesWithoutIds.get(i)).append("'");
         }
-        strSQLNodes += ")";
+        strSQLNodes.append(")");
 
         StringBuilder sql = new StringBuilder();
 
         sql.append("SELECT processid FROM metadata WHERE name = 'NodeId' and value in ");
-        sql.append(strSQLNodes);
+        sql.append(strSQLNodes.toString());
         sql.append(" order by processid;");
         @SuppressWarnings("unchecked")
         List<Object> rawData = ProcessManager.runSQL(sql.toString());
