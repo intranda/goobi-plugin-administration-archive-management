@@ -37,12 +37,12 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.sub.goobi.config.ConfigurationHelper;
-import de.sub.goobi.helper.HttpClientHelper;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.VocabularyManager;
+import io.goobi.workflow.api.connection.HttpUtils;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ ConfigurationHelper.class, HttpClientHelper.class, VocabularyManager.class, ProcessManager.class })
+@PrepareForTest({ ConfigurationHelper.class, HttpUtils.class, VocabularyManager.class, ProcessManager.class })
 @PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*",
         "org.w3c.*" })
 public class ArchiveManagementAdministrationPluginTest {
@@ -65,13 +65,13 @@ public class ArchiveManagementAdministrationPluginTest {
     @Before
     public void setUp() throws Exception {
 
-        PowerMock.mockStatic(HttpClientHelper.class);
-        EasyMock.expect(HttpClientHelper.getStringFromUrl("http://localhost:8984/databases")).andReturn(getDatabaseResponse()).anyTimes();
-        EasyMock.expect(HttpClientHelper.getStringFromUrl("http://localhost:8984/db/fixture/ead.xml")).andReturn(readDatabaseResponse()).anyTimes();
-        EasyMock.expect(HttpClientHelper.getStringFromUrl("http://localhost:8984/import/fixture/ead.xml"))
+        PowerMock.mockStatic(HttpUtils.class);
+        EasyMock.expect(HttpUtils.getStringFromUrl("http://localhost:8984/databases")).andReturn(getDatabaseResponse()).anyTimes();
+        EasyMock.expect(HttpUtils.getStringFromUrl("http://localhost:8984/db/fixture/ead.xml")).andReturn(readDatabaseResponse()).anyTimes();
+        EasyMock.expect(HttpUtils.getStringFromUrl("http://localhost:8984/import/fixture/ead.xml"))
                 .andReturn(readDatabaseResponse())
                 .anyTimes();
-        PowerMock.replay(HttpClientHelper.class);
+        PowerMock.replay(HttpUtils.class);
 
         PowerMock.mockStatic(ConfigurationHelper.class);
         ConfigurationHelper configurationHelper = EasyMock.createMock(ConfigurationHelper.class);
