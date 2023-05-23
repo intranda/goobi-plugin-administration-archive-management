@@ -67,8 +67,10 @@ import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.BeanHelper;
 import de.sub.goobi.helper.FacesContextHelper;
 import de.sub.goobi.helper.Helper;
+import de.sub.goobi.helper.ProcessTitleGenerator;
 import de.sub.goobi.helper.ScriptThreadWithoutHibernate;
 import de.sub.goobi.helper.StorageProvider;
+import de.sub.goobi.helper.enums.ManipulationType;
 import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
@@ -208,6 +210,12 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     @Getter
     @Setter
     private String selectedTemplate;
+
+    private int lengthLimit;
+
+    private String separator;
+
+    private boolean useSignature;
 
     /**
      * Constructor
@@ -711,6 +719,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
      * 
      */
     private void readConfiguration() {
+        log.debug("reading configuration");
         configuredFields = new ArrayList<>();
         configuredNodes = new ArrayList<>();
 
@@ -732,6 +741,12 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             configuredNodes.add(nt);
         }
 
+        // configurations for generating process title
+        lengthLimit = config.getInt("/lengthLimit", 10);
+        separator = config.getString("/separator", "_");
+        useSignature = config.getBoolean("/useSignature", false);
+
+        // configurations for metadata
         for (HierarchicalConfiguration hc : config.configurationsAt("/metadata")) {
             IMetadataField field = new EadMetadataField(hc.getString("@name"), hc.getInt("@level"), hc.getString("@xpath"),
                     hc.getString("@xpathType", "element"), hc.getBoolean("@repeatable", false), hc.getBoolean("@visible", true),
@@ -1492,14 +1507,28 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         }
 
         // TODO change process title generation, see #23816
-        StringBuilder processTitleBuilder = new StringBuilder();
+        //        StringBuilder processTitleBuilder = new StringBuilder();
+        //
+        //        processTitleBuilder.append(selectedEntry.getId());
+        //        processTitleBuilder.append("_");
+        //        processTitleBuilder.append(StringUtils.substring(selectedEntry.getLabel().toLowerCase(), 0, 32));
+        //        String processTitle = processTitleBuilder.toString().replaceAll("[\\W]", "_");
 
-        processTitleBuilder.append(selectedEntry.getId());
-        processTitleBuilder.append("_");
-        processTitleBuilder.append(StringUtils.substring(selectedEntry.getLabel().toLowerCase(), 0, 32));
-        String processTitle = processTitleBuilder.toString().replaceAll("[\\W]", "_");
+        ProcessTitleGenerator titleGenerator = getTitleGenerator();
 
-        // TODO check if title is unique, abort if not
+        // check if the generated process name is unique
+        // if it is not unique, then get the full uuid version name from the generator
+        // check its uniqueness again, if still not, report the failure and abort
+        String processTitle = titleGenerator.generateTitle();
+        if (ProcessManager.getNumberOfProcessesWithTitle(processTitle) > 0) {
+            processTitle = titleGenerator.getAlternativeTitle();
+            if (ProcessManager.getNumberOfProcessesWithTitle(processTitle) > 0) {
+                // title is not unique in this scenario, abort
+                log.error("Uniqueness of the generated process name is not guaranteed, aborting.");
+                return;
+            }
+        }
+        log.debug("processTitle = " + processTitle);
 
         // create process based on configured process template
         Process process = new Process();
@@ -1635,6 +1664,47 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             }
         }
         LockingBean.updateLocking(selectedDatabase);
+    }
+
+    private ProcessTitleGenerator getTitleGenerator() {
+        // 1. check config to see if the process name should be using signature
+        // 2.1. if signature is to be used, then try to get the signature
+        // 2.2. if signature is not to be used, or if it is not available, then use uuid instead
+        String signature = useSignature ? getSignature(selectedEntry) : "";
+        log.debug("signature = " + signature);
+        boolean shouldUseSignature = StringUtils.isNotBlank(signature);
+        log.debug("shouldUseSignature = " + shouldUseSignature);
+
+        ProcessTitleGenerator titleGenerator = new ProcessTitleGenerator(shouldUseSignature, lengthLimit, separator);
+
+        // use signature if it is valid, otherwise use uuid instead
+        String valueOfFirstToken = shouldUseSignature ? signature : rootElement.getId();
+        titleGenerator.addToken(valueOfFirstToken, ManipulationType.BEFORE_FIRST_SEPARATOR);
+
+        String label = selectedEntry.getLabel();
+        titleGenerator.addToken(label, ManipulationType.CAMEL_CASE_LENGTH_LIMITED);
+
+        return titleGenerator;
+    }
+
+    private String getSignature(IEadEntry entry) {
+        // signature is defined in the identityStatement whose:
+        // metadataName = shelfmarksource
+        // name = Shelfmark
+        // validationType = unique
+        // fieldType = input
+        // TODO: signature should be retrieved from the current node's parent node
+        final String mdName = "shelfmarksource";
+        String signature = "";
+        List<IMetadataField> identityStatements = entry.getIdentityStatementAreaList();
+        log.debug("======= identityStatements =======");
+        for (IMetadataField statement : identityStatements) {
+            if (mdName.equals(statement.getMetadataName())) {
+                signature = statement.getValues().get(0).getValue();
+                break;
+            }
+        }
+        return signature;
     }
 
     //  create metadata, add it to logical element
