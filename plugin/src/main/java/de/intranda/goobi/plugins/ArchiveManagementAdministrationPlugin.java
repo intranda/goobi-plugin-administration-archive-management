@@ -211,10 +211,11 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     @Setter
     private String selectedTemplate;
 
+    // maximum length of each component that is to be used to generate the process title
     private int lengthLimit;
-
+    // separator that will be used to join all components into a process title
     private String separator;
-
+    // true if signature should be used in the process title, false if uuid should be used 
     private boolean useSignature;
 
     /**
@@ -742,7 +743,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         }
 
         // configurations for generating process title
-        lengthLimit = config.getInt("/lengthLimit", 10);
+        lengthLimit = config.getInt("/lengthLimit", 0);
         separator = config.getString("/separator", "_");
         useSignature = config.getBoolean("/useSignature", false);
 
@@ -1514,13 +1515,14 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         //        processTitleBuilder.append(StringUtils.substring(selectedEntry.getLabel().toLowerCase(), 0, 32));
         //        String processTitle = processTitleBuilder.toString().replaceAll("[\\W]", "_");
 
-        ProcessTitleGenerator titleGenerator = getTitleGenerator();
+        ProcessTitleGenerator titleGenerator = prepareTitleGenerator();
 
         // check if the generated process name is unique
         // if it is not unique, then get the full uuid version name from the generator
         // check its uniqueness again, if still not, report the failure and abort
         String processTitle = titleGenerator.generateTitle();
         if (ProcessManager.getNumberOfProcessesWithTitle(processTitle) > 0) {
+            log.debug("A process named " + processTitle + " already exists. Trying to get an alternative title.");
             processTitle = titleGenerator.getAlternativeTitle();
             if (ProcessManager.getNumberOfProcessesWithTitle(processTitle) > 0) {
                 // title is not unique in this scenario, abort
@@ -1666,7 +1668,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         LockingBean.updateLocking(selectedDatabase);
     }
 
-    private ProcessTitleGenerator getTitleGenerator() {
+    private ProcessTitleGenerator prepareTitleGenerator() {
         // 1. check config to see if the process name should be using signature
         // 2.1. if signature is to be used, then try to get the signature
         // 2.2. if signature is not to be used, or if it is not available, then use uuid instead
@@ -1681,22 +1683,24 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         String valueOfFirstToken = shouldUseSignature ? signature : rootElement.getId();
         titleGenerator.addToken(valueOfFirstToken, ManipulationType.BEFORE_FIRST_SEPARATOR);
 
+        ManipulationType labelTokenType = lengthLimit > 0 ? ManipulationType.CAMEL_CASE_LENGTH_LIMITED : ManipulationType.CAMEL_CASE;
         String label = selectedEntry.getLabel();
-        titleGenerator.addToken(label, ManipulationType.CAMEL_CASE_LENGTH_LIMITED);
+        titleGenerator.addToken(label, labelTokenType);
 
         return titleGenerator;
     }
 
     private String getSignature(IEadEntry entry) {
-        // signature is defined in the identityStatement whose:
+        // signature is defined in the identityStatementAreaList whose:
         // metadataName = shelfmarksource
         // name = Shelfmark
         // validationType = unique
         // fieldType = input
-        // TODO: signature should be retrieved from the current node's parent node
         final String mdName = "shelfmarksource";
         String signature = "";
-        List<IMetadataField> identityStatements = entry.getIdentityStatementAreaList();
+        // signature should be retrieved from the current node's parent node
+        IEadEntry parentEntry = entry.getParentNode();
+        List<IMetadataField> identityStatements = parentEntry.getIdentityStatementAreaList();
         log.debug("======= identityStatements =======");
         for (IMetadataField statement : identityStatements) {
             if (mdName.equals(statement.getMetadataName())) {
