@@ -31,4 +31,6 @@ public interface IArchiveManagementAdministrationPlugin extends IAdministrationP
     public void setSelectedEntry(IEadEntry entry);
     public IEadEntry getSelectedEntry();
     public void addNode() ;
+
+    public void createEadDocument();
 }
