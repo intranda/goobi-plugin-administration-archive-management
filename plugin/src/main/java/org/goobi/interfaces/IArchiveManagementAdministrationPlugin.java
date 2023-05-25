@@ -26,4 +26,9 @@ public interface IArchiveManagementAdministrationPlugin extends IAdministrationP
     public void setFileName(String fileName);
     public void setDatabaseName(String databaseName);
     public void createNewDatabase();
+
+    // create new node as last child of the selected node
+    public void setSelectedEntry(IEadEntry entry);
+    public IEadEntry getSelectedEntry();
+    public void addNode() ;
 }
