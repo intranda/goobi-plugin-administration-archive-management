@@ -21,16 +21,23 @@ public interface IArchiveManagementAdministrationPlugin extends IAdministrationP
 
     public IEadEntry getRootElement();
 
-
     // used to create a new database
     public void setFileName(String fileName);
+
     public void setDatabaseName(String databaseName);
+
     public void createNewDatabase();
 
     // create new node as last child of the selected node
     public void setSelectedEntry(IEadEntry entry);
+
     public IEadEntry getSelectedEntry();
-    public void addNode() ;
+
+    public void addNode();
 
     public void createEadDocument();
+
+    public List<INodeType> getConfiguredNodes();
+
+    public List<IMetadataField> getConfiguredFields();
 }

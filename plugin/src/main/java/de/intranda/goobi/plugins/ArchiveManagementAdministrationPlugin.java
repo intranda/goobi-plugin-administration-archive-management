@@ -150,6 +150,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     private static XPathFactory xFactory = XPathFactory.instance();
 
     private XMLConfiguration xmlConfig;
+    @Getter
     private transient List<IMetadataField> configuredFields;
 
     @Getter
@@ -215,7 +216,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     private int lengthLimit;
     // separator that will be used to join all components into a process title
     private String separator;
-    // true if signature should be used in the process title, false if uuid should be used 
+    // true if signature should be used in the process title, false if uuid should be used
     private boolean useSignature;
 
     /**
@@ -410,6 +411,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         return answer;
     }
 
+    @Override
     public void createNewDatabase() {
 
         if (StringUtils.isNotBlank(databaseName) && StringUtils.isNotBlank(fileName)) {
@@ -824,6 +826,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         return flatEntryList;
     }
 
+    @Override
     public void setSelectedEntry(IEadEntry entry) {
 
         if (flatEntryList == null) {
@@ -837,6 +840,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         this.selectedEntry = entry;
     }
 
+    @Override
     public void addNode() {
         if (selectedEntry != null) {
             EadEntry entry =
@@ -890,6 +894,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
      * 
      */
 
+    @Override
     public void createEadDocument() {
 
         if (!StorageProvider.getInstance().isFileExists(Paths.get(exportFolder))) {
