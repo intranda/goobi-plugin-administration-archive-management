@@ -1512,14 +1512,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             return;
         }
 
-        // TODO change process title generation, see #23816
-        //        StringBuilder processTitleBuilder = new StringBuilder();
-        //
-        //        processTitleBuilder.append(selectedEntry.getId());
-        //        processTitleBuilder.append("_");
-        //        processTitleBuilder.append(StringUtils.substring(selectedEntry.getLabel().toLowerCase(), 0, 32));
-        //        String processTitle = processTitleBuilder.toString().replaceAll("[\\W]", "_");
-
+        // generate process title via ProcessTitleGenerator
         ProcessTitleGenerator titleGenerator = prepareTitleGenerator();
 
         // check if the generated process name is unique
@@ -1673,6 +1666,11 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         LockingBean.updateLocking(selectedDatabase);
     }
 
+    /**
+     * prepare a ProcessTitleGenerator object suitable for this scenario
+     * 
+     * @return ProcessTitleGenerator object
+     */
     private ProcessTitleGenerator prepareTitleGenerator() {
         // 1. check config to see if the process name should be using signature
         // 2.1. if signature is to be used, then try to get the signature
@@ -1695,6 +1693,12 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         return titleGenerator;
     }
 
+    /**
+     * try to retrieve the signature for the input entry
+     * 
+     * @param entry IEadEntry
+     * @return the signature for the input entry if it exists, or an empty string otherwise
+     */
     private String getSignature(IEadEntry entry) {
         // signature is defined in the identityStatementAreaList whose:
         // metadataName = shelfmarksource
@@ -1706,7 +1710,6 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         // signature should be retrieved from the current node's parent node
         IEadEntry parentEntry = entry.getParentNode();
         List<IMetadataField> identityStatements = parentEntry.getIdentityStatementAreaList();
-        log.debug("======= identityStatements =======");
         for (IMetadataField statement : identityStatements) {
             if (mdName.equals(statement.getMetadataName())) {
                 signature = statement.getValues().get(0).getValue();
