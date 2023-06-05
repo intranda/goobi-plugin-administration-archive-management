@@ -16,8 +16,8 @@
         <lengthLimit>0</lengthLimit>
         <!-- separator string that will be used to combine the tokens -->
         <separator>_</separator>
-        <!-- true if signature should be used preferably, false if uuid should be used -->
-        <useSignature>true</useSignature>
+        <!-- true if shelfmark should be used preferably, false if uuid should be used -->
+        <useShelfmark>true</useShelfmark>
         
         <!-- // configurations for generating process titles // -->
         

@@ -217,7 +217,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     // separator that will be used to join all components into a process title
     private String separator;
     // true if signature should be used in the process title, false if uuid should be used
-    private boolean useSignature;
+    private boolean useShelfmark;
 
     /**
      * Constructor
@@ -747,7 +747,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         // configurations for generating process title
         lengthLimit = config.getInt("/lengthLimit", 0);
         separator = config.getString("/separator", "_");
-        useSignature = config.getBoolean("/useSignature", false);
+        useShelfmark = config.getBoolean("/useShelfmark", false);
 
         // configurations for metadata
         for (HierarchicalConfiguration hc : config.configurationsAt("/metadata")) {
@@ -1673,17 +1673,17 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
      */
     private ProcessTitleGenerator prepareTitleGenerator() {
         // 1. check config to see if the process name should be using signature
-        // 2.1. if signature is to be used, then try to get the signature
-        // 2.2. if signature is not to be used, or if it is not available, then use uuid instead
-        String signature = useSignature ? getSignature(selectedEntry) : "";
-        log.debug("signature = " + signature);
-        boolean shouldUseSignature = StringUtils.isNotBlank(signature);
-        log.debug("shouldUseSignature = " + shouldUseSignature);
+        // 2.1. if shelfmark is to be used, then try to get the signature
+        // 2.2. if shelfmark is not to be used, or if it is not available, then use uuid instead
+        String shelfmark = useShelfmark ? getShelfmark(selectedEntry) : "";
+        log.debug("shelfmark = " + shelfmark);
+        boolean shouldUseShelfmark = StringUtils.isNotBlank(shelfmark);
+        log.debug("shouldUseShelfmark = " + shouldUseShelfmark);
 
-        ProcessTitleGenerator titleGenerator = new ProcessTitleGenerator(shouldUseSignature, lengthLimit, separator);
+        ProcessTitleGenerator titleGenerator = new ProcessTitleGenerator(shouldUseShelfmark, lengthLimit, separator);
 
         // use signature if it is valid, otherwise use uuid instead
-        String valueOfFirstToken = shouldUseSignature ? signature : rootElement.getId();
+        String valueOfFirstToken = shouldUseShelfmark ? shelfmark : rootElement.getId();
         titleGenerator.addToken(valueOfFirstToken, ManipulationType.BEFORE_FIRST_SEPARATOR);
 
         ManipulationType labelTokenType = lengthLimit > 0 ? ManipulationType.CAMEL_CASE_LENGTH_LIMITED : ManipulationType.CAMEL_CASE;
@@ -1694,29 +1694,29 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     }
 
     /**
-     * try to retrieve the signature for the input entry
+     * try to retrieve the shelfmark for the input entry
      * 
      * @param entry IEadEntry
-     * @return the signature for the input entry if it exists, or an empty string otherwise
+     * @return the shelfmark for the input entry if it exists, or an empty string otherwise
      */
-    private String getSignature(IEadEntry entry) {
-        // signature is defined in the identityStatementAreaList whose:
+    private String getShelfmark(IEadEntry entry) {
+        // shelfmark is defined in the identityStatementAreaList whose:
         // metadataName = shelfmarksource
         // name = Shelfmark
         // validationType = unique
         // fieldType = input
         final String mdName = "shelfmarksource";
-        String signature = "";
+        String shelfmark = "";
         // signature should be retrieved from the current node's parent node
         IEadEntry parentEntry = entry.getParentNode();
         List<IMetadataField> identityStatements = parentEntry.getIdentityStatementAreaList();
         for (IMetadataField statement : identityStatements) {
             if (mdName.equals(statement.getMetadataName())) {
-                signature = statement.getValues().get(0).getValue();
+                shelfmark = statement.getValues().get(0).getValue();
                 break;
             }
         }
-        return signature;
+        return shelfmark;
     }
 
     //  create metadata, add it to logical element
