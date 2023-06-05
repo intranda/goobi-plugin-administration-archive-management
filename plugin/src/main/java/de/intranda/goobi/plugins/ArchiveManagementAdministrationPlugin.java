@@ -216,7 +216,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     private int lengthLimit;
     // separator that will be used to join all components into a process title
     private String separator;
-    // true if signature should be used in the process title, false if uuid should be used
+    // true if shelfmark should be used in the process title, false if uuid should be used
     private boolean useShelfmark;
 
     /**
@@ -1672,7 +1672,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
      * @return ProcessTitleGenerator object
      */
     private ProcessTitleGenerator prepareTitleGenerator() {
-        // 1. check config to see if the process name should be using signature
+        // 1. check config to see if the process name should be using shelfmark
         // 2.1. if shelfmark is to be used, then try to get the signature
         // 2.2. if shelfmark is not to be used, or if it is not available, then use uuid instead
         String shelfmark = useShelfmark ? getShelfmark(selectedEntry) : "";
@@ -1707,7 +1707,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         // fieldType = input
         final String mdName = "shelfmarksource";
         String shelfmark = "";
-        // signature should be retrieved from the current node's parent node
+        // shelfmark should be retrieved from the current node's parent node
         IEadEntry parentEntry = entry.getParentNode();
         List<IMetadataField> identityStatements = parentEntry.getIdentityStatementAreaList();
         for (IMetadataField statement : identityStatements) {
