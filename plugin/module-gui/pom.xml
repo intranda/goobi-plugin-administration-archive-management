@@ -10,7 +10,7 @@
   <parent>
     <groupId>de.intranda.goobi.plugins.administration</groupId>
     <artifactId>archive-management</artifactId>
-    <version>23.05</version>
+    <version>23.05.1</version>
   </parent>
   <build>
     <finalName>${jar.name}</finalName>
