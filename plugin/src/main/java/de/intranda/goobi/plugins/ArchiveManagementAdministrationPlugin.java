@@ -218,6 +218,8 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     private String separator;
     // true if shelfmark should be used in the process title, false if uuid should be used
     private boolean useShelfmark;
+    // true if the id to be used should be taken from current node's parent node, false if it should be of the current node
+    private boolean useIdFromParent;
 
     /**
      * Constructor
@@ -747,7 +749,8 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         // configurations for generating process title
         lengthLimit = config.getInt("/lengthLimit", 0);
         separator = config.getString("/separator", "_");
-        useShelfmark = config.getBoolean("/useShelfmark", false);
+        useIdFromParent = config.getBoolean("/useIdFromParent", false);
+        useShelfmark = config.getBoolean("/useShelfmarkAsId", false);
 
         // configurations for metadata
         for (HierarchicalConfiguration hc : config.configurationsAt("/metadata")) {
@@ -1520,11 +1523,15 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         // check its uniqueness again, if still not, report the failure and abort
         String processTitle = titleGenerator.generateTitle();
         if (ProcessManager.getNumberOfProcessesWithTitle(processTitle) > 0) {
-            log.debug("A process named " + processTitle + " already exists. Trying to get an alternative title.");
+            String message1 = "A process named " + processTitle + " already exists. Trying to get an alternative title.";
+            log.debug(message1);
+            Helper.setMeldung(message1);
             processTitle = titleGenerator.getAlternativeTitle();
             if (ProcessManager.getNumberOfProcessesWithTitle(processTitle) > 0) {
                 // title is not unique in this scenario, abort
-                log.error("Uniqueness of the generated process name is not guaranteed, aborting.");
+                String message2 = "Uniqueness of the generated process name is not guaranteed, aborting.";
+                log.error(message2);
+                Helper.setFehlerMeldung(message2);
                 return;
             }
         }
@@ -1682,8 +1689,9 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
         ProcessTitleGenerator titleGenerator = new ProcessTitleGenerator(shouldUseShelfmark, lengthLimit, separator);
 
+        IEadEntry idEntry = useIdFromParent ? selectedEntry.getParentNode() : selectedEntry;
         // use signature if it is valid, otherwise use uuid instead
-        String valueOfFirstToken = shouldUseShelfmark ? shelfmark : rootElement.getId();
+        String valueOfFirstToken = shouldUseShelfmark ? shelfmark : idEntry.getId();
         titleGenerator.addToken(valueOfFirstToken, ManipulationType.BEFORE_FIRST_SEPARATOR);
 
         ManipulationType labelTokenType = lengthLimit > 0 ? ManipulationType.CAMEL_CASE_LENGTH_LIMITED : ManipulationType.CAMEL_CASE;

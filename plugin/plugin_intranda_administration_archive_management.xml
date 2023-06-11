@@ -16,8 +16,12 @@
         <lengthLimit>0</lengthLimit>
         <!-- separator string that will be used to combine the tokens -->
         <separator>_</separator>
-        <!-- true if shelfmark should be used preferably, false if uuid should be used -->
-        <useShelfmark>true</useShelfmark>
+        
+        <!-- use id from parent node instead of id from node -->
+        <useIdFromParent>false</useIdFromParent>
+        
+        <!-- use shelfmark preferably instead of node id if it is available -->
+        <useShelfmarkAsId>false</useShelfmarkAsId>
         
         <!-- // configurations for generating process titles // -->
         
