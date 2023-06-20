@@ -1682,7 +1682,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         // 1. check config to see if the process name should be using shelfmark
         // 2.1. if shelfmark is to be used, then try to get the signature
         // 2.2. if shelfmark is not to be used, or if it is not available, then use uuid instead
-        String shelfmark = useShelfmark ? getShelfmark(selectedEntry) : "";
+        String shelfmark = useShelfmark ? getShelfmark(selectedEntry.getParentNode()) : "";
         log.debug("shelfmark = " + shelfmark);
         boolean shouldUseShelfmark = StringUtils.isNotBlank(shelfmark);
         log.debug("shouldUseShelfmark = " + shouldUseShelfmark);
@@ -1713,18 +1713,24 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         // name = Shelfmark
         // validationType = unique
         // fieldType = input
+
+        // base condition
+        if (entry == null) {
+            return "";
+        }
+
         final String mdName = "shelfmarksource";
         String shelfmark = "";
-        // shelfmark should be retrieved from the current node's parent node
-        IEadEntry parentEntry = entry.getParentNode();
-        List<IMetadataField> identityStatements = parentEntry.getIdentityStatementAreaList();
+        // shelfmark should be retrieved from the current node or its parent node ( or parent node of that parent etc.)
+        List<IMetadataField> identityStatements = entry.getIdentityStatementAreaList();
         for (IMetadataField statement : identityStatements) {
             if (mdName.equals(statement.getMetadataName())) {
                 shelfmark = statement.getValues().get(0).getValue();
                 break;
             }
         }
-        return shelfmark;
+
+        return StringUtils.isBlank(shelfmark) ? getShelfmark(entry.getParentNode()) : shelfmark;
     }
 
     //  create metadata, add it to logical element
