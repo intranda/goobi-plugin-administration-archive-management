@@ -906,9 +906,9 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     @Override
     public void createEadDocument() {
 
-        if (!StorageProvider.getInstance().isFileExists(Paths.get(exportFolder))) {
+        if (!storageProvider.isFileExists(Paths.get(exportFolder))) {
             try {
-                StorageProvider.getInstance().createDirectories(Paths.get(exportFolder));
+                storageProvider.createDirectories(Paths.get(exportFolder));
             } catch (IOException e) {
                 log.error(e);
             }
