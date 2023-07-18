@@ -6,6 +6,7 @@ import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,6 +71,7 @@ import de.sub.goobi.helper.Helper;
 import de.sub.goobi.helper.ProcessTitleGenerator;
 import de.sub.goobi.helper.ScriptThreadWithoutHibernate;
 import de.sub.goobi.helper.StorageProvider;
+import de.sub.goobi.helper.StorageProviderInterface;
 import de.sub.goobi.helper.enums.ManipulationType;
 import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.helper.exceptions.DAOException;
@@ -148,6 +150,10 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
     public static final Namespace ns = Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9");
     private static XPathFactory xFactory = XPathFactory.instance();
+
+    private static final StorageProviderInterface storageProvider = StorageProvider.getInstance();
+    // DateFormat for representing a timestamp
+    private static final SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd-HHmmssSSS");
 
     private XMLConfiguration xmlConfig;
     @Getter
@@ -948,6 +954,9 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
         Path savedFile = Paths.get(exportFolder, uploadedFileName);
 
+        // check if savedFile already exists, if so turn it into a backup
+        boolean fileExists = backupFileIfExists(savedFile);
+
         try (InputStream input = uploadFile.getInputStream()) {
             Files.copy(input, savedFile);
         } catch (IOException e) {
@@ -984,6 +993,30 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         selectedDatabase = databaseName + " - " + uploadedFileName;
         displayMode = "";
         loadSelectedDatabase();
+    }
+
+    /**
+     * make a backup of the input file if it exists
+     * 
+     * @param filePath absolute path of the input file
+     * @return whether or not the input file exists
+     */
+    private boolean backupFileIfExists(Path filePath) {
+        boolean isFileExists = storageProvider.isFileExists(filePath);
+        // backup the file if it exists
+        if (isFileExists) {
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            String strTimestamp = timestampFormat.format(timestamp);
+            Path backupPath = Path.of(filePath.toString().concat(".").concat(strTimestamp));
+            log.debug("creating new backup: " + backupPath);
+            try {
+                storageProvider.move(filePath, backupPath);
+            } catch (IOException e) {
+                log.error("failed to save the backup: " + backupPath);
+            }
+        }
+
+        return isFileExists;
     }
 
     private void addMetadata(Element xmlElement, IEadEntry node) {
