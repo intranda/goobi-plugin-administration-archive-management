@@ -955,7 +955,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         Path savedFile = Paths.get(exportFolder, uploadedFileName);
 
         // check if savedFile already exists, if so turn it into a backup
-        boolean fileExists = backupFileIfExists(savedFile);
+        boolean fileExisted = backupFileIfExists(savedFile);
 
         try (InputStream input = uploadFile.getInputStream()) {
             Files.copy(input, savedFile);
@@ -975,6 +975,12 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         selectedDatabase = databaseName + " - " + uploadedFileName;
         displayMode = "";
         loadSelectedDatabase();
+        
+        // update existing process ids if the uploaded EAD file has an old version
+        if (fileExisted) {
+            log.debug("updating existing process ids");
+            updateGoobiIds();
+        }
     }
 
     /**
