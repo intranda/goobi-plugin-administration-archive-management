@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
@@ -226,6 +227,10 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     private boolean useShelfmark;
     // true if the id to be used should be taken from current node's parent node, false if it should be of the current node
     private boolean useIdFromParent;
+
+    @Getter
+    @Setter
+    private boolean fileToUploadExists = false;
 
     /**
      * Constructor
@@ -943,20 +948,16 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             return;
         }
 
-        String uploadedFileName = Paths.get(uploadFile.getSubmittedFileName()).getFileName().toString(); // MSIE fix.
-
-        // filename must end with xml
-        if (!uploadedFileName.endsWith(".xml")) {
-            uploadedFileName = uploadedFileName + ".xml";
-        }
-        // remove whitespaces from filename
-        uploadedFileName = uploadedFileName.replace(" ", "_");
+        String uploadedFileName = processUploadedFileName(uploadFile);
 
         Path savedFile = Paths.get(exportFolder, uploadedFileName);
 
-        // check if savedFile already exists, if so turn it into a backup
-        boolean fileExisted = backupFileIfExists(savedFile);
+        // make a backup if an older version of the uploaded file exists
+        if (fileToUploadExists) {
+            backupFile(savedFile);
+        }
 
+        // save the uploaded file
         try (InputStream input = uploadFile.getInputStream()) {
             Files.copy(input, savedFile);
         } catch (IOException e) {
@@ -969,6 +970,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             return;
         }
 
+        // load database
         String importUrl = datastoreUrl + "import/" + databaseName + "/" + uploadedFileName;
         HttpUtils.getStringFromUrl(importUrl);
 
@@ -976,35 +978,53 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         displayMode = "";
         loadSelectedDatabase();
         
-        // update existing process ids if the uploaded EAD file has an old version
-        if (fileExisted) {
-            log.debug("updating existing process ids");
+        // update existing process ids if the uploaded EAD file has an older version
+        if (fileToUploadExists) {
+            log.debug("updating existing processes' ids");
             updateGoobiIds();
         }
     }
 
+    public void validateTheFileToUpload(FacesContext ctx, UIComponent comp, Object value) {
+        log.debug("validating the file to upload");
+        Part file = (Part) value;
+
+        String uploadedFileName = processUploadedFileName(file);
+
+        Path fileToSave = Paths.get(exportFolder, uploadedFileName);
+
+        log.debug("fileToSave = " + fileToSave);
+        fileToUploadExists = storageProvider.isFileExists(fileToSave);
+    }
+
+    private String processUploadedFileName(Part file) {
+        String uploadedFileName = Paths.get(file.getSubmittedFileName()).getFileName().toString(); // MSIE fix.
+
+        // filename must end with xml
+        if (!uploadedFileName.endsWith(".xml")) {
+            uploadedFileName = uploadedFileName + ".xml";
+        }
+        // remove whitespaces from filename
+        uploadedFileName = uploadedFileName.replace(" ", "_");
+
+        return uploadedFileName;
+    }
+
     /**
-     * make a backup of the input file if it exists
+     * make a backup of the input file
      * 
      * @param filePath absolute path of the input file
-     * @return whether or not the input file exists
      */
-    private boolean backupFileIfExists(Path filePath) {
-        boolean isFileExists = storageProvider.isFileExists(filePath);
-        // backup the file if it exists
-        if (isFileExists) {
-            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            String strTimestamp = timestampFormat.format(timestamp);
-            Path backupPath = Path.of(filePath.toString().concat(".").concat(strTimestamp));
-            log.debug("creating new backup: " + backupPath);
-            try {
-                storageProvider.move(filePath, backupPath);
-            } catch (IOException e) {
-                log.error("failed to save the backup: " + backupPath);
-            }
+    private void backupFile(Path filePath) {
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        String strTimestamp = timestampFormat.format(timestamp);
+        Path backupPath = Path.of(filePath.toString().concat(".").concat(strTimestamp));
+        log.debug("creating new backup: " + backupPath);
+        try {
+            storageProvider.move(filePath, backupPath);
+        } catch (IOException e) {
+            log.error("failed to save the backup: " + backupPath);
         }
-
-        return isFileExists;
     }
 
     private boolean validateUploadedFile(Path filePath) {

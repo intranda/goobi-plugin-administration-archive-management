@@ -516,9 +516,15 @@ div.no-element-selected {
                                                 <p
                                                     style="margin-top: 20px;">#{msgs.plugin_administration_archive_creation_uploadFile}</p>
                                           
+                                          <!-- 
                                                 <h:inputFile value="#{AdministrationForm.administrationPlugin.uploadFile}">
                                                 </h:inputFile>
-
+                                            -->
+                                                <h:inputFile value="#{AdministrationForm.administrationPlugin.uploadFile}"
+                                                                     validator="#{AdministrationForm.administrationPlugin.validateTheFileToUpload}">
+                                                    <f:ajax execute="@this" render="uploadFileButtonGroup" />
+                                                </h:inputFile>
+                                                
                                                 <h:commandLink
                                                     styleClass="btn  font-size-s  margin-top-10">
                                                     <f:setPropertyActionListener
@@ -530,12 +536,35 @@ div.no-element-selected {
                                                         value="#{msgs.abbrechen}" />
                                                 </h:commandLink>
 
+                                                <!-- 
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right margin-top-10"
-                                                    action="#{AdministrationForm.administrationPlugin.upload}">
+                                                    action="#{AdministrationForm.administrationPlugin.upload}"
+                                                    rendered="#{not AdministrationForm.administrationPlugin.fileToUploadExists}">
                                                     <h:outputText
                                                         value="#{msgs.plugin_administration_archive_uploadDatabase}" />
                                                 </h:commandLink>
+                                                -->
+                                                <h:panelGroup id="uploadFileButtonGroup">
+                                                    <!-- 
+                                                    <h:outputText value="file to upload already exists" rendered="#{AdministrationForm.administrationPlugin.fileToUploadExists}" />
+                                                    -->
+                                                    <h:commandLink
+                                                        styleClass="btn btn-primary font-size-s pull-right margin-top-10"
+                                                        action="#{AdministrationForm.administrationPlugin.upload}"
+                                                        rendered="#{not AdministrationForm.administrationPlugin.fileToUploadExists}">
+                                                        <h:outputText
+                                                            value="#{msgs.plugin_administration_archive_uploadDatabase}" />
+                                                    </h:commandLink>
+                                                    <h:commandLink
+                                                        styleClass="btn btn-primary font-size-s pull-right margin-top-10"
+                                                        action="#{AdministrationForm.administrationPlugin.upload}"
+                                                        rendered="#{AdministrationForm.administrationPlugin.fileToUploadExists}"
+                                                        onclick="if (!confirm('#{msgs.plugin_administration_archive_confirmReplacement}')) return false;">
+                                                        <h:outputText
+                                                            value="#{msgs.plugin_administration_archive_uploadDatabase}" />
+                                                    </h:commandLink>
+                                                </h:panelGroup>
                                             </h:panelGroup>
                                             
                                         </div>
