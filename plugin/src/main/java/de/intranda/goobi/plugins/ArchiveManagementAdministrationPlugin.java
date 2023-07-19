@@ -966,7 +966,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
         // validate uploaded file
         if (!validateUploadedFile(savedFile)) {
-            log.error("the uploaded file is invalid");
+            log.error("the uploaded file is invalid, aborting...");
             return;
         }
 
@@ -1036,20 +1036,27 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         try {
             // file is valid xml
             Document document = builder.build(filePath.toFile());
-            // file is an ead file
             Element rootElement = document.getRootElement();
             if (!"ead".equals(rootElement.getName())) {
-                // error, delete file, show error message
-                Helper.setFehlerMeldung("TODO"); //TODO
-                return false;
+                // file is not an ead file
+                String message = "plugin_administration_archive_notEadFile";
+                throw new Exception(message);
             }
-
+            // the uploaded file is valid 
             return true;
 
         } catch (Exception e) {
             log.error(e);
-            //  error, delete file, show error message
-            Helper.setFehlerMeldung("TODO"); //TODO
+            // show error message
+            Helper.setFehlerMeldung(e.getMessage());
+            // delete the invalid file
+            try {
+                log.debug("deleting the invalid file from: " + filePath);
+                storageProvider.deleteFile(filePath);
+            } catch (IOException e1) {
+                log.error("IOException occurred while trying to delete the invalid file from: " + filePath);
+            }
+            // the uploaded file is invalid
             return false;
         }
     }
