@@ -228,6 +228,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     // true if the id to be used should be taken from current node's parent node, false if it should be of the current node
     private boolean useIdFromParent;
 
+    // true if the selected file to upload already has an older version in the same path, false otherwise
     @Getter
     @Setter
     private boolean fileToUploadExists = false;
@@ -942,6 +943,9 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         LockingBean.updateLocking(selectedDatabase);
     }
 
+    /**
+     * upload the selected file
+     */
     public void upload() {
         if (uploadFile == null || StringUtils.isBlank(databaseName)) {
             Helper.setFehlerMeldung("plugin_administration_archive_missing_Data");
@@ -985,8 +989,15 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         }
     }
 
-    public void validateTheFileToUpload(FacesContext ctx, UIComponent comp, Object value) {
-        log.debug("validating the file to upload");
+    /**
+     * check the existence of the selected file and save it to the private field fileToUploadExists
+     * 
+     * @param ctx FacesContext
+     * @param comp UIComponent
+     * @param value Object
+     */
+    public void checkExistenceOfSelectedFile(FacesContext ctx, UIComponent comp, Object value) {
+        log.debug("checking existence of the selected file");
         Part file = (Part) value;
 
         String uploadedFileName = processUploadedFileName(file);
@@ -997,6 +1008,13 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         fileToUploadExists = storageProvider.isFileExists(fileToSave);
     }
 
+    /**
+     * process the file name of the selected file in such way that the file name is assured to contain no white spaces as well as it has the correct
+     * extension .xml
+     * 
+     * @param file the selected file as a javax.servlet.http.Part object
+     * @return the corrected file name as a string
+     */
     private String processUploadedFileName(Part file) {
         String uploadedFileName = Paths.get(file.getSubmittedFileName()).getFileName().toString(); // MSIE fix.
 
@@ -1027,6 +1045,12 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         }
     }
 
+    /**
+     * check if the uploaded file is a valid ead file, and delete it if it is invalid
+     * 
+     * @param filePath absolute path of the uploaded file
+     * @return true if the uploaded file is valid, false otherwise
+     */
     private boolean validateUploadedFile(Path filePath) {
         SAXBuilder builder = new SAXBuilder(XMLReaders.NONVALIDATING);
         builder.setFeature("http://xml.org/sax/features/validation", false);

@@ -516,15 +516,13 @@ div.no-element-selected {
                                                 <p
                                                     style="margin-top: 20px;">#{msgs.plugin_administration_archive_creation_uploadFile}</p>
                                           
-                                          <!-- 
-                                                <h:inputFile value="#{AdministrationForm.administrationPlugin.uploadFile}">
-                                                </h:inputFile>
-                                            -->
+                                                <!-- FILE SELECTOR -->
                                                 <h:inputFile value="#{AdministrationForm.administrationPlugin.uploadFile}"
-                                                                     validator="#{AdministrationForm.administrationPlugin.validateTheFileToUpload}">
+                                                                     validator="#{AdministrationForm.administrationPlugin.checkExistenceOfSelectedFile}">
                                                     <f:ajax execute="@this" render="uploadFileButtonGroup" />
                                                 </h:inputFile>
                                                 
+                                                <!-- CANCEL BUTTON -->
                                                 <h:commandLink
                                                     styleClass="btn  font-size-s  margin-top-10">
                                                     <f:setPropertyActionListener
@@ -536,19 +534,9 @@ div.no-element-selected {
                                                         value="#{msgs.abbrechen}" />
                                                 </h:commandLink>
 
-                                                <!-- 
-                                                <h:commandLink
-                                                    styleClass="btn btn-primary font-size-s pull-right margin-top-10"
-                                                    action="#{AdministrationForm.administrationPlugin.upload}"
-                                                    rendered="#{not AdministrationForm.administrationPlugin.fileToUploadExists}">
-                                                    <h:outputText
-                                                        value="#{msgs.plugin_administration_archive_uploadDatabase}" />
-                                                </h:commandLink>
-                                                -->
+                                                <!-- GROUP OF TWO VERSIONS OF THE UPLOAD BUTTON -->
                                                 <h:panelGroup id="uploadFileButtonGroup">
-                                                    <!-- 
-                                                    <h:outputText value="file to upload already exists" rendered="#{AdministrationForm.administrationPlugin.fileToUploadExists}" />
-                                                    -->
+                                                    <!-- UPLOAD BUTTON FOR THE CASE WHERE NO SUCH FILE EXISTS YET -->
                                                     <h:commandLink
                                                         styleClass="btn btn-primary font-size-s pull-right margin-top-10"
                                                         action="#{AdministrationForm.administrationPlugin.upload}"
@@ -556,6 +544,7 @@ div.no-element-selected {
                                                         <h:outputText
                                                             value="#{msgs.plugin_administration_archive_uploadDatabase}" />
                                                     </h:commandLink>
+                                                    <!-- UPLOAD BUTTON FOR THE CASE WHERE AN OLD VERSION OF THE FILE ALREADY EXISTS -->
                                                     <h:commandLink
                                                         styleClass="btn btn-primary font-size-s pull-right margin-top-10"
                                                         action="#{AdministrationForm.administrationPlugin.upload}"
@@ -565,6 +554,7 @@ div.no-element-selected {
                                                             value="#{msgs.plugin_administration_archive_uploadDatabase}" />
                                                     </h:commandLink>
                                                 </h:panelGroup>
+                                                <!-- // GROUP OF TWO VERSIONS OF THE UPLOAD BUTTON -->
                                             </h:panelGroup>
                                             
                                         </div>
