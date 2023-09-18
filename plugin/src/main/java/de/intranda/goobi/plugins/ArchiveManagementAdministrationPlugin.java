@@ -1043,6 +1043,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         } catch (IOException e) {
             log.error("failed to save the backup: " + backupPath);
         }
+        Helper.setMeldung("Backup file created: " + backupPath);
     }
 
     /**
