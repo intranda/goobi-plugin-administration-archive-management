@@ -2259,7 +2259,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                 String strProcessTitle = ProcessManager.getProcessById(processId).getTitel();
                 node.setGoobiProcessTitle(strProcessTitle);
                 lstNodesWithNewIds.add(node.getLabel());
-                Helper.setMeldung("Node " + node.getLabel() + " has been given Goobi process ID " + strProcessTitle);
+                Helper.setMeldung("Node '" + node.getLabel() + "' has been given Goobi process ID: " + strProcessTitle);
             } else {
 
                 //perhaps remove the NodeId from the process?
