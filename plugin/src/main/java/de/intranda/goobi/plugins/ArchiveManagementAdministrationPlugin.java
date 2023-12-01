@@ -233,6 +233,9 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     @Setter
     private boolean fileToUploadExists = false;
 
+    private String identifierMetadataName = "NodeId";
+    private String identifierNodeName = "id";
+
     /**
      * Constructor
      */
@@ -752,6 +755,9 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             }
         }
 
+        identifierMetadataName = config.getString("/processIdentifierField", "NodeId");
+        identifierNodeName = config.getString("/nodeIdentifierField", "id");
+
         nodeDefaultTitle = config.getString("/nodeDefaultTitle", "-");
         for (HierarchicalConfiguration hc : config.configurationsAt("/node")) {
             INodeType nt = new NodeType(hc.getString("@name"), hc.getString("@ruleset"), hc.getString("@icon"), hc.getInt("@processTemplateId"));
@@ -981,7 +987,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         selectedDatabase = databaseName + " - " + uploadedFileName;
         displayMode = "";
         loadSelectedDatabase();
-        
+
         // update existing process ids if the uploaded EAD file has an older version
         if (fileToUploadExists) {
             log.debug("updating existing processes' ids");
@@ -1067,7 +1073,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                 String message = "plugin_administration_archive_notEadFile";
                 throw new Exception(message);
             }
-            // the uploaded file is valid 
+            // the uploaded file is valid
             return true;
 
         } catch (Exception e) {
@@ -2247,7 +2253,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         //otherwise
         for (Integer processId : lstProcessIds) {
 
-            String strNodeId = MetadataManager.getMetadataValue(processId, "NodeId");
+            String strNodeId = MetadataManager.getMetadataValue(processId, identifierMetadataName);
             IEadEntry node = getNodeWithId(strNodeId, rootElement);
             if (node != null) {
                 String strProcessTitle = ProcessManager.getProcessById(processId).getTitel();
@@ -2267,9 +2273,50 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
     private IEadEntry getNodeWithId(String strNodeId, IEadEntry node) {
 
-        if (node.getId() != null && node.getId().contentEquals(strNodeId)) {
-            return node;
+        if ("id".equalsIgnoreCase(identifierNodeName)) {
+            if (node.getId() != null && node.getId().contentEquals(strNodeId)) {
+                return node;
+            }
+        } else {
+            for (IMetadataField field : node.getIdentityStatementAreaList()) {
+
+                if (findMatchingNode(strNodeId, field)) {
+                    return node;
+                }
+            }
+
+            for (IMetadataField field : node.getContextAreaList()) {
+                if (findMatchingNode(strNodeId, field)) {
+                    return node;
+                }
+            }
+            for (IMetadataField field : node.getContentAndStructureAreaAreaList()) {
+                if (findMatchingNode(strNodeId, field)) {
+                    return node;
+                }
+            }
+            for (IMetadataField field : node.getAccessAndUseAreaList()) {
+                if (findMatchingNode(strNodeId, field)) {
+                    return node;
+                }
+            }
+            for (IMetadataField field : node.getAlliedMaterialsAreaList()) {
+                if (findMatchingNode(strNodeId, field)) {
+                    return node;
+                }
+            }
+            for (IMetadataField field : node.getNotesAreaList()) {
+                if (findMatchingNode(strNodeId, field)) {
+                    return node;
+                }
+            }
+            for (IMetadataField field : node.getDescriptionControlAreaList()) {
+                if (findMatchingNode(strNodeId, field)) {
+                    return node;
+                }
+            }
         }
+
         if (node.getSubEntryList() != null) {
             for (IEadEntry child : node.getSubEntryList()) {
                 IEadEntry found = getNodeWithId(strNodeId, child);
@@ -2281,6 +2328,17 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
         //otherwise
         return null;
+    }
+
+    private boolean findMatchingNode(String strNodeId, IMetadataField field) {
+        if (field.getName().equals(identifierNodeName)) {
+            for (IFieldValue fv : field.getValues()) {
+                if (fv.getValue().equals(strNodeId)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public List<Integer> getProcessWithNodeIds(List<String> lstNodesWithoutIds) {
@@ -2297,7 +2355,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
         StringBuilder sql = new StringBuilder();
 
-        sql.append("SELECT processid FROM metadata WHERE name = 'NodeId' and value in ");
+        sql.append("SELECT processid FROM metadata WHERE name = '" + identifierMetadataName + "' and value in ");
         sql.append(strSQLNodes.toString());
         sql.append(" order by processid;");
         @SuppressWarnings("unchecked")

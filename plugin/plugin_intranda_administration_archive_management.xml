@@ -174,13 +174,16 @@
             <value>val 4</value>
         </metadata>
 
-
-
     	<node name="file" ruleset="File" icon="fa fa-file-text-o" processTemplateId="309544" />
     	<node name="folder" ruleset="Folder" icon="fa fa-folder-open-o" processTemplateId="309544"/>
     	<node name="image" ruleset="Picture" icon="fa fa-file-image-o" processTemplateId="309544" />
     	<node name="audio" ruleset="Audio" icon="fa fa-file-audio-o" processTemplateId="309544"/>
     	<node name="video" ruleset="Video" icon="fa fa-file-video-o" processTemplateId="309544"/>
     	<node name="other" ruleset="Other" icon="fa fa-file-o" processTemplateId="309544" />
+        
+        <!-- configured fields are used to find identifying metadata in processes and ead nodes  -->
+        <processIdentifierField>NodeId</processIdentifierField>
+        <nodeIdentifierField>id</nodeIdentifierField>
+        
     </config>
 </config_plugin>
