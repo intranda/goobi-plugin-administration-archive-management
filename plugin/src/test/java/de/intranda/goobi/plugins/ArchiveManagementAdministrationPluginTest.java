@@ -37,12 +37,13 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.sub.goobi.config.ConfigurationHelper;
+import de.sub.goobi.helper.Helper;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.VocabularyManager;
 import io.goobi.workflow.api.connection.HttpUtils;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ ConfigurationHelper.class, HttpUtils.class, VocabularyManager.class, ProcessManager.class })
+@PrepareForTest({ ConfigurationHelper.class, HttpUtils.class, VocabularyManager.class, ProcessManager.class, Helper.class })
 @PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*",
         "org.w3c.*" })
 public class ArchiveManagementAdministrationPluginTest {
@@ -72,6 +73,14 @@ public class ArchiveManagementAdministrationPluginTest {
                 .andReturn(readDatabaseResponse())
                 .anyTimes();
         PowerMock.replay(HttpUtils.class);
+
+        PowerMock.mockStatic(Helper.class);
+        EasyMock.expect(Helper.getCurrentUser()).andReturn(null).anyTimes();
+        for (int i = 0; i < 4; i++) {
+            Helper.setFehlerMeldung(EasyMock.anyString());
+        }
+
+        PowerMock.replay(Helper.class);
 
         PowerMock.mockStatic(ConfigurationHelper.class);
         ConfigurationHelper configurationHelper = EasyMock.createMock(ConfigurationHelper.class);

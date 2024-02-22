@@ -1,5 +1,6 @@
 package de.intranda.goobi.plugins;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -64,6 +65,7 @@ import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.EadMetadataField;
 import de.intranda.goobi.plugins.model.FieldValue;
 import de.intranda.goobi.plugins.model.NodeType;
+import de.intranda.goobi.plugins.model.TitleComponent;
 import de.schlichtherle.io.FileOutputStream;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.BeanHelper;
@@ -154,7 +156,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
     private static final StorageProviderInterface storageProvider = StorageProvider.getInstance();
     // DateFormat for representing a timestamp
-    private static final SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd-HHmmssSSS");
+    private SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd-HHmmssSSS");
 
     private XMLConfiguration xmlConfig;
     @Getter
@@ -223,8 +225,8 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     private int lengthLimit;
     // separator that will be used to join all components into a process title
     private String separator;
-    // true if shelfmark should be used in the process title, false if uuid should be used
-    private boolean useShelfmark;
+
+    private transient List<TitleComponent> titleParts = new ArrayList<>();
     // true if the id to be used should be taken from current node's parent node, false if it should be of the current node
     private boolean useIdFromParent;
 
@@ -768,7 +770,15 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         lengthLimit = config.getInt("/lengthLimit", 0);
         separator = config.getString("/separator", "_");
         useIdFromParent = config.getBoolean("/useIdFromParent", false);
-        useShelfmark = config.getBoolean("/useShelfmarkAsId", false);
+
+        for (HierarchicalConfiguration hc : config.configurationsAt("/title")) {
+            String name = hc.getString("");
+            String manipulationType = hc.getString("@type", null);
+            String value = hc.getString("@value", "");
+            int lenght = hc.getInt("@lenght", 0);
+            TitleComponent comp = new TitleComponent(name, manipulationType, value, lenght);
+            titleParts.add(comp);
+        }
 
         // configurations for metadata
         for (HierarchicalConfiguration hc : config.configurationsAt("/metadata")) {
@@ -1067,11 +1077,11 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         try {
             // file is valid xml
             Document document = builder.build(filePath.toFile());
-            Element rootElement = document.getRootElement();
-            if (!"ead".equals(rootElement.getName())) {
+            Element mainElement = document.getRootElement();
+            if (!"ead".equals(mainElement.getName())) {
                 // file is not an ead file
                 String message = "plugin_administration_archive_notEadFile";
-                throw new Exception(message);
+                throw new FileNotFoundException(message);
             }
             // the uploaded file is valid
             return true;
@@ -1235,7 +1245,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
             // ignore .
             if (".".equals(field)) {
-                continue;
+                // do nothing
             }
             // check if its an element or attribute
             else if (field.startsWith("@")) {
@@ -1276,7 +1286,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                     boolean conditionsMatch = true;
                     for (String condition : conditionArray) {
                         if (StringUtils.isBlank(condition)) {
-                            continue;
+                            // do nothing, no condition is given
                         } else if (condition.trim().startsWith("not")) {
                             int start = condition.indexOf("(");
                             int end = condition.indexOf(")");
@@ -1621,77 +1631,22 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             return;
         }
 
-        // generate process title via ProcessTitleGenerator
-        ProcessTitleGenerator titleGenerator = prepareTitleGenerator();
-
-        // check if the generated process name is unique
-        // if it is not unique, then get the full uuid version name from the generator
-        // check its uniqueness again, if still not, report the failure and abort
-        String processTitle = titleGenerator.generateTitle();
-        if (ProcessManager.getNumberOfProcessesWithTitle(processTitle) > 0) {
-            String message1 = "A process named " + processTitle + " already exists. Trying to get an alternative title.";
-            log.debug(message1);
-            Helper.setMeldung(message1);
-            processTitle = titleGenerator.getAlternativeTitle();
-            if (ProcessManager.getNumberOfProcessesWithTitle(processTitle) > 0) {
-                // title is not unique in this scenario, abort
-                String message2 = "Uniqueness of the generated process name is not guaranteed, aborting.";
-                log.error(message2);
-                Helper.setFehlerMeldung(message2);
-                return;
-            }
-        }
-        log.debug("processTitle = " + processTitle);
-
-        // create process based on configured process template
-        Process process = new Process();
-        process.setTitel(processTitle);
-        selectedEntry.setGoobiProcessTitle(processTitle);
-        process.setIstTemplate(false);
-        process.setInAuswahllisteAnzeigen(false);
-        process.setProjekt(processTemplate.getProjekt());
-        process.setRegelsatz(processTemplate.getRegelsatz());
-        process.setDocket(processTemplate.getDocket());
-
-        bhelp.SchritteKopieren(processTemplate, process);
-        bhelp.ScanvorlagenKopieren(processTemplate, process);
-        bhelp.WerkstueckeKopieren(processTemplate, process);
-        bhelp.EigenschaftenKopieren(processTemplate, process);
-
-        bhelp.EigenschaftHinzufuegen(process, "Template", processTemplate.getTitel());
-        bhelp.EigenschaftHinzufuegen(process, "TemplateID", selectedTemplate);
-
-        // save process
-        try {
-            ProcessManager.saveProcess(process);
-        } catch (DAOException e1) {
-            log.error(e1);
-        }
-
         Prefs prefs = processTemplate.getRegelsatz().getPreferences();
 
         String publicationType = selectedEntry.getNodeType().getDocumentType();
-
+        Fileformat fileformat = null;
+        DigitalDocument digDoc = null;
         try {
+            fileformat = new MetsMods(prefs);
+            digDoc = new DigitalDocument();
             // create mets file based on selected node type
-            Fileformat fileformat = new MetsMods(prefs);
-            DigitalDocument digDoc = new DigitalDocument();
             fileformat.setDigitalDocument(digDoc);
             DocStruct logical = digDoc.createDocStruct(prefs.getDocStrctTypeByName(publicationType));
             digDoc.setLogicalDocStruct(logical);
             Metadata identifier = new Metadata(prefs.getMetadataTypeByName("CatalogIDDigital"));
             identifier.setValue(selectedEntry.getId());
             logical.addMetadata(identifier);
-            try {
-                MetadataType eadIdType = prefs.getMetadataTypeByName("NodeId");
-                if (eadIdType != null) {
-                    Metadata eadid = new Metadata(eadIdType);
-                    eadid.setValue(selectedEntry.getId());
-                    logical.addMetadata(eadid);
-                }
-            } catch (UGHException e) {
-                log.error(e);
-            }
+            addNoteId(prefs, logical);
 
             // import configured metadata
             for (IMetadataField emf : selectedEntry.getIdentityStatementAreaList()) {
@@ -1756,6 +1711,57 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                 parent = parent.getParentNode();
             }
 
+        } catch (UGHException e) {
+            log.error(e);
+        }
+
+        // generate process title via ProcessTitleGenerator
+        ProcessTitleGenerator titleGenerator = prepareTitleGenerator(digDoc.getLogicalDocStruct());
+
+        // check if the generated process name is unique
+        // if it is not unique, then get the full uuid version name from the generator
+        // check its uniqueness again, if still not, report the failure and abort
+        String processTitle = titleGenerator.generateTitle();
+        if (ProcessManager.getNumberOfProcessesWithTitle(processTitle) > 0) {
+            String message1 = "A process named " + processTitle + " already exists. Trying to get an alternative title.";
+            log.debug(message1);
+            Helper.setMeldung(message1);
+            processTitle = titleGenerator.getAlternativeTitle();
+            if (ProcessManager.getNumberOfProcessesWithTitle(processTitle) > 0) {
+                // title is not unique in this scenario, abort
+                String message2 = "Uniqueness of the generated process name is not guaranteed, aborting.";
+                log.error(message2);
+                Helper.setFehlerMeldung(message2);
+                return;
+            }
+        }
+        log.debug("processTitle = " + processTitle);
+
+        // create process based on configured process template
+        Process process = new Process();
+        process.setTitel(processTitle);
+        selectedEntry.setGoobiProcessTitle(processTitle);
+        process.setIstTemplate(false);
+        process.setInAuswahllisteAnzeigen(false);
+        process.setProjekt(processTemplate.getProjekt());
+        process.setRegelsatz(processTemplate.getRegelsatz());
+        process.setDocket(processTemplate.getDocket());
+
+        bhelp.SchritteKopieren(processTemplate, process);
+        bhelp.ScanvorlagenKopieren(processTemplate, process);
+        bhelp.WerkstueckeKopieren(processTemplate, process);
+        bhelp.EigenschaftenKopieren(processTemplate, process);
+
+        bhelp.EigenschaftHinzufuegen(process, "Template", processTemplate.getTitel());
+        bhelp.EigenschaftHinzufuegen(process, "TemplateID", selectedTemplate);
+
+        // save process
+        try {
+            ProcessManager.saveProcess(process);
+        } catch (DAOException e1) {
+            log.error(e1);
+        }
+        try {
             DocStruct physical = digDoc.createDocStruct(prefs.getDocStrctTypeByName("BoundBook"));
             digDoc.setPhysicalDocStruct(physical);
             Metadata imageFiles = new Metadata(prefs.getMetadataTypeByName("pathimagefiles"));
@@ -1765,7 +1771,9 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             process.writeMetadataFile(fileformat);
         } catch (UGHException | IOException | SwapException e) {
             log.error(e);
+
         }
+
         // save ead file
         createEadDocument();
 
@@ -1779,64 +1787,89 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         LockingBean.updateLocking(selectedDatabase);
     }
 
-    /**
-     * prepare a ProcessTitleGenerator object suitable for this scenario
-     * 
-     * @return ProcessTitleGenerator object
-     */
-    private ProcessTitleGenerator prepareTitleGenerator() {
-        // 1. check config to see if the process name should be using shelfmark
-        // 2.1. if shelfmark is to be used, then try to get the signature
-        // 2.2. if shelfmark is not to be used, or if it is not available, then use uuid instead
-        String shelfmark = useShelfmark ? getShelfmark(selectedEntry.getParentNode()) : "";
-        log.debug("shelfmark = " + shelfmark);
-        boolean shouldUseShelfmark = StringUtils.isNotBlank(shelfmark);
-        log.debug("shouldUseShelfmark = " + shouldUseShelfmark);
-
-        ProcessTitleGenerator titleGenerator = new ProcessTitleGenerator(shouldUseShelfmark, lengthLimit, separator);
-
-        IEadEntry idEntry = useIdFromParent ? selectedEntry.getParentNode() : selectedEntry;
-        // use signature if it is valid, otherwise use uuid instead
-        String valueOfFirstToken = shouldUseShelfmark ? shelfmark : idEntry.getId();
-        titleGenerator.addToken(valueOfFirstToken, ManipulationType.BEFORE_FIRST_SEPARATOR);
-
-        ManipulationType labelTokenType = lengthLimit > 0 ? ManipulationType.CAMEL_CASE_LENGTH_LIMITED : ManipulationType.CAMEL_CASE;
-        String label = selectedEntry.getLabel();
-        titleGenerator.addToken(label, labelTokenType);
-
-        return titleGenerator;
+    private void addNoteId(Prefs prefs, DocStruct logical) {
+        try {
+            MetadataType eadIdType = prefs.getMetadataTypeByName("NodeId");
+            if (eadIdType != null) {
+                Metadata eadid = new Metadata(eadIdType);
+                eadid.setValue(selectedEntry.getId());
+                logical.addMetadata(eadid);
+            }
+        } catch (UGHException e) {
+            log.error(e);
+        }
     }
 
     /**
-     * try to retrieve the shelfmark for the input entry
+     * prepare a ProcessTitleGenerator object suitable for this scenario
+     *
+     * @param fileformat
      * 
-     * @param entry IEadEntry
-     * @return the shelfmark for the input entry if it exists, or an empty string otherwise
+     * @return ProcessTitleGenerator object
      */
-    private String getShelfmark(IEadEntry entry) {
-        // shelfmark is defined in the identityStatementAreaList whose:
-        // metadataName = shelfmarksource
-        // name = Shelfmark
-        // validationType = unique
-        // fieldType = input
+    private ProcessTitleGenerator prepareTitleGenerator(DocStruct docstruct) {
 
-        // base condition
-        if (entry == null) {
-            return "";
-        }
+        ProcessTitleGenerator titleGenerator = new ProcessTitleGenerator();
+        titleGenerator.setSeparator(separator);
+        titleGenerator.setBodyTokenLengthLimit(lengthLimit);
+        for (TitleComponent comp : titleParts) {
+            // set title type
+            ManipulationType manipulationType = null;
+            // check for special types
+            switch (comp.getType().toLowerCase()) {
+                case "camelcase":
+                case "camel_case":
+                    manipulationType = ManipulationType.CAMEL_CASE;
+                    break;
+                case "camelcaselenghtlimited":
+                case "camel_case_lenght_limited":
+                    manipulationType = ManipulationType.CAMEL_CASE_LENGTH_LIMITED;
+                    break;
 
-        final String mdName = "shelfmarksource";
-        String shelfmark = "";
-        // shelfmark should be retrieved from the current node or its parent node ( or parent node of that parent etc.)
-        List<IMetadataField> identityStatements = entry.getIdentityStatementAreaList();
-        for (IMetadataField statement : identityStatements) {
-            if (mdName.equals(statement.getMetadataName())) {
-                shelfmark = statement.getValues().get(0).getValue();
-                break;
+                case "afterlastseparator":
+                case "after_last_separator":
+                    manipulationType = ManipulationType.AFTER_LAST_SEPARATOR;
+                    break;
+                case "beforefirstseparator":
+                case "before_first_separator":
+                    manipulationType = ManipulationType.BEFORE_FIRST_SEPARATOR;
+                    break;
+                case "normal":
+                default:
+                    manipulationType = ManipulationType.NORMAL;
+            }
+
+            // get actual value
+            String val = null;
+            if (StringUtils.isNotBlank(comp.getValue())) {
+                // static text
+                val = comp.getValue();
+            } else {
+                // get value from metadata
+                String metadataName = comp.getName();
+
+                for (Metadata md : docstruct.getAllMetadata()) {
+                    if (md.getType().getName().equals(metadataName)) {
+                        val = md.getValue();
+                    }
+                }
+            }
+            if (StringUtils.isNotBlank(val)) {
+                titleGenerator.addToken(val, manipulationType);
             }
         }
 
-        return StringUtils.isBlank(shelfmark) ? getShelfmark(entry.getParentNode()) : shelfmark;
+        if (StringUtils.isBlank(titleGenerator.generateTitle())) {
+            // default title, if nothing is configured
+            IEadEntry idEntry = useIdFromParent ? selectedEntry.getParentNode() : selectedEntry;
+            String valueOfFirstToken = idEntry.getId();
+            titleGenerator.addToken(valueOfFirstToken, ManipulationType.BEFORE_FIRST_SEPARATOR);
+
+            ManipulationType labelTokenType = lengthLimit > 0 ? ManipulationType.CAMEL_CASE_LENGTH_LIMITED : ManipulationType.CAMEL_CASE;
+            String label = selectedEntry.getLabel();
+            titleGenerator.addToken(label, labelTokenType);
+        }
+        return titleGenerator;
     }
 
     //  create metadata, add it to logical element
@@ -1909,11 +1942,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             try {
                 ServletOutputStream out = response.getOutputStream();
                 XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
-                try {
-                    outputter.output(document, out);
-                } catch (IOException e) {
-                    log.error(e);
-                }
+                outputter.output(document, out);
                 out.flush();
             } catch (IOException e) {
                 log.error("IOException while exporting run note", e);
@@ -2161,11 +2190,8 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     public void updateGoobiIds() {
 
         IEadEntry selected = getSelectedEntry();
-
         List<String> lstNodesWithoutIds = removeInvalidProcessIds();
-
-        List<String> lstNodesWithNewGoobiIds = checkGoobiProcessesForArchiveRefs(lstNodesWithoutIds);
-
+        checkGoobiProcessesForArchiveRefs(lstNodesWithoutIds);
         setSelectedEntry(selected);
     }
 
