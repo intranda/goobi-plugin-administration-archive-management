@@ -20,8 +20,20 @@
         <!-- use id from parent node instead of id from node -->
         <useIdFromParent>false</useIdFromParent>
         
-        <!-- use shelfmark preferably instead of node id if it is available -->
-        <useShelfmarkAsId>false</useShelfmarkAsId>
+
+        <!-- Optional title generation, if nothing is configured, process titles are built based on the node ID -->
+        <!-- attribute value: contains a static text. If it is empty, it is assumed that a metadata value is being searched for -->
+        <!-- attribute name: contains the metadata name to use -->
+        <!-- attribute type: can be NORMAL (use text as it is), CAMEL_CASE (each word begins with an upper case letter), 
+             AFTER_LAST_SEPARATOR (insert at the end), BEFORE_FIRST_SEPARATOR (insert in front) -->
+        
+        <!-- 
+        <title name="shelfmarksource" type="NORMAL"    />
+        <title name="static" type="CAMEL_CASE" value="STATIC TEXT"  />
+        <title name="CatalogIDDigital" type="AFTER_LAST_SEPARATOR"    />
+        -->
+
+
         
         <!-- // configurations for generating process titles // -->
         

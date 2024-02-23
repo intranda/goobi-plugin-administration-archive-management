@@ -12,7 +12,4 @@ public class TitleComponent {
     private String type;
 
     private String value;
-
-    private int lenght;
-
 }

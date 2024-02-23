@@ -772,11 +772,10 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         useIdFromParent = config.getBoolean("/useIdFromParent", false);
 
         for (HierarchicalConfiguration hc : config.configurationsAt("/title")) {
-            String name = hc.getString("");
+            String name = hc.getString("@name");
             String manipulationType = hc.getString("@type", null);
             String value = hc.getString("@value", "");
-            int lenght = hc.getInt("@lenght", 0);
-            TitleComponent comp = new TitleComponent(name, manipulationType, value, lenght);
+            TitleComponent comp = new TitleComponent(name, manipulationType, value);
             titleParts.add(comp);
         }
 
@@ -1819,13 +1818,15 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             switch (comp.getType().toLowerCase()) {
                 case "camelcase":
                 case "camel_case":
-                    manipulationType = ManipulationType.CAMEL_CASE;
-                    break;
                 case "camelcaselenghtlimited":
                 case "camel_case_lenght_limited":
-                    manipulationType = ManipulationType.CAMEL_CASE_LENGTH_LIMITED;
-                    break;
+                    if (lengthLimit > 0) {
+                        manipulationType = ManipulationType.CAMEL_CASE_LENGTH_LIMITED;
+                    } else {
+                        manipulationType = ManipulationType.CAMEL_CASE;
+                    }
 
+                    break;
                 case "afterlastseparator":
                 case "after_last_separator":
                     manipulationType = ManipulationType.AFTER_LAST_SEPARATOR;
@@ -1851,6 +1852,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                 for (Metadata md : docstruct.getAllMetadata()) {
                     if (md.getType().getName().equals(metadataName)) {
                         val = md.getValue();
+                        break;
                     }
                 }
             }
