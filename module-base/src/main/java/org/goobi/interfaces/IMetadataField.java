@@ -30,12 +30,12 @@ public interface IMetadataField {
 
     public boolean isVisible();
 
-
     public boolean isValid();
 
     public void setVisible(boolean value);
 
     public boolean isShowField();
+
     public void setShowField(boolean value);
 
     public void setValid(boolean value);
@@ -79,5 +79,7 @@ public interface IMetadataField {
     public void addValue();
 
     public void deleteValue(IFieldValue value);
+
+    public IMetadataField copy();
 
 }

@@ -286,15 +286,12 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                 List<Element> databaseList = root.getChildren("database");
                 for (Element db : databaseList) {
                     String dbName = db.getChildText("name");
-
                     Element details = db.getChild("details");
                     for (Element resource : details.getChildren()) {
                         databases.add(dbName + " - " + resource.getText());
                     }
-
                 }
             }
-
             dbOK = true;
         } else {
             Helper.setFehlerMeldung("plugin_administration_archive_noConnectionToDatabase");
@@ -2395,6 +2392,31 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         }
 
         return processIds;
+    }
+
+    /**
+     * duplicate selected node and insert it as the last sibling
+     */
+
+    public void duplicateNode() {
+        // abort if no node is selected
+        if (selectedEntry == null) {
+            return;
+        }
+        if (selectedEntry.getNodeType() == null) {
+            return;
+        }
+
+        // abort if root node is selected
+        if (selectedEntry.getParentNode() == null) {
+            return;
+        }
+
+        IEadEntry copy = selectedEntry.deepCopy();
+        if (copy != null) {
+            selectedEntry.getParentNode().addSubEntry(copy);
+        }
+
     }
 
 }

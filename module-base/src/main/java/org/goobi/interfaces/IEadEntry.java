@@ -122,4 +122,6 @@ public interface IEadEntry {
 
     public boolean isDescriptionControlAreaVisible();
 
+    public IEadEntry deepCopy();
+
 }

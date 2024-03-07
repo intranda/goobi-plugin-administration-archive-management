@@ -3,6 +3,7 @@ package de.intranda.goobi.plugins.model;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.IMetadataField;
@@ -147,7 +148,7 @@ public class EadEntry implements IEadEntry {
         List<IEadEntry> list = new LinkedList<>();
         list.add(this);
 
-        if (entry.equals(this)) {
+        if (this.equals(entry)) {
             setSelectable(false);
             parentNode.setSelectable(false);
         } else if (subEntryList != null) {
@@ -341,5 +342,65 @@ public class EadEntry implements IEadEntry {
             }
         }
         return false;
+    }
+
+    @Override
+    public IEadEntry deepCopy() {
+        IEadEntry other = new EadEntry(orderNumber, hierarchy);
+        other.setNodeType(nodeType);
+        other.setDisplayChildren(true);
+        other.setLabel(label);
+
+        // create new id
+        other.setId(String.valueOf(UUID.randomUUID()));
+
+        // copy all metadata
+        for (IMetadataField field : identityStatementAreaList) {
+            IMetadataField otherField = field.copy();
+            otherField.setEadEntry(other);
+            other.getIdentityStatementAreaList().add(otherField);
+        }
+
+        for (IMetadataField field : contextAreaList) {
+            IMetadataField otherField = field.copy();
+            otherField.setEadEntry(other);
+            other.getContextAreaList().add(otherField);
+        }
+        for (IMetadataField field : contentAndStructureAreaAreaList) {
+            IMetadataField otherField = field.copy();
+            otherField.setEadEntry(other);
+            other.getContentAndStructureAreaAreaList().add(otherField);
+        }
+
+        for (IMetadataField field : accessAndUseAreaList) {
+            IMetadataField otherField = field.copy();
+            otherField.setEadEntry(other);
+            other.getAccessAndUseAreaList().add(otherField);
+        }
+
+        for (IMetadataField field : alliedMaterialsAreaList) {
+            IMetadataField otherField = field.copy();
+            otherField.setEadEntry(other);
+            other.getAlliedMaterialsAreaList().add(otherField);
+        }
+
+        for (IMetadataField field : notesAreaList) {
+            IMetadataField otherField = field.copy();
+            otherField.setEadEntry(other);
+            other.getNotesAreaList().add(otherField);
+        }
+
+        for (IMetadataField field : descriptionControlAreaList) {
+            IMetadataField otherField = field.copy();
+            otherField.setEadEntry(other);
+            other.getDescriptionControlAreaList().add(otherField);
+        }
+
+        // copy all children
+        for (IEadEntry child : subEntryList) {
+            other.addSubEntry(child.deepCopy());
+        }
+
+        return other;
     }
 }
