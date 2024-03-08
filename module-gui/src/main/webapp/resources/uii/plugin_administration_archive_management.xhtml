@@ -843,6 +843,16 @@ div.no-element-selected {
 
                                     <div class="form-actions">
 
+                                        <h:commandLink
+                                            styleClass="btn margin-sides-10 font-size-s"
+                                            action="#{AdministrationForm.administrationPlugin.duplicateEadFile}"
+                                            title="#{msgs.plugin_administration_archive_duplicateEadFile}">
+                                            <i class="fa fa-files-o margin-right-5" />
+                                            <f:passThroughAttribute
+                                                name="data-toggle"
+                                                value="tooltip" />
+                                            <h:outputText value="#{msgs.plugin_administration_archive_duplicateEadFile}" />
+                                        </h:commandLink>
 
 
                                         <h:commandLink
@@ -855,6 +865,7 @@ div.no-element-selected {
                                                 value="tooltip" />
                                             <h:outputText value="#{msgs.plugin_administration_archive_download}" />
                                         </h:commandLink>
+
 
 
                                         <h:commandLink

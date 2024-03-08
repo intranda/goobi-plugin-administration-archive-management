@@ -2406,17 +2406,42 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         if (selectedEntry.getNodeType() == null) {
             return;
         }
-
         // abort if root node is selected
         if (selectedEntry.getParentNode() == null) {
             return;
         }
-
         IEadEntry copy = selectedEntry.deepCopy();
         if (copy != null) {
             selectedEntry.getParentNode().addSubEntry(copy);
         }
-
     }
 
+    public void duplicateEadFile() {
+        String[] nameParts = selectedDatabase.split(" - ");
+        String newFileName = nameParts[1].replace(".xml", "") + "_copy.xml";
+
+        IEadEntry duplicate = rootElement.deepCopy();
+
+        Document document = new Document();
+
+        Element eadRoot = new Element("ead", ns);
+        document.setRootElement(eadRoot);
+
+        addMetadata(eadRoot, duplicate);
+        createEventFields(eadRoot);
+        XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
+        try {
+            out.output(document, new FileOutputStream(exportFolder + "/" + newFileName));
+        } catch (IOException e) {
+            log.error(e);
+        }
+
+        // call function to import created ead file
+        String importUrl = datastoreUrl + "import/" + nameParts[0] + "/" + newFileName;
+
+        HttpUtils.getStringFromUrl(importUrl);
+
+        LockingBean.updateLocking(selectedDatabase);
+
+    }
 }
