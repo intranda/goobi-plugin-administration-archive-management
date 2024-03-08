@@ -80,6 +80,6 @@ public interface IMetadataField {
 
     public void deleteValue(IFieldValue value);
 
-    public IMetadataField copy();
+    public IMetadataField copy(String prefix, String suffix);
 
 }

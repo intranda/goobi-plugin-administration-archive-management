@@ -38,6 +38,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
 import org.goobi.beans.User;
+import org.goobi.interfaces.IConfiguration;
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.IFieldValue;
 import org.goobi.interfaces.IMetadataField;
@@ -61,6 +62,7 @@ import org.jdom2.output.XMLOutputter;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
+import de.intranda.goobi.plugins.model.DuplicationConfiguration;
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.EadMetadataField;
 import de.intranda.goobi.plugins.model.FieldValue;
@@ -237,6 +239,8 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
 
     private String identifierMetadataName = "NodeId";
     private String identifierNodeName = "id";
+
+    private transient IConfiguration duplicationConfiguration = null;
 
     /**
      * Constructor
@@ -449,6 +453,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             rootElement.setNodeType(rootType);
             selectedEntry = rootElement;
             displayMode = "";
+            getDuplicationConfiguration();
             LockingBean.lockObject(selectedDatabase, username);
         } else {
             //this may write an error message if necessary
@@ -506,6 +511,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
                 }
             }
         }
+        getDuplicationConfiguration();
     }
 
     /**
@@ -2410,8 +2416,11 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         if (selectedEntry.getParentNode() == null) {
             return;
         }
-        IEadEntry copy = selectedEntry.deepCopy();
+        IEadEntry copy = selectedEntry.deepCopy(duplicationConfiguration);
         if (copy != null) {
+            // add new field at the last position
+            copy.setOrderNumber(selectedEntry.getParentNode().getSubEntryList().size() + 1);
+
             selectedEntry.getParentNode().addSubEntry(copy);
         }
     }
@@ -2420,7 +2429,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         String[] nameParts = selectedDatabase.split(" - ");
         String newFileName = nameParts[1].replace(".xml", "") + "_copy.xml";
 
-        IEadEntry duplicate = rootElement.deepCopy();
+        IEadEntry duplicate = rootElement.deepCopy(duplicationConfiguration);
 
         Document document = new Document();
 
@@ -2442,6 +2451,12 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         HttpUtils.getStringFromUrl(importUrl);
 
         LockingBean.updateLocking(selectedDatabase);
+    }
 
+    public IConfiguration getDuplicationConfiguration() {
+        if (duplicationConfiguration == null && rootElement != null) {
+            duplicationConfiguration = new DuplicationConfiguration(rootElement);
+        }
+        return duplicationConfiguration;
     }
 }

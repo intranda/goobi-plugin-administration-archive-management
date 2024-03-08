@@ -122,6 +122,6 @@ public interface IEadEntry {
 
     public boolean isDescriptionControlAreaVisible();
 
-    public IEadEntry deepCopy();
+    public IEadEntry deepCopy(IConfiguration configuration);
 
 }

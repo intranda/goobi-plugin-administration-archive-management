@@ -5,9 +5,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
+import org.goobi.interfaces.IConfiguration;
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.IMetadataField;
 import org.goobi.interfaces.INodeType;
+import org.goobi.interfaces.IParameter;
 
 import lombok.Data;
 
@@ -234,7 +236,6 @@ public class EadEntry implements IEadEntry {
     @Override
     public void markAsFound() {
         displaySearch = true;
-        //      selected = true;
         searchFound = true;
 
         if (parentNode != null) {
@@ -251,7 +252,6 @@ public class EadEntry implements IEadEntry {
     @Override
     public void resetFoundList() {
         displaySearch = false;
-        //        selected = false;
         searchFound = false;
         if (subEntryList != null) {
             for (IEadEntry ds : subEntryList) {
@@ -345,62 +345,174 @@ public class EadEntry implements IEadEntry {
     }
 
     @Override
-    public IEadEntry deepCopy() {
+    public IEadEntry deepCopy(IConfiguration configuration) {
         IEadEntry other = new EadEntry(orderNumber, hierarchy);
         other.setNodeType(nodeType);
         other.setDisplayChildren(true);
         other.setLabel(label);
+        other.setOrderNumber(orderNumber);
 
         // create new id
         other.setId(String.valueOf(UUID.randomUUID()));
 
         // copy all metadata
         for (IMetadataField field : identityStatementAreaList) {
-            IMetadataField otherField = field.copy();
-            otherField.setEadEntry(other);
+            IMetadataField otherField = copyIdentityStatementField(configuration, other, field);
             other.getIdentityStatementAreaList().add(otherField);
         }
 
         for (IMetadataField field : contextAreaList) {
-            IMetadataField otherField = field.copy();
+            IMetadataField otherField = copyContextField(configuration, other, field);
             otherField.setEadEntry(other);
             other.getContextAreaList().add(otherField);
         }
         for (IMetadataField field : contentAndStructureAreaAreaList) {
-            IMetadataField otherField = field.copy();
+            IMetadataField otherField = copyContentField(configuration, other, field);
             otherField.setEadEntry(other);
             other.getContentAndStructureAreaAreaList().add(otherField);
         }
 
         for (IMetadataField field : accessAndUseAreaList) {
-            IMetadataField otherField = field.copy();
+            IMetadataField otherField = copyAccessField(configuration, other, field);
             otherField.setEadEntry(other);
             other.getAccessAndUseAreaList().add(otherField);
         }
 
         for (IMetadataField field : alliedMaterialsAreaList) {
-            IMetadataField otherField = field.copy();
+            IMetadataField otherField = copyAlliedMaterialsField(configuration, other, field);
             otherField.setEadEntry(other);
             other.getAlliedMaterialsAreaList().add(otherField);
         }
 
         for (IMetadataField field : notesAreaList) {
-            IMetadataField otherField = field.copy();
+            IMetadataField otherField = copyNotesField(configuration, other, field);
             otherField.setEadEntry(other);
             other.getNotesAreaList().add(otherField);
         }
 
         for (IMetadataField field : descriptionControlAreaList) {
-            IMetadataField otherField = field.copy();
+            IMetadataField otherField = copyDescriptionField(configuration, other, field);
             otherField.setEadEntry(other);
             other.getDescriptionControlAreaList().add(otherField);
         }
 
         // copy all children
         for (IEadEntry child : subEntryList) {
-            other.addSubEntry(child.deepCopy());
+            other.addSubEntry(child.deepCopy(configuration));
         }
 
         return other;
+    }
+
+    private IMetadataField copyIdentityStatementField(IConfiguration configuration, IEadEntry other, IMetadataField field) {
+        String prefix = "";
+        String suffix = "";
+        if (configuration != null) {
+            for (IParameter param : configuration.getIdentityStatementArea()) {
+                if (param.getFieldName().equals(field.getName())) {
+                    prefix = param.getPrefix();
+                    suffix = param.getSuffix();
+                }
+            }
+        }
+        IMetadataField otherField = field.copy(prefix, suffix);
+        otherField.setEadEntry(other);
+        return otherField;
+    }
+
+    private IMetadataField copyContextField(IConfiguration configuration, IEadEntry other, IMetadataField field) {
+        String prefix = "";
+        String suffix = "";
+        if (configuration != null) {
+            for (IParameter param : configuration.getContextArea()) {
+                if (param.getFieldName().equals(field.getName())) {
+                    prefix = param.getPrefix();
+                    suffix = param.getSuffix();
+                }
+            }
+        }
+        IMetadataField otherField = field.copy(prefix, suffix);
+        otherField.setEadEntry(other);
+        return otherField;
+    }
+
+    private IMetadataField copyContentField(IConfiguration configuration, IEadEntry other, IMetadataField field) {
+        String prefix = "";
+        String suffix = "";
+        if (configuration != null) {
+            for (IParameter param : configuration.getContentArea()) {
+                if (param.getFieldName().equals(field.getName())) {
+                    prefix = param.getPrefix();
+                    suffix = param.getSuffix();
+                }
+            }
+        }
+        IMetadataField otherField = field.copy(prefix, suffix);
+        otherField.setEadEntry(other);
+        return otherField;
+    }
+
+    private IMetadataField copyAccessField(IConfiguration configuration, IEadEntry other, IMetadataField field) {
+        String prefix = "";
+        String suffix = "";
+        if (configuration != null) {
+            for (IParameter param : configuration.getAccessArea()) {
+                if (param.getFieldName().equals(field.getName())) {
+                    prefix = param.getPrefix();
+                    suffix = param.getSuffix();
+                }
+            }
+        }
+        IMetadataField otherField = field.copy(prefix, suffix);
+        otherField.setEadEntry(other);
+        return otherField;
+    }
+
+    private IMetadataField copyAlliedMaterialsField(IConfiguration configuration, IEadEntry other, IMetadataField field) {
+        String prefix = "";
+        String suffix = "";
+        if (configuration != null) {
+            for (IParameter param : configuration.getAlliedMaterialsArea()) {
+                if (param.getFieldName().equals(field.getName())) {
+                    prefix = param.getPrefix();
+                    suffix = param.getSuffix();
+                }
+            }
+        }
+        IMetadataField otherField = field.copy(prefix, suffix);
+        otherField.setEadEntry(other);
+        return otherField;
+    }
+
+    private IMetadataField copyNotesField(IConfiguration configuration, IEadEntry other, IMetadataField field) {
+        String prefix = "";
+        String suffix = "";
+        if (configuration != null) {
+            for (IParameter param : configuration.getNotesArea()) {
+                if (param.getFieldName().equals(field.getName())) {
+                    prefix = param.getPrefix();
+                    suffix = param.getSuffix();
+                }
+            }
+        }
+        IMetadataField otherField = field.copy(prefix, suffix);
+        otherField.setEadEntry(other);
+        return otherField;
+    }
+
+    private IMetadataField copyDescriptionField(IConfiguration configuration, IEadEntry other, IMetadataField field) {
+        String prefix = "";
+        String suffix = "";
+        if (configuration != null) {
+            for (IParameter param : configuration.getDescriptionArea()) {
+                if (param.getFieldName().equals(field.getName())) {
+                    prefix = param.getPrefix();
+                    suffix = param.getSuffix();
+                }
+            }
+        }
+        IMetadataField otherField = field.copy(prefix, suffix);
+        otherField.setEadEntry(other);
+        return otherField;
     }
 }

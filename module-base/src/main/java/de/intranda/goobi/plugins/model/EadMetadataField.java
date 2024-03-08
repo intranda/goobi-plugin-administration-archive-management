@@ -150,13 +150,13 @@ public class EadMetadataField implements IMetadataField {
     }
 
     @Override
-    public IMetadataField copy() {
+    public IMetadataField copy(String prefix, String suffix) {
         IMetadataField field = new EadMetadataField(name, level, xpath, xpathType, repeatable, visible, showField,
                 fieldType, metadataName, importMetadataInChild, validationType, regularExpression);
         field.setSelectItemList(selectItemList);
         for (IFieldValue val : values) {
-            IFieldValue newValue = new FieldValue(this);
-            newValue.setValue(val.getValue());
+            IFieldValue newValue = new FieldValue(field);
+            newValue.setValue(prefix + val.getValue() + suffix);
             field.addFieldValue(newValue);
         }
         return field;
