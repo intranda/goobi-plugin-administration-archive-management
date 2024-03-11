@@ -591,28 +591,15 @@ div.no-element-selected {
                                                     class="input-group"
                                                     style="margin-right: 10px; margin-top: 2px;">
                                                     <h:inputText
-                                                        onkeydown="return submitEnter('FilterAlle',event)"
                                                         styleClass="form-control searchfield"
                                                         id="filterField"
-                                                        value="#{AdministrationForm.administrationPlugin.searchValue}" />
-
-                                                    <div class="input-group-btn">
-                                                        <x:commandLink
-                                                            id="FilterAlle2"
-                                                            forceId="true"
-                                                            styleClass="btn"
-                                                            action="#{AdministrationForm.administrationPlugin.search}">
-                                                            <i class="fa fa-search"></i>
-                                                        </x:commandLink>
-                                                    </div>
+                                                        value="#{AdministrationForm.administrationPlugin.searchValue}">
+                                                        <f:ajax
+                                                            event="keyup"
+                                                            listener="#{AdministrationForm.administrationPlugin.searchListener}"
+                                                            render="hierarchy" />
+                                                    </h:inputText>
                                                 </div>
-                                                <x:commandButton
-                                                    styleClass="submitOnEnter"
-                                                    type="submit"
-                                                    id="FilterAlle"
-                                                    forceId="true"
-                                                    style="display: none;"
-                                                    action="#{AdministrationForm.administrationPlugin.search}" />
                                             </div>
                                         </div>
                                         <div class="box-content leftArea-grid">

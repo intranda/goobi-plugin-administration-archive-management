@@ -21,6 +21,7 @@ import java.util.UUID;
 
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.event.AjaxBehaviorEvent;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -1575,7 +1576,8 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     }
 
     private void searchInNode(IEadEntry node) {
-        if (node.getLabel() != null && node.getLabel().toLowerCase().contains(searchValue.toLowerCase())) {
+
+        if (containsSearchString(node, null, searchValue.toLowerCase())) {
             // mark element + all parents as displayable
             node.markAsFound();
         }
@@ -1585,6 +1587,25 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             }
         }
         LockingBean.updateLocking(selectedDatabase);
+    }
+
+    private boolean containsSearchString(IEadEntry node, List<String> fieldnames, String searchString) {
+
+        // search in all/configured fields
+        for (IMetadataField field : node.getIdentityStatementAreaList()) {
+            if (fieldnames == null || fieldnames.isEmpty() || fieldnames.contains(field.getName())) {
+                for (IFieldValue value : field.getValues()) {
+                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public void searchListener(AjaxBehaviorEvent event) { //NOSONAR method signature must include the parameter, even if it is not needed
+        search();
     }
 
     public void resetSearch() {
