@@ -32,7 +32,7 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -1580,9 +1580,33 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     public void searchAdvanced() {
+        // get a list of all existing nodes
+        resetSearch();
+        List<IEadEntry> allNodes = rootElement.getAllNodes();
+
         for (StringPair p : advancedSearch) {
-            System.out.println(p.getOne() + ": " + p.getTwo());
+            if (StringUtils.isNotBlank(p.getOne()) && StringUtils.isNotBlank(p.getTwo())) {
+                // filter the node list, return only fields containing the data
+                allNodes = filterNodeList(allNodes, p.getOne(), p.getTwo());
+            }
         }
+
+        // finally mark all found nodes
+        for (IEadEntry node : allNodes) {
+            node.markAsFound();
+        }
+
+        flatEntryList = rootElement.getSearchList();
+    }
+
+    private List<IEadEntry> filterNodeList(List<IEadEntry> nodes, String searchField, String searchValues) {
+        List<IEadEntry> filteredEntries = new ArrayList<>();
+        for (IEadEntry node : nodes) {
+            if (containsSearchString(node, searchField, searchValues)) {
+                filteredEntries.add(node);
+            }
+        }
+        return filteredEntries;
     }
 
     public void search() {
@@ -1616,11 +1640,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         LockingBean.updateLocking(selectedDatabase);
     }
 
-    private boolean containsSearchString(IEadEntry node, List<String> fieldnames, String searchString) {
+    private boolean containsSearchString(IEadEntry node, String fieldname, String searchString) {
 
         // search in all/configured fields
         for (IMetadataField field : node.getIdentityStatementAreaList()) {
-            if (fieldnames == null || fieldnames.isEmpty() || fieldnames.contains(field.getName())) {
+            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
                 for (IFieldValue value : field.getValues()) {
                     if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
                         return true;
@@ -1628,6 +1652,63 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 }
             }
         }
+        for (IMetadataField field : node.getContextAreaList()) {
+            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
+                for (IFieldValue value : field.getValues()) {
+                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        for (IMetadataField field : node.getContentAndStructureAreaAreaList()) {
+            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
+                for (IFieldValue value : field.getValues()) {
+                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        for (IMetadataField field : node.getAccessAndUseAreaList()) {
+            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
+                for (IFieldValue value : field.getValues()) {
+                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        for (IMetadataField field : node.getAlliedMaterialsAreaList()) {
+            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
+                for (IFieldValue value : field.getValues()) {
+                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        for (IMetadataField field : node.getNotesAreaList()) {
+            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
+                for (IFieldValue value : field.getValues()) {
+                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        for (IMetadataField field : node.getDescriptionControlAreaList()) {
+            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
+                for (IFieldValue value : field.getValues()) {
+                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
         return false;
     }
 

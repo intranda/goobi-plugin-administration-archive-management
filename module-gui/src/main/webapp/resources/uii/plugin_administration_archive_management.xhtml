@@ -605,13 +605,11 @@ div.no-element-selected {
                                                             forceId="true"
                                                             styleClass="btn"
                                                             onclick="$('#advancedSearchBox').modal('show');"
-                                                            
-                                                            	 title="#{msgs.plugin_administration_archive_advancedSearch}"
-                                                            >
+                                                            title="#{msgs.plugin_administration_archive_advancedSearch}">
                                                             <i class="fa fa-search"></i>
-                                                             <f:passThroughAttribute
-                                                        name="data-toggle"
-                                                        value="tooltip" />
+                                                            <f:passThroughAttribute
+                                                                name="data-toggle"
+                                                                value="tooltip" />
                                                             <f:ajax />
                                                         </x:commandLink>
                                                     </div>
@@ -1392,27 +1390,29 @@ div.no-element-selected {
 
                             <div class="modal-body">
 
-                                    <ui:repeat
-                                        value="#{AdministrationForm.administrationPlugin.advancedSearch}"
-                                        var="entry">
+                                <ui:repeat
+                                    value="#{AdministrationForm.administrationPlugin.advancedSearch}"
+                                    var="entry">
 
-                                <div class="row form-group">
+                                    <div class="row form-group">
 
                                         <div class="col-sm-4">
                                             <h:selectOneMenu
-                                                    value="#{entry.one}"
-                                                    styleClass="form-select form-control"
-                                                    pt:aria-label="#{msgs.fieldname}"
-                                                    id="fieldname">
-                                                    <f:selectItem itemValue="" itemLabel="#{msgs.bitteAuswaehlen}" />
-                                                    <f:selectItems
-                                                        var="fieldname"
-                                                        value="#{AdministrationForm.administrationPlugin.advancedSearchFields}"
-                                                        itemValue="#{fieldname}"
-                                                        itemLabel="#{msgs['plugin_administration_archive_'.concat(fieldname)]}" />
-                                                </h:selectOneMenu>
+                                                value="#{entry.one}"
+                                                styleClass="form-select form-control"
+                                                pt:aria-label="#{msgs.fieldname}"
+                                                id="fieldname">
+                                                <f:selectItem
+                                                    itemValue=""
+                                                    itemLabel="#{msgs.bitteAuswaehlen}" />
+                                                <f:selectItems
+                                                    var="fieldname"
+                                                    value="#{AdministrationForm.administrationPlugin.advancedSearchFields}"
+                                                    itemValue="#{fieldname}"
+                                                    itemLabel="#{msgs['plugin_administration_archive_'.concat(fieldname)]}" />
+                                            </h:selectOneMenu>
                                         </div>
-                                        
+
                                         <h:panelGroup styleClass="col-sm-8">
                                             <h:inputText
                                                 value="#{entry.two}"
@@ -1421,9 +1421,9 @@ div.no-element-selected {
                                                 id="processid">
                                             </h:inputText>
                                         </h:panelGroup>
-                                        
-                                </div>
-                                        </ui:repeat>
+
+                                    </div>
+                                </ui:repeat>
 
                             </div>
                             <div class="modal-footer">
@@ -1441,6 +1441,15 @@ div.no-element-selected {
                                     title="#{msgs.cancel}"
                                     data-dismiss="modal"> <h:outputText value="#{msgs.cancel}" />
                                 </a>
+
+                                <h:commandLink
+                                    id="clear"
+                                    styleClass="btn margin-sides-10 font-size-s pull-left"
+                                    title="#{msgs.plugin_administration_archive_clear}"
+                                    type="reset">
+                                    <h:outputText value="#{msgs.plugin_administration_archive_clear}" />
+                                    <f:ajax render="@form" />
+                                </h:commandLink>
                             </div>
                         </h:form>
                     </h:panelGroup>

@@ -124,4 +124,6 @@ public interface IEadEntry {
 
     public IEadEntry deepCopy(IConfiguration configuration);
 
+    public List<IEadEntry> getAllNodes();
+
 }

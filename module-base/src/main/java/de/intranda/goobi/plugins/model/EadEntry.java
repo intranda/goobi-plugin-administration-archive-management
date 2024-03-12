@@ -141,6 +141,18 @@ public class EadEntry implements IEadEntry {
     }
 
     @Override
+    public List<IEadEntry> getAllNodes() {
+        List<IEadEntry> list = new LinkedList<>();
+        list.add(this);
+        if (subEntryList != null) {
+            for (IEadEntry ds : subEntryList) {
+                list.addAll(ds.getAllNodes());
+            }
+        }
+        return list;
+    }
+
+    @Override
     public boolean isHasChildren() {
         return !subEntryList.isEmpty();
     }
