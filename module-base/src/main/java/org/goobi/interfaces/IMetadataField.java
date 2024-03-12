@@ -80,6 +80,8 @@ public interface IMetadataField {
 
     public void deleteValue(IFieldValue value);
 
+    public boolean isSearchable();
+
     public IMetadataField copy(String prefix, String suffix);
 
 }

@@ -35,38 +35,46 @@ public class DuplicationConfiguration implements IConfiguration {
     public DuplicationConfiguration(IEadEntry entry) {
 
         for (IMetadataField field : entry.getIdentityStatementAreaList()) {
-            if (field.isVisible()) {
+            if (field.isSearchable()) {
                 IParameter dp = new DuplicationParameter(field.getName());
                 identityStatementArea.add(dp);
             }
         }
         for (IMetadataField field : entry.getContextAreaList()) {
-            DuplicationParameter dp = new DuplicationParameter(field.getName());
-            contextArea.add(dp);
+            if (field.isSearchable()) {
+                DuplicationParameter dp = new DuplicationParameter(field.getName());
+                contextArea.add(dp);
+            }
         }
         for (IMetadataField field : entry.getContentAndStructureAreaAreaList()) {
-            DuplicationParameter dp = new DuplicationParameter(field.getName());
-            contentArea.add(dp);
+            if (field.isSearchable()) {
+                DuplicationParameter dp = new DuplicationParameter(field.getName());
+                contentArea.add(dp);
+            }
         }
-
         for (IMetadataField field : entry.getAccessAndUseAreaList()) {
-            DuplicationParameter dp = new DuplicationParameter(field.getName());
-            accessArea.add(dp);
+            if (field.isSearchable()) {
+                DuplicationParameter dp = new DuplicationParameter(field.getName());
+                accessArea.add(dp);
+            }
         }
-
         for (IMetadataField field : entry.getAlliedMaterialsAreaList()) {
-            DuplicationParameter dp = new DuplicationParameter(field.getName());
-            alliedMaterialsArea.add(dp);
+            if (field.isSearchable()) {
+                DuplicationParameter dp = new DuplicationParameter(field.getName());
+                alliedMaterialsArea.add(dp);
+            }
         }
-
         for (IMetadataField field : entry.getNotesAreaList()) {
-            DuplicationParameter dp = new DuplicationParameter(field.getName());
-            notesArea.add(dp);
+            if (field.isSearchable()) {
+                DuplicationParameter dp = new DuplicationParameter(field.getName());
+                notesArea.add(dp);
+            }
         }
-
         for (IMetadataField field : entry.getDescriptionControlAreaList()) {
-            DuplicationParameter dp = new DuplicationParameter(field.getName());
-            descriptionArea.add(dp);
+            if (field.isSearchable()) {
+                DuplicationParameter dp = new DuplicationParameter(field.getName());
+                descriptionArea.add(dp);
+            }
         }
     }
 }

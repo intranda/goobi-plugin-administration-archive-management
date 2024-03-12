@@ -77,8 +77,11 @@ public class EadMetadataField implements IMetadataField {
     /** contains a human readable error text */
     private String validationError;
 
+    private boolean searchable;
+
     public EadMetadataField(String name, Integer level, String xpath, String xpathType, boolean repeatable, boolean visible, boolean showField,
-            String fieldType, String metadataName, boolean importMetadataInChild, String validationType, String regularExpression) {
+            String fieldType, String metadataName, boolean importMetadataInChild, String validationType, String regularExpression,
+            boolean searchable) {
         this.name = name;
         this.level = level;
         this.xpath = xpath;
@@ -91,6 +94,7 @@ public class EadMetadataField implements IMetadataField {
         this.importMetadataInChild = importMetadataInChild;
         this.validationType = validationType;
         this.regularExpression = regularExpression;
+        this.searchable = searchable;
     }
 
     @Override
@@ -152,7 +156,7 @@ public class EadMetadataField implements IMetadataField {
     @Override
     public IMetadataField copy(String prefix, String suffix) {
         IMetadataField field = new EadMetadataField(name, level, xpath, xpathType, repeatable, visible, showField,
-                fieldType, metadataName, importMetadataInChild, validationType, regularExpression);
+                fieldType, metadataName, importMetadataInChild, validationType, regularExpression, searchable);
         field.setSelectItemList(selectItemList);
         for (IFieldValue val : values) {
             IFieldValue newValue = new FieldValue(field);

@@ -39,6 +39,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
 import org.goobi.beans.User;
+import org.goobi.interfaces.IArchiveManagementAdministrationPlugin;
 import org.goobi.interfaces.IConfiguration;
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.IFieldValue;
@@ -102,7 +103,7 @@ import ugh.fileformats.mets.MetsMods;
 
 @PluginImplementation
 @Log4j2
-public class ArchiveManagementAdministrationPlugin implements org.goobi.interfaces.IArchiveManagementAdministrationPlugin {
+public class ArchiveManagementAdministrationPlugin implements IArchiveManagementAdministrationPlugin {
 
     private static final long serialVersionUID = -6745728159636602782L;
 
@@ -242,6 +243,13 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
     private String identifierNodeName = "id";
 
     private transient IConfiguration duplicationConfiguration = null;
+
+    @Getter
+    private List<String> advancedSearchFields = new ArrayList<>();
+
+    @Getter
+    @Setter
+    private List<StringPair> advancedSearch = new ArrayList<>();
 
     /**
      * Constructor
@@ -489,7 +497,8 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             if (processinfoElement != null) {
                 Element list = processinfoElement.getChild("list", ns);
                 List<Element> entries = list.getChildren("item", ns);
-                IMetadataField editor = new EadMetadataField("editorName", 7, null, null, false, true, true, "readonly", null, false, null, null);
+                IMetadataField editor =
+                        new EadMetadataField("editorName", 7, null, null, false, true, true, "readonly", null, false, null, null, false);
 
                 for (Element item : entries) {
                     editorList.add(item.getText());
@@ -664,7 +673,7 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
         }
         IMetadataField toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable(),
                 emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild(), emf.getValidationType(),
-                emf.getRegularExpression());
+                emf.getRegularExpression(), emf.isSearchable());
         toAdd.setValidationError(emf.getValidationError());
         toAdd.setSelectItemList(emf.getSelectItemList());
         toAdd.setEadEntry(entry);
@@ -782,14 +791,26 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             TitleComponent comp = new TitleComponent(name, manipulationType, value);
             titleParts.add(comp);
         }
+        advancedSearchFields = new ArrayList<>();
+        advancedSearch = new ArrayList<>();
+        advancedSearch.add(new StringPair());
+        advancedSearch.add(new StringPair());
+        advancedSearch.add(new StringPair());
+        advancedSearch.add(new StringPair());
+        advancedSearch.add(new StringPair());
 
         // configurations for metadata
         for (HierarchicalConfiguration hc : config.configurationsAt("/metadata")) {
             IMetadataField field = new EadMetadataField(hc.getString("@name"), hc.getInt("@level"), hc.getString("@xpath"),
                     hc.getString("@xpathType", "element"), hc.getBoolean("@repeatable", false), hc.getBoolean("@visible", true),
                     hc.getBoolean("@showField", false), hc.getString("@fieldType", "input"), hc.getString("@rulesetName", null),
-                    hc.getBoolean("@importMetadataInChild", false), hc.getString("@validationType", null), hc.getString("@regularExpression"));
+                    hc.getBoolean("@importMetadataInChild", false), hc.getString("@validationType", null), hc.getString("@regularExpression"),
+                    hc.getBoolean("@searchable", false));
             configuredFields.add(field);
+            if (field.isSearchable()) {
+                advancedSearchFields.add(field.getName());
+            }
+
             field.setValidationError(hc.getString("/validationError"));
             if ("dropdown".equals(field.getFieldType()) || "multiselect".equals(field.getFieldType())) {
                 List<String> valueList = Arrays.asList(hc.getStringArray("/value"));
@@ -1556,6 +1577,12 @@ public class ArchiveManagementAdministrationPlugin implements org.goobi.interfac
             selectedEntry.getParentNode().reOrderElements();
         }
         LockingBean.updateLocking(selectedDatabase);
+    }
+
+    public void searchAdvanced() {
+        for (StringPair p : advancedSearch) {
+            System.out.println(p.getOne() + ": " + p.getTwo());
+        }
     }
 
     public void search() {
