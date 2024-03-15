@@ -165,4 +165,9 @@ public class EadMetadataField implements IMetadataField {
         }
         return field;
     }
+
+    @Override
+    public IFieldValue createFieldValue() {
+        return new FieldValue(this);
+    }
 }

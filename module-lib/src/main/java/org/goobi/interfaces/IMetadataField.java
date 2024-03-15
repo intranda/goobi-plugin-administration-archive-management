@@ -84,4 +84,5 @@ public interface IMetadataField {
 
     public IMetadataField copy(String prefix, String suffix);
 
+    public IFieldValue createFieldValue();
 }
