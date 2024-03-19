@@ -87,7 +87,6 @@ import de.sub.goobi.persistence.managers.MetadataManager;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.VocabularyManager;
 import io.goobi.workflow.api.connection.HttpUtils;
-import io.goobi.workflow.locking.LockingBean;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -384,11 +383,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         try {
             // open selected database
             if (StringUtils.isNotBlank(selectedDatabase)) {
-                if (!LockingBean.lockObject(selectedDatabase, userName)) {
-                    Helper.setFehlerMeldung("plugin_administration_archive_databaseLocked");
-                    selectedDatabase = null;
-                    return;
-                }
+                //                if (!LockingBean.lockObject(selectedDatabase, userName)) {
+                //                    Helper.setFehlerMeldung("plugin_administration_archive_databaseLocked");
+                //                    selectedDatabase = null;
+                //                    return;
+                //                }
 
                 String[] parts = selectedDatabase.split(" - ");
 
@@ -467,7 +466,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             selectedEntry = rootElement;
             displayMode = "";
             getDuplicationConfiguration();
-            LockingBean.lockObject(selectedDatabase, username);
+            //            LockingBean.lockObject(selectedDatabase, username);
         } else {
             //this may write an error message if necessary
             List<String> databases = getPossibleDatabaseNames();
@@ -927,7 +926,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             selectedEntry.setSelected(true);
             flatEntryList = null;
         }
-        LockingBean.updateLocking(selectedDatabase);
+        //        LockingBean.updateLocking(selectedDatabase);
     }
 
     public void deleteNode() {
@@ -944,7 +943,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             setSelectedEntry(parentNode);
             flatEntryList = null;
         }
-        LockingBean.updateLocking(selectedDatabase);
+        //        LockingBean.updateLocking(selectedDatabase);
     }
 
     /**
@@ -984,7 +983,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         HttpUtils.getStringFromUrl(importUrl);
 
-        LockingBean.updateLocking(selectedDatabase);
+        //        LockingBean.updateLocking(selectedDatabase);
     }
 
     /**
@@ -1474,7 +1473,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         flatEntryList = null;
 
         displayMode = "";
-        LockingBean.updateLocking(selectedDatabase);
+        //        LockingBean.updateLocking(selectedDatabase);
     }
 
     public void moveNodeUp() {
@@ -1500,7 +1499,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), selectedEntry.getOrderNumber() - 1);
         selectedEntry.getParentNode().reOrderElements();
         flatEntryList = null;
-        LockingBean.updateLocking(selectedDatabase);
+        //        LockingBean.updateLocking(selectedDatabase);
     }
 
     public void moveNodeDown() {
@@ -1526,7 +1525,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), selectedEntry.getOrderNumber() + 1);
         selectedEntry.getParentNode().reOrderElements();
         flatEntryList = null;
-        LockingBean.updateLocking(selectedDatabase);
+        //        LockingBean.updateLocking(selectedDatabase);
     }
 
     public void moveHierarchyDown() {
@@ -1550,7 +1549,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         destinationEntry = previousNode;
         moveNode();
         destinationEntry.setDisplayChildren(true);
-        LockingBean.updateLocking(selectedDatabase);
+        //        LockingBean.updateLocking(selectedDatabase);
     }
 
     public void moveHierarchyUp() {
@@ -1580,7 +1579,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), oldParent.getOrderNumber() + 1);
             selectedEntry.getParentNode().reOrderElements();
         }
-        LockingBean.updateLocking(selectedDatabase);
+        //        LockingBean.updateLocking(selectedDatabase);
     }
 
     public void searchAdvanced() {
@@ -1627,7 +1626,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         } else {
             resetSearch();
         }
-        LockingBean.updateLocking(selectedDatabase);
+        //        LockingBean.updateLocking(selectedDatabase);
     }
 
     private void searchInNode(IEadEntry node) {
@@ -1641,7 +1640,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 searchInNode(child);
             }
         }
-        LockingBean.updateLocking(selectedDatabase);
+        //        LockingBean.updateLocking(selectedDatabase);
     }
 
     private boolean containsSearchString(IEadEntry node, String fieldname, String searchString) {
@@ -1919,7 +1918,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 myThread.startOrPutToQueue();
             }
         }
-        LockingBean.updateLocking(selectedDatabase);
+        //        LockingBean.updateLocking(selectedDatabase);
     }
 
     private void addNoteId(Prefs prefs, DocStruct logical) {
@@ -2048,7 +2047,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
         Process process = ProcessManager.getProcessByExactTitle(selectedEntry.getGoobiProcessTitle());
         process.downloadDocket();
-        LockingBean.updateLocking(selectedDatabase);
+        //        LockingBean.updateLocking(selectedDatabase);
     }
 
     public void downloadArchive() {
@@ -2088,7 +2087,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
             facesContext.responseComplete();
         }
-        LockingBean.updateLocking(selectedDatabase);
+        //        LockingBean.updateLocking(selectedDatabase);
     }
 
     private void createEventFields(Element eadElement) {
@@ -2159,7 +2158,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public String cancelEdition() {
         // reset current settings
-        LockingBean.freeObject(selectedDatabase);
+        //        LockingBean.freeObject(selectedDatabase);
         selectedDatabase = null;
         selectedEntry = null;
         rootElement = null;
@@ -2185,7 +2184,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         Map<String, List<String>> valueMap = new HashMap<>();
 
         validateNode(rootElement, valueMap);
-        LockingBean.updateLocking(selectedDatabase);
+        //        LockingBean.updateLocking(selectedDatabase);
     }
 
     private void validateNode(IEadEntry node, Map<String, List<String>> valueMap) {
@@ -2430,7 +2429,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
         }
 
-        LockingBean.updateLocking(selectedDatabase);
+        //        LockingBean.updateLocking(selectedDatabase);
 
         return lstNodesWithNewIds;
     }
@@ -2583,7 +2582,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         HttpUtils.getStringFromUrl(importUrl);
 
-        LockingBean.updateLocking(selectedDatabase);
+        //        LockingBean.updateLocking(selectedDatabase);
     }
 
     public IConfiguration getDuplicationConfiguration() {
