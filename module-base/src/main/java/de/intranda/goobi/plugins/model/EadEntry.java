@@ -11,9 +11,11 @@ import org.goobi.interfaces.IMetadataField;
 import org.goobi.interfaces.INodeType;
 import org.goobi.interfaces.IParameter;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class EadEntry implements IEadEntry {
 
     // parent node
