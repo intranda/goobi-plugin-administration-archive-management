@@ -41,6 +41,7 @@ import de.sub.goobi.helper.Helper;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.VocabularyManager;
 import io.goobi.workflow.api.connection.HttpUtils;
+import io.goobi.workflow.locking.LockingBean;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ ConfigurationHelper.class, HttpUtils.class, VocabularyManager.class, ProcessManager.class, Helper.class })
@@ -154,6 +155,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
     @Test
     public void testFlatList() {
+        LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
@@ -175,6 +177,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
     @Test
     public void testLoadDatabase() {
+        LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
@@ -502,6 +505,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
     @Test
     public void testCreateEadDocument() throws Exception {
+        LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
@@ -554,6 +558,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
     @Test
     public void testSetSelectedEntry() {
+        LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
 
         IEadEntry root = new EadEntry(0, 0);
@@ -586,6 +591,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
     @Test
     public void testAddNode() {
+        LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
@@ -609,6 +615,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
     @Test
     public void testDeleteNode() {
+        LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
@@ -616,6 +623,7 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.loadSelectedDatabase();
 
         IEadEntry root = plugin.getRootElement();
+        plugin.setSelectedEntry(root);
         root.setDisplayChildren(true);
         IEadEntry firstChild = root.getSubEntryList().get(0);
         // do nothing
@@ -632,6 +640,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
     @Test
     public void testPrepareMoveNode() {
+        LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
@@ -644,6 +653,7 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals("", plugin.getDisplayMode());
 
         IEadEntry root = plugin.getRootElement();
+        plugin.setSelectedEntry(root);
         IEadEntry firstChild = root.getSubEntryList().get(0);
         root.setDisplayChildren(true);
         firstChild.setDisplayChildren(true);
@@ -671,7 +681,8 @@ public class ArchiveManagementAdministrationPluginTest {
 
     @Test
     public void testMoveNode() {
-
+        LockingBean.resetAllLocks();
+        LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
@@ -696,6 +707,8 @@ public class ArchiveManagementAdministrationPluginTest {
 
     @Test
     public void testMoveNodeUp() {
+        LockingBean.resetAllLocks();
+        LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
@@ -735,6 +748,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
     @Test
     public void testMoveNodeDown() {
+        LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
@@ -774,6 +788,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
     @Test
     public void testMoveHierarchyDown() {
+        LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
@@ -808,6 +823,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
     @Test
     public void testMoveHierarchyUp() {
+        LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
@@ -846,6 +862,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
     @Test
     public void testSearch() {
+        LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
@@ -863,6 +880,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
     @Test
     public void testGetDistinctDatabaseNames() {
+        LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.getPossibleDatabases();
         List<String> dbs = plugin.getDistinctDatabaseNames();
@@ -873,6 +891,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
     @Test
     public void testCreateNewDatabase() {
+        LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.getPossibleDatabases();
         plugin.createNewDatabase();
@@ -896,6 +915,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
     @Test
     public void testCancelEdition() {
+        LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
@@ -950,6 +970,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
     @Test
     public void testValidateArchive() {
+        LockingBean.resetAllLocks();
 
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setDatastoreUrl("http://localhost:8984/");

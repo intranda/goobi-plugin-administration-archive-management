@@ -87,6 +87,7 @@ import de.sub.goobi.persistence.managers.MetadataManager;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.VocabularyManager;
 import io.goobi.workflow.api.connection.HttpUtils;
+import io.goobi.workflow.locking.LockingBean;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -210,7 +211,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private List<String> editorList = new ArrayList<>();
     private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    private String username;
+    private String username = "";
 
     @Getter
     private boolean dbOK;
@@ -377,17 +378,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Override
     public void loadSelectedDatabase() {
 
-        User user = Helper.getCurrentUser();
-        String userName = user != null ? user.getNachVorname() : "-";
-
         try {
             // open selected database
             if (StringUtils.isNotBlank(selectedDatabase)) {
-                //                if (!LockingBean.lockObject(selectedDatabase, userName)) {
-                //                    Helper.setFehlerMeldung("plugin_administration_archive_databaseLocked");
-                //                    selectedDatabase = null;
-                //                    return;
-                //                }
 
                 String[] parts = selectedDatabase.split(" - ");
 
@@ -466,7 +459,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             selectedEntry = rootElement;
             displayMode = "";
             getDuplicationConfiguration();
-            //            LockingBean.lockObject(selectedDatabase, username);
         } else {
             //this may write an error message if necessary
             List<String> databases = getPossibleDatabaseNames();
@@ -493,7 +485,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
         rootElement.setNodeType(rootType);
         rootElement.setDisplayChildren(true);
-        selectedEntry = rootElement;
+
         Element archdesc = eadElement.getChild("archdesc", ns);
         if (archdesc != null) {
             Element processinfoElement = archdesc.getChild("processinfo", ns);
@@ -509,7 +501,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     fv.setValue(item.getText());
                     editor.addFieldValue(fv);
                 }
-                selectedEntry.getDescriptionControlAreaList().add(editor);
+                rootElement.getDescriptionControlAreaList().add(editor);
             }
         }
         Element control = eadElement.getChild("control", ns);
@@ -886,6 +878,32 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     @Override
     public void setSelectedEntry(IEadEntry entry) {
+        // unlock last entry and its children
+        if (selectedEntry != null) {
+            List<IEadEntry> entriesToUnlock = selectedEntry.getAllNodes();
+            for (IEadEntry e : entriesToUnlock) {
+                LockingBean.freeObject(e.getId());
+            }
+        }
+        // unselect the old entry
+        selectedEntry = null;
+
+        // check if entry or any of its children is locked by another person
+        List<IEadEntry> entriesToLock = entry.getAllNodes();
+        for (IEadEntry e : entriesToLock) {
+            if (LockingBean.isLocked(e.getId())) {
+                // TODO abort with error message
+                Helper.setFehlerMeldung("Someone is working on this node or its children");
+                return;
+            }
+        }
+
+        // lock new node, of no-one is working on it or its children
+        for (IEadEntry e : entriesToLock) {
+            if (!LockingBean.lockObject(e.getId(), username)) {
+                // TODO this error cannot not occur
+            }
+        }
 
         if (flatEntryList == null) {
             getFlatEntryList();
