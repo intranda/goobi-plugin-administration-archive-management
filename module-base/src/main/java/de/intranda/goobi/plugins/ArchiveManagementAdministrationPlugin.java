@@ -395,12 +395,16 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 String response = HttpUtils.getStringFromUrl(datastoreUrl + "db/" + parts[0] + "/" + parts[1]);
                 // get xml root element
                 Document document = openDocument(response);
+
                 if (document != null) {
                     // get field definitions from config file
                     readConfiguration();
 
                     // parse ead file
                     parseEadFile(document);
+
+                    // save it again, so any generated ids are saved
+                    createEadDocument();
                 }
             } else {
                 Helper.setFehlerMeldung("plugin_administration_archive_creation_noRecordGroupSelected");
