@@ -70,9 +70,22 @@ public class ArchiveManagementAdministrationPluginTest {
         PowerMock.mockStatic(HttpUtils.class);
         EasyMock.expect(HttpUtils.getStringFromUrl("http://localhost:8984/databases")).andReturn(getDatabaseResponse()).anyTimes();
         EasyMock.expect(HttpUtils.getStringFromUrl("http://localhost:8984/db/fixture/ead.xml")).andReturn(readDatabaseResponse()).anyTimes();
+
+        EasyMock.expect(HttpUtils.getStringFromUrl("http://localhost:8984/updateNode/fixture/ead.xml/1234uniqueId")).andReturn("").anyTimes();
+        EasyMock.expect(HttpUtils.getStringFromUrl(
+                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x69955980777740420181205140002806"))
+                .andReturn("")
+                .anyTimes();
+
+        EasyMock.expect(HttpUtils.getStringFromUrl(
+                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x88373351097106920181205140002803"))
+                .andReturn("")
+                .anyTimes();
+
         EasyMock.expect(HttpUtils.getStringFromUrl("http://localhost:8984/import/fixture/ead.xml"))
                 .andReturn(readDatabaseResponse())
                 .anyTimes();
+
         PowerMock.replay(HttpUtils.class);
 
         PowerMock.mockStatic(Helper.class);
@@ -560,7 +573,8 @@ public class ArchiveManagementAdministrationPluginTest {
     public void testSetSelectedEntry() {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
-
+        plugin.setSelectedDatabase("fixture - ead.xml");
+        plugin.setTestMode(true);
         IEadEntry root = new EadEntry(0, 0);
         IEadEntry firstRootChild = new EadEntry(0, 1);
         IEadEntry secondRootChild = new EadEntry(1, 1);
@@ -593,6 +607,7 @@ public class ArchiveManagementAdministrationPluginTest {
     public void testAddNode() {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.setTestMode(true);
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -617,6 +632,7 @@ public class ArchiveManagementAdministrationPluginTest {
     public void testDeleteNode() {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.setTestMode(true);
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -642,6 +658,7 @@ public class ArchiveManagementAdministrationPluginTest {
     public void testPrepareMoveNode() {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.setTestMode(true);
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -684,6 +701,7 @@ public class ArchiveManagementAdministrationPluginTest {
         LockingBean.resetAllLocks();
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.setTestMode(true);
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -710,6 +728,7 @@ public class ArchiveManagementAdministrationPluginTest {
         LockingBean.resetAllLocks();
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.setTestMode(true);
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -750,6 +769,7 @@ public class ArchiveManagementAdministrationPluginTest {
     public void testMoveNodeDown() {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.setTestMode(true);
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -790,6 +810,7 @@ public class ArchiveManagementAdministrationPluginTest {
     public void testMoveHierarchyDown() {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.setTestMode(true);
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -825,6 +846,7 @@ public class ArchiveManagementAdministrationPluginTest {
     public void testMoveHierarchyUp() {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.setTestMode(true);
         plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setSelectedDatabase("fixture - ead.xml");
@@ -923,7 +945,6 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.loadSelectedDatabase();
         plugin.getFlatEntryList();
         IEadEntry entry = plugin.getRootElement();
-        plugin.setSelectedEntry(entry);
         plugin.setDisplayMode("something");
         plugin.setSearchValue("something");
 
@@ -936,7 +957,6 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.setDisplayControlArea(true);
 
         assertEquals("fixture - ead.xml", plugin.getSelectedDatabase());
-        assertEquals(entry, plugin.getSelectedEntry());
         assertEquals(entry, plugin.getRootElement());
         assertEquals("something", plugin.getDisplayMode());
         assertNotNull(plugin.getFlatEntryList());

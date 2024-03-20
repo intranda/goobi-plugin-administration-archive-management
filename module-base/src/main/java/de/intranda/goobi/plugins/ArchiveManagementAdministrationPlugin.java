@@ -107,6 +107,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     private static final long serialVersionUID = -6745728159636602782L;
 
+    @Setter
+    private boolean testMode;
+
     @Getter
     @Setter
     private String displayMode = "";
@@ -523,8 +526,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * read the metadata for the current xml node. - create an {@link EadEntry} - execute the configured xpaths on the current node - add the metadata
      * to one of the 7 levels - check if the node has sub nodes - call the method recursively for all sub nodes
      */
-    private EadEntry parseElement(int order, int hierarchy, Element element) {
-        EadEntry entry = new EadEntry(order, hierarchy);
+    private IEadEntry parseElement(int order, int hierarchy, Element element) {
+        IEadEntry entry = new EadEntry(order, hierarchy);
 
         for (IMetadataField emf : configuredFields) {
 
@@ -639,7 +642,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             int subHierarchy = hierarchy + 1;
             for (Element c : clist) {
 
-                EadEntry child = parseElement(subOrder, subHierarchy, c);
+                IEadEntry child = parseElement(subOrder, subHierarchy, c);
                 entry.addSubEntry(child);
                 child.setParentNode(entry);
                 subOrder++;
@@ -662,7 +665,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * @param stringValue
      */
 
-    private void addFieldToEntry(EadEntry entry, IMetadataField emf, List<String> stringValues) {
+    private void addFieldToEntry(IEadEntry entry, IMetadataField emf, List<String> stringValues) {
         if (StringUtils.isBlank(entry.getLabel()) && emf.getXpath().contains("unittitle") && stringValues != null && !stringValues.isEmpty()) {
             entry.setLabel(stringValues.get(0));
         }
@@ -878,21 +881,55 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     @Override
     public void setSelectedEntry(IEadEntry entry) {
-        // unlock last entry and its children
+
         if (selectedEntry != null) {
+            // auto save current node - if not, remove this line
+            updateSingleNode();
+
+            // unlock last entry and its children
             List<IEadEntry> entriesToUnlock = selectedEntry.getAllNodes();
             for (IEadEntry e : entriesToUnlock) {
                 LockingBean.freeObject(e.getId());
             }
         }
-        // unselect the old entry
+        // deselect the old entry
         selectedEntry = null;
+        if (!testMode) {
+            // replace the node with the latest version from basex
+            String nodeId = entry.getId();
+            String[] nameParts = selectedDatabase.split(" - ");
+            String nodeUpdateUrl = datastoreUrl + "getNode/" + nameParts[0] + "/" + nameParts[1] + "/" + nodeId;
+            String nodeContent = HttpUtils.getStringFromUrl(nodeUpdateUrl);
+
+            // check if the element still exists, maybe it was deleted by another user
+            if (StringUtils.isBlank(nodeContent)) {
+                // error, probably destination node was deleted
+                Helper.setFehlerMeldung("Node not found, reload the file");
+                return;
+            }
+            // read as xml
+            Document nodeDoc = openDocument(nodeContent);
+
+            if (entry.getParentNode() == null) {
+                parseEadFile(nodeDoc);
+                entry = rootElement;
+            } else {
+                // create new entry from latest content and replace old element with new one
+                IEadEntry newNode = parseElement(entry.getOrderNumber(), entry.getHierarchy(), nodeDoc.getRootElement());
+                IEadEntry parentNode = entry.getParentNode();
+                parentNode.getSubEntryList().remove(entry);
+                parentNode.getSubEntryList().add(newNode);
+                Collections.sort(parentNode.getSubEntryList());
+                newNode.setParentNode(parentNode);
+                entry = newNode;
+            }
+        }
 
         // check if entry or any of its children is locked by another person
         List<IEadEntry> entriesToLock = entry.getAllNodes();
         for (IEadEntry e : entriesToLock) {
             if (LockingBean.isLocked(e.getId())) {
-                // TODO abort with error message
+                // TODO abort with error message, this message is not displayed in the UI
                 Helper.setFehlerMeldung("Someone is working on this node or its children");
                 return;
             }
@@ -2600,7 +2637,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         HttpUtils.getStringFromUrl(importUrl);
 
-        //        LockingBean.updateLocking(selectedDatabase);
     }
 
     public IConfiguration getDuplicationConfiguration() {
@@ -2608,5 +2644,54 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             duplicationConfiguration = new DuplicationConfiguration(rootElement);
         }
         return duplicationConfiguration;
+    }
+
+    /**
+     * Replace an existing node in the EAD document in <baseX with the selected node.
+     * 
+     * The method searches for a node with the same id in the selected XML file and replaces the complete node and its children with the new content
+     * 
+     */
+
+    public void updateSingleNode() {
+        if (selectedEntry != null) {
+
+            // call regular save method for root node
+            if (selectedEntry.equals(rootElement)) {
+                createEadDocument();
+                return;
+            }
+
+            // otherwise continue
+
+            // create xml element for the node and all children
+            Document nodeDocument = new Document();
+            Element eadNode = new Element("c", ns);
+            nodeDocument.setRootElement(eadNode);
+            addMetadata(eadNode, selectedEntry);
+
+            // save document in exchange folder
+            String filename = exportFolder + "/" + selectedEntry.getId();
+            XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
+            try {
+                out.output(nodeDocument, new FileOutputStream(filename));
+            } catch (IOException e) {
+                log.error(e);
+            }
+
+            // call function to import created ead file
+            String[] nameParts = selectedDatabase.split(" - ");
+            String importUrl = datastoreUrl + "updateNode/" + nameParts[0] + "/" + nameParts[1] + "/" + selectedEntry.getId();
+
+            // call replacement statement
+            HttpUtils.getStringFromUrl(importUrl);
+
+            // delete exchange file
+            try {
+                StorageProvider.getInstance().deleteFile(Paths.get(filename));
+            } catch (IOException e) {
+                log.error(e);
+            }
+        }
     }
 }
