@@ -529,4 +529,11 @@ public class EadEntry implements IEadEntry {
         otherField.setEadEntry(other);
         return otherField;
     }
+
+    // overwrite compare method to sort child list by its order number
+
+    @Override
+    public int compareTo(IEadEntry o) {
+        return orderNumber.compareTo(o.getOrderNumber());
+    }
 }

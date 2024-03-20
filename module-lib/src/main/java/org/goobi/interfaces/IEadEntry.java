@@ -2,7 +2,7 @@ package org.goobi.interfaces;
 
 import java.util.List;
 
-public interface IEadEntry {
+public interface IEadEntry extends Comparable<IEadEntry> {
 
     public IEadEntry getParentNode();
 

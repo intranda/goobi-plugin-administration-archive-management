@@ -723,14 +723,16 @@ div.no-element-selected {
                                                         <ui:repeat
                                                             var="template"
                                                             value="#{AdministrationForm.administrationPlugin.processTemplates}">
-                                                            <li><h:commandLink
+                                                            <li>
+                                                                <h:commandLink
                                                                     action="#{AdministrationForm.administrationPlugin.createProcesses}"
                                                                     pt:aria-label="#{template.two}">
                                                                     <h:outputText value="#{template.two}" />
                                                                     <x:updateActionListener
                                                                         property="#{AdministrationForm.administrationPlugin.selectedTemplate}"
                                                                         value="#{template.one}" />
-                                                                </h:commandLink></li>
+                                                                </h:commandLink>
+                                                            </li>
                                                         </ui:repeat>
 
                                                     </ul>
@@ -843,6 +845,18 @@ div.no-element-selected {
                                                         render="hierarchy" />
                                                 </h:commandLink>
 
+                                                <!-- TODO remove this again. Temporary button to update the selected node in BaseX -->
+                                                <h:commandLink
+                                                    styleClass="btn btn-primary font-size-s pull-right leftArea-button"
+                                                    action="#{AdministrationForm.administrationPlugin.updateSingleNode}"
+                                                    title="#{msgs.plugin_administration_archive_updateSingleNode}">
+                                                    <i class="fa fa-files-o" />
+                                                    <f:passThroughAttribute
+                                                        name="data-toggle"
+                                                        value="tooltip" />
+                                                    <f:ajax execute="nodeContentArea" />
+                                                </h:commandLink>
+
                                             </div>
                                         </div>
                                     </h:panelGroup>
@@ -918,7 +932,8 @@ div.no-element-selected {
                                         <!-- a node was selected -->
                                         <h:panelGroup
                                             layout="block"
-                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry != null}">
+                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry != null}"
+                                            id="nodeContentArea">
 
                                             <h:panelGroup
                                                 layout="block"
@@ -965,7 +980,8 @@ div.no-element-selected {
                                                                             aria-label="#{msgs.plugin_administration_archive_process_create_process}"
                                                                             href="#"
                                                                             class="btn btn-blue font-size-s dropdown-toggle"
-                                                                            data-toggle="dropdown"> <h:outputText
+                                                                            data-toggle="dropdown">
+                                                                            <h:outputText
                                                                                 value="#{msgs.plugin_administration_archive_process_create_process}" />
                                                                             <span class="caret"></span>
                                                                         </a>
@@ -973,14 +989,16 @@ div.no-element-selected {
                                                                             <ui:repeat
                                                                                 var="template"
                                                                                 value="#{AdministrationForm.administrationPlugin.processTemplates}">
-                                                                                <li><h:commandLink
+                                                                                <li>
+                                                                                    <h:commandLink
                                                                                         action="#{AdministrationForm.administrationPlugin.createProcess}"
                                                                                         pt:aria-label="#{template.two}">
                                                                                         <h:outputText value="#{template.two}" />
                                                                                         <x:updateActionListener
                                                                                             property="#{AdministrationForm.administrationPlugin.selectedTemplate}"
                                                                                             value="#{template.one}" />
-                                                                                    </h:commandLink></li>
+                                                                                    </h:commandLink>
+                                                                                </li>
                                                                             </ui:repeat>
 
                                                                         </ul>
@@ -1374,7 +1392,8 @@ div.no-element-selected {
                                 class="close"
                                 data-dismiss="modal"
                                 aria-label="Close">
-                                <span aria-hidden="true"> <h:outputText
+                                <span aria-hidden="true">
+                                    <h:outputText
                                         value="&amp;times;"
                                         escape="false" />
                                 </span>
@@ -1439,7 +1458,8 @@ div.no-element-selected {
                                 <a
                                     class="btn pull-left"
                                     title="#{msgs.cancel}"
-                                    data-dismiss="modal"> <h:outputText value="#{msgs.cancel}" />
+                                    data-dismiss="modal">
+                                    <h:outputText value="#{msgs.cancel}" />
                                 </a>
 
                                 <h:commandLink
@@ -1482,7 +1502,8 @@ div.no-element-selected {
                                 class="close"
                                 data-dismiss="modal"
                                 aria-label="Close">
-                                <span aria-hidden="true"> <h:outputText
+                                <span aria-hidden="true">
+                                    <h:outputText
                                         value="&amp;times;"
                                         escape="false" />
                                 </span>
@@ -1706,7 +1727,8 @@ div.no-element-selected {
                                 <a
                                     class="btn pull-left"
                                     title="#{msgs.cancel}"
-                                    data-dismiss="modal"> <h:outputText value="#{msgs.cancel}" />
+                                    data-dismiss="modal">
+                                    <h:outputText value="#{msgs.cancel}" />
                                 </a>
                             </div>
 
