@@ -7,26 +7,26 @@ declare
     
 function page:moveNode($database, $xmlDocument, $nodeid, $parentid) { 
 
-  (: open selected file :)
-  let $ead := db:get($database, $xmlDocument)/ead
+    (: open selected file :)
+    let $ead := db:get($database, $xmlDocument)/ead
 
-  (: find node to move :)
-  let $node := $ead//*[@id=$nodeid]
+    (: find node to move :)
+    let $node := $ead//*[@id=$nodeid]
 
-  (: find new parent node :)
-  
-  let $destination := $ead//*[@id=$parentid]
+    (: find new parent node :)
+    let $destination := $ead//*[@id=$parentid]
 
- let $var := page:deleteNode($node)
-  let $var2 :=  page:insertNode($node, $destination)
+	(: delete old node, insert node at new position :)
+    let $var := page:deleteNode($node)
+    let $var2 := page:insertNode($node, $destination)
 
-return $destination
+    return $destination
 };
 
-declare updating function page:deleteNode($node) {
-  update:output("delete"), delete node $node
+declare function page:deleteNode($node) {
+    delete node $node
 };
 
-declare updating function page:insertNode($node, $destination) {
-  update:output("insert"), insert node $node into $destination 
+declare function page:insertNode($node, $parent) {
+    insert node $node into $parent
 };
