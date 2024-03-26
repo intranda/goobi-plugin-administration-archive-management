@@ -20,7 +20,10 @@ function page:moveNode($database, $xmlDocument, $nodeid, $parentid) {
     let $var := page:deleteNode($node)
     let $var2 := page:insertNode($node, $destination)
 
-    return $destination
+    return 
+        <collection>
+            {$ead}
+        </collection>
 };
 
 declare function page:deleteNode($node) {
