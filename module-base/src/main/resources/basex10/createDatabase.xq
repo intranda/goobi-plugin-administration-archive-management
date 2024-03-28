@@ -5,7 +5,7 @@ declare default element namespace "urn:isbn:1-931666-22-9";
 declare
   %rest:path("/create/{$database}")
   %rest:single
-  %rest:GET
+  %rest:POST
 updating function page:createDatbase($database) {
 	 if (db:exists($database)) then (
 

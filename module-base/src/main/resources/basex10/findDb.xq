@@ -6,21 +6,21 @@ declare
   %rest:path("/dbname/{$identifier}")
   %rest:single
   %rest:GET
-  
 function page:getDatabase($identifier) {
-	<db>
-	{
-	let $databases := db:list()
-	for $c in $databases
-	let $files := db:list-details($c)
-	for $filename in $files
-	return
-	let $ead := db:get($c, $filename)/ead
-	return
-	if (exists($ead[//c[@id=$identifier]]))
-	then (
-	      <record database="{$c}" filename="{$filename}" />
-	      ) else ()
-	}
-	</db>
+
+<db>
+{
+let $databases := db:list()
+for $c in $databases
+let $files := db:list-details($c)
+for $filename in $files
+return
+let $ead := db:get($c, $filename)/ead
+return
+if (exists($ead[//c[@level="file"][@id=$identifier]]))
+then (
+      <record database="{$c}" filename="{$filename}" />
+      ) else ()
+}
+</db>
 };

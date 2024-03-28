@@ -35,16 +35,16 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import de.intranda.goobi.plugins.api.BaseXConnection;
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.Helper;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.VocabularyManager;
-import io.goobi.workflow.api.connection.HttpUtils;
 import io.goobi.workflow.locking.LockingBean;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ ConfigurationHelper.class, HttpUtils.class, VocabularyManager.class, ProcessManager.class, Helper.class })
+@PrepareForTest({ ConfigurationHelper.class, BaseXConnection.class, VocabularyManager.class, ProcessManager.class, Helper.class })
 @PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*",
         "org.w3c.*" })
 public class ArchiveManagementAdministrationPluginTest {
@@ -67,26 +67,36 @@ public class ArchiveManagementAdministrationPluginTest {
     @Before
     public void setUp() throws Exception {
 
-        PowerMock.mockStatic(HttpUtils.class);
-        EasyMock.expect(HttpUtils.getStringFromUrl("http://localhost:8984/databases")).andReturn(getDatabaseResponse()).anyTimes();
-        EasyMock.expect(HttpUtils.getStringFromUrl("http://localhost:8984/db/fixture/ead.xml")).andReturn(readDatabaseResponse()).anyTimes();
-
-        EasyMock.expect(HttpUtils.getStringFromUrl("http://localhost:8984/updateNode/fixture/ead.xml/1234uniqueId")).andReturn("").anyTimes();
-        EasyMock.expect(HttpUtils.getStringFromUrl(
-                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x69955980777740420181205140002806"))
-                .andReturn("")
+        PowerMock.mockStatic(BaseXConnection.class);
+        EasyMock.expect(BaseXConnection.executeRequestWithoutBody("get", "http://localhost:8984/databases"))
+                .andReturn(getDatabaseResponse())
                 .anyTimes();
-
-        EasyMock.expect(HttpUtils.getStringFromUrl(
-                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x88373351097106920181205140002803"))
-                .andReturn("")
-                .anyTimes();
-
-        EasyMock.expect(HttpUtils.getStringFromUrl("http://localhost:8984/import/fixture/ead.xml"))
+        EasyMock.expect(BaseXConnection.executeRequestWithoutBody("get", "http://localhost:8984/db/fixture/ead.xml"))
                 .andReturn(readDatabaseResponse())
                 .anyTimes();
 
-        PowerMock.replay(HttpUtils.class);
+        EasyMock.expect(BaseXConnection.executeRequestWithBody("put", "http://localhost:8984/updateNode/fixture/ead.xml/1234uniqueId", null))
+                .andReturn("")
+                .anyTimes();
+        EasyMock.expect(BaseXConnection.executeRequestWithBody("put",
+                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x69955980777740420181205140002806", null))
+                .andReturn("")
+                .anyTimes();
+
+        EasyMock.expect(BaseXConnection.executeRequestWithBody("put",
+                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x88373351097106920181205140002803", null))
+                .andReturn("")
+                .anyTimes();
+
+        EasyMock.expect(BaseXConnection.executeRequestWithBody("put", "http://localhost:8984/import/fixture/ead.xml", null))
+                .andReturn(readDatabaseResponse())
+                .anyTimes();
+
+        EasyMock.expect(BaseXConnection.executeRequestWithoutBody("delete", "http://localhost:8984/deleteNode/fixture/ead.xml/1234uniqueId"))
+                .andReturn(readDatabaseResponse())
+                .anyTimes();
+
+        PowerMock.replay(BaseXConnection.class);
 
         PowerMock.mockStatic(Helper.class);
         EasyMock.expect(Helper.getCurrentUser()).andReturn(null).anyTimes();
