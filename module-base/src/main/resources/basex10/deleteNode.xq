@@ -2,7 +2,7 @@ module namespace page = 'http://basex.org/examples/web-page';
 declare default element namespace "urn:isbn:1-931666-22-9";
 
 declare 
-%rest:GET 
+%rest:DELETE 
 %rest:path("/deleteNode/{$database}/{$xmlDocument}/{$nodeid}")
     
 updating function page:deleteNode($database, $xmlDocument, $nodeid) { 

@@ -2,7 +2,7 @@ module namespace page = 'http://basex.org/examples/web-page';
 declare default element namespace "urn:isbn:1-931666-22-9";
 
 declare 
-%rest:GET 
+%rest:PUT 
 %rest:path("/updateNode/{$database}/{$xmlDocument}/{$nodeid}")
     
 updating function page:updateNode($database, $xmlDocument, $nodeid) { 

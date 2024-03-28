@@ -132,11 +132,9 @@ public class EadEntry implements IEadEntry {
     public List<IEadEntry> getAsFlatList() {
         List<IEadEntry> list = new LinkedList<>();
         list.add(this);
-        if (displayChildren) {
-            if (subEntryList != null) {
-                for (IEadEntry ds : subEntryList) {
-                    list.addAll(ds.getAsFlatList());
-                }
+        if (displayChildren && subEntryList != null) {
+            for (IEadEntry ds : subEntryList) {
+                list.addAll(ds.getAsFlatList());
             }
         }
         return list;

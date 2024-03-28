@@ -33,9 +33,6 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
 import org.goobi.beans.User;
@@ -64,6 +61,7 @@ import org.jdom2.output.XMLOutputter;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
+import de.intranda.goobi.plugins.api.BaseXConnection;
 import de.intranda.goobi.plugins.model.DuplicationConfiguration;
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.EadMetadataField;
@@ -86,7 +84,6 @@ import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.MetadataManager;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.VocabularyManager;
-import io.goobi.workflow.api.connection.HttpUtils;
 import io.goobi.workflow.locking.LockingBean;
 import lombok.Getter;
 import lombok.Setter;
@@ -131,7 +128,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private String exportFolder = "/tmp/";
 
     @Getter
-    @Setter
     private String selectedDatabase;
 
     @Getter
@@ -279,6 +275,17 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
     }
 
+    @Override
+    public void setSelectedDatabase(String db) {
+        selectedDatabase = db;
+        if (StringUtils.isNotBlank(selectedDatabase)) {
+            String[] nameParts = selectedDatabase.split(" - ");
+            databaseName = nameParts[0];
+            fileName = nameParts[1];
+        }
+
+    }
+
     public String checkDBConnection() {
         getPossibleDatabases();
         return null;
@@ -293,7 +300,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Override
     public List<String> getPossibleDatabases() {
         List<String> databases = new ArrayList<>();
-        String response = HttpUtils.getStringFromUrl(datastoreUrl + "databases");
+        String response = BaseXConnection.executeRequestWithoutBody("get", datastoreUrl + "databases");
         if (StringUtils.isNotBlank(response)) {
 
             Document document = openDocument(response);
@@ -327,7 +334,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public List<String> getPossibleDatabaseNames() {
         List<String> databases = new ArrayList<>();
-        String response = HttpUtils.getStringFromUrl(datastoreUrl + "databases");
+        String response = BaseXConnection.executeRequestWithoutBody("get", datastoreUrl + "databases");
         if (StringUtils.isNotBlank(response)) {
 
             Document document = openDocument(response);
@@ -352,26 +359,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * Check if there is a connection to the DB, return true if there is
      */
     private boolean checkDB() {
-
         String url = datastoreUrl + "databases";
-        HttpGet method = new HttpGet(url);
-        CloseableHttpClient client = HttpClientBuilder.create().build();
-        try {
-            client.execute(method, HttpUtils.stringResponseHandler);
-        } catch (IOException e) {
-            Helper.setFehlerMeldung("plugin_administration_archive_databaseCannotBeLoaded");
-            return false;
-        } finally {
-            method.releaseConnection();
-            try {
-                client.close();
-            } catch (IOException e) {
-                log.error(e);
-            }
-        }
-
-        //otherwise
-        return true;
+        return BaseXConnection.checkIfDBIsRunning(url);
     }
 
     /**
@@ -385,9 +374,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             // open selected database
             if (StringUtils.isNotBlank(selectedDatabase)) {
 
-                String[] parts = selectedDatabase.split(" - ");
-
-                String response = HttpUtils.getStringFromUrl(datastoreUrl + "db/" + parts[0] + "/" + parts[1]);
+                String response = BaseXConnection.executeRequestWithoutBody("get", datastoreUrl + "db/" + databaseName + "/" + fileName);
                 // get xml root element
                 Document document = openDocument(response);
 
@@ -732,6 +719,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * @return
      */
     private Document openDocument(String response) {
+
         // read response
         SAXBuilder builder = new SAXBuilder(XMLReaders.NONVALIDATING); // NOSONAR
         builder.setFeature("http://xml.org/sax/features/validation", false);
@@ -885,7 +873,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         if (selectedEntry != null) {
             // auto save current node - if not, remove this line
             updateSingleNode();
-
+            selectedEntry.setSelected(false);
             // unlock last entry and its children
             List<IEadEntry> entriesToUnlock = selectedEntry.getAllNodes();
             for (IEadEntry e : entriesToUnlock) {
@@ -894,12 +882,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
         // deselect the old entry
         selectedEntry = null;
+
+        // replace the node with the latest version from basex
         if (!testMode) {
-            // replace the node with the latest version from basex
             String nodeId = entry.getId();
-            String[] nameParts = selectedDatabase.split(" - ");
-            String nodeUpdateUrl = datastoreUrl + "getNode/" + nameParts[0] + "/" + nameParts[1] + "/" + nodeId;
-            String nodeContent = HttpUtils.getStringFromUrl(nodeUpdateUrl);
+            String nodeUpdateUrl = datastoreUrl + "getNode/" + databaseName + "/" + fileName + "/" + nodeId;
+            String nodeContent = BaseXConnection.executeRequestWithoutBody("get", nodeUpdateUrl);
 
             // check if the element still exists, maybe it was deleted by another user
             if (StringUtils.isBlank(nodeContent)) {
@@ -910,6 +898,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             // read as xml
             Document nodeDoc = openDocument(nodeContent);
 
+            // root node was selected, reload the complete file
             if (entry.getParentNode() == null) {
                 parseEadFile(nodeDoc);
                 entry = rootElement;
@@ -924,6 +913,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 entry = newNode;
             }
         }
+        entry.setSelected(true);
 
         // check if entry or any of its children is locked by another person
         List<IEadEntry> entriesToLock = entry.getAllNodes();
@@ -941,15 +931,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 // TODO this error cannot not occur
             }
         }
-
-        if (flatEntryList == null) {
-            getFlatEntryList();
-        }
-
-        for (IEadEntry other : flatEntryList) {
-            other.setSelected(false);
-        }
-        entry.setSelected(true);
+        resetFlatList();
         this.selectedEntry = entry;
     }
 
@@ -995,6 +977,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             // remove current element from parent node
             parentNode.removeSubEntry(selectedEntry);
             // set selectedEntry to parent node
+
+            String deletionURL = datastoreUrl + "deleteNode/" + databaseName + "/" + fileName + "/" + selectedEntry.getId();
+            BaseXConnection.executeRequestWithoutBody("delete", deletionURL);
+
             setSelectedEntry(parentNode);
             flatEntryList = null;
         }
@@ -1025,18 +1011,17 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         addMetadata(eadRoot, rootElement);
         createEventFields(eadRoot);
-        String[] nameParts = selectedDatabase.split(" - ");
         XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
         try {
-            out.output(document, new FileOutputStream(exportFolder + "/" + nameParts[1]));
+            out.output(document, new FileOutputStream(exportFolder + "/" + fileName));
         } catch (IOException e) {
             log.error(e);
         }
 
         // call function to import created ead file
-        String importUrl = datastoreUrl + "import/" + nameParts[0] + "/" + nameParts[1];
+        String importUrl = datastoreUrl + "import/" + databaseName + "/" + fileName;
 
-        HttpUtils.getStringFromUrl(importUrl);
+        BaseXConnection.executeRequestWithBody("put", importUrl, null);
 
         //        LockingBean.updateLocking(selectedDatabase);
     }
@@ -1074,9 +1059,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         // load database
         String importUrl = datastoreUrl + "import/" + databaseName + "/" + uploadedFileName;
-        HttpUtils.getStringFromUrl(importUrl);
+        BaseXConnection.executeRequestWithBody("put", importUrl, null);
 
-        selectedDatabase = databaseName + " - " + uploadedFileName;
+        setSelectedDatabase(databaseName + " - " + uploadedFileName);
         displayMode = "";
         loadSelectedDatabase();
 
@@ -1515,6 +1500,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public void moveNode() {
 
+        // TODO replace this with moveNode/ call
+
         // remove element from parent node
         IEadEntry parentNode = selectedEntry.getParentNode();
         parentNode.removeSubEntry(selectedEntry);
@@ -1528,6 +1515,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         flatEntryList = null;
 
         displayMode = "";
+
         //        LockingBean.updateLocking(selectedDatabase);
     }
 
@@ -2613,8 +2601,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     public void duplicateEadFile() {
-        String[] nameParts = selectedDatabase.split(" - ");
-        String newFileName = nameParts[1].replace(".xml", "") + "_copy.xml";
+        String newFileName = fileName.replace(".xml", "") + "_copy.xml";
 
         IEadEntry duplicate = rootElement.deepCopy(duplicationConfiguration);
 
@@ -2633,9 +2620,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
 
         // call function to import created ead file
-        String importUrl = datastoreUrl + "import/" + nameParts[0] + "/" + newFileName;
+        String importUrl = datastoreUrl + "import/" + databaseName + "/" + newFileName;
 
-        HttpUtils.getStringFromUrl(importUrl);
+        BaseXConnection.executeRequestWithBody("put", importUrl, null);
 
     }
 
@@ -2680,11 +2667,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
 
             // call function to import created ead file
-            String[] nameParts = selectedDatabase.split(" - ");
-            String importUrl = datastoreUrl + "updateNode/" + nameParts[0] + "/" + nameParts[1] + "/" + selectedEntry.getId();
+            String importUrl = datastoreUrl + "updateNode/" + databaseName + "/" + fileName + "/" + selectedEntry.getId();
 
             // call replacement statement
-            HttpUtils.getStringFromUrl(importUrl);
+            BaseXConnection.executeRequestWithBody("put", importUrl, null);
 
             // delete exchange file
             try {
@@ -2694,4 +2680,5 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
         }
     }
+
 }
