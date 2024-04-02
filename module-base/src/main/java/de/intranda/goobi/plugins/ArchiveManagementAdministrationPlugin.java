@@ -884,35 +884,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         selectedEntry = null;
 
         // replace the node with the latest version from basex
-        if (!testMode) {
-            String nodeId = entry.getId();
-            String nodeUpdateUrl = datastoreUrl + "getNode/" + databaseName + "/" + fileName + "/" + nodeId;
-            String nodeContent = BaseXConnection.executeRequestWithoutBody("get", nodeUpdateUrl);
-
-            // check if the element still exists, maybe it was deleted by another user
-            if (StringUtils.isBlank(nodeContent)) {
-                // error, probably destination node was deleted
-                Helper.setFehlerMeldung("Node not found, reload the file");
-                return;
-            }
-            // read as xml
-            Document nodeDoc = openDocument(nodeContent);
-
-            // root node was selected, reload the complete file
-            if (entry.getParentNode() == null) {
-                parseEadFile(nodeDoc);
-                entry = rootElement;
-            } else {
-                // create new entry from latest content and replace old element with new one
-                IEadEntry newNode = parseElement(entry.getOrderNumber(), entry.getHierarchy(), nodeDoc.getRootElement());
-                IEadEntry parentNode = entry.getParentNode();
-                parentNode.getSubEntryList().remove(entry);
-                parentNode.getSubEntryList().add(newNode);
-                Collections.sort(parentNode.getSubEntryList());
-                newNode.setParentNode(parentNode);
-                entry = newNode;
-            }
+        IEadEntry updatedEntry = updateNode(entry);
+        if (updatedEntry == null) {
+            return;
         }
+        entry = updatedEntry;
         entry.setSelected(true);
 
         // check if entry or any of its children is locked by another person
@@ -933,6 +909,39 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
         resetFlatList();
         this.selectedEntry = entry;
+    }
+
+    private IEadEntry updateNode(IEadEntry entry) {
+        if (!testMode) {
+            String nodeId = entry.getId();
+            String nodeUpdateUrl = datastoreUrl + "getNode/" + databaseName + "/" + fileName + "/" + nodeId;
+            String nodeContent = BaseXConnection.executeRequestWithoutBody("get", nodeUpdateUrl);
+
+            // check if the element still exists, maybe it was deleted by another user
+            if (StringUtils.isBlank(nodeContent)) {
+                // error, probably destination node was deleted
+                Helper.setFehlerMeldung("Node not found, reload the file");
+                return null;
+            }
+            // read as xml
+            Document nodeDoc = openDocument(nodeContent);
+
+            // root node was selected, reload the complete file
+            if (entry.getParentNode() == null) {
+                parseEadFile(nodeDoc);
+                entry = rootElement;
+            } else {
+                // create new entry from latest content and replace old element with new one
+                IEadEntry newNode = parseElement(entry.getOrderNumber(), entry.getHierarchy(), nodeDoc.getRootElement());
+                IEadEntry parentNode = entry.getParentNode();
+                parentNode.getSubEntryList().remove(entry);
+                parentNode.getSubEntryList().add(newNode);
+                Collections.sort(parentNode.getSubEntryList());
+                newNode.setParentNode(parentNode);
+                entry = newNode;
+            }
+        }
+        return entry;
     }
 
     @Override
@@ -963,7 +972,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             selectedEntry.setSelected(true);
             flatEntryList = null;
         }
-        //        LockingBean.updateLocking(selectedDatabase);
+        // TODO update basex
     }
 
     public void deleteNode() {
@@ -984,7 +993,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             setSelectedEntry(parentNode);
             flatEntryList = null;
         }
-        //        LockingBean.updateLocking(selectedDatabase);
+
     }
 
     /**
@@ -1023,7 +1032,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         BaseXConnection.executeRequestWithBody("put", importUrl, null);
 
-        //        LockingBean.updateLocking(selectedDatabase);
     }
 
     /**
@@ -1500,23 +1508,33 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public void moveNode() {
 
-        // TODO replace this with moveNode/ call
+        // abort if new parent is locked
 
-        // remove element from parent node
-        IEadEntry parentNode = selectedEntry.getParentNode();
-        parentNode.removeSubEntry(selectedEntry);
+        String idToMove = selectedEntry.getId();
 
-        // add it to new parent
-        destinationEntry.addSubEntry(selectedEntry);
-        selectedEntry.setParentNode(destinationEntry);
+        IEadEntry oldParentNode = selectedEntry.getParentNode();
 
-        // set new hierarchy level to element and all children
-        selectedEntry.updateHierarchy();
-        flatEntryList = null;
+        IEadEntry newParentNode = destinationEntry;
+        if (LockingBean.isLocked(newParentNode.getId())) {
+            // TODO display it in ui
+            Helper.setFehlerMeldung("plugin_administration_archive_destinationLocked");
 
+            return;
+        }
+
+        // move node in ead file
+        String importUrl = datastoreUrl + "moveNode/" + databaseName + "/" + idToMove + "/" + newParentNode.getId();
+        BaseXConnection.executeRequestWithBody("put", importUrl, "");
+
+        // replace old parent node with latest version from ead
+        updateNode(oldParentNode);
+        // update new parent node  from ead
+        updateNode(newParentNode);
+
+        // update hierarchy tree, mark current node as selected
+        setSelectedEntry(selectedEntry);
         displayMode = "";
 
-        //        LockingBean.updateLocking(selectedDatabase);
     }
 
     public void moveNodeUp() {
@@ -1542,7 +1560,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), selectedEntry.getOrderNumber() - 1);
         selectedEntry.getParentNode().reOrderElements();
         flatEntryList = null;
-        //        LockingBean.updateLocking(selectedDatabase);
+
     }
 
     public void moveNodeDown() {
@@ -1568,7 +1586,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), selectedEntry.getOrderNumber() + 1);
         selectedEntry.getParentNode().reOrderElements();
         flatEntryList = null;
-        //        LockingBean.updateLocking(selectedDatabase);
+
     }
 
     public void moveHierarchyDown() {
@@ -1592,7 +1610,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         destinationEntry = previousNode;
         moveNode();
         destinationEntry.setDisplayChildren(true);
-        //        LockingBean.updateLocking(selectedDatabase);
+
     }
 
     public void moveHierarchyUp() {
@@ -1622,7 +1640,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), oldParent.getOrderNumber() + 1);
             selectedEntry.getParentNode().reOrderElements();
         }
-        //        LockingBean.updateLocking(selectedDatabase);
+
     }
 
     public void searchAdvanced() {
@@ -1669,7 +1687,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         } else {
             resetSearch();
         }
-        //        LockingBean.updateLocking(selectedDatabase);
+
     }
 
     private void searchInNode(IEadEntry node) {
@@ -1683,7 +1701,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 searchInNode(child);
             }
         }
-        //        LockingBean.updateLocking(selectedDatabase);
+
     }
 
     private boolean containsSearchString(IEadEntry node, String fieldname, String searchString) {
@@ -1961,7 +1979,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 myThread.startOrPutToQueue();
             }
         }
-        //        LockingBean.updateLocking(selectedDatabase);
+
     }
 
     private void addNoteId(Prefs prefs, DocStruct logical) {
@@ -2090,7 +2108,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
         Process process = ProcessManager.getProcessByExactTitle(selectedEntry.getGoobiProcessTitle());
         process.downloadDocket();
-        //        LockingBean.updateLocking(selectedDatabase);
+
     }
 
     public void downloadArchive() {
@@ -2130,7 +2148,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
             facesContext.responseComplete();
         }
-        //        LockingBean.updateLocking(selectedDatabase);
+
     }
 
     private void createEventFields(Element eadElement) {
@@ -2227,7 +2245,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         Map<String, List<String>> valueMap = new HashMap<>();
 
         validateNode(rootElement, valueMap);
-        //        LockingBean.updateLocking(selectedDatabase);
+
     }
 
     private void validateNode(IEadEntry node, Map<String, List<String>> valueMap) {
@@ -2471,8 +2489,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 //perhaps remove the NodeId from the process?
             }
         }
-
-        //        LockingBean.updateLocking(selectedDatabase);
 
         return lstNodesWithNewIds;
     }

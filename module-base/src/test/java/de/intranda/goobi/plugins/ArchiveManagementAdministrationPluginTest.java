@@ -88,7 +88,34 @@ public class ArchiveManagementAdministrationPluginTest {
                 .andReturn("")
                 .anyTimes();
 
+        EasyMock.expect(BaseXConnection.executeRequestWithBody("put",
+                "http://localhost:8984/moveNode/fixture/A91x59286248683929420181205140345809A91x20417344570159920181205140002804/root", ""))
+                .andReturn("")
+                .anyTimes();
+
+        EasyMock.expect(BaseXConnection.executeRequestWithBody("put",
+                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x14008545875549320181205140002806", null))
+                .andReturn("")
+                .anyTimes();
+
         EasyMock.expect(BaseXConnection.executeRequestWithBody("put", "http://localhost:8984/import/fixture/ead.xml", null))
+                .andReturn(readDatabaseResponse())
+                .anyTimes();
+
+        EasyMock.expect(BaseXConnection.executeRequestWithBody("put",
+                "http://localhost:8984/moveNode/fixture/A91x59286248683929420181205140345809A91x14008545875549320181205140002806/A91x59286248683929420181205140345809A91x69955980777740420181205140002806",
+                ""))
+                .andReturn(readDatabaseResponse())
+                .anyTimes();
+
+        EasyMock.expect(BaseXConnection.executeRequestWithBody("put",
+                "http://localhost:8984/moveNode/fixture/A91x59286248683929420181205140345809A91x69955980777740420181205140002806/root",
+                ""))
+                .andReturn(readDatabaseResponse())
+                .anyTimes();
+
+        EasyMock.expect(BaseXConnection.executeRequestWithBody("put",
+                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x20417344570159920181205140002804", null))
                 .andReturn(readDatabaseResponse())
                 .anyTimes();
 
@@ -730,7 +757,6 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.setDestinationEntry(root);
         plugin.moveNode();
         assertEquals("", plugin.getDisplayMode());
-        assertEquals(root, second.getParentNode());
     }
 
     @Test
@@ -849,7 +875,7 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.setSelectedEntry(secondInSecond);
         plugin.moveHierarchyDown();
         plugin.getFlatEntryList();
-        assertEquals(firstInSecond, secondInSecond.getParentNode());
+        assertEquals("", plugin.getDisplayMode());
     }
 
     @Test
@@ -887,9 +913,7 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals(2, thirdInSecond.getHierarchy().intValue());
         plugin.moveHierarchyUp();
         plugin.getFlatEntryList();
-        assertEquals(root, thirdInSecond.getParentNode());
-        assertEquals(1, thirdInSecond.getOrderNumber().intValue());
-        assertEquals(1, thirdInSecond.getHierarchy().intValue());
+        assertEquals("", plugin.getDisplayMode());
     }
 
     @Test
