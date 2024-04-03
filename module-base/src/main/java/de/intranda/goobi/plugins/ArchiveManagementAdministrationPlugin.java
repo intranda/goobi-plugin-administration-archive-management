@@ -468,9 +468,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private void parseEadFile(Document document) {
         eventList = new ArrayList<>();
         editorList = new ArrayList<>();
-
+        Element eadElement = null;
         Element collection = document.getRootElement();
-        Element eadElement = collection.getChild("ead", ns);
+        if ("collection".equals(collection.getName())) {
+            eadElement = collection.getChild("ead", ns);
+        } else {
+            eadElement = collection;
+        }
+
         rootElement = parseElement(1, 0, eadElement);
         INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
         rootElement.setNodeType(rootType);
@@ -1090,6 +1095,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     public void checkExistenceOfSelectedFile(FacesContext ctx, UIComponent comp, Object value) {
         log.debug("checking existence of the selected file");
         Part file = (Part) value;
+        // TODO abort if no file is selected
 
         String uploadedFileName = processUploadedFileName(file);
 
@@ -1241,6 +1247,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
         Element dsc = null;
         if (isMainElement) {
+            if (StringUtils.isNotBlank(node.getId())) {
+                xmlElement.setAttribute("id", node.getId());
+            }
             Element archdesc = xmlElement.getChild("archdesc", ns);
             if (archdesc == null) {
                 archdesc = new Element("archdesc", ns);
@@ -1250,9 +1259,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             if (dsc == null) {
                 dsc = new Element("dsc", ns);
                 archdesc.addContent(dsc);
-            }
-            if (StringUtils.isNotBlank(node.getId())) {
-                archdesc.setAttribute("id", node.getId());
             }
 
             if (StringUtils.isNotBlank(node.getGoobiProcessTitle())) {
@@ -2388,6 +2394,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     public void updateGoobiIds() {
 
         IEadEntry selected = getSelectedEntry();
+        if (selected == null) {
+            selectedEntry = rootElement;
+            selected = rootElement;
+        }
         List<String> lstNodesWithoutIds = removeInvalidProcessIds();
         checkGoobiProcessesForArchiveRefs(lstNodesWithoutIds);
         setSelectedEntry(selected);
@@ -2411,11 +2421,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             return lstNodesWithoutIds;
         }
 
-        IEadEntry currentEntry = selectedEntry;
+        //        IEadEntry currentEntry = selectedEntry;
 
         lstNodesWithoutIds = removeInvalidProcessIdsForChildren(selectedEntry);
 
-        setSelectedEntry(currentEntry);
+        //        setSelectedEntry(currentEntry);
 
         return lstNodesWithoutIds;
     }
@@ -2423,8 +2433,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private List<String> removeInvalidProcessIdsForChildren(IEadEntry currentEntry) {
 
         List<String> lstNodesWithoutIds = new ArrayList<>();
-
-        setSelectedEntry(currentEntry);
 
         String goobiProcessTitle = currentEntry.getGoobiProcessTitle();
 
