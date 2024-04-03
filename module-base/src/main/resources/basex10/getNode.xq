@@ -8,10 +8,10 @@ declare
 function page:getNode($database, $xmlDocument, $nodeid) { 
 
   (: open selected file :)
-  let $ead := db:get($database, $xmlDocument)/ead
+  let $ead := db:get($database, $xmlDocument)
 
   (: find node :)
-  let $node := $ead//c[@id=$nodeid]
+  let $node := $ead//*[@id=$nodeid]
 
   (: return node:)
     return $node
