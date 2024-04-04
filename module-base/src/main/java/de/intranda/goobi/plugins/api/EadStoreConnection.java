@@ -5,21 +5,17 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -31,30 +27,39 @@ import de.sub.goobi.helper.Helper;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class BaseXConnection {
+public class EadStoreConnection {
 
-    private BaseXConnection() {
+    private EadStoreConnection() {
         // hide implicit constructor
     }
 
     public static boolean checkIfDBIsRunning(String url) {
-        if (StringUtils.isBlank(executeRequestWithoutBody("get", url))) {
+        if (StringUtils.isBlank(executeRequest(HttpMethod.GET, url))) {
             Helper.setFehlerMeldung("plugin_administration_archive_databaseCannotBeLoaded");
             return false;
         }
         return true;
     }
 
-    public static String executeRequestWithoutBody(String method, String url) {
+    public static String executeRequest(HttpMethod method, String url) {
 
         HttpRequestBase httpBase;
 
-        switch (method.toLowerCase()) {
-            case "get":
+        switch (method) {
+            case GET:
                 httpBase = new HttpGet(url);
                 break;
-            case "delete":
+            case DELETE:
                 httpBase = new HttpDelete(url);
+                break;
+            case PUT:
+                httpBase = new HttpPut(url);
+                break;
+            case POST:
+                httpBase = new HttpPost(url);
+                break;
+            case PATCH:
+                httpBase = new HttpPatch(url);
                 break;
             default:
                 httpBase = new HttpGet(url);
@@ -63,16 +68,16 @@ public class BaseXConnection {
 
         CloseableHttpClient client = null;
 
-        // option for basic auth
-        //        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        //        credsProvider.setCredentials(new AuthScope("host", 8080),
-        //                new UsernamePasswordCredentials("username", "passowrd"));
-        //        client = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
-
         try {
             client = HttpClients.createDefault();
             httpBase.setHeader("Accept", "application/xml");
+            httpBase.setHeader("Content-type", "application/xml");
 
+            // option for basic auth
+            //        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+            //        credsProvider.setCredentials(new AuthScope("host", 8080),
+            //                new UsernamePasswordCredentials("username", "passowrd"));
+            //        client = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
             // option to add additional header parameter for token authentication
             //            for (Entry<String, String> entry : headerParameters.entrySet()) {
             //                httpGet.setHeader(entry.getKey(), entry.getValue());
@@ -97,49 +102,6 @@ public class BaseXConnection {
             } catch (IOException e) {
                 log.error(e);
             }
-        }
-
-        return null;
-    }
-
-    public static String executeRequestWithBody(String method, String url, String body) {
-
-        HttpEntityEnclosingRequestBase httpBase;
-        switch (method.toLowerCase()) {
-            case "put":
-                httpBase = new HttpPut(url);
-                break;
-            case "post":
-                httpBase = new HttpPost(url);
-                break;
-            case "patch":
-                httpBase = new HttpPatch(url);
-                break;
-
-            default: // unknown
-                return null; //NOSONAR
-        }
-
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-            httpBase.setHeader("Accept", "application/xml");
-            httpBase.setHeader("Content-type", "application/xml");
-
-            setupProxy(url, httpBase);
-
-            if (StringUtils.isNotBlank(body)) {
-                StringEntity entity = new StringEntity(body, ContentType.create("application/xml", Consts.UTF_8));
-                httpBase.setEntity(entity);
-
-            }
-            return client.execute(httpBase, responseHandler);
-
-        } catch (IOException e) {
-            String message = "IOException caught while executing request: " + httpBase.getRequestLine();
-            log.error(message);
-
-        } catch (InvalidJsonException e) {
-            String message = "ParseException caught while executing request: " + httpBase.getRequestLine();
-            log.error(message);
         }
 
         return null;
@@ -175,4 +137,11 @@ public class BaseXConnection {
         }
     }
 
+    public enum HttpMethod {
+        GET,
+        POST,
+        PUT,
+        DELETE,
+        PATCH;
+    }
 }

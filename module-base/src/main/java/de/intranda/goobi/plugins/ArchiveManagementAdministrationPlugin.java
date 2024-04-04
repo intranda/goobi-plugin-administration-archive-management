@@ -61,7 +61,8 @@ import org.jdom2.output.XMLOutputter;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
-import de.intranda.goobi.plugins.api.BaseXConnection;
+import de.intranda.goobi.plugins.api.EadStoreConnection;
+import de.intranda.goobi.plugins.api.EadStoreConnection.HttpMethod;
 import de.intranda.goobi.plugins.model.DuplicationConfiguration;
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.EadMetadataField;
@@ -250,6 +251,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Setter
     private List<StringPair> advancedSearch = new ArrayList<>();
 
+    private static final String URL_SEPARATOR = "/";
+
     /**
      * Constructor
      */
@@ -300,7 +303,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Override
     public List<String> getPossibleDatabases() {
         List<String> databases = new ArrayList<>();
-        String response = BaseXConnection.executeRequestWithoutBody("get", datastoreUrl + "databases");
+        String response = EadStoreConnection.executeRequest(HttpMethod.GET, datastoreUrl + "databases");
         if (StringUtils.isNotBlank(response)) {
 
             Document document = openDocument(response);
@@ -334,7 +337,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public List<String> getPossibleDatabaseNames() {
         List<String> databases = new ArrayList<>();
-        String response = BaseXConnection.executeRequestWithoutBody("get", datastoreUrl + "databases");
+        String response = EadStoreConnection.executeRequest(HttpMethod.GET, datastoreUrl + "databases");
         if (StringUtils.isNotBlank(response)) {
 
             Document document = openDocument(response);
@@ -360,7 +363,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      */
     private boolean checkDB() {
         String url = datastoreUrl + "databases";
-        return BaseXConnection.checkIfDBIsRunning(url);
+        return EadStoreConnection.checkIfDBIsRunning(url);
     }
 
     /**
@@ -374,7 +377,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             // open selected database
             if (StringUtils.isNotBlank(selectedDatabase)) {
 
-                String response = BaseXConnection.executeRequestWithoutBody("get", datastoreUrl + "db/" + databaseName + "/" + fileName);
+                String response = EadStoreConnection.executeRequest(HttpMethod.GET, datastoreUrl + "db/" + databaseName + URL_SEPARATOR + fileName);
                 // get xml root element
                 Document document = openDocument(response);
 
@@ -919,8 +922,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private IEadEntry updateNode(IEadEntry entry) {
         if (!testMode) {
             String nodeId = entry.getId();
-            String nodeUpdateUrl = datastoreUrl + "getNode/" + databaseName + "/" + fileName + "/" + nodeId;
-            String nodeContent = BaseXConnection.executeRequestWithoutBody("get", nodeUpdateUrl);
+            String nodeUpdateUrl = datastoreUrl + "getNode/" + databaseName + URL_SEPARATOR + fileName + URL_SEPARATOR + nodeId;
+            String nodeContent = EadStoreConnection.executeRequest(HttpMethod.GET, nodeUpdateUrl);
 
             // check if the element still exists, maybe it was deleted by another user
             if (StringUtils.isBlank(nodeContent)) {
@@ -992,8 +995,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             parentNode.removeSubEntry(selectedEntry);
             // set selectedEntry to parent node
 
-            String deletionURL = datastoreUrl + "deleteNode/" + databaseName + "/" + fileName + "/" + selectedEntry.getId();
-            BaseXConnection.executeRequestWithoutBody("delete", deletionURL);
+            String deletionURL = datastoreUrl + "deleteNode/" + databaseName + URL_SEPARATOR + fileName + URL_SEPARATOR + selectedEntry.getId();
+            EadStoreConnection.executeRequest(HttpMethod.DELETE, deletionURL);
 
             setSelectedEntry(parentNode);
             flatEntryList = null;
@@ -1027,15 +1030,15 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         createEventFields(eadRoot);
         XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
         try {
-            out.output(document, new FileOutputStream(exportFolder + "/" + fileName));
+            out.output(document, new FileOutputStream(exportFolder + URL_SEPARATOR + fileName));
         } catch (IOException e) {
             log.error(e);
         }
 
         // call function to import created ead file
-        String importUrl = datastoreUrl + "import/" + databaseName + "/" + fileName;
+        String importUrl = datastoreUrl + "import/" + databaseName + URL_SEPARATOR + fileName;
 
-        BaseXConnection.executeRequestWithBody("put", importUrl, null);
+        EadStoreConnection.executeRequest(HttpMethod.PUT, importUrl);
 
     }
 
@@ -1071,8 +1074,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
 
         // load database
-        String importUrl = datastoreUrl + "import/" + databaseName + "/" + uploadedFileName;
-        BaseXConnection.executeRequestWithBody("put", importUrl, null);
+        String importUrl = datastoreUrl + "import/" + databaseName + URL_SEPARATOR + uploadedFileName;
+        EadStoreConnection.executeRequest(HttpMethod.PUT, importUrl);
 
         setSelectedDatabase(databaseName + " - " + uploadedFileName);
         displayMode = "";
@@ -1317,7 +1320,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 }
             }
         }
-        // split xpath on "/", unless within square brackets
+        // split xpath on URL_SEPARATOR, unless within square brackets
         String strRegex = "/(?=[^\\]]*(?:\\[|$))";
         String[] fields = xpath.split(strRegex);
         boolean written = false;
@@ -1529,8 +1532,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
 
         // move node in ead file
-        String importUrl = datastoreUrl + "moveNode/" + databaseName + "/" + idToMove + "/" + newParentNode.getId();
-        BaseXConnection.executeRequestWithBody("put", importUrl, "");
+        String importUrl = datastoreUrl + "moveNode/" + databaseName + URL_SEPARATOR + idToMove + URL_SEPARATOR + newParentNode.getId();
+        EadStoreConnection.executeRequest(HttpMethod.PUT, importUrl);
 
         // replace old parent node with latest version from ead
         updateNode(oldParentNode);
@@ -1589,8 +1592,18 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             return;
         }
 
-        Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), selectedEntry.getOrderNumber() + 1);
-        selectedEntry.getParentNode().reOrderElements();
+        // swap nodes in ead store
+        String firstNodeId = selectedEntry.getId();
+        String followingNodeId = selectedEntry.getParentNode().getSubEntryList().get(selectedEntry.getOrderNumber() + 1).getId();
+        // http://localhost:8984/swapNodes/basexdb/EAD_StadtA_GOE_Dep__92_14213_2018_10_09_13_12_32.xml/g379020/g379022
+
+        String swapUrl =
+                datastoreUrl + "swapNodes/" + databaseName + URL_SEPARATOR + fileName + URL_SEPARATOR + firstNodeId + URL_SEPARATOR + followingNodeId;
+
+        String parentNodeContent = EadStoreConnection.executeRequest(HttpMethod.PUT, swapUrl);
+        // replace parent with latest content from ead store
+        //TODO
+        // find selectedEntry node, mark as visible
         flatEntryList = null;
 
     }
@@ -1614,8 +1627,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         IEadEntry previousNode = selectedEntry.getParentNode().getSubEntryList().get(selectedEntry.getOrderNumber().intValue() - 1);
         // move node to prev.
         destinationEntry = previousNode;
-        moveNode();
         destinationEntry.setDisplayChildren(true);
+        moveNode();
 
     }
 
@@ -2638,15 +2651,15 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         createEventFields(eadRoot);
         XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
         try {
-            out.output(document, new FileOutputStream(exportFolder + "/" + newFileName));
+            out.output(document, new FileOutputStream(exportFolder + URL_SEPARATOR + newFileName));
         } catch (IOException e) {
             log.error(e);
         }
 
         // call function to import created ead file
-        String importUrl = datastoreUrl + "import/" + databaseName + "/" + newFileName;
+        String importUrl = datastoreUrl + "import/" + databaseName + URL_SEPARATOR + newFileName;
 
-        BaseXConnection.executeRequestWithBody("put", importUrl, null);
+        EadStoreConnection.executeRequest(HttpMethod.PUT, importUrl);
 
     }
 
@@ -2682,7 +2695,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             addMetadata(eadNode, selectedEntry);
 
             // save document in exchange folder
-            String filename = exportFolder + "/" + selectedEntry.getId();
+            String filename = exportFolder + URL_SEPARATOR + selectedEntry.getId();
             XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
             try {
                 out.output(nodeDocument, new FileOutputStream(filename));
@@ -2691,10 +2704,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
 
             // call function to import created ead file
-            String importUrl = datastoreUrl + "updateNode/" + databaseName + "/" + fileName + "/" + selectedEntry.getId();
+            String importUrl = datastoreUrl + "updateNode/" + databaseName + URL_SEPARATOR + fileName + URL_SEPARATOR + selectedEntry.getId();
 
             // call replacement statement
-            BaseXConnection.executeRequestWithBody("put", importUrl, null);
+            EadStoreConnection.executeRequest(HttpMethod.PUT, importUrl);
 
             // delete exchange file
             try {
