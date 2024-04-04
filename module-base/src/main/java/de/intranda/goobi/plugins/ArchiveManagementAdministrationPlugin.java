@@ -875,6 +875,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         return flatEntryList;
     }
 
+    //TODO change this, don't use the object, work with node ids instead
+    // as the actual objects are replaced and overwritten, the current equals method might fail
     @Override
     public void setSelectedEntry(IEadEntry entry) {
 
@@ -931,23 +933,28 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 Helper.setFehlerMeldung("Node not found, reload the file");
                 return null;
             }
-            // read as xml
-            Document nodeDoc = openDocument(nodeContent);
+            entry = parseNode(entry, nodeContent);
+        }
+        return entry;
+    }
 
-            // root node was selected, reload the complete file
-            if (entry.getParentNode() == null) {
-                parseEadFile(nodeDoc);
-                entry = rootElement;
-            } else {
-                // create new entry from latest content and replace old element with new one
-                IEadEntry newNode = parseElement(entry.getOrderNumber(), entry.getHierarchy(), nodeDoc.getRootElement());
-                IEadEntry parentNode = entry.getParentNode();
-                parentNode.getSubEntryList().remove(entry);
-                parentNode.getSubEntryList().add(newNode);
-                Collections.sort(parentNode.getSubEntryList());
-                newNode.setParentNode(parentNode);
-                entry = newNode;
-            }
+    private IEadEntry parseNode(IEadEntry entry, String nodeContent) {
+        // read as xml
+        Document nodeDoc = openDocument(nodeContent);
+
+        // root node was selected, reload the complete file
+        if (entry.getParentNode() == null) {
+            parseEadFile(nodeDoc);
+            entry = rootElement;
+        } else {
+            // create new entry from latest content and replace old element with new one
+            IEadEntry newNode = parseElement(entry.getOrderNumber(), entry.getHierarchy(), nodeDoc.getRootElement());
+            IEadEntry parentNode = entry.getParentNode();
+            parentNode.getSubEntryList().remove(entry);
+            parentNode.getSubEntryList().add(newNode);
+            Collections.sort(parentNode.getSubEntryList());
+            newNode.setParentNode(parentNode);
+            entry = newNode;
         }
         return entry;
     }
@@ -1566,8 +1573,27 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             return;
         }
 
-        Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), selectedEntry.getOrderNumber() - 1);
-        selectedEntry.getParentNode().reOrderElements();
+        // swap nodes in ead store
+        String currentNodeId = selectedEntry.getId();
+        String previousNodeId = selectedEntry.getParentNode().getSubEntryList().get(selectedEntry.getOrderNumber() - 1).getId();
+
+        String swapUrl =
+                datastoreUrl + "swapNodes/" + databaseName + URL_SEPARATOR + fileName + URL_SEPARATOR + previousNodeId + URL_SEPARATOR
+                        + currentNodeId;
+        String parentNodeContent = EadStoreConnection.executeRequest(HttpMethod.PUT, swapUrl);
+
+        // replace parent with latest content from ead store
+        IEadEntry parent = parseNode(selectedEntry.getParentNode(), parentNodeContent);
+        parent.setDisplayChildren(true);
+        // find selectedEntry node, mark as visible
+        for (IEadEntry e : parent.getSubEntryList()) {
+            if (e.getId().equals(selectedEntry.getId())) {
+                e.setSelected(true);
+                selectedEntry = e;
+                break;
+            }
+        }
+
         flatEntryList = null;
 
     }
@@ -1599,11 +1625,20 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         String swapUrl =
                 datastoreUrl + "swapNodes/" + databaseName + URL_SEPARATOR + fileName + URL_SEPARATOR + firstNodeId + URL_SEPARATOR + followingNodeId;
-
         String parentNodeContent = EadStoreConnection.executeRequest(HttpMethod.PUT, swapUrl);
+
         // replace parent with latest content from ead store
-        //TODO
+        IEadEntry parent = parseNode(selectedEntry.getParentNode(), parentNodeContent);
+        parent.setDisplayChildren(true);
         // find selectedEntry node, mark as visible
+        for (IEadEntry e : parent.getSubEntryList()) {
+            if (e.getId().equals(selectedEntry.getId())) {
+                e.setSelected(true);
+                selectedEntry = e;
+                break;
+            }
+        }
+
         flatEntryList = null;
 
     }
@@ -1622,6 +1657,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         if (selectedEntry.getOrderNumber().intValue() == 0) {
             return;
         }
+
+        // TODO replace this with ead store manipulation
 
         // find previous sibling
         IEadEntry previousNode = selectedEntry.getParentNode().getSubEntryList().get(selectedEntry.getOrderNumber().intValue() - 1);
@@ -1649,6 +1686,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         // get parent node of parent
         IEadEntry oldParent = selectedEntry.getParentNode();
         IEadEntry newParent = oldParent.getParentNode();
+
+        // TODO replace this with ead store manipulation
 
         // move current node to parents parent
         destinationEntry = newParent;
