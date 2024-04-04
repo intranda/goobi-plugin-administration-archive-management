@@ -35,7 +35,8 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import de.intranda.goobi.plugins.api.BaseXConnection;
+import de.intranda.goobi.plugins.api.EadStoreConnection;
+import de.intranda.goobi.plugins.api.EadStoreConnection.HttpMethod;
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.Helper;
@@ -44,7 +45,7 @@ import de.sub.goobi.persistence.managers.VocabularyManager;
 import io.goobi.workflow.locking.LockingBean;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ ConfigurationHelper.class, BaseXConnection.class, VocabularyManager.class, ProcessManager.class, Helper.class })
+@PrepareForTest({ ConfigurationHelper.class, EadStoreConnection.class, VocabularyManager.class, ProcessManager.class, Helper.class })
 @PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*",
         "org.w3c.*" })
 public class ArchiveManagementAdministrationPluginTest {
@@ -67,63 +68,66 @@ public class ArchiveManagementAdministrationPluginTest {
     @Before
     public void setUp() throws Exception {
 
-        PowerMock.mockStatic(BaseXConnection.class);
-        EasyMock.expect(BaseXConnection.executeRequestWithoutBody("get", "http://localhost:8984/databases"))
+        PowerMock.mockStatic(EadStoreConnection.class);
+        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.GET, "http://localhost:8984/databases"))
                 .andReturn(getDatabaseResponse())
                 .anyTimes();
-        EasyMock.expect(BaseXConnection.executeRequestWithoutBody("get", "http://localhost:8984/db/fixture/ead.xml"))
+        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.GET, "http://localhost:8984/db/fixture/ead.xml"))
                 .andReturn(readDatabaseResponse())
                 .anyTimes();
 
-        EasyMock.expect(BaseXConnection.executeRequestWithBody("put", "http://localhost:8984/updateNode/fixture/ead.xml/1234uniqueId", null))
+        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT, "http://localhost:8984/updateNode/fixture/ead.xml/1234uniqueId"))
                 .andReturn("")
                 .anyTimes();
-        EasyMock.expect(BaseXConnection.executeRequestWithBody("put",
-                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x69955980777740420181205140002806", null))
-                .andReturn("")
-                .anyTimes();
-
-        EasyMock.expect(BaseXConnection.executeRequestWithBody("put",
-                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x88373351097106920181205140002803", null))
+        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT,
+                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x69955980777740420181205140002806"))
                 .andReturn("")
                 .anyTimes();
 
-        EasyMock.expect(BaseXConnection.executeRequestWithBody("put",
-                "http://localhost:8984/moveNode/fixture/A91x59286248683929420181205140345809A91x20417344570159920181205140002804/root", ""))
+        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT,
+                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x88373351097106920181205140002803"))
                 .andReturn("")
                 .anyTimes();
 
-        EasyMock.expect(BaseXConnection.executeRequestWithBody("put",
-                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x14008545875549320181205140002806", null))
+        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT,
+                "http://localhost:8984/moveNode/fixture/A91x59286248683929420181205140345809A91x20417344570159920181205140002804/root"))
                 .andReturn("")
                 .anyTimes();
 
-        EasyMock.expect(BaseXConnection.executeRequestWithBody("put", "http://localhost:8984/import/fixture/ead.xml", null))
+        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT,
+                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x14008545875549320181205140002806"))
+                .andReturn("")
+                .anyTimes();
+
+        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT, "http://localhost:8984/import/fixture/ead.xml"))
                 .andReturn(readDatabaseResponse())
                 .anyTimes();
 
-        EasyMock.expect(BaseXConnection.executeRequestWithBody("put",
-                "http://localhost:8984/moveNode/fixture/A91x59286248683929420181205140345809A91x14008545875549320181205140002806/A91x59286248683929420181205140345809A91x69955980777740420181205140002806",
-                ""))
+        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT,
+                "http://localhost:8984/moveNode/fixture/A91x59286248683929420181205140345809A91x14008545875549320181205140002806/A91x59286248683929420181205140345809A91x69955980777740420181205140002806"))
+                .andReturn(readDatabaseResponse())
+                .anyTimes();
+        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT,
+                "http://localhost:8984/swapNodes/fixture/ead.xml/A91x59286248683929420181205140345809A91x69955980777740420181205140002806/A91x59286248683929420181205140345809A91x14008545875549320181205140002806"))
                 .andReturn(readDatabaseResponse())
                 .anyTimes();
 
-        EasyMock.expect(BaseXConnection.executeRequestWithBody("put",
-                "http://localhost:8984/moveNode/fixture/A91x59286248683929420181205140345809A91x69955980777740420181205140002806/root",
-                ""))
+        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT,
+                "http://localhost:8984/moveNode/fixture/A91x59286248683929420181205140345809A91x69955980777740420181205140002806/root"))
                 .andReturn(readDatabaseResponse())
                 .anyTimes();
 
-        EasyMock.expect(BaseXConnection.executeRequestWithBody("put",
-                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x20417344570159920181205140002804", null))
+        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT,
+                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x20417344570159920181205140002804"))
                 .andReturn(readDatabaseResponse())
                 .anyTimes();
 
-        EasyMock.expect(BaseXConnection.executeRequestWithoutBody("delete", "http://localhost:8984/deleteNode/fixture/ead.xml/1234uniqueId"))
+        EasyMock.expect(
+                EadStoreConnection.executeRequest(HttpMethod.DELETE, "http://localhost:8984/deleteNode/fixture/ead.xml/1234uniqueId"))
                 .andReturn(readDatabaseResponse())
                 .anyTimes();
 
-        PowerMock.replay(BaseXConnection.class);
+        PowerMock.replay(EadStoreConnection.class);
 
         PowerMock.mockStatic(Helper.class);
         EasyMock.expect(Helper.getCurrentUser()).andReturn(null).anyTimes();
@@ -798,7 +802,7 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.setSelectedEntry(secondInSecond);
         assertEquals(1, secondInSecond.getOrderNumber().intValue());
         plugin.moveNodeUp();
-        assertEquals(0, secondInSecond.getOrderNumber().intValue());
+        assertEquals("", plugin.getDisplayMode());
     }
 
     @Test
@@ -839,7 +843,7 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.setSelectedEntry(firstInSecond);
         assertEquals(0, firstInSecond.getOrderNumber().intValue());
         plugin.moveNodeDown();
-        assertEquals(1, firstInSecond.getOrderNumber().intValue());
+        assertEquals("", plugin.getDisplayMode());
     }
 
     @Test
