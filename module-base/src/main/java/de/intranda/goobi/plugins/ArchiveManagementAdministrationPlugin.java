@@ -445,7 +445,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             Document document = new Document();
             Element eadElement = new Element("ead", ns);
             document.setRootElement(eadElement);
-            rootElement = parseElement(1, 0, eadElement);
+            rootElement = parseElement(1, 0, eadElement, false);
             rootElement.setDisplayChildren(true);
             INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
             rootElement.setNodeType(rootType);
@@ -479,7 +479,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             eadElement = collection;
         }
 
-        rootElement = parseElement(1, 0, eadElement);
+        rootElement = parseElement(1, 0, eadElement, false);
         INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
         rootElement.setNodeType(rootType);
         rootElement.setDisplayChildren(true);
@@ -521,54 +521,58 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * read the metadata for the current xml node. - create an {@link EadEntry} - execute the configured xpaths on the current node - add the metadata
      * to one of the 7 levels - check if the node has sub nodes - call the method recursively for all sub nodes
      */
-    private IEadEntry parseElement(int order, int hierarchy, Element element) {
+    private IEadEntry parseElement(int order, int hierarchy, Element element, boolean fastMode) {
         IEadEntry entry = new EadEntry(order, hierarchy);
 
-        for (IMetadataField emf : configuredFields) {
+        if (!fastMode) {
 
-            List<String> stringValues = new ArrayList<>();
-            if ("text".equalsIgnoreCase(emf.getXpathType())) {
-                XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, ns);
-                List<Text> values = engine.evaluate(element);
-                if (emf.isRepeatable()) {
-                    for (Text value : values) {
-                        String stringValue = value.getValue();
-                        stringValues.add(stringValue);
-                    }
-                } else if (!values.isEmpty()) {
-                    Text value = values.get(0);
-                    String stringValue = value.getValue();
-                    stringValues.add(stringValue);
-                }
-            } else if ("attribute".equalsIgnoreCase(emf.getXpathType())) {
-                XPathExpression<Attribute> engine = xFactory.compile(emf.getXpath(), Filters.attribute(), null, ns);
-                List<Attribute> values = engine.evaluate(element);
+            for (IMetadataField emf : configuredFields) {
 
-                if (emf.isRepeatable()) {
-                    for (Attribute value : values) {
+                List<String> stringValues = new ArrayList<>();
+                if ("text".equalsIgnoreCase(emf.getXpathType())) {
+                    XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, ns);
+                    List<Text> values = engine.evaluate(element);
+                    if (emf.isRepeatable()) {
+                        for (Text value : values) {
+                            String stringValue = value.getValue();
+                            stringValues.add(stringValue);
+                        }
+                    } else if (!values.isEmpty()) {
+                        Text value = values.get(0);
                         String stringValue = value.getValue();
                         stringValues.add(stringValue);
                     }
-                } else if (!values.isEmpty()) {
-                    Attribute value = values.get(0);
-                    String stringValue = value.getValue();
-                    stringValues.add(stringValue);
-                }
-            } else {
-                XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, ns);
-                List<Element> values = engine.evaluate(element);
-                if (emf.isRepeatable()) {
-                    for (Element value : values) {
+                } else if ("attribute".equalsIgnoreCase(emf.getXpathType())) {
+                    XPathExpression<Attribute> engine = xFactory.compile(emf.getXpath(), Filters.attribute(), null, ns);
+                    List<Attribute> values = engine.evaluate(element);
+
+                    if (emf.isRepeatable()) {
+                        for (Attribute value : values) {
+                            String stringValue = value.getValue();
+                            stringValues.add(stringValue);
+                        }
+                    } else if (!values.isEmpty()) {
+                        Attribute value = values.get(0);
                         String stringValue = value.getValue();
                         stringValues.add(stringValue);
                     }
-                } else if (!values.isEmpty()) {
-                    Element value = values.get(0);
-                    String stringValue = value.getValue();
-                    stringValues.add(stringValue);
+                } else {
+                    XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, ns);
+                    List<Element> values = engine.evaluate(element);
+                    if (emf.isRepeatable()) {
+                        for (Element value : values) {
+                            String stringValue = value.getValue();
+                            stringValues.add(stringValue);
+                        }
+                    } else if (!values.isEmpty()) {
+                        Element value = values.get(0);
+                        String stringValue = value.getValue();
+                        stringValues.add(stringValue);
+                    }
                 }
+                addFieldToEntry(entry, emf, stringValues);
             }
-            addFieldToEntry(entry, emf, stringValues);
+
         }
 
         Element eadheader = element.getChild("eadheader", ns);
@@ -637,7 +641,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             int subHierarchy = hierarchy + 1;
             for (Element c : clist) {
 
-                IEadEntry child = parseElement(subOrder, subHierarchy, c);
+                IEadEntry child = parseElement(subOrder, subHierarchy, c, fastMode);
                 entry.addSubEntry(child);
                 child.setParentNode(entry);
                 subOrder++;
@@ -933,12 +937,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 Helper.setFehlerMeldung("Node not found, reload the file");
                 return null;
             }
-            entry = parseNode(entry, nodeContent);
+            entry = parseNode(entry, nodeContent, false);
         }
         return entry;
     }
 
-    private IEadEntry parseNode(IEadEntry entry, String nodeContent) {
+    private IEadEntry parseNode(IEadEntry entry, String nodeContent, boolean fastMode) {
         // read as xml
         Document nodeDoc = openDocument(nodeContent);
 
@@ -948,7 +952,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             entry = rootElement;
         } else {
             // create new entry from latest content and replace old element with new one
-            IEadEntry newNode = parseElement(entry.getOrderNumber(), entry.getHierarchy(), nodeDoc.getRootElement());
+            IEadEntry newNode = parseElement(entry.getOrderNumber(), entry.getHierarchy(), nodeDoc.getRootElement(), fastMode);
             IEadEntry parentNode = entry.getParentNode();
             parentNode.getSubEntryList().remove(entry);
             parentNode.getSubEntryList().add(newNode);
@@ -1583,7 +1587,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         String parentNodeContent = EadStoreConnection.executeRequest(HttpMethod.PUT, swapUrl);
 
         // replace parent with latest content from ead store
-        IEadEntry parent = parseNode(selectedEntry.getParentNode(), parentNodeContent);
+        IEadEntry parent = parseNode(selectedEntry.getParentNode(), parentNodeContent, false);
         parent.setDisplayChildren(true);
         // find selectedEntry node, mark as visible
         for (IEadEntry e : parent.getSubEntryList()) {
@@ -1628,7 +1632,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         String parentNodeContent = EadStoreConnection.executeRequest(HttpMethod.PUT, swapUrl);
 
         // replace parent with latest content from ead store
-        IEadEntry parent = parseNode(selectedEntry.getParentNode(), parentNodeContent);
+        IEadEntry parent = parseNode(selectedEntry.getParentNode(), parentNodeContent, false);
         parent.setDisplayChildren(true);
         // find selectedEntry node, mark as visible
         for (IEadEntry e : parent.getSubEntryList()) {
