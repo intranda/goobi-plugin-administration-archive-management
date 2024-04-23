@@ -5,18 +5,24 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.goobi.interfaces.IConfiguration;
 import org.goobi.interfaces.IEadEntry;
+import org.goobi.interfaces.IFieldValue;
 import org.goobi.interfaces.IMetadataField;
 import org.goobi.interfaces.INodeType;
 import org.goobi.interfaces.IParameter;
 
+import de.sub.goobi.persistence.managers.MySQLHelper;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class EadEntry implements IEadEntry {
+
+    // table auto increment key
+    private Integer databaseId;
 
     // parent node
     private IEadEntry parentNode;
@@ -44,6 +50,8 @@ public class EadEntry implements IEadEntry {
 
     // node type -  @level
     private INodeType nodeType;
+
+    private String sequence;
 
     // display node in a search result
     private boolean displaySearch;
@@ -98,7 +106,7 @@ public class EadEntry implements IEadEntry {
     private List<IMetadataField> descriptionControlAreaList = new ArrayList<>();
 
     // empty if no process was created, otherwise the name of othe process is stored
-    private String goobiProcessTitle;
+    private String goobiProcessTitle = "";
 
     // true if the validation of all metadata fields was successful
     private boolean valid = true;
@@ -534,4 +542,68 @@ public class EadEntry implements IEadEntry {
     public int compareTo(IEadEntry o) {
         return orderNumber.compareTo(o.getOrderNumber());
     }
+
+    @Override
+    public String getSequence() {
+        if (sequence == null) {
+            if (getParentNode() == null) {
+                // root node,
+                sequence = "1";
+            } else {
+                sequence = getParentNode().getSequence() + "." + orderNumber + 1;
+            }
+        }
+        return sequence;
+    }
+
+    @Override
+    public String getDataAsXml() {
+        StringBuilder xml = new StringBuilder();
+        xml.append("<xml>");
+        for (IMetadataField field : identityStatementAreaList) {
+            createXmlField(xml, field);
+        }
+        for (IMetadataField field : contextAreaList) {
+            createXmlField(xml, field);
+        }
+
+        for (IMetadataField field : contentAndStructureAreaAreaList) {
+            createXmlField(xml, field);
+        }
+
+        for (IMetadataField field : accessAndUseAreaList) {
+            createXmlField(xml, field);
+        }
+
+        for (IMetadataField field : alliedMaterialsAreaList) {
+            createXmlField(xml, field);
+        }
+
+        for (IMetadataField field : notesAreaList) {
+            createXmlField(xml, field);
+        }
+
+        for (IMetadataField field : descriptionControlAreaList) {
+            createXmlField(xml, field);
+        }
+        xml.append("</xml>");
+        return xml.toString();
+    }
+
+    private void createXmlField(StringBuilder xml, IMetadataField field) {
+        xml.append("<field name=\"").append(field.getName()).append("\">");
+        for (IFieldValue val : field.getValues()) {
+            xml.append("<value>");
+            if (StringUtils.isNotBlank(val.getValue())) {
+                // mask ending backslash
+                if (val.getValue().endsWith("\\")) {
+                    val.setValue(val.getValue() + "\\");
+                }
+                xml.append(MySQLHelper.escapeSql(val.getValue()));
+            }
+            xml.append("</value>");
+        }
+        xml.append("</field>");
+    }
+
 }

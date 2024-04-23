@@ -126,4 +126,14 @@ public interface IEadEntry extends Comparable<IEadEntry> {
 
     public List<IEadEntry> getAllNodes();
 
+    public String getSequence();
+
+    public void setSequence(String sequenceNumber);
+
+    public Integer getDatabaseId();
+
+    public void setDatabaseId(Integer id);
+
+    public String getDataAsXml();
+
 }

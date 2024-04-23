@@ -845,7 +845,7 @@ div.no-element-selected {
                                                         render="hierarchy" />
                                                 </h:commandLink>
 
-                                                <!-- TODO remove this again. Temporary button to update the selected node in BaseX -->
+                                                <!-- TODO remove this again. Temporary button to update the selected node in BaseX
                                                 <h:commandLink
                                                     styleClass="btn btn-primary font-size-s pull-right leftArea-button"
                                                     action="#{AdministrationForm.administrationPlugin.updateSingleNode}"
@@ -856,6 +856,18 @@ div.no-element-selected {
                                                         value="tooltip" />
                                                     <f:ajax execute="nodeContentArea" />
                                                 </h:commandLink>
+ -->
+
+                                                <h:commandLink
+                                                    styleClass="btn btn-primary font-size-s pull-right leftArea-button"
+                                                    action="#{AdministrationForm.administrationPlugin.saveInDatabase}"
+                                                    title="saveInDatabase">
+                                                    <i class="fa fa-files-o" />
+                                                    <f:passThroughAttribute
+                                                        name="data-toggle"
+                                                        value="tooltip" />
+                                                </h:commandLink>
+
 
                                             </div>
                                         </div>

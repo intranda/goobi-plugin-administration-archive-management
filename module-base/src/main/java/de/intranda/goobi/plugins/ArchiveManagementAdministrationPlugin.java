@@ -68,7 +68,9 @@ import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.EadMetadataField;
 import de.intranda.goobi.plugins.model.FieldValue;
 import de.intranda.goobi.plugins.model.NodeType;
+import de.intranda.goobi.plugins.model.RecordGroup;
 import de.intranda.goobi.plugins.model.TitleComponent;
+import de.intranda.goobi.plugins.persistence.ArchiveManagementManager;
 import de.schlichtherle.io.FileOutputStream;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.BeanHelper;
@@ -276,6 +278,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         } catch (ConfigurationException e2) {
             log.error(e2);
         }
+
     }
 
     @Override
@@ -524,55 +527,51 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private IEadEntry parseElement(int order, int hierarchy, Element element, boolean fastMode) {
         IEadEntry entry = new EadEntry(order, hierarchy);
 
-        if (!fastMode) {
+        for (IMetadataField emf : configuredFields) {
 
-            for (IMetadataField emf : configuredFields) {
-
-                List<String> stringValues = new ArrayList<>();
-                if ("text".equalsIgnoreCase(emf.getXpathType())) {
-                    XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, ns);
-                    List<Text> values = engine.evaluate(element);
-                    if (emf.isRepeatable()) {
-                        for (Text value : values) {
-                            String stringValue = value.getValue();
-                            stringValues.add(stringValue);
-                        }
-                    } else if (!values.isEmpty()) {
-                        Text value = values.get(0);
+            List<String> stringValues = new ArrayList<>();
+            if ("text".equalsIgnoreCase(emf.getXpathType())) {
+                XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, ns);
+                List<Text> values = engine.evaluate(element);
+                if (emf.isRepeatable()) {
+                    for (Text value : values) {
                         String stringValue = value.getValue();
                         stringValues.add(stringValue);
                     }
-                } else if ("attribute".equalsIgnoreCase(emf.getXpathType())) {
-                    XPathExpression<Attribute> engine = xFactory.compile(emf.getXpath(), Filters.attribute(), null, ns);
-                    List<Attribute> values = engine.evaluate(element);
-
-                    if (emf.isRepeatable()) {
-                        for (Attribute value : values) {
-                            String stringValue = value.getValue();
-                            stringValues.add(stringValue);
-                        }
-                    } else if (!values.isEmpty()) {
-                        Attribute value = values.get(0);
-                        String stringValue = value.getValue();
-                        stringValues.add(stringValue);
-                    }
-                } else {
-                    XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, ns);
-                    List<Element> values = engine.evaluate(element);
-                    if (emf.isRepeatable()) {
-                        for (Element value : values) {
-                            String stringValue = value.getValue();
-                            stringValues.add(stringValue);
-                        }
-                    } else if (!values.isEmpty()) {
-                        Element value = values.get(0);
-                        String stringValue = value.getValue();
-                        stringValues.add(stringValue);
-                    }
+                } else if (!values.isEmpty()) {
+                    Text value = values.get(0);
+                    String stringValue = value.getValue();
+                    stringValues.add(stringValue);
                 }
-                addFieldToEntry(entry, emf, stringValues);
-            }
+            } else if ("attribute".equalsIgnoreCase(emf.getXpathType())) {
+                XPathExpression<Attribute> engine = xFactory.compile(emf.getXpath(), Filters.attribute(), null, ns);
+                List<Attribute> values = engine.evaluate(element);
 
+                if (emf.isRepeatable()) {
+                    for (Attribute value : values) {
+                        String stringValue = value.getValue();
+                        stringValues.add(stringValue);
+                    }
+                } else if (!values.isEmpty()) {
+                    Attribute value = values.get(0);
+                    String stringValue = value.getValue();
+                    stringValues.add(stringValue);
+                }
+            } else {
+                XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, ns);
+                List<Element> values = engine.evaluate(element);
+                if (emf.isRepeatable()) {
+                    for (Element value : values) {
+                        String stringValue = value.getValue();
+                        stringValues.add(stringValue);
+                    }
+                } else if (!values.isEmpty()) {
+                    Element value = values.get(0);
+                    String stringValue = value.getValue();
+                    stringValues.add(stringValue);
+                }
+            }
+            addFieldToEntry(entry, emf, stringValues);
         }
 
         Element eadheader = element.getChild("eadheader", ns);
@@ -2759,6 +2758,20 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 log.error(e);
             }
         }
+    }
+
+    public void saveInDatabase() {
+        ArchiveManagementManager.createTables();
+
+        RecordGroup rg = new RecordGroup();
+        rg.setTitle(selectedDatabase);
+        ArchiveManagementManager.saveRecordGroup(rg);
+
+        List<IEadEntry> allEntries = rootElement.getAllNodes();
+
+        // insert all entries
+        ArchiveManagementManager.saveNodes(rg.getId(), allEntries);
+
     }
 
 }
