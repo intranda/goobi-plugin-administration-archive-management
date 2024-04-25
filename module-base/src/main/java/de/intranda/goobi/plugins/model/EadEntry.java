@@ -3,6 +3,7 @@ package de.intranda.goobi.plugins.model;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -56,6 +57,9 @@ public class EadEntry implements IEadEntry {
     // display node in a search result
     private boolean displaySearch;
     private boolean searchFound;
+
+    // TODO on initialization, get metadata from this map
+    private Map<String, List<String>> metadataMap;
 
     /* 1. metadata for Identity Statement Area */
     //    Reference code(s)
@@ -550,7 +554,7 @@ public class EadEntry implements IEadEntry {
                 // root node,
                 sequence = "1";
             } else {
-                sequence = getParentNode().getSequence() + "." + orderNumber + 1;
+                sequence = getParentNode().getSequence() + "." + (orderNumber + 1);
             }
         }
         return sequence;
@@ -591,19 +595,18 @@ public class EadEntry implements IEadEntry {
     }
 
     private void createXmlField(StringBuilder xml, IMetadataField field) {
-        xml.append("<field name=\"").append(field.getName()).append("\">");
         for (IFieldValue val : field.getValues()) {
-            xml.append("<value>");
+            xml.append("<").append(field.getName()).append(">");
             if (StringUtils.isNotBlank(val.getValue())) {
                 // mask ending backslash
-                if (val.getValue().endsWith("\\")) {
-                    val.setValue(val.getValue() + "\\");
+                String actualValue = val.getValue();
+                if (actualValue.endsWith("\\")) {
+                    actualValue = val.getValue() + "\\";
                 }
-                xml.append(MySQLHelper.escapeSql(val.getValue()));
+                xml.append(MySQLHelper.escapeSql(actualValue.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")));
             }
-            xml.append("</value>");
+            xml.append("</").append(field.getName()).append(">");
         }
-        xml.append("</field>");
     }
 
 }

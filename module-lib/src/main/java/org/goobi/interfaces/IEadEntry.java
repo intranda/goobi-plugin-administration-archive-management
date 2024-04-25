@@ -1,6 +1,7 @@
 package org.goobi.interfaces;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IEadEntry extends Comparable<IEadEntry> {
 
@@ -135,5 +136,7 @@ public interface IEadEntry extends Comparable<IEadEntry> {
     public void setDatabaseId(Integer id);
 
     public String getDataAsXml();
+
+    public void setMetadataMap(Map<String, List<String>> metadataMap);
 
 }

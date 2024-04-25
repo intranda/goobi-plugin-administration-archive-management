@@ -2765,6 +2765,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         RecordGroup rg = new RecordGroup();
         rg.setTitle(selectedDatabase);
+        rg.setId(1);
         ArchiveManagementManager.saveRecordGroup(rg);
 
         List<IEadEntry> allEntries = rootElement.getAllNodes();
@@ -2772,6 +2773,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         // insert all entries
         ArchiveManagementManager.saveNodes(rg.getId(), allEntries);
 
+        ArchiveManagementManager.setConfiguredNodes(configuredNodes);
+        long startTimeToRead = System.currentTimeMillis();
+        IEadEntry rootElementFromDb = ArchiveManagementManager.loadRecordGroup(rg.getId());
+        long endTime = System.currentTimeMillis();
+        System.out.println("Total time to read: " + (endTime - startTimeToRead));
+        System.out.println("All entries: " + rootElementFromDb.getAllNodes().size());
     }
 
 }

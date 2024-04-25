@@ -2,12 +2,28 @@ package de.intranda.goobi.plugins.persistence;
 
 import java.io.Serializable;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang3.StringUtils;
 import org.goobi.interfaces.IEadEntry;
+import org.goobi.interfaces.INodeType;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.Converter;
+import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+
+import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.RecordGroup;
 import de.sub.goobi.persistence.managers.DatabaseVersion;
 import de.sub.goobi.persistence.managers.MySQLHelper;
@@ -17,6 +33,12 @@ import lombok.extern.log4j.Log4j2;
 public class ArchiveManagementManager implements Serializable {
 
     private static final long serialVersionUID = 2861873896714636026L;
+
+    private static List<INodeType> configuredNodes;
+
+    public static void setConfiguredNodes(List<INodeType> configuredNodes) {
+        ArchiveManagementManager.configuredNodes = configuredNodes;
+    }
 
     public static final void createTables() {
         StringBuilder sql = new StringBuilder();
@@ -43,9 +65,6 @@ public class ArchiveManagementManager implements Serializable {
         sql.append("parent_id int(11), ");
         sql.append("label text, ");
         sql.append("data text ");
-        // sql.append("KEY archive_record_group_id (archive_record_group_id), ");
-        // sql.append("KEY sequence (sequence) ");
-        //  sql.append("KEY parent_id (parent_id) ");
         // TODO use index for archive_record_group_id, sequence, parent_id
 
         sql.append(") ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4; ");
@@ -60,18 +79,13 @@ public class ArchiveManagementManager implements Serializable {
     public static void saveRecordGroup(RecordGroup grp) {
         try (Connection connection = MySQLHelper.getInstance().getConnection()) {
             QueryRunner run = new QueryRunner();
-            if (grp.getId() == null) {
-                // insert as new
-                String sql = "INSERT INTO archive_record_group (title) VALUES (?)";
-                Integer id = run.insert(connection, sql, MySQLHelper.resultSetToIntegerHandler, grp.getTitle());
-                if (id != null) {
-                    grp.setId(id);
-                }
-            } else {
-                // update existing entry
-                String sql = "UPDATE archive_record_group SET title = ? WHERE id = ?";
-                run.update(connection, sql, grp.getTitle(), grp.getId());
+            // insert as new
+            String sql = "INSERT INTO archive_record_group (id, title) VALUES (?, ?) ON DUPLICATE KEY UPDATE title = VALUES(title)";
+            Integer id = run.insert(connection, sql, MySQLHelper.resultSetToIntegerHandler, grp.getId(), grp.getTitle());
+            if (id != null) {
+                grp.setId(id);
             }
+
         } catch (SQLException e) {
             log.error(e);
         }
@@ -82,11 +96,11 @@ public class ArchiveManagementManager implements Serializable {
                 "INSERT INTO archive_record_node (id, uuid, archive_record_group_id, hierarchy, order_number, node_type, sequence, processtitle, parent_id,label, data) VALUES ";
 
         // lock table
-        try {
-            DatabaseVersion.runSql("LOCK TABLE archive_record_node WRITE");
-        } catch (SQLException e) {
-            log.error(e);
-        }
+        //        try {
+        //            DatabaseVersion.runSql("LOCK TABLE archive_record_node WRITE");
+        //        } catch (SQLException e) {
+        //            log.error(e);
+        //        }
 
         // get next free id
         String nextIdSql = "SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA = 'goobi' AND TABLE_NAME = 'archive_record_node'";
@@ -98,10 +112,6 @@ public class ArchiveManagementManager implements Serializable {
                 if (node.getDatabaseId() == null) {
                     node.setDatabaseId(nextAutoIncrementDbID++);
                 }
-                if (node.getLabel() != null && node.getLabel().endsWith("\\")) {
-                    node.setLabel(node.getLabel() + "\\");
-                }
-
             }
         } catch (SQLException e) {
             log.error(e);
@@ -121,8 +131,8 @@ public class ArchiveManagementManager implements Serializable {
                 parentId = entry.getParentNode().getDatabaseId();
             }
 
-            String label = entry.getLabel();
-            if (label != null && label.endsWith("\\")) {
+            String label = MySQLHelper.escapeSql(entry.getLabel());
+            if (label != null && label.endsWith("\\") && !label.endsWith("\\\\")) {
                 label = label + "\\";
             }
 
@@ -167,17 +177,174 @@ public class ArchiveManagementManager implements Serializable {
                 values = new StringBuilder();
             }
         }
-        System.out.println("Update duration: " + (System.currentTimeMillis() - start));
+        System.out.println("Save duration: " + (System.currentTimeMillis() - start));
         // unlock table
-        try {
-            DatabaseVersion.runSql("UNLOCK TABLE");
+        //        try {
+        //            DatabaseVersion.runSql("UNLOCK TABLE");
+        //        } catch (SQLException e) {
+        //            log.error(e);
+        //        }
+    }
+
+    public static IEadEntry loadRecordGroup(int recordGroupId) {
+        String query = "SELECT * FROM archive_record_node WHERE archive_record_group_id = ? ORDER BY hierarchy, sequence";
+
+        try (Connection connection = MySQLHelper.getInstance().getConnection()) {
+            QueryRunner run = new QueryRunner();
+            return run.query(connection, query, resultSetToNodeHandler, recordGroupId);
         } catch (SQLException e) {
             log.error(e);
         }
+
+        return null;
     }
 
-    public void loadRecordGroup() {
-        String query = "SELECT * FROM archive_record_node WHERE archive_record_group_id = ? ORDER BY ";
+    private static final ResultSetHandler<IEadEntry> resultSetToNodeHandler = new ResultSetHandler<>() {
+
+        @Override
+        public IEadEntry handle(ResultSet rs) throws SQLException {
+            IEadEntry lastElement = null;
+            IEadEntry rootElement = null;
+            while (rs.next()) {
+
+                int id = rs.getInt("id");
+                String uuid = rs.getString("uuid");
+
+                int hierarchy = rs.getInt("hierarchy");
+                int orderNumber = rs.getInt("order_number");
+                String nodeTypeName = rs.getString("node_type");
+                String sequence = rs.getString("sequence");
+                String processtitle = rs.getString("processtitle");
+                int parentId = rs.getInt("parent_id");
+                String label = rs.getString("label");
+                String data = rs.getString("data");
+
+                IEadEntry currentEntry = new EadEntry(orderNumber, hierarchy);
+
+                currentEntry.setDatabaseId(id);
+                currentEntry.setId(uuid);
+                for (INodeType nt : configuredNodes) {
+                    if (nt.getNodeName().equals(nodeTypeName)) {
+                        currentEntry.setNodeType(nt);
+                    }
+                }
+                currentEntry.setSequence(sequence);
+                currentEntry.setGoobiProcessTitle(processtitle);
+                currentEntry.setLabel(label);
+
+                //  parse metadata, convert it to Map<String, List<String>
+                // TODO replace this with a faster implementation
+                Map<String, List<String>> metadataMap = convertStringToMap(data);
+                currentEntry.setMetadataMap(metadataMap);
+
+                if (parentId == 0) {
+                    rootElement = currentEntry;
+                } else if (parentId == lastElement.getDatabaseId().intValue()) {
+                    // new element is a child of the last one
+                    currentEntry.setParentNode(lastElement);
+                    lastElement.getSubEntryList().add(currentEntry);
+                } else if (parentId == lastElement.getParentNode().getDatabaseId().intValue()) {
+                    // new element is a sibling of last one
+                    currentEntry.setParentNode(lastElement.getParentNode());
+                    lastElement.getParentNode().getSubEntryList().add(currentEntry);
+                } else {
+                    // use sequence number to find correct parent element
+                    String[] parts = sequence.split("\\.");
+
+                    IEadEntry e = rootElement;
+                    // first element is skipped as it is the root element
+                    // last element is ignored as it is the order of the current element
+                    for (int i = 1; i < parts.length - 1; i++) {
+                        String partNumber = parts[i];
+                        int ordnerNum = Integer.parseInt(partNumber);
+                        for (IEadEntry sub : e.getSubEntryList()) {
+                            if (sub.getOrderNumber().intValue() == ordnerNum) {
+                                e = sub;
+                                break;
+                            }
+                        }
+                    }
+                    // add it as sub element, after we found the parent
+                    e.getSubEntryList().add(currentEntry);
+                    currentEntry.setParentNode(e);
+                }
+                lastElement = currentEntry;
+            }
+            return rootElement;
+        }
+    };
+
+    public static String convertDataToString(Map<String, List<String>> data) {
+        if (data != null && !data.isEmpty()) {
+            XStream xstream = new XStream();
+            xstream.registerConverter(new MapConverter());
+            xstream.alias("xml", Map.class);
+            return xstream.toXML(data);
+        }
+        return null;
     }
 
+    public static Map<String, List<String>> convertStringToMap(String data) {
+
+        if (StringUtils.isNotBlank(data)) {
+            XStream xstream = new XStream();
+            xstream.registerConverter(new MapConverter());
+            xstream.alias("xml", Map.class);
+            xstream.allowTypes(new Class[] { Map.class });
+            @SuppressWarnings("unchecked")
+            Map<String, List<String>> map = (HashMap<String, List<String>>) xstream.fromXML(data);
+            return map;
+        }
+
+        return new HashMap<>();
+    }
+
+    public static class MapConverter implements Converter {
+
+        @Override
+        public boolean canConvert(@SuppressWarnings("rawtypes") Class clazz) {
+            return AbstractMap.class.isAssignableFrom(clazz);
+        }
+
+        @Override
+        @SuppressWarnings("rawtypes")
+        public void marshal(Object value, HierarchicalStreamWriter writer, MarshallingContext context) {
+
+            AbstractMap map = (AbstractMap) value;
+            for (Object obj : map.entrySet()) {
+                Map.Entry entry = (Map.Entry) obj;
+                Object val = entry.getValue();
+                if (null != val) {
+                    List<String> lst = (List<String>) val;
+                    for (String v : lst) {
+                        writer.startNode(entry.getKey().toString());
+                        writer.setValue(v);
+                        writer.endNode();
+                    }
+                }
+            }
+        }
+
+        @Override
+        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+
+            Map<String, List<String>> map = new HashMap<>();
+
+            while (reader.hasMoreChildren()) {
+                reader.moveDown();
+
+                String key = reader.getNodeName(); // nodeName aka element's name
+                String value = reader.getValue();
+
+                List<String> valueList = map.getOrDefault(key, new ArrayList<>());
+                valueList.add(value);
+                map.put(key, valueList);
+
+                reader.moveUp();
+            }
+
+            return map;
+        }
+
+    }
 }
