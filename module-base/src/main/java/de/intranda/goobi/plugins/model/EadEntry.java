@@ -552,9 +552,14 @@ public class EadEntry implements IEadEntry {
         if (sequence == null) {
             if (getParentNode() == null) {
                 // root node,
-                sequence = "1";
+                sequence = "";
             } else {
-                sequence = getParentNode().getSequence() + "." + (orderNumber + 1);
+                String prefix = getParentNode().getSequence();
+                if (StringUtils.isNotBlank(prefix)) {
+                    sequence = prefix + "." + (getParentNode().getOrderNumber());
+                } else {
+                    sequence = String.valueOf(getParentNode().getOrderNumber());
+                }
             }
         }
         return sequence;

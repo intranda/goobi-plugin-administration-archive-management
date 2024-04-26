@@ -390,7 +390,7 @@ public class ArchiveManagementAdministrationPluginTest {
             }
         }
 
-        assertEquals(1, entry.getOrderNumber().intValue());
+        assertEquals(0, entry.getOrderNumber().intValue());
         assertEquals(0, entry.getHierarchy().intValue());
         assertEquals("archive header title", entry.getLabel());
 

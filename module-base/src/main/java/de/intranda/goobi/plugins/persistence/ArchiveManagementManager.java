@@ -212,7 +212,10 @@ public class ArchiveManagementManager implements Serializable {
                 String nodeTypeName = rs.getString("node_type");
                 String sequence = rs.getString("sequence");
                 String processtitle = rs.getString("processtitle");
-                int parentId = rs.getInt("parent_id");
+                Integer parentId = rs.getInt("parent_id");
+                if (rs.wasNull()) {
+                    parentId = null;
+                }
                 String label = rs.getString("label");
 
                 IEadEntry currentEntry = new EadEntry(orderNumber, hierarchy);
@@ -233,7 +236,7 @@ public class ArchiveManagementManager implements Serializable {
                 //                Map<String, List<String>> metadataMap = convertStringToMap(data);
                 //                currentEntry.setMetadataMap(metadataMap);
 
-                if (parentId == 0) {
+                if (parentId == null) {
                     rootElement = currentEntry;
                 } else if (parentId == lastElement.getDatabaseId().intValue()) {
                     // new element is a child of the last one
@@ -248,9 +251,8 @@ public class ArchiveManagementManager implements Serializable {
                     String[] parts = sequence.split("\\.");
 
                     IEadEntry e = rootElement;
-                    // first element is skipped as it is the root element
-                    // last element is ignored as it is the order of the current element
-                    for (int i = 1; i < parts.length - 1; i++) {
+
+                    for (int i = 1; i < parts.length; i++) {
                         String partNumber = parts[i];
                         int ordnerNum = Integer.parseInt(partNumber);
                         for (IEadEntry sub : e.getSubEntryList()) {

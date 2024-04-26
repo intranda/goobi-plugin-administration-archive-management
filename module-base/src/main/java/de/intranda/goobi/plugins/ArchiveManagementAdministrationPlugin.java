@@ -448,7 +448,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             Document document = new Document();
             Element eadElement = new Element("ead", ns);
             document.setRootElement(eadElement);
-            rootElement = parseElement(1, 0, eadElement, false);
+            rootElement = parseElement(0, 0, eadElement, false);
             rootElement.setDisplayChildren(true);
             INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
             rootElement.setNodeType(rootType);
@@ -482,7 +482,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             eadElement = collection;
         }
 
-        rootElement = parseElement(1, 0, eadElement, false);
+        rootElement = parseElement(0, 0, eadElement, false);
         INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
         rootElement.setNodeType(rootType);
         rootElement.setDisplayChildren(true);
@@ -2768,7 +2768,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         rg.setId(1);
         //        ArchiveManagementManager.saveRecordGroup(rg);
 
-        List<IEadEntry> allEntries = rootElement.getAllNodes();
+        //        List<IEadEntry> allEntries = rootElement.getAllNodes();
 
         // insert all entries
         //        ArchiveManagementManager.saveNodes(rg.getId(), allEntries);
@@ -2781,6 +2781,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         System.out.println("All entries: " + rootElementFromDb.getAllNodes().size());
 
         rootElement = rootElementFromDb;
+        rootElement.setDisplayChildren(true);
     }
 
 }
