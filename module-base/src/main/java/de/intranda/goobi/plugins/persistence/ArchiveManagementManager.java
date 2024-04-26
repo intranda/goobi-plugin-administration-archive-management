@@ -4,24 +4,18 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.lang3.StringUtils;
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.INodeType;
-
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.converters.Converter;
-import com.thoughtworks.xstream.converters.MarshallingContext;
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.io.HierarchicalStreamReader;
-import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.RecordGroup;
@@ -35,6 +29,8 @@ public class ArchiveManagementManager implements Serializable {
     private static final long serialVersionUID = 2861873896714636026L;
 
     private static List<INodeType> configuredNodes;
+
+    private static Pattern pattern = Pattern.compile("<([^<]+?)>([^<]+)<\\/[^<]+?>");
 
     public static void setConfiguredNodes(List<INodeType> configuredNodes) {
         ArchiveManagementManager.configuredNodes = configuredNodes;
@@ -187,11 +183,12 @@ public class ArchiveManagementManager implements Serializable {
     }
 
     public static IEadEntry loadRecordGroup(int recordGroupId) {
-        String query = "SELECT * FROM archive_record_node WHERE archive_record_group_id = ? ORDER BY hierarchy, sequence";
 
         try (Connection connection = MySQLHelper.getInstance().getConnection()) {
             QueryRunner run = new QueryRunner();
-            return run.query(connection, query, resultSetToNodeHandler, recordGroupId);
+            return run.query(connection,
+                    "SELECT * FROM archive_record_node WHERE archive_record_group_id = ? ORDER BY hierarchy, sequence, order_number",
+                    resultSetToNodeHandler, recordGroupId);
         } catch (SQLException e) {
             log.error(e);
         }
@@ -217,7 +214,6 @@ public class ArchiveManagementManager implements Serializable {
                 String processtitle = rs.getString("processtitle");
                 int parentId = rs.getInt("parent_id");
                 String label = rs.getString("label");
-                String data = rs.getString("data");
 
                 IEadEntry currentEntry = new EadEntry(orderNumber, hierarchy);
 
@@ -232,10 +228,10 @@ public class ArchiveManagementManager implements Serializable {
                 currentEntry.setGoobiProcessTitle(processtitle);
                 currentEntry.setLabel(label);
 
-                //  parse metadata, convert it to Map<String, List<String>
-                // TODO replace this with a faster implementation
-                Map<String, List<String>> metadataMap = convertStringToMap(data);
-                currentEntry.setMetadataMap(metadataMap);
+                //  parse metadata
+                //                String data = rs.getString("data");
+                //                Map<String, List<String>> metadataMap = convertStringToMap(data);
+                //                currentEntry.setMetadataMap(metadataMap);
 
                 if (parentId == 0) {
                     rootElement = currentEntry;
@@ -274,77 +270,22 @@ public class ArchiveManagementManager implements Serializable {
         }
     };
 
-    public static String convertDataToString(Map<String, List<String>> data) {
-        if (data != null && !data.isEmpty()) {
-            XStream xstream = new XStream();
-            xstream.registerConverter(new MapConverter());
-            xstream.alias("xml", Map.class);
-            return xstream.toXML(data);
-        }
-        return null;
-    }
+    // only call it to load/enhance the selected node. Otherwise the metadata is not needed
 
     public static Map<String, List<String>> convertStringToMap(String data) {
 
-        if (StringUtils.isNotBlank(data)) {
-            XStream xstream = new XStream();
-            xstream.registerConverter(new MapConverter());
-            xstream.alias("xml", Map.class);
-            xstream.allowTypes(new Class[] { Map.class });
-            @SuppressWarnings("unchecked")
-            Map<String, List<String>> map = (HashMap<String, List<String>>) xstream.fromXML(data);
-            return map;
+        data = data.replace("<xml>", "").replace("</xml>", "");
+        Map<String, List<String>> metadataMap = new HashMap<>();
+        for (Matcher m = pattern.matcher(data); m.find();) {
+            MatchResult mr = m.toMatchResult();
+            String metadata = mr.group(1);
+            String value = mr.group(2);
+            List<String> values = metadataMap.getOrDefault(metadata, new ArrayList<>());
+            values.add(value);
+            metadataMap.put(metadata, values);
         }
 
-        return new HashMap<>();
+        return metadataMap;
     }
 
-    public static class MapConverter implements Converter {
-
-        @Override
-        public boolean canConvert(@SuppressWarnings("rawtypes") Class clazz) {
-            return AbstractMap.class.isAssignableFrom(clazz);
-        }
-
-        @Override
-        @SuppressWarnings("rawtypes")
-        public void marshal(Object value, HierarchicalStreamWriter writer, MarshallingContext context) {
-
-            AbstractMap map = (AbstractMap) value;
-            for (Object obj : map.entrySet()) {
-                Map.Entry entry = (Map.Entry) obj;
-                Object val = entry.getValue();
-                if (null != val) {
-                    List<String> lst = (List<String>) val;
-                    for (String v : lst) {
-                        writer.startNode(entry.getKey().toString());
-                        writer.setValue(v);
-                        writer.endNode();
-                    }
-                }
-            }
-        }
-
-        @Override
-        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-
-            Map<String, List<String>> map = new HashMap<>();
-
-            while (reader.hasMoreChildren()) {
-                reader.moveDown();
-
-                String key = reader.getNodeName(); // nodeName aka element's name
-                String value = reader.getValue();
-
-                List<String> valueList = map.getOrDefault(key, new ArrayList<>());
-                valueList.add(value);
-                map.put(key, valueList);
-
-                reader.moveUp();
-            }
-
-            return map;
-        }
-
-    }
 }
