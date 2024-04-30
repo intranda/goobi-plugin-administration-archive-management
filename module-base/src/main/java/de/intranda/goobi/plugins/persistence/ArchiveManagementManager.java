@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.BeanHandler;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.INodeType;
 
@@ -85,6 +88,32 @@ public class ArchiveManagementManager implements Serializable {
         } catch (SQLException e) {
             log.error(e);
         }
+    }
+
+    public static List<RecordGroup> getAllRecordGroups() {
+        try (Connection connection = MySQLHelper.getInstance().getConnection()) {
+            QueryRunner run = new QueryRunner();
+            return run.query(connection, "SELECT * FROM archive_record_group ORDER BY title", new BeanListHandler<>(RecordGroup.class));
+        } catch (SQLException e) {
+            log.error(e);
+        }
+        return Collections.emptyList();
+    }
+
+    public static RecordGroup getRecordGroupByTitle(String title) {
+        try (Connection connection = MySQLHelper.getInstance().getConnection()) {
+            QueryRunner run = new QueryRunner();
+            return run.query(connection, "SELECT * FROM archive_record_group WHERE title = ?", new BeanHandler<>(RecordGroup.class), title);
+        } catch (SQLException e) {
+            log.error(e);
+        }
+        return null;
+    }
+
+    public static void saveNode(Integer archiveId, IEadEntry node) {
+        List<IEadEntry> list = new ArrayList<>();
+        list.add(node);
+        saveNodes(archiveId, list);
     }
 
     public static void saveNodes(Integer archiveId, List<IEadEntry> nodes) {
@@ -196,6 +225,31 @@ public class ArchiveManagementManager implements Serializable {
         return null;
     }
 
+    public static Map<String, List<String>> loadMetadataForNode(int id) {
+        try (Connection connection = MySQLHelper.getInstance().getConnection()) {
+            QueryRunner run = new QueryRunner();
+            return run.query(connection,
+                    "SELECT data FROM archive_record_node WHERE id = ?",
+                    resultSetMetadataHandler, id);
+
+        } catch (SQLException e) {
+            log.error(e);
+        }
+        return Collections.emptyMap();
+    }
+
+    private static final ResultSetHandler<Map<String, List<String>>> resultSetMetadataHandler = new ResultSetHandler<>() {
+
+        @Override
+        public Map<String, List<String>> handle(ResultSet rs) throws SQLException {
+            if (rs.next()) {
+                String data = rs.getString("data");
+                return convertStringToMap(data);
+            }
+            return Collections.emptyMap();
+        }
+    };
+
     private static final ResultSetHandler<IEadEntry> resultSetToNodeHandler = new ResultSetHandler<>() {
 
         @Override
@@ -289,5 +343,7 @@ public class ArchiveManagementManager implements Serializable {
 
         return metadataMap;
     }
+
+    // TODO search for specific nodes
 
 }

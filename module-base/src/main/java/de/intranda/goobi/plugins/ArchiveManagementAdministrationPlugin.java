@@ -2,9 +2,7 @@ package de.intranda.goobi.plugins;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
@@ -61,8 +59,6 @@ import org.jdom2.output.XMLOutputter;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
-import de.intranda.goobi.plugins.api.EadStoreConnection;
-import de.intranda.goobi.plugins.api.EadStoreConnection.HttpMethod;
 import de.intranda.goobi.plugins.model.DuplicationConfiguration;
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.EadMetadataField;
@@ -71,7 +67,6 @@ import de.intranda.goobi.plugins.model.NodeType;
 import de.intranda.goobi.plugins.model.RecordGroup;
 import de.intranda.goobi.plugins.model.TitleComponent;
 import de.intranda.goobi.plugins.persistence.ArchiveManagementManager;
-import de.schlichtherle.io.FileOutputStream;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.BeanHelper;
 import de.sub.goobi.helper.FacesContextHelper;
@@ -124,13 +119,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private String gui = "/uii/plugin_administration_archive_management.xhtml";
 
     @Getter
-    @Setter
-    private String datastoreUrl = "http://localhost:8984/";
-
-    @Setter
-    private String exportFolder = "/tmp/";
-
-    @Getter
     private String selectedDatabase;
 
     @Getter
@@ -144,6 +132,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Getter
     @Setter
     private transient IEadEntry rootElement = null;
+
+    private transient RecordGroup selectedRecordGroup;
 
     private transient List<IEadEntry> flatEntryList;
 
@@ -216,9 +206,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private String username = "";
 
     @Getter
-    private boolean dbOK;
-
-    @Getter
     @Setter
     private transient Part uploadFile;
 
@@ -266,14 +253,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             xmlConfig.setReloadingStrategy(new FileChangedReloadingStrategy());
             xmlConfig.setExpressionEngine(new XPathExpressionEngine());
 
-            datastoreUrl = xmlConfig.getString("/basexUrl", "http://localhost:8984/");
-            exportFolder = xmlConfig.getString("/eadExportFolder", "/tmp");
             User user = Helper.getCurrentUser();
             if (user != null) {
                 username = user.getNachVorname();
             }
-
-            dbOK = true;
 
         } catch (ConfigurationException e2) {
             log.error(e2);
@@ -305,30 +288,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     @Override
     public List<String> getPossibleDatabases() {
+
+        List<RecordGroup> allRecordGroups = ArchiveManagementManager.getAllRecordGroups();
+
         List<String> databases = new ArrayList<>();
-        String response = EadStoreConnection.executeRequest(HttpMethod.GET, datastoreUrl + "databases");
-        if (StringUtils.isNotBlank(response)) {
-
-            Document document = openDocument(response);
-            if (document != null) {
-                Element root = document.getRootElement();
-                List<Element> databaseList = root.getChildren("database");
-                for (Element db : databaseList) {
-                    String dbName = db.getChildText("name");
-                    Element details = db.getChild("details");
-                    for (Element resource : details.getChildren()) {
-                        databases.add(dbName + " - " + resource.getText());
-                    }
-                }
-            }
-            dbOK = true;
-        } else {
-            Helper.setFehlerMeldung("plugin_administration_archive_noConnectionToDatabase");
-            log.error("No connection to baseX database");
-            dbOK = false;
+        for (RecordGroup rec : allRecordGroups) {
+            databases.add(rec.getTitle());
         }
-
-        //otherwise
         return databases;
     }
 
@@ -340,33 +306,17 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public List<String> getPossibleDatabaseNames() {
         List<String> databases = new ArrayList<>();
-        String response = EadStoreConnection.executeRequest(HttpMethod.GET, datastoreUrl + "databases");
-        if (StringUtils.isNotBlank(response)) {
+        List<RecordGroup> allRecordGroups = ArchiveManagementManager.getAllRecordGroups();
 
-            Document document = openDocument(response);
-            if (document != null) {
-                Element root = document.getRootElement();
-                List<Element> databaseList = root.getChildren("database");
-                for (Element db : databaseList) {
-                    String dbName = db.getChildText("name");
-                    databases.add(dbName);
-                }
-            }
+        for (RecordGroup rec : allRecordGroups) {
+            databases.add(rec.getTitle());
         }
 
-        if (databases.isEmpty() && checkDB()) {
+        if (databases.isEmpty()) {
             Helper.setFehlerMeldung("plugin_administration_archive_databaseMustBeCreated");
         }
 
         return databases;
-    }
-
-    /**
-     * Check if there is a connection to the DB, return true if there is
-     */
-    private boolean checkDB() {
-        String url = datastoreUrl + "databases";
-        return EadStoreConnection.checkIfDBIsRunning(url);
     }
 
     /**
@@ -379,21 +329,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         try {
             // open selected database
             if (StringUtils.isNotBlank(selectedDatabase)) {
+                selectedRecordGroup = ArchiveManagementManager.getRecordGroupByTitle(selectedDatabase);
+                // get field definitions from config file
+                readConfiguration();
+                ArchiveManagementManager.setConfiguredNodes(configuredNodes);
+                rootElement = ArchiveManagementManager.loadRecordGroup(selectedRecordGroup.getId());
 
-                String response = EadStoreConnection.executeRequest(HttpMethod.GET, datastoreUrl + "db/" + databaseName + URL_SEPARATOR + fileName);
-                // get xml root element
-                Document document = openDocument(response);
-
-                if (document != null) {
-                    // get field definitions from config file
-                    readConfiguration();
-
-                    // parse ead file
-                    parseEadFile(document);
-
-                    // save it again, so any generated ids are saved
-                    createEadDocument();
-                }
             } else {
                 Helper.setFehlerMeldung("plugin_administration_archive_creation_noRecordGroupSelected");
 
@@ -434,7 +375,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     @Override
     public void createNewDatabase() {
-
+        // TODO
         if (StringUtils.isNotBlank(databaseName) && StringUtils.isNotBlank(fileName)) {
             // filename must end with xml
             if (!fileName.endsWith(".xml")) {
@@ -926,17 +867,21 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     private IEadEntry updateNode(IEadEntry entry) {
         if (!testMode) {
-            String nodeId = entry.getId();
-            String nodeUpdateUrl = datastoreUrl + "getNode/" + databaseName + URL_SEPARATOR + fileName + URL_SEPARATOR + nodeId;
-            String nodeContent = EadStoreConnection.executeRequest(HttpMethod.GET, nodeUpdateUrl);
+            loadMetadataForNode(entry);
 
-            // check if the element still exists, maybe it was deleted by another user
-            if (StringUtils.isBlank(nodeContent)) {
-                // error, probably destination node was deleted
-                Helper.setFehlerMeldung("Node not found, reload the file");
-                return null;
-            }
-            entry = parseNode(entry, nodeContent, false);
+            // reload node and its children
+            //
+            //            String nodeId = entry.getId();
+            //            String nodeUpdateUrl = datastoreUrl + "getNode/" + databaseName + URL_SEPARATOR + fileName + URL_SEPARATOR + nodeId;
+            //            String nodeContent = EadStoreConnection.executeRequest(HttpMethod.GET, nodeUpdateUrl);
+            //
+            //            // check if the element still exists, maybe it was deleted by another user
+            //            if (StringUtils.isBlank(nodeContent)) {
+            //                // error, probably destination node was deleted
+            //                Helper.setFehlerMeldung("Node not found, reload the file");
+            //                return null;
+            //            }
+            //            entry = parseNode(entry, nodeContent, false);
         }
         return entry;
     }
@@ -995,21 +940,25 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public void deleteNode() {
         if (selectedEntry != null) {
-            // find parent node
-            IEadEntry parentNode = selectedEntry.getParentNode();
-            if (parentNode == null) {
-                // we found the root node, this node cant be deleted
-                return;
-            }
-            // remove current element from parent node
-            parentNode.removeSubEntry(selectedEntry);
-            // set selectedEntry to parent node
-
-            String deletionURL = datastoreUrl + "deleteNode/" + databaseName + URL_SEPARATOR + fileName + URL_SEPARATOR + selectedEntry.getId();
-            EadStoreConnection.executeRequest(HttpMethod.DELETE, deletionURL);
-
-            setSelectedEntry(parentNode);
-            flatEntryList = null;
+            // TODO get IDs for all sub elements
+            // TODO delete sub elements in db
+            // TODO delete current node
+            //
+            //            // find parent node
+            //            IEadEntry parentNode = selectedEntry.getParentNode();
+            //            if (parentNode == null) {
+            //                // we found the root node, this node cant be deleted
+            //                return;
+            //            }
+            //            // remove current element from parent node
+            //            parentNode.removeSubEntry(selectedEntry);
+            //            // set selectedEntry to parent node
+            //
+            //            String deletionURL = datastoreUrl + "deleteNode/" + databaseName + URL_SEPARATOR + fileName + URL_SEPARATOR + selectedEntry.getId();
+            //            EadStoreConnection.executeRequest(HttpMethod.DELETE, deletionURL);
+            //
+            //            setSelectedEntry(parentNode);
+            //            flatEntryList = null;
         }
 
     }
@@ -1023,32 +972,34 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Override
     public void createEadDocument() {
 
-        if (!storageProvider.isFileExists(Paths.get(exportFolder))) {
-            try {
-                storageProvider.createDirectories(Paths.get(exportFolder));
-            } catch (IOException e) {
-                log.error(e);
-            }
-        }
+        //        if (!storageProvider.isFileExists(Paths.get(exportFolder))) {
+        //            try {
+        //                storageProvider.createDirectories(Paths.get(exportFolder));
+        //            } catch (IOException e) {
+        //                log.error(e);
+        //            }
+        //        }
+        //
+        //        Document document = new Document();
+        //
+        //        Element eadRoot = new Element("ead", ns);
+        //        document.setRootElement(eadRoot);
+        //
+        //        addMetadata(eadRoot, rootElement);
+        //        createEventFields(eadRoot);
+        //        XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
+        //        try {
+        //            out.output(document, new FileOutputStream(exportFolder + URL_SEPARATOR + fileName));
+        //        } catch (IOException e) {
+        //            log.error(e);
+        //        }
+        //
+        //        // call function to import created ead file
+        //        String importUrl = datastoreUrl + "import/" + databaseName + URL_SEPARATOR + fileName;
+        //
+        //        EadStoreConnection.executeRequest(HttpMethod.PUT, importUrl);
 
-        Document document = new Document();
-
-        Element eadRoot = new Element("ead", ns);
-        document.setRootElement(eadRoot);
-
-        addMetadata(eadRoot, rootElement);
-        createEventFields(eadRoot);
-        XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
-        try {
-            out.output(document, new FileOutputStream(exportFolder + URL_SEPARATOR + fileName));
-        } catch (IOException e) {
-            log.error(e);
-        }
-
-        // call function to import created ead file
-        String importUrl = datastoreUrl + "import/" + databaseName + URL_SEPARATOR + fileName;
-
-        EadStoreConnection.executeRequest(HttpMethod.PUT, importUrl);
+        // TODO new RecordGroup
 
     }
 
@@ -1061,41 +1012,43 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             return;
         }
 
-        String uploadedFileName = processUploadedFileName(uploadFile);
+        // TOD upload file, read it with xml parser, store it in db, load it from db
 
-        Path savedFile = Paths.get(exportFolder, uploadedFileName);
-
-        // make a backup if an older version of the uploaded file exists
-        if (fileToUploadExists) {
-            backupFile(savedFile);
-        }
-
-        // save the uploaded file
-        try (InputStream input = uploadFile.getInputStream()) {
-            Files.copy(input, savedFile);
-        } catch (IOException e) {
-            log.error(e);
-        }
-
-        // validate uploaded file
-        if (!validateUploadedFile(savedFile)) {
-            log.error("the uploaded file is invalid, aborting...");
-            return;
-        }
-
-        // load database
-        String importUrl = datastoreUrl + "import/" + databaseName + URL_SEPARATOR + uploadedFileName;
-        EadStoreConnection.executeRequest(HttpMethod.PUT, importUrl);
-
-        setSelectedDatabase(databaseName + " - " + uploadedFileName);
-        displayMode = "";
-        loadSelectedDatabase();
-
-        // update existing process ids if the uploaded EAD file has an older version
-        if (fileToUploadExists) {
-            log.debug("updating existing processes' ids");
-            updateGoobiIds();
-        }
+        //        String uploadedFileName = processUploadedFileName(uploadFile);
+        //
+        //        Path savedFile = Paths.get(exportFolder, uploadedFileName);
+        //
+        //        // make a backup if an older version of the uploaded file exists
+        //        if (fileToUploadExists) {
+        //            backupFile(savedFile);
+        //        }
+        //
+        //        // save the uploaded file
+        //        try (InputStream input = uploadFile.getInputStream()) {
+        //            Files.copy(input, savedFile);
+        //        } catch (IOException e) {
+        //            log.error(e);
+        //        }
+        //
+        //        // validate uploaded file
+        //        if (!validateUploadedFile(savedFile)) {
+        //            log.error("the uploaded file is invalid, aborting...");
+        //            return;
+        //        }
+        //
+        //        // load database
+        //        String importUrl = datastoreUrl + "import/" + databaseName + URL_SEPARATOR + uploadedFileName;
+        //        EadStoreConnection.executeRequest(HttpMethod.PUT, importUrl);
+        //
+        //        setSelectedDatabase(databaseName + " - " + uploadedFileName);
+        //        displayMode = "";
+        //        loadSelectedDatabase();
+        //
+        //        // update existing process ids if the uploaded EAD file has an older version
+        //        if (fileToUploadExists) {
+        //            log.debug("updating existing processes' ids");
+        //            updateGoobiIds();
+        //        }
     }
 
     /**
@@ -1108,14 +1061,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     public void checkExistenceOfSelectedFile(FacesContext ctx, UIComponent comp, Object value) {
         log.debug("checking existence of the selected file");
         Part file = (Part) value;
-        // TODO abort if no file is selected
+        // TODO abort if RecordGroup already exists
 
-        String uploadedFileName = processUploadedFileName(file);
-
-        Path fileToSave = Paths.get(exportFolder, uploadedFileName);
-
-        log.debug("fileToSave = " + fileToSave);
-        fileToUploadExists = storageProvider.isFileExists(fileToSave);
+        //        String uploadedFileName = processUploadedFileName(file);
+        //
+        //        Path fileToSave = Paths.get(exportFolder, uploadedFileName);
+        //
+        //        log.debug("fileToSave = " + fileToSave);
+        //        fileToUploadExists = storageProvider.isFileExists(fileToSave);
     }
 
     /**
@@ -1531,24 +1484,26 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         String idToMove = selectedEntry.getId();
 
-        IEadEntry oldParentNode = selectedEntry.getParentNode();
+        // TODO set new parent, store new id in database
 
-        IEadEntry newParentNode = destinationEntry;
-        if (LockingBean.isLocked(newParentNode.getId())) {
-            // TODO display it in ui
-            Helper.setFehlerMeldung("plugin_administration_archive_destinationLocked");
-
-            return;
-        }
-
-        // move node in ead file
-        String importUrl = datastoreUrl + "moveNode/" + databaseName + URL_SEPARATOR + idToMove + URL_SEPARATOR + newParentNode.getId();
-        EadStoreConnection.executeRequest(HttpMethod.PUT, importUrl);
-
-        // replace old parent node with latest version from ead
-        updateNode(oldParentNode);
-        // update new parent node  from ead
-        updateNode(newParentNode);
+        //        IEadEntry oldParentNode = selectedEntry.getParentNode();
+        //
+        //        IEadEntry newParentNode = destinationEntry;
+        //        if (LockingBean.isLocked(newParentNode.getId())) {
+        //            // TODO display it in ui
+        //            Helper.setFehlerMeldung("plugin_administration_archive_destinationLocked");
+        //
+        //            return;
+        //        }
+        //
+        //        // move node in ead file
+        //        String importUrl = datastoreUrl + "moveNode/" + databaseName + URL_SEPARATOR + idToMove + URL_SEPARATOR + newParentNode.getId();
+        //        EadStoreConnection.executeRequest(HttpMethod.PUT, importUrl);
+        //
+        //        // replace old parent node with latest version from ead
+        //        updateNode(oldParentNode);
+        //        // update new parent node  from ead
+        //        updateNode(newParentNode);
 
         // update hierarchy tree, mark current node as selected
         setSelectedEntry(selectedEntry);
@@ -1580,22 +1535,24 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         String currentNodeId = selectedEntry.getId();
         String previousNodeId = selectedEntry.getParentNode().getSubEntryList().get(selectedEntry.getOrderNumber() - 1).getId();
 
-        String swapUrl =
-                datastoreUrl + "swapNodes/" + databaseName + URL_SEPARATOR + fileName + URL_SEPARATOR + previousNodeId + URL_SEPARATOR
-                        + currentNodeId;
-        String parentNodeContent = EadStoreConnection.executeRequest(HttpMethod.PUT, swapUrl);
+        // TODO change parent, save in db
+
+        //        String swapUrl =
+        //                datastoreUrl + "swapNodes/" + databaseName + URL_SEPARATOR + fileName + URL_SEPARATOR + previousNodeId + URL_SEPARATOR
+        //                        + currentNodeId;
+        //        String parentNodeContent = EadStoreConnection.executeRequest(HttpMethod.PUT, swapUrl);
 
         // replace parent with latest content from ead store
-        IEadEntry parent = parseNode(selectedEntry.getParentNode(), parentNodeContent, false);
-        parent.setDisplayChildren(true);
-        // find selectedEntry node, mark as visible
-        for (IEadEntry e : parent.getSubEntryList()) {
-            if (e.getId().equals(selectedEntry.getId())) {
-                e.setSelected(true);
-                selectedEntry = e;
-                break;
-            }
-        }
+        //        IEadEntry parent = parseNode(selectedEntry.getParentNode(), parentNodeContent, false);
+        //        parent.setDisplayChildren(true);
+        //        // find selectedEntry node, mark as visible
+        //        for (IEadEntry e : parent.getSubEntryList()) {
+        //            if (e.getId().equals(selectedEntry.getId())) {
+        //                e.setSelected(true);
+        //                selectedEntry = e;
+        //                break;
+        //            }
+        //        }
 
         flatEntryList = null;
 
@@ -1620,27 +1577,28 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         if (selectedEntry.getOrderNumber().intValue() == selectedEntry.getParentNode().getSubEntryList().size() - 1) {
             return;
         }
+        // TODO change parent, save in db
 
-        // swap nodes in ead store
-        String firstNodeId = selectedEntry.getId();
-        String followingNodeId = selectedEntry.getParentNode().getSubEntryList().get(selectedEntry.getOrderNumber() + 1).getId();
-        // http://localhost:8984/swapNodes/basexdb/EAD_StadtA_GOE_Dep__92_14213_2018_10_09_13_12_32.xml/g379020/g379022
-
-        String swapUrl =
-                datastoreUrl + "swapNodes/" + databaseName + URL_SEPARATOR + fileName + URL_SEPARATOR + firstNodeId + URL_SEPARATOR + followingNodeId;
-        String parentNodeContent = EadStoreConnection.executeRequest(HttpMethod.PUT, swapUrl);
-
-        // replace parent with latest content from ead store
-        IEadEntry parent = parseNode(selectedEntry.getParentNode(), parentNodeContent, false);
-        parent.setDisplayChildren(true);
-        // find selectedEntry node, mark as visible
-        for (IEadEntry e : parent.getSubEntryList()) {
-            if (e.getId().equals(selectedEntry.getId())) {
-                e.setSelected(true);
-                selectedEntry = e;
-                break;
-            }
-        }
+        //        // swap nodes in ead store
+        //        String firstNodeId = selectedEntry.getId();
+        //        String followingNodeId = selectedEntry.getParentNode().getSubEntryList().get(selectedEntry.getOrderNumber() + 1).getId();
+        //        // http://localhost:8984/swapNodes/basexdb/EAD_StadtA_GOE_Dep__92_14213_2018_10_09_13_12_32.xml/g379020/g379022
+        //
+        //        String swapUrl =
+        //                datastoreUrl + "swapNodes/" + databaseName + URL_SEPARATOR + fileName + URL_SEPARATOR + firstNodeId + URL_SEPARATOR + followingNodeId;
+        //        String parentNodeContent = EadStoreConnection.executeRequest(HttpMethod.PUT, swapUrl);
+        //
+        //        // replace parent with latest content from ead store
+        //        IEadEntry parent = parseNode(selectedEntry.getParentNode(), parentNodeContent, false);
+        //        parent.setDisplayChildren(true);
+        //        // find selectedEntry node, mark as visible
+        //        for (IEadEntry e : parent.getSubEntryList()) {
+        //            if (e.getId().equals(selectedEntry.getId())) {
+        //                e.setSelected(true);
+        //                selectedEntry = e;
+        //                break;
+        //            }
+        //        }
 
         flatEntryList = null;
 
@@ -2680,28 +2638,29 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     public void duplicateEadFile() {
-        String newFileName = fileName.replace(".xml", "") + "_copy.xml";
-
-        IEadEntry duplicate = rootElement.deepCopy(duplicationConfiguration);
-
-        Document document = new Document();
-
-        Element eadRoot = new Element("ead", ns);
-        document.setRootElement(eadRoot);
-
-        addMetadata(eadRoot, duplicate);
-        createEventFields(eadRoot);
-        XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
-        try {
-            out.output(document, new FileOutputStream(exportFolder + URL_SEPARATOR + newFileName));
-        } catch (IOException e) {
-            log.error(e);
-        }
-
-        // call function to import created ead file
-        String importUrl = datastoreUrl + "import/" + databaseName + URL_SEPARATOR + newFileName;
-
-        EadStoreConnection.executeRequest(HttpMethod.PUT, importUrl);
+        // TODO
+        //        String newFileName = fileName.replace(".xml", "") + "_copy.xml";
+        //
+        //        IEadEntry duplicate = rootElement.deepCopy(duplicationConfiguration);
+        //
+        //        Document document = new Document();
+        //
+        //        Element eadRoot = new Element("ead", ns);
+        //        document.setRootElement(eadRoot);
+        //
+        //        addMetadata(eadRoot, duplicate);
+        //        createEventFields(eadRoot);
+        //        XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
+        //        try {
+        //            out.output(document, new FileOutputStream(exportFolder + URL_SEPARATOR + newFileName));
+        //        } catch (IOException e) {
+        //            log.error(e);
+        //        }
+        //
+        //        // call function to import created ead file
+        //        String importUrl = datastoreUrl + "import/" + databaseName + URL_SEPARATOR + newFileName;
+        //
+        //        EadStoreConnection.executeRequest(HttpMethod.PUT, importUrl);
 
     }
 
@@ -2729,34 +2688,34 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
 
             // otherwise continue
-
-            // create xml element for the node and all children
-            Document nodeDocument = new Document();
-            Element eadNode = new Element("c", ns);
-            nodeDocument.setRootElement(eadNode);
-            addMetadata(eadNode, selectedEntry);
-
-            // save document in exchange folder
-            String filename = exportFolder + URL_SEPARATOR + selectedEntry.getId();
-            XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
-            try {
-                out.output(nodeDocument, new FileOutputStream(filename));
-            } catch (IOException e) {
-                log.error(e);
-            }
-
-            // call function to import created ead file
-            String importUrl = datastoreUrl + "updateNode/" + databaseName + URL_SEPARATOR + fileName + URL_SEPARATOR + selectedEntry.getId();
-
-            // call replacement statement
-            EadStoreConnection.executeRequest(HttpMethod.PUT, importUrl);
-
-            // delete exchange file
-            try {
-                StorageProvider.getInstance().deleteFile(Paths.get(filename));
-            } catch (IOException e) {
-                log.error(e);
-            }
+            ArchiveManagementManager.saveNode(selectedRecordGroup.getId(), selectedEntry);
+            //            // create xml element for the node and all children
+            //            Document nodeDocument = new Document();
+            //            Element eadNode = new Element("c", ns);
+            //            nodeDocument.setRootElement(eadNode);
+            //            addMetadata(eadNode, selectedEntry);
+            //
+            //            // save document in exchange folder
+            //            String filename = exportFolder + URL_SEPARATOR + selectedEntry.getId();
+            //            XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
+            //            try {
+            //                out.output(nodeDocument, new FileOutputStream(filename));
+            //            } catch (IOException e) {
+            //                log.error(e);
+            //            }
+            //
+            //            // call function to import created ead file
+            //            String importUrl = datastoreUrl + "updateNode/" + databaseName + URL_SEPARATOR + fileName + URL_SEPARATOR + selectedEntry.getId();
+            //
+            //            // call replacement statement
+            //            EadStoreConnection.executeRequest(HttpMethod.PUT, importUrl);
+            //
+            //            // delete exchange file
+            //            try {
+            //                StorageProvider.getInstance().deleteFile(Paths.get(filename));
+            //            } catch (IOException e) {
+            //                log.error(e);
+            //            }
         }
     }
 
@@ -2768,11 +2727,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         rg.setId(1);
         //        ArchiveManagementManager.saveRecordGroup(rg);
 
-        //        List<IEadEntry> allEntries = rootElement.getAllNodes();
-
-        // insert all entries
-        //        ArchiveManagementManager.saveNodes(rg.getId(), allEntries);
-
         ArchiveManagementManager.setConfiguredNodes(configuredNodes);
         long startTimeToRead = System.currentTimeMillis();
         IEadEntry rootElementFromDb = ArchiveManagementManager.loadRecordGroup(rg.getId());
@@ -2782,6 +2736,27 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         rootElement = rootElementFromDb;
         rootElement.setDisplayChildren(true);
+    }
+
+    private void loadMetadataForNode(IEadEntry entry) {
+        // clear old, outdated metadata
+
+        entry.getIdentityStatementAreaList().clear();
+        entry.getContextAreaList().clear();
+        entry.getContentAndStructureAreaAreaList().clear();
+        entry.getAccessAndUseAreaList().clear();
+        entry.getAlliedMaterialsAreaList().clear();
+        entry.getNotesAreaList().clear();
+        entry.getDescriptionControlAreaList().clear();
+
+        Map<String, List<String>> metadata = ArchiveManagementManager.loadMetadataForNode(entry.getDatabaseId());
+
+        for (IMetadataField emf : configuredFields) {
+            List<String> values = metadata.get(emf.getName());
+            addFieldToEntry(entry, emf, values);
+
+        }
+
     }
 
 }
