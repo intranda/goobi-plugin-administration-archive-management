@@ -369,10 +369,8 @@ div.no-element-selected {
             <f:metadata>
                 <f:viewParam
                     name="name"
-                    value="#{AdministrationForm.administrationPlugin.selectedDatabase}" />
-                <f:event
-                    type="preRenderView"
-                    listener="#{AdministrationForm.administrationPlugin.checkDBConnection}" />
+                    value="#{AdministrationForm.administrationPlugin.databaseName}" />
+              
             </f:metadata>
         </h:head>
 
@@ -384,7 +382,7 @@ div.no-element-selected {
                     <h:panelGroup
                         layout="block"
                         styleClass="box box-color box-bordered"
-                        rendered="#{AdministrationForm.administrationPlugin.selectedDatabase == NULL}">
+                        rendered="#{AdministrationForm.administrationPlugin.databaseName == NULL}">
                         <div class="box-title">
                             <h2>
                                 <i class="fa fa-archive" />
@@ -406,7 +404,7 @@ div.no-element-selected {
                                 <h:panelGroup
                                     layout="block"
                                     styleClass="row"
-                                    rendered="#{AdministrationForm.administrationPlugin.selectedDatabase == NULL}">
+                                    rendered="#{AdministrationForm.administrationPlugin.databaseName == NULL}">
                                     <h:form enctype="multipart/form-data">
 
                                         <div class="container">
@@ -421,15 +419,14 @@ div.no-element-selected {
                                                     id="selectDB"
                                                     style="margin-bottom:10px;"
                                                     styleClass="form-control"
-                                                    value="#{AdministrationForm.administrationPlugin.selectedDatabase}">
+                                                    value="#{AdministrationForm.administrationPlugin.databaseName}">
                                                     <f:selectItem
                                                         itemValue=""
                                                         itemLabel="#{msgs.bitteAuswaehlen}" />
                                                     <f:selectItems value="#{AdministrationForm.administrationPlugin.possibleDatabases}" />
                                                 </h:selectOneMenu>
                                                 <h:commandLink
-                                                    styleClass="btn font-size-s  margin-top-10"
-                                                    rendered="#{AdministrationForm.administrationPlugin.dbOK}">
+                                                    styleClass="btn font-size-s  margin-top-10">
                                                     <h:outputText value="#{msgs.plugin_administration_archive_createNewArchive}" />
                                                     <f:setPropertyActionListener
                                                         value="createArchive"
@@ -439,7 +436,7 @@ div.no-element-selected {
 
                                                 <h:commandLink
                                                     styleClass="btn font-size-s  margin-top-10 margin-left-10"
-                                                    rendered="#{AdministrationForm.administrationPlugin.dbOK}">
+                                                   >
                                                     <h:outputText value="#{msgs.plugin_administration_archive_uploadEadFile}" />
                                                     <f:setPropertyActionListener
                                                         value="uploadFile"
@@ -471,12 +468,6 @@ div.no-element-selected {
                                                         itemLabel="#{msgs.bitteAuswaehlen}" />
                                                     <f:selectItems value="#{AdministrationForm.administrationPlugin.distinctDatabaseNames}" />
                                                 </h:selectOneMenu>
-
-                                                <p style="margin-top: 20px;">#{msgs.plugin_administration_archive_creation_filename}</p>
-                                                <h:inputText
-                                                    style="margin-bottom:10px;"
-                                                    styleClass="form-control"
-                                                    value="#{AdministrationForm.administrationPlugin.fileName}" />
 
                                                 <h:commandLink styleClass="btn  font-size-s  margin-top-10">
                                                     <f:setPropertyActionListener
@@ -569,7 +560,7 @@ div.no-element-selected {
                         id="details"
                         layout="block"
                         styleClass="row"
-                        rendered="#{AdministrationForm.administrationPlugin.selectedDatabase != NULL and AdministrationForm.administrationPlugin.displayMode == ''}">
+                        rendered="#{AdministrationForm.administrationPlugin.databaseName != NULL and AdministrationForm.administrationPlugin.displayMode == ''}">
                         <h:form
                             styleClass="form-horizontal form-bordered"
                             id="ead-details"
@@ -583,7 +574,7 @@ div.no-element-selected {
                                         <div class="box-title">
                                             <h2>
                                                 <i class="fa fa-archive" />
-                                                <h:outputText value="#{AdministrationForm.administrationPlugin.selectedDatabase}" />
+                                                <h:outputText value="#{AdministrationForm.administrationPlugin.databaseName}" />
                                             </h2>
                                             <!-- search box -->
                                             <div class="searchfilter pull-right">
@@ -1299,7 +1290,7 @@ div.no-element-selected {
                         id="moveNodeArea"
                         layout="block"
                         styleClass="row"
-                        rendered="#{AdministrationForm.administrationPlugin.selectedDatabase != NULL and AdministrationForm.administrationPlugin.displayMode == 'moveNode'}">
+                        rendered="#{AdministrationForm.administrationPlugin.databaseName != NULL and AdministrationForm.administrationPlugin.displayMode == 'moveNode'}">
 
                         <div class="col-sm-12">
                             <div class="box box-color box-bordered">
