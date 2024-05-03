@@ -1275,15 +1275,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         // remove element from old parent list
         selectedEntry.getParentNode().getSubEntryList().remove(selectedEntry);
-        // TODO add it to new parent list
 
         selectedEntry.setParentNode(destinationEntry);
-        ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
         destinationEntry.addSubEntry(selectedEntry);
+        selectedEntry.getParentNode().reOrderElements();
+        ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
         setSelectedEntry(selectedEntry);
         displayMode = "";
-        // TODO safe old and new parent and their children
-        selectedEntry.getParentNode().reOrderElements();
     }
 
     public void moveNodeUp() {

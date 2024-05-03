@@ -898,11 +898,10 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals("", plugin.getDisplayMode());
     }
 
-    //    @Test
-    public void testSearch() {
+    @Test
+    public void testSimpleSearch() {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
-        //        plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setDatabaseName("fixture - ead.xml");
         plugin.loadSelectedDatabase();
@@ -1108,7 +1107,6 @@ public class ArchiveManagementAdministrationPluginTest {
         rootValue.setValue("12345");
         plugin.validateArchive();
         assertFalse(rootMetadata.isValid());
-
     }
 
     private IEadEntry getSampleData() {

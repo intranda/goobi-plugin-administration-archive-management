@@ -17,6 +17,7 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.lang3.StringUtils;
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.INodeType;
 
@@ -370,6 +371,112 @@ public class ArchiveManagementManager implements Serializable {
         }
     }
 
-    // TODO search for specific nodes
+    /**
+     * 
+     * Perform an advanced search within a record group. It can be used to further restrict a hit set.
+     * 
+     * If no list is specified, the search is performed for all nodes in the record group, otherwise only for the specified sub set.
+     * 
+     * @param recordGroupId
+     * @param fieldName
+     * @param searchValue
+     * @param filteredList
+     * @return
+     */
 
+    public static List<Integer> advancedSearch(int recordGroupId, String fieldName, String searchValue, List<Integer> filteredList) {
+
+        String escapedSearchValue = MySQLHelper.escapeSql(searchValue);
+
+        if (filteredList == null || filteredList.isEmpty()) {
+            // search over all records
+            List<String> searchFields = new ArrayList<>();
+            if (StringUtils.isNotBlank(fieldName)) {
+                searchFields.add(fieldName);
+            }
+            return simpleSearch(recordGroupId, searchFields, escapedSearchValue);
+
+        } else {
+            StringBuilder sql = new StringBuilder();
+            sql.append("select id from archive_record_node WHERE archive_record_node = ? AND ");
+            if (StringUtils.isBlank(fieldName)) {
+                sql.append("data like '%");
+                sql.append(escapedSearchValue);
+                sql.append("%'");
+            } else {
+                sql.append("  ExtractValue(data, '/xml/").append(fieldName).append("') like '%");
+                sql.append(escapedSearchValue);
+                sql.append("%'");
+            }
+
+            sql.append(" AND id in (");
+            StringBuilder ids = new StringBuilder();
+            for (Integer id : filteredList) {
+                if (ids.length() > 0) {
+                    ids.append(",");
+                }
+                ids.append(id);
+            }
+            sql.append(ids.toString());
+            sql.append(")");
+            try (Connection connection = MySQLHelper.getInstance().getConnection()) {
+                QueryRunner run = new QueryRunner();
+                return run.query(connection, sql.toString(), MySQLHelper.resultSetToIntegerListHandler, recordGroupId);
+            } catch (SQLException e) {
+                log.error(e);
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * 
+     * Perform a simple search within a record group
+     * 
+     * @param recordGroupId record group id
+     * @param fieldnames list of fieldnames to search in. If the list is empty, all data is searched
+     * @param searchValue the actual search value
+     * @return
+     */
+
+    public static List<Integer> simpleSearch(int recordGroupId, List<String> fieldnames, String searchValue) {
+
+        // abort, if search value is empty
+        if (StringUtils.isBlank(searchValue)) {
+            return Collections.emptyList();
+        }
+
+        String escapedSearchValue = MySQLHelper.escapeSql(searchValue);
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("select id from archive_record_node WHERE archive_record_node = ? AND (");
+
+        // search in all fields
+        if (fieldnames == null || fieldnames.isEmpty()) {
+            sql.append("  data like '%");
+            sql.append(escapedSearchValue);
+            sql.append("%'");
+        } else {
+            // search in specific fields
+            StringBuilder sub = new StringBuilder();
+            for (String fieldName : fieldnames) {
+                if (sub.length() > 0) {
+                    sub.append(" OR ");
+                }
+                sub.append("  ExtractValue(data, '/xml/").append(fieldName).append("') like '%");
+                sub.append(escapedSearchValue);
+                sub.append("%'");
+            }
+            sql.append(sub.toString());
+        }
+        sql.append(")");
+        try (Connection connection = MySQLHelper.getInstance().getConnection()) {
+            QueryRunner run = new QueryRunner();
+            return run.query(connection, sql.toString(), MySQLHelper.resultSetToIntegerListHandler, recordGroupId);
+
+        } catch (SQLException e) {
+            log.error(e);
+        }
+        return Collections.emptyList();
+    }
 }
