@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,9 +34,9 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import de.intranda.goobi.plugins.api.EadStoreConnection;
-import de.intranda.goobi.plugins.api.EadStoreConnection.HttpMethod;
 import de.intranda.goobi.plugins.model.EadEntry;
+import de.intranda.goobi.plugins.model.RecordGroup;
+import de.intranda.goobi.plugins.persistence.ArchiveManagementManager;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.Helper;
 import de.sub.goobi.persistence.managers.ProcessManager;
@@ -45,7 +44,7 @@ import de.sub.goobi.persistence.managers.VocabularyManager;
 import io.goobi.workflow.locking.LockingBean;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ ConfigurationHelper.class, EadStoreConnection.class, VocabularyManager.class, ProcessManager.class, Helper.class })
+@PrepareForTest({ ConfigurationHelper.class, ArchiveManagementManager.class, VocabularyManager.class, ProcessManager.class, Helper.class })
 @PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*",
         "org.w3c.*" })
 public class ArchiveManagementAdministrationPluginTest {
@@ -68,66 +67,23 @@ public class ArchiveManagementAdministrationPluginTest {
     @Before
     public void setUp() throws Exception {
 
-        PowerMock.mockStatic(EadStoreConnection.class);
-        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.GET, "http://localhost:8984/databases"))
-                .andReturn(getDatabaseResponse())
-                .anyTimes();
-        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.GET, "http://localhost:8984/db/fixture/ead.xml"))
-                .andReturn(readDatabaseResponse())
+        PowerMock.mockStatic(ArchiveManagementManager.class);
+        List<RecordGroup> grps = new ArrayList<>();
+        grps.add(new RecordGroup(1, "first database"));
+        grps.add(new RecordGroup(2, "another_file"));
+        grps.add(new RecordGroup(3, "something"));
+
+        EasyMock.expect(ArchiveManagementManager.getAllRecordGroups()).andReturn(grps).anyTimes();
+
+        EasyMock.expect(ArchiveManagementManager.getRecordGroupByTitle("fixture - ead.xml"))
+                .andReturn(new RecordGroup(1, "fixture - ead.xml"))
                 .anyTimes();
 
-        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT, "http://localhost:8984/updateNode/fixture/ead.xml/1234uniqueId"))
-                .andReturn("")
-                .anyTimes();
-        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT,
-                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x69955980777740420181205140002806"))
-                .andReturn("")
-                .anyTimes();
+        ArchiveManagementManager.setConfiguredNodes(EasyMock.anyObject());
 
-        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT,
-                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x88373351097106920181205140002803"))
-                .andReturn("")
-                .anyTimes();
+        EasyMock.expect(ArchiveManagementManager.loadRecordGroup(EasyMock.anyInt())).andReturn(getSampleData()).anyTimes();
 
-        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT,
-                "http://localhost:8984/moveNode/fixture/A91x59286248683929420181205140345809A91x20417344570159920181205140002804/root"))
-                .andReturn("")
-                .anyTimes();
-
-        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT,
-                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x14008545875549320181205140002806"))
-                .andReturn("")
-                .anyTimes();
-
-        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT, "http://localhost:8984/import/fixture/ead.xml"))
-                .andReturn(readDatabaseResponse())
-                .anyTimes();
-
-        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT,
-                "http://localhost:8984/moveNode/fixture/A91x59286248683929420181205140345809A91x14008545875549320181205140002806/A91x59286248683929420181205140345809A91x69955980777740420181205140002806"))
-                .andReturn(readDatabaseResponse())
-                .anyTimes();
-        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT,
-                "http://localhost:8984/swapNodes/fixture/ead.xml/A91x59286248683929420181205140345809A91x69955980777740420181205140002806/A91x59286248683929420181205140345809A91x14008545875549320181205140002806"))
-                .andReturn(readDatabaseResponse())
-                .anyTimes();
-
-        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT,
-                "http://localhost:8984/moveNode/fixture/A91x59286248683929420181205140345809A91x69955980777740420181205140002806/root"))
-                .andReturn(readDatabaseResponse())
-                .anyTimes();
-
-        EasyMock.expect(EadStoreConnection.executeRequest(HttpMethod.PUT,
-                "http://localhost:8984/updateNode/fixture/ead.xml/A91x59286248683929420181205140345809A91x20417344570159920181205140002804"))
-                .andReturn(readDatabaseResponse())
-                .anyTimes();
-
-        EasyMock.expect(
-                EadStoreConnection.executeRequest(HttpMethod.DELETE, "http://localhost:8984/deleteNode/fixture/ead.xml/1234uniqueId"))
-                .andReturn(readDatabaseResponse())
-                .anyTimes();
-
-        PowerMock.replay(EadStoreConnection.class);
+        PowerMock.replay(ArchiveManagementManager.class);
 
         PowerMock.mockStatic(Helper.class);
         EasyMock.expect(Helper.getCurrentUser()).andReturn(null).anyTimes();
@@ -157,57 +113,24 @@ public class ArchiveManagementAdministrationPluginTest {
         PowerMock.replay(ConfigurationHelper.class);
     }
 
-    private String getDatabaseResponse() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<databases>");
-        sb.append("  <database>");
-        sb.append("    <name>first database</name>");
-        sb.append("    <details>");
-        sb.append("      <resource>first_file.xml</resource>");
-        sb.append("      <resource>another_file.xml</resource>");
-        sb.append("    </details>");
-        sb.append("  </database>");
-        sb.append("  <database>");
-        sb.append("    <name>second database</name>");
-        sb.append("    <details>");
-        sb.append("      <resource>first_file.xml</resource>");
-        sb.append("    </details>");
-        sb.append("  </database>");
-        sb.append("</databases>");
-
-        return sb.toString();
-    }
-
-    private String readDatabaseResponse() throws IOException {
-        Path eadSource = Paths.get(resourcesFolder + "EAD.XML");
-
-        List<String> lines = Files.readAllLines(eadSource, StandardCharsets.UTF_8);
-        StringBuilder sb = new StringBuilder();
-        for (String line : lines) {
-            sb.append(line);
-        }
-
-        return sb.toString();
-    }
-
     @Test
     public void testConstructor() throws IOException {
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         assertNotNull(plugin);
     }
 
-    //    @Test
+    @Test
     public void testListDatabases() {
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         //        plugin.setDatastoreUrl("http://localhost:8984/");
         List<String> databases = plugin.getPossibleDatabases();
         assertEquals(3, databases.size());
-        assertEquals("first database - first_file.xml", databases.get(0));
-        assertEquals("first database - another_file.xml", databases.get(1));
-        assertEquals("second database - first_file.xml", databases.get(2));
+        assertEquals("first database", databases.get(0));
+        assertEquals("another_file", databases.get(1));
+        assertEquals("something", databases.get(2));
     }
 
-    //    @Test
+    @Test
     public void testFlatList() {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
@@ -220,13 +143,13 @@ public class ArchiveManagementAdministrationPluginTest {
         root.setDisplayChildren(true);
         // flat list contains root element + first hierarchy
         List<IEadEntry> flat = plugin.getFlatEntryList();
-        assertEquals(2, flat.size());
+        assertEquals(3, flat.size());
         // display second hierarchy
         flat.get(1).setDisplayChildren(true);
         plugin.resetFlatList();
         flat = plugin.getFlatEntryList();
         // now flat list contains root element + first + second hierarchy
-        assertEquals(7, flat.size());
+        assertEquals(5, flat.size());
     }
 
     //    @Test
@@ -1148,4 +1071,35 @@ public class ArchiveManagementAdministrationPluginTest {
 
     }
 
+    private IEadEntry getSampleData() {
+        IEadEntry rootNode = new EadEntry(0, 0);
+
+        IEadEntry firstChild = new EadEntry(0, 1);
+        firstChild.setParentNode(rootNode);
+        rootNode.getSubEntryList().add(firstChild);
+        {
+            IEadEntry firstGrandChild = new EadEntry(0, 1);
+            firstGrandChild.setParentNode(firstChild);
+            firstChild.getSubEntryList().add(firstGrandChild);
+
+            IEadEntry secondGrandChild = new EadEntry(0, 1);
+            secondGrandChild.setParentNode(firstChild);
+            firstChild.getSubEntryList().add(secondGrandChild);
+        }
+        IEadEntry secondChild = new EadEntry(1, 1);
+        secondChild.setParentNode(rootNode);
+        rootNode.getSubEntryList().add(secondChild);
+
+        {
+            IEadEntry firstGrandChild = new EadEntry(0, 1);
+            firstGrandChild.setParentNode(secondChild);
+            secondChild.getSubEntryList().add(firstGrandChild);
+
+            IEadEntry secondGrandChild = new EadEntry(0, 1);
+            secondGrandChild.setParentNode(secondChild);
+            secondChild.getSubEntryList().add(secondGrandChild);
+        }
+
+        return rootNode;
+    }
 }
