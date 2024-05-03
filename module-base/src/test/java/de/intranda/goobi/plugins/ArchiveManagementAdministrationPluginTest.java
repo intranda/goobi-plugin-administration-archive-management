@@ -583,10 +583,11 @@ public class ArchiveManagementAdministrationPluginTest {
 
     }
 
-    //    @Test
+    @Test
     public void testSetSelectedEntry() {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.setRecordGroup(new RecordGroup(1, "sample"));
         plugin.setDatabaseName("fixture - ead.xml");
         plugin.setTestMode(true);
         IEadEntry root = new EadEntry(0, 0);
@@ -617,7 +618,7 @@ public class ArchiveManagementAdministrationPluginTest {
         assertFalse(root.isSelected());
     }
 
-    //    @Test
+    @Test
     public void testAddNode() {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();

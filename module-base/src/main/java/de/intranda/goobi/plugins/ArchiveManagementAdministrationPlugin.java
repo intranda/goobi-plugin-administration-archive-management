@@ -120,7 +120,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Setter
     private transient IEadEntry rootElement = null;
 
-    private transient RecordGroup selectedRecordGroup;
+    @Getter
+    @Setter
+    private transient RecordGroup recordGroup;
 
     private transient List<IEadEntry> flatEntryList;
 
@@ -299,10 +301,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         try {
             // open selected database
             if (StringUtils.isNotBlank(databaseName)) {
-                selectedRecordGroup = ArchiveManagementManager.getRecordGroupByTitle(databaseName);
+                recordGroup = ArchiveManagementManager.getRecordGroupByTitle(databaseName);
                 // get field definitions from config file
                 readConfiguration();
-                rootElement = ArchiveManagementManager.loadRecordGroup(selectedRecordGroup.getId());
+                rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
 
             } else {
                 Helper.setFehlerMeldung("plugin_administration_archive_creation_noRecordGroupSelected");
@@ -350,9 +352,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             databaseName = databaseName.replace(" ", "_");
             readConfiguration();
 
-            selectedRecordGroup = new RecordGroup();
-            selectedRecordGroup.setTitle(databaseName);
-            ArchiveManagementManager.saveRecordGroup(selectedRecordGroup);
+            recordGroup = new RecordGroup();
+            recordGroup.setTitle(databaseName);
+            ArchiveManagementManager.saveRecordGroup(recordGroup);
 
             rootElement = new EadEntry(0, 0);
             rootElement.setId(String.valueOf(UUID.randomUUID()));
@@ -361,7 +363,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
             rootElement.setNodeType(rootType);
 
-            ArchiveManagementManager.saveNode(selectedRecordGroup.getId(), rootElement);
+            ArchiveManagementManager.saveNode(recordGroup.getId(), rootElement);
             loadMetadataForNode(rootElement);
 
             selectedEntry = rootElement;
@@ -842,7 +844,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             selectedEntry = entry;
             selectedEntry.setSelected(true);
             flatEntryList = null;
-            ArchiveManagementManager.saveNode(selectedRecordGroup.getId(), entry);
+            ArchiveManagementManager.saveNode(recordGroup.getId(), entry);
         }
     }
 
@@ -851,6 +853,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             // TODO get IDs for all sub elements
             // TODO delete sub elements in db
             // TODO delete current node
+            // TODO select parent node
 
         }
 
@@ -891,11 +894,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
 
         // save nodes
-        selectedRecordGroup = new RecordGroup();
-        selectedRecordGroup.setTitle(uploadedFileName);
-        ArchiveManagementManager.saveRecordGroup(selectedRecordGroup);
+        recordGroup = new RecordGroup();
+        recordGroup.setTitle(uploadedFileName);
+        ArchiveManagementManager.saveRecordGroup(recordGroup);
         List<IEadEntry> nodes = rootElement.getAllNodes();
-        ArchiveManagementManager.saveNodes(selectedRecordGroup.getId(), nodes);
+        ArchiveManagementManager.saveNodes(recordGroup.getId(), nodes);
     }
 
     /**
@@ -1279,7 +1282,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         // TODO add it to new parent list
 
         selectedEntry.setParentNode(destinationEntry);
-        ArchiveManagementManager.saveNode(selectedRecordGroup.getId(), selectedEntry);
+        ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
         setSelectedEntry(selectedEntry);
         displayMode = "";
         // TODO safe old and new parent and their children
@@ -1314,8 +1317,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         previousNode.setOrderNumber(currentOrderNumber);
 
         // save nodes
-        ArchiveManagementManager.saveNode(selectedRecordGroup.getId(), previousNode);
-        ArchiveManagementManager.saveNode(selectedRecordGroup.getId(), selectedEntry);
+        ArchiveManagementManager.saveNode(recordGroup.getId(), previousNode);
+        ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
         selectedEntry.getParentNode().sortElements();
 
         flatEntryList = null;
@@ -1349,8 +1352,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         followingNode.setOrderNumber(currentOrderNumber);
 
         // save nodes
-        ArchiveManagementManager.saveNode(selectedRecordGroup.getId(), followingNode);
-        ArchiveManagementManager.saveNode(selectedRecordGroup.getId(), selectedEntry);
+        ArchiveManagementManager.saveNode(recordGroup.getId(), followingNode);
+        ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
         selectedEntry.getParentNode().sortElements();
 
         flatEntryList = null;
@@ -1738,7 +1741,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
 
         // save current node
-        ArchiveManagementManager.saveNode(selectedRecordGroup.getId(), selectedEntry);
+        ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
 
         // start any open automatic tasks
         for (Step s : process.getSchritteList()) {
@@ -1892,7 +1895,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         addMetadata(eadRoot, rootElement);
         createEventFields(eadRoot);
         //  write document to servlet output stream
-        String downloadFileName = selectedRecordGroup.getTitle().replace(" ", "_");
+        String downloadFileName = recordGroup.getTitle().replace(" ", "_");
         if (!downloadFileName.endsWith(".xml")) {
             downloadFileName = downloadFileName + ".xml";
         }
@@ -1981,7 +1984,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     public String saveArchiveAndLeave() {
         // save current node
         if (selectedEntry != null) {
-            ArchiveManagementManager.saveNode(selectedRecordGroup.getId(), selectedEntry);
+            ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
         }
 
         return cancelEdition();
@@ -2389,7 +2392,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
             selectedEntry.getParentNode().addSubEntry(copy);
 
-            ArchiveManagementManager.saveNode(selectedRecordGroup.getId(), copy);
+            ArchiveManagementManager.saveNode(recordGroup.getId(), copy);
         }
     }
 
@@ -2422,16 +2425,16 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public void updateSingleNode() {
         if (selectedEntry != null) {
-            ArchiveManagementManager.saveNode(selectedRecordGroup.getId(), selectedEntry);
+            ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
         }
     }
 
     public void saveInDatabase() {
         ArchiveManagementManager.createTables();
 
-        ArchiveManagementManager.saveRecordGroup(selectedRecordGroup);
+        ArchiveManagementManager.saveRecordGroup(recordGroup);
 
-        IEadEntry rootElementFromDb = ArchiveManagementManager.loadRecordGroup(selectedRecordGroup.getId());
+        IEadEntry rootElementFromDb = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
 
         rootElement = rootElementFromDb;
         rootElement.setDisplayChildren(true);
