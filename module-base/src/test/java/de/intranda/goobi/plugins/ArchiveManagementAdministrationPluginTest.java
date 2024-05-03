@@ -91,8 +91,9 @@ public class ArchiveManagementAdministrationPluginTest {
                 .andReturn(new RecordGroup(1, "fixture - ead.xml"))
                 .anyTimes();
 
-        ArchiveManagementManager.saveNode(EasyMock.anyInt(), EasyMock.anyObject());
-        ArchiveManagementManager.saveNode(EasyMock.anyInt(), EasyMock.anyObject());
+        for (int i = 0; i < 10; i++) {
+            ArchiveManagementManager.saveNode(EasyMock.anyInt(), EasyMock.anyObject());
+        }
 
         ArchiveManagementManager.saveNodes(EasyMock.anyInt(), EasyMock.anyObject());
         ArchiveManagementManager.saveRecordGroup(EasyMock.anyObject());
@@ -625,7 +626,6 @@ public class ArchiveManagementAdministrationPluginTest {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setTestMode(true);
-        //        plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setDatabaseName("fixture - ead.xml");
         plugin.loadSelectedDatabase();
@@ -650,7 +650,6 @@ public class ArchiveManagementAdministrationPluginTest {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setTestMode(true);
-        //        plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setDatabaseName("fixture - ead.xml");
         plugin.loadSelectedDatabase();
@@ -673,12 +672,11 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals(1, root.getSubEntryList().size());
     }
 
-    //    @Test
+    @Test
     public void testPrepareMoveNode() {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setTestMode(true);
-        //        plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setDatabaseName("fixture - ead.xml");
         plugin.loadSelectedDatabase();
@@ -689,6 +687,11 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals("", plugin.getDisplayMode());
 
         IEadEntry root = plugin.getRootElement();
+
+        // delete second root child for this test
+        plugin.setSelectedEntry(root.getSubEntryList().get(1));
+        plugin.deleteNode();
+
         plugin.setSelectedEntry(root);
         IEadEntry firstChild = root.getSubEntryList().get(0);
         root.setDisplayChildren(true);
@@ -715,13 +718,12 @@ public class ArchiveManagementAdministrationPluginTest {
 
     }
 
-    //    @Test
+    @Test
     public void testMoveNode() {
         LockingBean.resetAllLocks();
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setTestMode(true);
-        //        plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setDatabaseName("fixture - ead.xml");
         plugin.loadSelectedDatabase();
@@ -741,13 +743,12 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals("", plugin.getDisplayMode());
     }
 
-    //    @Test
+    @Test
     public void testMoveNodeUp() {
         LockingBean.resetAllLocks();
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setTestMode(true);
-        //        plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setDatabaseName("fixture - ead.xml");
         plugin.loadSelectedDatabase();
@@ -778,17 +779,16 @@ public class ArchiveManagementAdministrationPluginTest {
 
         // second child node selected
         plugin.setSelectedEntry(secondInSecond);
-        assertEquals(1, secondInSecond.getOrderNumber().intValue());
+        assertEquals(0, secondInSecond.getOrderNumber().intValue());
         plugin.moveNodeUp();
         assertEquals("", plugin.getDisplayMode());
     }
 
-    //    @Test
+    @Test
     public void testMoveNodeDown() {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setTestMode(true);
-        //        plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setDatabaseName("fixture - ead.xml");
         plugin.loadSelectedDatabase();
@@ -798,7 +798,7 @@ public class ArchiveManagementAdministrationPluginTest {
         firstChild.setDisplayChildren(true);
         IEadEntry firstInSecond = firstChild.getSubEntryList().get(0);
         firstInSecond.setDisplayChildren(true);
-        IEadEntry lastInSecond = firstChild.getSubEntryList().get(4);
+        IEadEntry lastInSecond = firstChild.getSubEntryList().get(1);
         lastInSecond.setDisplayChildren(true);
         plugin.getFlatEntryList();
 
@@ -824,22 +824,22 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals("", plugin.getDisplayMode());
     }
 
-    //    @Test
+    @Test
     public void testMoveHierarchyDown() {
+        Part part = prepareFileUpload();
+
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
-        plugin.setTestMode(true);
-        //        plugin.setDatastoreUrl("http://localhost:8984/");
-        plugin.getPossibleDatabases();
-        plugin.setDatabaseName("fixture - ead.xml");
-        plugin.loadSelectedDatabase();
+        plugin.setDatabaseName("sample");
+        plugin.setUploadFile(part);
+        plugin.upload();
         IEadEntry root = plugin.getRootElement();
         root.setDisplayChildren(true);
         IEadEntry firstChild = root.getSubEntryList().get(0);
         firstChild.setDisplayChildren(true);
         IEadEntry firstInSecond = firstChild.getSubEntryList().get(0);
         firstInSecond.setDisplayChildren(true);
-        IEadEntry secondInSecond = firstChild.getSubEntryList().get(1);
+        IEadEntry secondInSecond = firstChild.getSubEntryList().get(4);
         secondInSecond.setDisplayChildren(true);
         plugin.getFlatEntryList();
         // no node selected - do nothing
@@ -860,15 +860,15 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals("", plugin.getDisplayMode());
     }
 
-    //    @Test
+    @Test
     public void testMoveHierarchyUp() {
+        Part part = prepareFileUpload();
+
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
-        plugin.setTestMode(true);
-        //        plugin.setDatastoreUrl("http://localhost:8984/");
-        plugin.getPossibleDatabases();
-        plugin.setDatabaseName("fixture - ead.xml");
-        plugin.loadSelectedDatabase();
+        plugin.setDatabaseName("sample");
+        plugin.setUploadFile(part);
+        plugin.upload();
         IEadEntry root = plugin.getRootElement();
         root.setDisplayChildren(true);
         IEadEntry firstChild = root.getSubEntryList().get(0);
@@ -916,32 +916,18 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals(2, plugin.getFlatEntryList().size());
     }
 
-    //    @Test
-    public void testGetDistinctDatabaseNames() {
-        LockingBean.resetAllLocks();
-        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
-        plugin.getPossibleDatabases();
-        List<String> dbs = plugin.getDistinctDatabaseNames();
-        assertEquals(2, dbs.size());
-        assertEquals("first database", dbs.get(0));
-        assertEquals("second database", dbs.get(1));
-    }
-
-    //    @Test
+    @Test
     public void testCreateNewDatabase() {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.getPossibleDatabases();
         plugin.createNewDatabase();
-        // do nothing because databaseName + fileName are not set
-        assertNull(plugin.getRootElement());
-        plugin.setDatabaseName("db");
-        plugin.createNewDatabase();
+        // do nothing because databaseName is not set
         assertNull(plugin.getRootElement());
         plugin.setDatabaseName("");
         plugin.createNewDatabase();
         assertNull(plugin.getRootElement());
-        // now both are set
+        // now it is set
         plugin.setDatabaseName("db");
         plugin.createNewDatabase();
 
@@ -949,11 +935,10 @@ public class ArchiveManagementAdministrationPluginTest {
 
     }
 
-    //    @Test
+    @Test
     public void testCancelEdition() {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
-        //        plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setDatabaseName("fixture - ead.xml");
         plugin.loadSelectedDatabase();
@@ -1002,15 +987,15 @@ public class ArchiveManagementAdministrationPluginTest {
 
     }
 
-    //    @Test
+    @Test
     public void testValidateArchive() {
-        LockingBean.resetAllLocks();
+        Part part = prepareFileUpload();
 
+        LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
-        //        plugin.setDatastoreUrl("http://localhost:8984/");
-        plugin.getPossibleDatabases();
-        plugin.setDatabaseName("fixture - ead.xml");
-        plugin.loadSelectedDatabase();
+        plugin.setDatabaseName("sample");
+        plugin.setUploadFile(part);
+        plugin.upload();
         plugin.getFlatEntryList();
         IEadEntry entry = plugin.getRootElement();
         entry.setDisplayChildren(true);

@@ -326,24 +326,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
     }
 
-    public List<String> getDistinctDatabaseNames() {
-        List<String> answer = new ArrayList<>();
-        List<String> completeList = getPossibleDatabases();
-        for (String s : completeList) {
-            String[] parts = s.split(" - ");
-            String dbName = parts[0];
-            if (!answer.contains(dbName)) {
-                answer.add(dbName);
-            }
-        }
-
-        if (answer.isEmpty()) {
-            answer = getPossibleDatabaseNames();
-        }
-
-        return answer;
-    }
-
     @Override
     public void createNewDatabase() {
         if (StringUtils.isNotBlank(databaseName)) {
@@ -1291,12 +1273,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             return;
         }
 
-        // TODO remove element from old parent list
-
+        // remove element from old parent list
+        selectedEntry.getParentNode().getSubEntryList().remove(selectedEntry);
         // TODO add it to new parent list
 
         selectedEntry.setParentNode(destinationEntry);
         ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
+        destinationEntry.addSubEntry(selectedEntry);
         setSelectedEntry(selectedEntry);
         displayMode = "";
         // TODO safe old and new parent and their children
@@ -2456,23 +2439,23 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     private void loadMetadataForNode(IEadEntry entry) {
         // clear old, outdated metadata
+        if (entry.getDatabaseId() != null) {
+            entry.getIdentityStatementAreaList().clear();
+            entry.getContextAreaList().clear();
+            entry.getContentAndStructureAreaAreaList().clear();
+            entry.getAccessAndUseAreaList().clear();
+            entry.getAlliedMaterialsAreaList().clear();
+            entry.getNotesAreaList().clear();
+            entry.getDescriptionControlAreaList().clear();
 
-        entry.getIdentityStatementAreaList().clear();
-        entry.getContextAreaList().clear();
-        entry.getContentAndStructureAreaAreaList().clear();
-        entry.getAccessAndUseAreaList().clear();
-        entry.getAlliedMaterialsAreaList().clear();
-        entry.getNotesAreaList().clear();
-        entry.getDescriptionControlAreaList().clear();
+            Map<String, List<String>> metadata = ArchiveManagementManager.loadMetadataForNode(entry.getDatabaseId());
 
-        Map<String, List<String>> metadata = ArchiveManagementManager.loadMetadataForNode(entry.getDatabaseId());
+            for (IMetadataField emf : configuredFields) {
+                List<String> values = metadata.get(emf.getName());
+                addFieldToEntry(entry, emf, values);
 
-        for (IMetadataField emf : configuredFields) {
-            List<String> values = metadata.get(emf.getName());
-            addFieldToEntry(entry, emf, values);
-
+            }
         }
-
     }
 
 }
