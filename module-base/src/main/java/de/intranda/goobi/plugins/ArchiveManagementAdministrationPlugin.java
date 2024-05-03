@@ -864,6 +864,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             Helper.setFehlerMeldung("plugin_administration_archive_missing_Data");
             return;
         }
+        readConfiguration();
 
         String uploadedFileName = processUploadedFileName(uploadFile);
         // open document, parse it
@@ -872,6 +873,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             if (document != null) {
 
                 Element mainElement = document.getRootElement();
+                if ("collection".equals(mainElement.getName())) {
+                    mainElement = mainElement.getChildren().get(0);
+                }
+
                 if (!"ead".equals(mainElement.getName())) {
                     // file is not an ead file
                     String message = "plugin_administration_archive_notEadFile";

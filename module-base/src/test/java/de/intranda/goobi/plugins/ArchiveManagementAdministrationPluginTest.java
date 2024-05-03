@@ -7,12 +7,22 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 
 import org.easymock.EasyMock;
 import org.goobi.interfaces.IEadEntry;
@@ -29,6 +39,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.omnifaces.io.DefaultServletOutputStream;
 import org.powermock.api.easymock.PowerMock;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -38,6 +49,7 @@ import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.RecordGroup;
 import de.intranda.goobi.plugins.persistence.ArchiveManagementManager;
 import de.sub.goobi.config.ConfigurationHelper;
+import de.sub.goobi.helper.FacesContextHelper;
 import de.sub.goobi.helper.Helper;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.VocabularyManager;
@@ -79,6 +91,9 @@ public class ArchiveManagementAdministrationPluginTest {
                 .andReturn(new RecordGroup(1, "fixture - ead.xml"))
                 .anyTimes();
 
+        ArchiveManagementManager.saveNode(EasyMock.anyInt(), EasyMock.anyObject());
+        ArchiveManagementManager.saveNodes(EasyMock.anyInt(), EasyMock.anyObject());
+        ArchiveManagementManager.saveRecordGroup(EasyMock.anyObject());
         ArchiveManagementManager.setConfiguredNodes(EasyMock.anyObject());
 
         EasyMock.expect(ArchiveManagementManager.loadRecordGroup(EasyMock.anyInt())).andReturn(getSampleData()).anyTimes();
@@ -134,7 +149,6 @@ public class ArchiveManagementAdministrationPluginTest {
     public void testFlatList() {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
-        //        plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setDatabaseName("fixture - ead.xml");
         plugin.loadSelectedDatabase();
@@ -152,14 +166,28 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals(5, flat.size());
     }
 
-    //    @Test
+    @Test
     public void testLoadDatabase() {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
-        //        plugin.setDatastoreUrl("http://localhost:8984/");
         plugin.getPossibleDatabases();
         plugin.setDatabaseName("fixture - ead.xml");
         plugin.loadSelectedDatabase();
+
+        IEadEntry entry = plugin.getRootElement();
+
+        assertEquals("label", entry.getLabel());
+    }
+
+    @Test
+    public void testUpLoadXmlFile() {
+        Part part = prepareFileUpload();
+
+        LockingBean.resetAllLocks();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.setDatabaseName("sample");
+        plugin.setUploadFile(part);
+        plugin.upload();
 
         IEadEntry entry = plugin.getRootElement();
 
@@ -180,9 +208,6 @@ public class ArchiveManagementAdministrationPluginTest {
                 case "agencycode":
                     agencycode = emf;
                     break;
-                //                case "eadid":
-                //                    eadid = emf;
-                //                    break;
                 case "recordid":
                     recordid = emf;
                     break;
@@ -480,25 +505,50 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals("file", descriptionLevel.getValues().get(0).getValue());
     }
 
-    //    @Test
-    public void testCreateEadDocument() throws Exception {
+    @Test
+    public void testDownloadArchive() throws Exception {
+        Part part = prepareFileUpload();
+
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
-        //        plugin.setDatastoreUrl("http://localhost:8984/");
-        plugin.getPossibleDatabases();
-        plugin.setDatabaseName("fixture - ead.xml");
-        plugin.loadSelectedDatabase();
+        plugin.setDatabaseName("sample");
+        plugin.setUploadFile(part);
+        plugin.upload();
 
-        // save file
-        File exportFolder = folder.newFolder("export");
-        //        plugin.setExportFolder(exportFolder.toString());
-        //        plugin.createEadDocument();
+        // mock download, save response into temporary file
+        FacesContext facesContext = EasyMock.createMock(FacesContext.class);
+        EasyMock.expect(facesContext.getResponseComplete()).andReturn(false).anyTimes();
+        FacesContextHelper.setFacesContext(facesContext);
+        ExternalContext externalContext = EasyMock.createMock(ExternalContext.class);
+        ServletContext servletContext = EasyMock.createMock(ServletContext.class);
+        HttpServletResponse response = EasyMock.createMock(HttpServletResponse.class);
 
-        Path createdEadFile = Paths.get(exportFolder.toString(), "ead.xml");
-        assertTrue(Files.exists(createdEadFile));
+        EasyMock.expect(facesContext.getExternalContext()).andReturn(externalContext).anyTimes();
+        EasyMock.expect(externalContext.getResponse()).andReturn(response).anyTimes();
+
+        EasyMock.expect(externalContext.getContext()).andReturn(servletContext).anyTimes();
+        EasyMock.expect(servletContext.getMimeType(EasyMock.anyString())).andReturn("application/xml").anyTimes();
+
+        response.setContentType(EasyMock.anyString());
+
+        response.setHeader(EasyMock.anyString(), EasyMock.anyString());
+
+        File file = folder.newFile("ead.xml");
+        ServletOutputStream out = new DefaultServletOutputStream(new FileOutputStream(file));
+
+        EasyMock.expect(response.getOutputStream()).andReturn(out);
+
+        facesContext.responseComplete();
+
+        EasyMock.replay(response);
+        EasyMock.replay(servletContext);
+        EasyMock.replay(externalContext);
+        EasyMock.replay(facesContext);
+
+        plugin.downloadArchive();
 
         // open file
-        Document doc = new SAXBuilder(XMLReaders.NONVALIDATING).build(createdEadFile.toFile());
+        Document doc = new SAXBuilder(XMLReaders.NONVALIDATING).build(file);
 
         Element ead = doc.getRootElement();
         Element eadHeader = ead.getChild("eadheader", ArchiveManagementAdministrationPlugin.ns);
@@ -1073,7 +1123,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
     private IEadEntry getSampleData() {
         IEadEntry rootNode = new EadEntry(0, 0);
-
+        rootNode.setLabel("label");
         IEadEntry firstChild = new EadEntry(0, 1);
         firstChild.setParentNode(rootNode);
         rootNode.getSubEntryList().add(firstChild);
@@ -1101,5 +1151,59 @@ public class ArchiveManagementAdministrationPluginTest {
         }
 
         return rootNode;
+    }
+
+    private Part prepareFileUpload() {
+        Path eadSource = Paths.get(resourcesFolder + "EAD.XML");
+        Part part = new Part() {
+            @Override
+            public void write(String fileName) throws IOException {
+            }
+
+            @Override
+            public String getSubmittedFileName() {
+                return "/path/to/sam ple.xml";
+            }
+
+            @Override
+            public long getSize() {
+                return 0;
+            }
+
+            @Override
+            public String getName() {
+                return getSubmittedFileName();
+            }
+
+            @Override
+            public InputStream getInputStream() throws IOException {
+                return Files.newInputStream(eadSource);
+            }
+
+            @Override
+            public Collection<String> getHeaders(String name) {
+                return null;
+            }
+
+            @Override
+            public Collection<String> getHeaderNames() {
+                return null;
+            }
+
+            @Override
+            public String getHeader(String name) {
+                return null;
+            }
+
+            @Override
+            public String getContentType() {
+                return null;
+            }
+
+            @Override
+            public void delete() throws IOException {
+            }
+        };
+        return part;
     }
 }
