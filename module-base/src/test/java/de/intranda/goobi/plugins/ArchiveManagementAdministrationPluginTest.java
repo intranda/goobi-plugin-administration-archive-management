@@ -92,10 +92,12 @@ public class ArchiveManagementAdministrationPluginTest {
                 .anyTimes();
 
         ArchiveManagementManager.saveNode(EasyMock.anyInt(), EasyMock.anyObject());
+        ArchiveManagementManager.saveNode(EasyMock.anyInt(), EasyMock.anyObject());
+
         ArchiveManagementManager.saveNodes(EasyMock.anyInt(), EasyMock.anyObject());
         ArchiveManagementManager.saveRecordGroup(EasyMock.anyObject());
         ArchiveManagementManager.setConfiguredNodes(EasyMock.anyObject());
-
+        ArchiveManagementManager.deleteNodes(EasyMock.anyObject());
         EasyMock.expect(ArchiveManagementManager.loadRecordGroup(EasyMock.anyInt())).andReturn(getSampleData()).anyTimes();
 
         PowerMock.replay(ArchiveManagementManager.class);
@@ -643,7 +645,7 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals(root, fixture.getParentNode());
     }
 
-    //    @Test
+    @Test
     public void testDeleteNode() {
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
@@ -656,9 +658,11 @@ public class ArchiveManagementAdministrationPluginTest {
         IEadEntry root = plugin.getRootElement();
         plugin.setSelectedEntry(root);
         root.setDisplayChildren(true);
+        assertEquals(2, root.getSubEntryList().size());
         IEadEntry firstChild = root.getSubEntryList().get(0);
         // do nothing
         plugin.deleteNode();
+        assertEquals(2, root.getSubEntryList().size());
 
         // delete first node
         plugin.getFlatEntryList();
@@ -666,7 +670,7 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.deleteNode();
 
         assertEquals(root, plugin.getSelectedEntry());
-        assertEquals(0, root.getSubEntryList().size());
+        assertEquals(1, root.getSubEntryList().size());
     }
 
     //    @Test

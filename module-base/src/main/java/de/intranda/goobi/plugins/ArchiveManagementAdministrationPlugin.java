@@ -850,10 +850,24 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public void deleteNode() {
         if (selectedEntry != null) {
-            // TODO get IDs for all sub elements
-            // TODO delete sub elements in db
-            // TODO delete current node
-            // TODO select parent node
+            IEadEntry parentNode = selectedEntry.getParentNode();
+            if (parentNode == null) {
+                // abort, root node cannot be deleted
+                return;
+            }
+
+            // remove the current node from parent
+            parentNode.getSubEntryList().remove(selectedEntry);
+            parentNode.reOrderElements();
+
+            // get the current node and all of its children
+            List<IEadEntry> nodesToDelete = selectedEntry.getAllNodes();
+
+            // delete elements in the database
+            ArchiveManagementManager.deleteNodes(nodesToDelete);
+
+            // select the parent node
+            setSelectedEntry(parentNode);
 
         }
 

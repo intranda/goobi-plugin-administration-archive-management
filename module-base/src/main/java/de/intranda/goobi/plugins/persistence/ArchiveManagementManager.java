@@ -347,6 +347,29 @@ public class ArchiveManagementManager implements Serializable {
         return metadataMap;
     }
 
+    public static void deleteNodes(List<IEadEntry> nodesToDelete) {
+        // create id list
+        StringBuilder identifierList = new StringBuilder();
+        for (IEadEntry e : nodesToDelete) {
+            if (e.getDatabaseId() != null) {
+                if (identifierList.length() > 0) {
+                    identifierList.append(", ");
+                }
+                identifierList.append(e.getDatabaseId());
+            }
+        }
+        if (identifierList.length() > 0) {
+            String sql = "DELETE FROM archive_record_node WHERE id IN (" + identifierList.toString() + ")";
+            try (Connection connection = MySQLHelper.getInstance().getConnection()) {
+                QueryRunner run = new QueryRunner();
+                run.execute(connection, sql);
+            } catch (SQLException e1) {
+                log.error(e1);
+            }
+
+        }
+    }
+
     // TODO search for specific nodes
 
 }
