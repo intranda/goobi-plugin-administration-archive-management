@@ -63,7 +63,12 @@ public class ArchiveManagementManager implements Serializable {
         sql.append("processtitle varchar(255), ");
         sql.append("parent_id int(11), ");
         sql.append("label text, ");
-        sql.append("data text ");
+        sql.append("data text, ");
+        sql.append("KEY 'label' ('label'(768)), ");
+        sql.append("KEY 'archive_record_group_id' ('archive_record_group_id'), ");
+        sql.append("KEY 'sequence' ('sequence'), ");
+        sql.append("KEY 'parent_id' ('parent_id') ");
+
         // TODO use index for archive_record_group_id, sequence, parent_id
 
         sql.append(") ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4; ");
@@ -143,7 +148,6 @@ public class ArchiveManagementManager implements Serializable {
         }
 
         log.debug("Save {} records", nodes.size());
-        long start = System.currentTimeMillis();
 
         StringBuilder values = new StringBuilder();
         for (int i = 0; i < nodes.size(); i++) {
@@ -202,7 +206,6 @@ public class ArchiveManagementManager implements Serializable {
                 values = new StringBuilder();
             }
         }
-        System.out.println("Save duration: " + (System.currentTimeMillis() - start));
         // unlock table
         //        try {
         //            DatabaseVersion.runSql("UNLOCK TABLE");

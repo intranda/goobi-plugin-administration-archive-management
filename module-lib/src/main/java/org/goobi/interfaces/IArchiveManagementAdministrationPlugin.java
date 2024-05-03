@@ -15,14 +15,9 @@ public interface IArchiveManagementAdministrationPlugin extends IAdministrationP
 
     public List<String> getPossibleDatabases();
 
-    public void setSelectedDatabase(String db);
-
     public void loadSelectedDatabase();
 
     public IEadEntry getRootElement();
-
-    // used to create a new database
-    public void setFileName(String fileName);
 
     public void setDatabaseName(String databaseName);
 
@@ -34,8 +29,6 @@ public interface IArchiveManagementAdministrationPlugin extends IAdministrationP
     public IEadEntry getSelectedEntry();
 
     public void addNode();
-
-    public void createEadDocument();
 
     public List<INodeType> getConfiguredNodes();
 

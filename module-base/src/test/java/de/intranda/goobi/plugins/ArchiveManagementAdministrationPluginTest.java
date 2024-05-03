@@ -569,7 +569,7 @@ public class ArchiveManagementAdministrationPluginTest {
         // save file
         File exportFolder = folder.newFolder("export");
         //        plugin.setExportFolder(exportFolder.toString());
-        plugin.createEadDocument();
+        //        plugin.createEadDocument();
 
         Path createdEadFile = Paths.get(exportFolder.toString(), "ead.xml");
         assertTrue(Files.exists(createdEadFile));

@@ -1,9 +1,9 @@
 package de.intranda.goobi.plugins.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -52,14 +52,9 @@ public class EadEntry implements IEadEntry {
     // node type -  @level
     private INodeType nodeType;
 
-    private String sequence;
-
     // display node in a search result
     private boolean displaySearch;
     private boolean searchFound;
-
-    // TODO on initialization, get metadata from this map
-    private Map<String, List<String>> metadataMap;
 
     /* 1. metadata for Identity Statement Area */
     //    Reference code(s)
@@ -138,6 +133,11 @@ public class EadEntry implements IEadEntry {
         for (IEadEntry entry : subEntryList) {
             entry.setOrderNumber(order++);
         }
+    }
+
+    @Override
+    public void sortElements() {
+        Collections.sort(subEntryList);
     }
 
     @Override
@@ -221,12 +221,13 @@ public class EadEntry implements IEadEntry {
         if (parentNode != null && other.parentNode == null) {
             return false;
         }
-
-        if (!parentNode.getOrderNumber().equals(other.parentNode.getOrderNumber())) {
-            return false;
-        }
-        if (!parentNode.getHierarchy().equals(other.parentNode.getHierarchy())) {
-            return false;
+        if (parentNode != null && other.parentNode != null) {
+            if (!parentNode.getOrderNumber().equals(other.parentNode.getOrderNumber())) {
+                return false;
+            }
+            if (!parentNode.getHierarchy().equals(other.parentNode.getHierarchy())) {
+                return false;
+            }
         }
 
         return true;
@@ -549,20 +550,24 @@ public class EadEntry implements IEadEntry {
 
     @Override
     public String getSequence() {
-        if (sequence == null) {
-            if (getParentNode() == null) {
-                // root node,
-                sequence = "";
+        String sequence;
+        if (getParentNode() == null) {
+            // root node,
+            sequence = "";
+        } else {
+            String prefix = getParentNode().getSequence();
+            if (StringUtils.isNotBlank(prefix)) {
+                sequence = prefix + "." + (getParentNode().getOrderNumber());
             } else {
-                String prefix = getParentNode().getSequence();
-                if (StringUtils.isNotBlank(prefix)) {
-                    sequence = prefix + "." + (getParentNode().getOrderNumber());
-                } else {
-                    sequence = String.valueOf(getParentNode().getOrderNumber());
-                }
+                sequence = String.valueOf(getParentNode().getOrderNumber());
             }
         }
         return sequence;
+    }
+
+    @Override
+    public void setSequence(String sequenceNumber) {
+        // do nothing
     }
 
     @Override
