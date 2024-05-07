@@ -390,24 +390,19 @@ public class ArchiveManagementManager implements Serializable {
 
         if (filteredList == null || filteredList.isEmpty()) {
             // search over all records
-            List<String> searchFields = new ArrayList<>();
-            if (StringUtils.isNotBlank(fieldName)) {
-                searchFields.add(fieldName);
-            }
-            return simpleSearch(recordGroupId, searchFields, escapedSearchValue);
+
+            return simpleSearch(recordGroupId, fieldName, searchValue);
 
         } else {
             StringBuilder sql = new StringBuilder();
             sql.append("select id from archive_record_node WHERE archive_record_group_id = ? AND ");
             if (StringUtils.isBlank(fieldName)) {
                 sql.append("data like '%");
-                sql.append(escapedSearchValue);
-                sql.append("%'");
             } else {
                 sql.append("  ExtractValue(data, '/xml/").append(fieldName).append("') like '%");
-                sql.append(escapedSearchValue);
-                sql.append("%'");
             }
+            sql.append(escapedSearchValue);
+            sql.append("%'");
 
             sql.append(" AND id in (");
             StringBuilder ids = new StringBuilder();
@@ -439,7 +434,7 @@ public class ArchiveManagementManager implements Serializable {
      * @return
      */
 
-    public static List<Integer> simpleSearch(int recordGroupId, List<String> fieldnames, String searchValue) {
+    public static List<Integer> simpleSearch(int recordGroupId, String fieldName, String searchValue) {
 
         // abort, if search value is empty
         if (StringUtils.isBlank(searchValue)) {
@@ -452,23 +447,14 @@ public class ArchiveManagementManager implements Serializable {
         sql.append("select id from archive_record_node WHERE archive_record_group_id = ? AND (");
 
         // search in all fields
-        if (fieldnames == null || fieldnames.isEmpty()) {
+        if (StringUtils.isBlank(fieldName)) {
             sql.append("  data like '%");
-            sql.append(escapedSearchValue);
-            sql.append("%'");
         } else {
             // search in specific fields
-            StringBuilder sub = new StringBuilder();
-            for (String fieldName : fieldnames) {
-                if (sub.length() > 0) {
-                    sub.append(" OR ");
-                }
-                sub.append("  ExtractValue(data, '/xml/").append(fieldName).append("') like '%");
-                sub.append(escapedSearchValue);
-                sub.append("%'");
-            }
-            sql.append(sub.toString());
+            sql.append("  ExtractValue(data, '/xml/").append(fieldName).append("') like '%");
         }
+        sql.append(escapedSearchValue);
+        sql.append("%'");
         sql.append(")");
         try (Connection connection = MySQLHelper.getInstance().getConnection()) {
             QueryRunner run = new QueryRunner();

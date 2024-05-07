@@ -787,7 +787,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 // this error cannot not occur
             }
         }
-        resetFlatList();
+
         this.selectedEntry = entry;
     }
 
@@ -1406,34 +1406,23 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     public void searchAdvanced() {
-        // TODO replace this with db search
-        // get a list of all existing nodes
         resetSearch();
-        List<IEadEntry> allNodes = rootElement.getAllNodes();
-
+        List<Integer> searchResults = new ArrayList<>();
         for (StringPair p : advancedSearch) {
             if (StringUtils.isNotBlank(p.getOne()) && StringUtils.isNotBlank(p.getTwo())) {
                 // filter the node list, return only fields containing the data
-                allNodes = filterNodeList(allNodes, p.getOne(), p.getTwo());
+                searchResults = ArchiveManagementManager.advancedSearch(recordGroup.getId(), p.getOne(), p.getTwo(), searchResults);
             }
         }
 
         // finally mark all found nodes
-        for (IEadEntry node : allNodes) {
-            node.markAsFound();
+        for (IEadEntry entry : rootElement.getAllNodes()) {
+            if (searchResults.contains(entry.getDatabaseId())) {
+                entry.markAsFound();
+            }
         }
 
         flatEntryList = rootElement.getSearchList();
-    }
-
-    private List<IEadEntry> filterNodeList(List<IEadEntry> nodes, String searchField, String searchValues) {
-        List<IEadEntry> filteredEntries = new ArrayList<>();
-        for (IEadEntry node : nodes) {
-            if (containsSearchString(node, searchField, searchValues)) {
-                filteredEntries.add(node);
-            }
-        }
-        return filteredEntries;
     }
 
     public void search() {
@@ -1442,8 +1431,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             rootElement.resetFoundList();
             // search in all/some metadata fields of all elements?
 
-            // for now: search only labels
-            searchInNode(rootElement);
+            List<Integer> searchResults = ArchiveManagementManager.simpleSearch(recordGroup.getId(), null, searchValue);
+
+            for (IEadEntry entry : rootElement.getAllNodes()) {
+                if (searchResults.contains(entry.getDatabaseId())) {
+                    entry.markAsFound();
+                }
+            }
 
             // fill flatList with displayable fields
             flatEntryList = rootElement.getSearchList();
@@ -1451,90 +1445,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             resetSearch();
         }
 
-    }
-
-    private void searchInNode(IEadEntry node) {
-
-        List<Integer> searchResults = ArchiveManagementManager.simpleSearch(recordGroup.getId(), null, searchValue);
-
-        for (IEadEntry entry : rootElement.getAllNodes()) {
-            if (searchResults.contains(entry.getDatabaseId())) {
-                entry.markAsFound();
-            }
-        }
-    }
-
-    private boolean containsSearchString(IEadEntry node, String fieldname, String searchString) {
-        // TODO replace this with db search
-
-        // search in all/configured fields
-        for (IMetadataField field : node.getIdentityStatementAreaList()) {
-            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
-                for (IFieldValue value : field.getValues()) {
-                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        for (IMetadataField field : node.getContextAreaList()) {
-            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
-                for (IFieldValue value : field.getValues()) {
-                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        for (IMetadataField field : node.getContentAndStructureAreaAreaList()) {
-            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
-                for (IFieldValue value : field.getValues()) {
-                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        for (IMetadataField field : node.getAccessAndUseAreaList()) {
-            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
-                for (IFieldValue value : field.getValues()) {
-                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        for (IMetadataField field : node.getAlliedMaterialsAreaList()) {
-            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
-                for (IFieldValue value : field.getValues()) {
-                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        for (IMetadataField field : node.getNotesAreaList()) {
-            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
-                for (IFieldValue value : field.getValues()) {
-                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        for (IMetadataField field : node.getDescriptionControlAreaList()) {
-            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
-                for (IFieldValue value : field.getValues()) {
-                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
     }
 
     public void resetSearch() {

@@ -271,7 +271,7 @@ div.no-element-selected {
     max-width: 70%;
 }
 
-#FilterAlle2, #SearchFilter {
+.search-btn {
     padding-bottom: 2px;
     padding-top: 2px;
     background-color: #666;
@@ -568,6 +568,15 @@ div.no-element-selected {
                                                 <div
                                                     class="input-group"
                                                     style="margin-right: 10px; margin-top: 2px;">
+                                                    <div class="input-group-btn">
+                                                    <h:commandLink styleClass="btn input-group-btn search-btn" 
+                                                    id="resetSearch" action="#{AdministrationForm.administrationPlugin.resetSearch}" title="#{msgs.plugin_administration_archive_resetSearch}">
+                                                     <i
+                                                                class="fa fa-undo"
+                                                                aria-hidden="true"></i>
+                                                    
+                                                    </h:commandLink>
+                                                    </div>
                                                     <h:inputText
                                                         styleClass="form-control searchfield"
                                                         id="filterField"
@@ -578,7 +587,7 @@ div.no-element-selected {
                                                         <x:commandLink
                                                             id="SearchFilter"
                                                             forceId="true"
-                                                            styleClass="btn"
+                                                            styleClass="btn search-btn"
                                                             action="#{AdministrationForm.administrationPlugin.search}"
                                                             title="#{msgs.plugin_administration_archive_simpleSearch}">
                                                             <span
@@ -593,7 +602,7 @@ div.no-element-selected {
                                                         <x:commandLink
                                                             id="FilterAlle2"
                                                             forceId="true"
-                                                            styleClass="btn"
+                                                            styleClass="btn search-btn"
                                                             onclick="$('#advancedSearchBox').modal('show');"
                                                             title="#{msgs.plugin_administration_archive_advancedSearch}">
                                                             <span
