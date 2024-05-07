@@ -569,13 +569,18 @@ div.no-element-selected {
                                                     class="input-group"
                                                     style="margin-right: 10px; margin-top: 2px;">
                                                     <div class="input-group-btn">
-                                                    <h:commandLink styleClass="btn input-group-btn search-btn" 
-                                                    id="resetSearch" action="#{AdministrationForm.administrationPlugin.resetSearch}" title="#{msgs.plugin_administration_archive_resetSearch}">
-                                                     <i
+                                                        <h:commandLink
+                                                            styleClass="btn input-group-btn search-btn"
+                                                            id="resetSearch"
+                                                            action="#{AdministrationForm.administrationPlugin.resetSearch}"
+                                                            title="#{msgs.clear}">
+                                                            <span
                                                                 class="fa fa-undo"
-                                                                aria-hidden="true"></i>
-                                                    
-                                                    </h:commandLink>
+                                                                aria-hidden="true"></span>
+                                                            <f:passThroughAttribute
+                                                                name="data-toggle"
+                                                                value="tooltip" />
+                                                        </h:commandLink>
                                                     </div>
                                                     <h:inputText
                                                         styleClass="form-control searchfield"
@@ -589,7 +594,7 @@ div.no-element-selected {
                                                             forceId="true"
                                                             styleClass="btn search-btn"
                                                             action="#{AdministrationForm.administrationPlugin.search}"
-                                                            title="#{msgs.plugin_administration_archive_simpleSearch}">
+                                                            title="#{msgs.search}">
                                                             <span
                                                                 class="fa fa-search"
                                                                 aria-hidden="true"></span>
