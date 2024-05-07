@@ -1399,13 +1399,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         // move current node to parents parent
         destinationEntry = newParent;
         moveNode();
-        newParent.reOrderElements();
         // move node to one position after current parent
         if (selectedEntry.getOrderNumber().intValue() != oldParent.getOrderNumber().intValue() + 1) {
             Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), oldParent.getOrderNumber() + 1);
             selectedEntry.getParentNode().reOrderElements();
         }
-
     }
 
     public void searchAdvanced() {

@@ -101,6 +101,10 @@ public class ArchiveManagementAdministrationPluginTest {
         ArchiveManagementManager.deleteNodes(EasyMock.anyObject());
         EasyMock.expect(ArchiveManagementManager.loadRecordGroup(EasyMock.anyInt())).andReturn(getSampleData()).anyTimes();
 
+        EasyMock.expect(ArchiveManagementManager.getRecordGroupByTitle(EasyMock.anyString())).andReturn(null);
+        RecordGroup rg = new RecordGroup(4, "sa_mple.xml");
+        EasyMock.expect(ArchiveManagementManager.getRecordGroupByTitle(EasyMock.anyString())).andReturn(rg);
+
         PowerMock.replay(ArchiveManagementManager.class);
 
         PowerMock.mockStatic(Helper.class);
@@ -746,7 +750,6 @@ public class ArchiveManagementAdministrationPluginTest {
     @Test
     public void testMoveNodeUp() {
         LockingBean.resetAllLocks();
-        LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.setTestMode(true);
         plugin.getPossibleDatabases();
@@ -779,7 +782,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
         // second child node selected
         plugin.setSelectedEntry(secondInSecond);
-        assertEquals(0, secondInSecond.getOrderNumber().intValue());
+        assertEquals(1, secondInSecond.getOrderNumber().intValue());
         plugin.moveNodeUp();
         assertEquals("", plugin.getDisplayMode());
     }
@@ -875,7 +878,7 @@ public class ArchiveManagementAdministrationPluginTest {
         firstChild.setDisplayChildren(true);
         IEadEntry firstInSecond = firstChild.getSubEntryList().get(0);
         firstInSecond.setDisplayChildren(true);
-        IEadEntry thirdInSecond = firstChild.getSubEntryList().get(3);
+        IEadEntry thirdInSecond = firstChild.getSubEntryList().get(2);
         thirdInSecond.setDisplayChildren(true);
         plugin.getFlatEntryList();
         // no node selected - do nothing
@@ -891,7 +894,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
         // second child element selected - move it to last child element of current node
         plugin.setSelectedEntry(thirdInSecond);
-        assertEquals(3, thirdInSecond.getOrderNumber().intValue());
+        assertEquals(2, thirdInSecond.getOrderNumber().intValue());
         assertEquals(2, thirdInSecond.getHierarchy().intValue());
         plugin.moveHierarchyUp();
         plugin.getFlatEntryList();
@@ -900,11 +903,12 @@ public class ArchiveManagementAdministrationPluginTest {
 
     @Test
     public void testSimpleSearch() {
+        Part part = prepareFileUpload();
         LockingBean.resetAllLocks();
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
-        plugin.getPossibleDatabases();
-        plugin.setDatabaseName("fixture - ead.xml");
-        plugin.loadSelectedDatabase();
+        plugin.setDatabaseName("sample");
+        plugin.setUploadFile(part);
+        plugin.upload();
         assertEquals(2, plugin.getFlatEntryList().size());
         plugin.setSearchValue("Milzbrand");
         plugin.search();
@@ -1109,6 +1113,22 @@ public class ArchiveManagementAdministrationPluginTest {
         assertFalse(rootMetadata.isValid());
     }
 
+    @Test
+    public void testCheckExistenceOfSelectedFile() {
+        LockingBean.resetAllLocks();
+        Part part = prepareFileUpload();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        assertFalse(plugin.isFileToUploadExists());
+
+        // uploaded file does not exist
+        plugin.checkExistenceOfSelectedFile(null, null, part);
+        assertFalse(plugin.isFileToUploadExists());
+
+        // second attempt: uploaded file does exist
+        plugin.checkExistenceOfSelectedFile(null, null, part);
+        assertTrue(plugin.isFileToUploadExists());
+    }
+
     private IEadEntry getSampleData() {
         IEadEntry rootNode = new EadEntry(0, 0);
         rootNode.setLabel("label");
@@ -1120,7 +1140,7 @@ public class ArchiveManagementAdministrationPluginTest {
             firstGrandChild.setParentNode(firstChild);
             firstChild.getSubEntryList().add(firstGrandChild);
 
-            IEadEntry secondGrandChild = new EadEntry(0, 1);
+            IEadEntry secondGrandChild = new EadEntry(1, 1);
             secondGrandChild.setParentNode(firstChild);
             firstChild.getSubEntryList().add(secondGrandChild);
         }
@@ -1133,7 +1153,7 @@ public class ArchiveManagementAdministrationPluginTest {
             firstGrandChild.setParentNode(secondChild);
             secondChild.getSubEntryList().add(firstGrandChild);
 
-            IEadEntry secondGrandChild = new EadEntry(0, 1);
+            IEadEntry secondGrandChild = new EadEntry(1, 1);
             secondGrandChild.setParentNode(secondChild);
             secondChild.getSubEntryList().add(secondGrandChild);
         }
