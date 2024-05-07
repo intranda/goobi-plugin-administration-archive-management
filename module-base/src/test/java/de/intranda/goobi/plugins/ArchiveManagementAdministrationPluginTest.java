@@ -105,6 +105,12 @@ public class ArchiveManagementAdministrationPluginTest {
         RecordGroup rg = new RecordGroup(4, "sa_mple.xml");
         EasyMock.expect(ArchiveManagementManager.getRecordGroupByTitle(EasyMock.anyString())).andReturn(rg);
 
+        List<Integer> searchList = new ArrayList<>();
+
+        searchList.add(4);
+        searchList.add(6);
+        EasyMock.expect(ArchiveManagementManager.simpleSearch(1, null, "Milzbrand")).andReturn(searchList);
+
         PowerMock.replay(ArchiveManagementManager.class);
 
         PowerMock.mockStatic(Helper.class);
@@ -903,20 +909,21 @@ public class ArchiveManagementAdministrationPluginTest {
 
     @Test
     public void testSimpleSearch() {
-        Part part = prepareFileUpload();
-        LockingBean.resetAllLocks();
+
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
-        plugin.setDatabaseName("sample");
-        plugin.setUploadFile(part);
-        plugin.upload();
-        assertEquals(2, plugin.getFlatEntryList().size());
+        plugin.getPossibleDatabases();
+        plugin.setDatabaseName("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+
+        assertEquals(3, plugin.getFlatEntryList().size());
         plugin.setSearchValue("Milzbrand");
+        plugin.setRecordGroup(new RecordGroup(1, "sample"));
         plugin.search();
-        assertEquals(6, plugin.getFlatEntryList().size());
+        assertEquals(5, plugin.getFlatEntryList().size());
 
         plugin.setSearchValue("");
         plugin.search();
-        assertEquals(2, plugin.getFlatEntryList().size());
+        assertEquals(3, plugin.getFlatEntryList().size());
     }
 
     @Test
@@ -1132,29 +1139,37 @@ public class ArchiveManagementAdministrationPluginTest {
     private IEadEntry getSampleData() {
         IEadEntry rootNode = new EadEntry(0, 0);
         rootNode.setLabel("label");
+        rootNode.setDatabaseId(1);
+        rootNode.setDisplayChildren(true);
         IEadEntry firstChild = new EadEntry(0, 1);
         firstChild.setParentNode(rootNode);
+        firstChild.setDatabaseId(2);
         rootNode.getSubEntryList().add(firstChild);
         {
             IEadEntry firstGrandChild = new EadEntry(0, 1);
             firstGrandChild.setParentNode(firstChild);
+            firstGrandChild.setDatabaseId(3);
             firstChild.getSubEntryList().add(firstGrandChild);
 
             IEadEntry secondGrandChild = new EadEntry(1, 1);
             secondGrandChild.setParentNode(firstChild);
+            secondGrandChild.setDatabaseId(4);
             firstChild.getSubEntryList().add(secondGrandChild);
         }
         IEadEntry secondChild = new EadEntry(1, 1);
         secondChild.setParentNode(rootNode);
+        secondChild.setDatabaseId(5);
         rootNode.getSubEntryList().add(secondChild);
 
         {
             IEadEntry firstGrandChild = new EadEntry(0, 1);
             firstGrandChild.setParentNode(secondChild);
+            firstGrandChild.setDatabaseId(6);
             secondChild.getSubEntryList().add(firstGrandChild);
 
             IEadEntry secondGrandChild = new EadEntry(1, 1);
             secondGrandChild.setParentNode(secondChild);
+            secondGrandChild.setDatabaseId(7);
             secondChild.getSubEntryList().add(secondGrandChild);
         }
 
