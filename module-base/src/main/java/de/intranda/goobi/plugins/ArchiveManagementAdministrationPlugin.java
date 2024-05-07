@@ -17,7 +17,6 @@ import java.util.UUID;
 
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
-import javax.faces.event.AjaxBehaviorEvent;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -1536,10 +1535,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
 
         return false;
-    }
-
-    public void searchListener(AjaxBehaviorEvent event) { //NOSONAR method signature must include the parameter, even if it is not needed
-        search();
     }
 
     public void resetSearch() {

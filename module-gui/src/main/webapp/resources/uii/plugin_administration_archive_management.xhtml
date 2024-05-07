@@ -271,7 +271,7 @@ div.no-element-selected {
     max-width: 70%;
 }
 
-#FilterAlle2 {
+#FilterAlle2, #SearchFilter {
     padding-bottom: 2px;
     padding-top: 2px;
     background-color: #666;
@@ -370,7 +370,7 @@ div.no-element-selected {
                 <f:viewParam
                     name="name"
                     value="#{AdministrationForm.administrationPlugin.databaseName}" />
-              
+
             </f:metadata>
         </h:head>
 
@@ -425,8 +425,7 @@ div.no-element-selected {
                                                         itemLabel="#{msgs.bitteAuswaehlen}" />
                                                     <f:selectItems value="#{AdministrationForm.administrationPlugin.possibleDatabases}" />
                                                 </h:selectOneMenu>
-                                                <h:commandLink
-                                                    styleClass="btn font-size-s  margin-top-10">
+                                                <h:commandLink styleClass="btn font-size-s  margin-top-10">
                                                     <h:outputText value="#{msgs.plugin_administration_archive_createNewArchive}" />
                                                     <f:setPropertyActionListener
                                                         value="createArchive"
@@ -434,9 +433,7 @@ div.no-element-selected {
                                                     <f:ajax render="@form" />
                                                 </h:commandLink>
 
-                                                <h:commandLink
-                                                    styleClass="btn font-size-s  margin-top-10 margin-left-10"
-                                                   >
+                                                <h:commandLink styleClass="btn font-size-s  margin-top-10 margin-left-10">
                                                     <h:outputText value="#{msgs.plugin_administration_archive_uploadEadFile}" />
                                                     <f:setPropertyActionListener
                                                         value="uploadFile"
@@ -458,13 +455,13 @@ div.no-element-selected {
                                                 rendered="#{AdministrationForm.administrationPlugin.displayMode == 'createArchive'}">
 
                                                 <h3>#{msgs.plugin_administration_archive_creationHeading}</h3>
-     
+
                                                 <p style="margin-top: 20px;">#{msgs.plugin_administration_archive_creation_filename}</p>
                                                 <h:inputText
                                                     style="margin-bottom:10px;"
                                                     styleClass="form-control"
                                                     value="#{AdministrationForm.administrationPlugin.databaseName}" />
-                                                    
+
 
                                                 <h:commandLink styleClass="btn  font-size-s  margin-top-10">
                                                     <f:setPropertyActionListener
@@ -489,7 +486,7 @@ div.no-element-selected {
 
                                                 <h3>#{msgs.plugin_administration_archive_uploadHeading}</h3>
 
-                                           
+
 
                                                 <p style="margin-top: 20px;">#{msgs.plugin_administration_archive_creation_uploadFile}</p>
 
@@ -567,26 +564,41 @@ div.no-element-selected {
                                             </h2>
                                             <!-- search box -->
                                             <div class="searchfilter pull-right">
+
                                                 <div
                                                     class="input-group"
                                                     style="margin-right: 10px; margin-top: 2px;">
                                                     <h:inputText
                                                         styleClass="form-control searchfield"
                                                         id="filterField"
-                                                        value="#{AdministrationForm.administrationPlugin.searchValue}">
-                                                        <f:ajax
-                                                            event="keyup"
-                                                            listener="#{AdministrationForm.administrationPlugin.searchListener}"
-                                                            render="hierarchy" />
+                                                        value="#{AdministrationForm.administrationPlugin.searchValue}"
+                                                        onkeypress="submitSearch(event)">
                                                     </h:inputText>
                                                     <div class="input-group-btn">
+                                                        <x:commandLink
+                                                            id="SearchFilter"
+                                                            forceId="true"
+                                                            styleClass="btn"
+                                                            action="#{AdministrationForm.administrationPlugin.search}"
+                                                            title="#{msgs.plugin_administration_archive_simpleSearch}">
+                                                            <span
+                                                                class="fa fa-search"
+                                                                aria-hidden="true"></span>
+                                                            <f:passThroughAttribute
+                                                                name="data-toggle"
+                                                                value="tooltip" />
+
+                                                        </x:commandLink>
+
                                                         <x:commandLink
                                                             id="FilterAlle2"
                                                             forceId="true"
                                                             styleClass="btn"
                                                             onclick="$('#advancedSearchBox').modal('show');"
                                                             title="#{msgs.plugin_administration_archive_advancedSearch}">
-                                                            <i class="fa fa-search"></i>
+                                                            <span
+                                                                class="fa fa-search-plus"
+                                                                aria-hidden="true"></span>
                                                             <f:passThroughAttribute
                                                                 name="data-toggle"
                                                                 value="tooltip" />
@@ -1706,7 +1718,17 @@ div.no-element-selected {
             </div>
         </h:panelGroup>
 
+        <script>
+									function submitSearch(e) {
+										if (e.key != 'Enter')
+											return
 
+										e.preventDefault()
+										var submit = document
+												.querySelector('[id$="SearchFilter"]');
+										submit.click()
+									}
+								</script>
 
     </composite:implementation>
 </ui:composition>
