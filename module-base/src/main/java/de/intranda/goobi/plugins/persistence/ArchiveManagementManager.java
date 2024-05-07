@@ -398,7 +398,7 @@ public class ArchiveManagementManager implements Serializable {
 
         } else {
             StringBuilder sql = new StringBuilder();
-            sql.append("select id from archive_record_node WHERE archive_record_node = ? AND ");
+            sql.append("select id from archive_record_node WHERE archive_record_group_id = ? AND ");
             if (StringUtils.isBlank(fieldName)) {
                 sql.append("data like '%");
                 sql.append(escapedSearchValue);
@@ -449,7 +449,7 @@ public class ArchiveManagementManager implements Serializable {
         String escapedSearchValue = MySQLHelper.escapeSql(searchValue);
 
         StringBuilder sql = new StringBuilder();
-        sql.append("select id from archive_record_node WHERE archive_record_node = ? AND (");
+        sql.append("select id from archive_record_node WHERE archive_record_group_id = ? AND (");
 
         // search in all fields
         if (fieldnames == null || fieldnames.isEmpty()) {

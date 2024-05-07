@@ -1456,20 +1456,18 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     private void searchInNode(IEadEntry node) {
 
-        if (containsSearchString(node, null, searchValue.toLowerCase())) {
-            // mark element + all parents as displayable
-            node.markAsFound();
-        }
-        if (node.getSubEntryList() != null) {
-            for (IEadEntry child : node.getSubEntryList()) {
-                searchInNode(child);
+        List<Integer> searchResults = ArchiveManagementManager.simpleSearch(recordGroup.getId(), null, searchValue);
+
+        for (IEadEntry entry : rootElement.getAllNodes()) {
+            if (searchResults.contains(entry.getDatabaseId())) {
+                entry.markAsFound();
             }
         }
-
     }
 
     private boolean containsSearchString(IEadEntry node, String fieldname, String searchString) {
         // TODO replace this with db search
+
         // search in all/configured fields
         for (IMetadataField field : node.getIdentityStatementAreaList()) {
             if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
