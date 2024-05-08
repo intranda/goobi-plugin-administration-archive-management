@@ -69,9 +69,6 @@ public class ArchiveManagementManager implements Serializable {
         sql.append("KEY 'archive_record_group_id' ('archive_record_group_id'), ");
         sql.append("KEY 'sequence' ('sequence'), ");
         sql.append("KEY 'parent_id' ('parent_id') ");
-
-        // TODO use index for archive_record_group_id, sequence, parent_id
-
         sql.append(") ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4; ");
 
         try {
@@ -122,16 +119,9 @@ public class ArchiveManagementManager implements Serializable {
         saveNodes(archiveId, list);
     }
 
-    public static void saveNodes(Integer archiveId, List<IEadEntry> nodes) {
+    public static synchronized void saveNodes(Integer archiveId, List<IEadEntry> nodes) {
         String insertSql =
                 "INSERT INTO archive_record_node (id, uuid, archive_record_group_id, hierarchy, order_number, node_type, sequence, processtitle, parent_id,label, data) VALUES ";
-
-        // lock table
-        //        try {
-        //            DatabaseVersion.runSql("LOCK TABLE archive_record_node WRITE");
-        //        } catch (SQLException e) {
-        //            log.error(e);
-        //        }
 
         // get next free id
         String nextIdSql = "SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA = 'goobi' AND TABLE_NAME = 'archive_record_node'";
@@ -207,12 +197,6 @@ public class ArchiveManagementManager implements Serializable {
                 values = new StringBuilder();
             }
         }
-        // unlock table
-        //        try {
-        //            DatabaseVersion.runSql("UNLOCK TABLE");
-        //        } catch (SQLException e) {
-        //            log.error(e);
-        //        }
     }
 
     public static IEadEntry loadRecordGroup(int recordGroupId) {
@@ -276,6 +260,8 @@ public class ArchiveManagementManager implements Serializable {
                 }
                 String label = rs.getString("label");
 
+                String data = rs.getString("data");
+
                 IEadEntry currentEntry = new EadEntry(orderNumber, hierarchy);
 
                 currentEntry.setDatabaseId(id);
@@ -288,11 +274,7 @@ public class ArchiveManagementManager implements Serializable {
                 currentEntry.setSequence(sequence);
                 currentEntry.setGoobiProcessTitle(processtitle);
                 currentEntry.setLabel(label);
-
-                //  parse metadata
-                //                String data = rs.getString("data");
-                //                Map<String, List<String>> metadataMap = convertStringToMap(data);
-                //                currentEntry.setMetadataMap(metadataMap);
+                currentEntry.setData(data);
 
                 if (parentId == null) {
                     rootElement = currentEntry;

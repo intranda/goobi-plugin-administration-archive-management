@@ -109,6 +109,7 @@ public class EadEntry implements IEadEntry {
 
     // true if the validation of all metadata fields was successful
     private boolean valid = true;
+    private String data;
 
     public EadEntry(Integer order, Integer hierarchy) {
         this.orderNumber = order;

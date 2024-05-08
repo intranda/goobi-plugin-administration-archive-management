@@ -138,4 +138,8 @@ public interface IEadEntry extends Comparable<IEadEntry> {
 
     public String getDataAsXml();
 
+    public String getData();
+
+    public void setData(String data);
+
 }

@@ -1782,12 +1782,17 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         // validate
         validateArchive();
 
+        // save current element
+        ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
+        // reload all nodes from db to get every change
+        rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
+        loadMetadataForAllNodes();
+
         // create ead document
         Document document = new Document();
 
         Element eadRoot = new Element("ead", ns);
         document.setRootElement(eadRoot);
-
         addMetadata(eadRoot, rootElement);
         createEventFields(eadRoot);
         //  write document to servlet output stream
@@ -2352,9 +2357,27 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             for (IMetadataField emf : configuredFields) {
                 List<String> values = metadata.get(emf.getName());
                 addFieldToEntry(entry, emf, values);
-
             }
         }
     }
 
+    private void loadMetadataForAllNodes() {
+
+        List<IEadEntry> allNodes = rootElement.getAllNodes();
+
+        for (IEadEntry entry : allNodes) {
+            Map<String, List<String>> metadata = ArchiveManagementManager.convertStringToMap(entry.getData());
+            entry.getIdentityStatementAreaList().clear();
+            entry.getContextAreaList().clear();
+            entry.getContentAndStructureAreaAreaList().clear();
+            entry.getAccessAndUseAreaList().clear();
+            entry.getAlliedMaterialsAreaList().clear();
+            entry.getNotesAreaList().clear();
+            entry.getDescriptionControlAreaList().clear();
+            for (IMetadataField emf : configuredFields) {
+                List<String> values = metadata.get(emf.getName());
+                addFieldToEntry(entry, emf, values);
+            }
+        }
+    }
 }
