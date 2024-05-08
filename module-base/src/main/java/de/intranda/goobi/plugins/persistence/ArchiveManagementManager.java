@@ -315,18 +315,18 @@ public class ArchiveManagementManager implements Serializable {
     // only call it to load/enhance the selected node. Otherwise the metadata is not needed
 
     public static Map<String, List<String>> convertStringToMap(String data) {
-
-        data = data.replace("<xml>", "").replace("</xml>", "");
         Map<String, List<String>> metadataMap = new HashMap<>();
-        for (Matcher m = pattern.matcher(data); m.find();) {
-            MatchResult mr = m.toMatchResult();
-            String metadata = mr.group(1);
-            String value = mr.group(2);
-            List<String> values = metadataMap.getOrDefault(metadata, new ArrayList<>());
-            values.add(value);
-            metadataMap.put(metadata, values);
+        if (StringUtils.isNotBlank(data)) {
+            data = data.replace("<xml>", "").replace("</xml>", "");
+            for (Matcher m = pattern.matcher(data); m.find();) {
+                MatchResult mr = m.toMatchResult();
+                String metadata = mr.group(1);
+                String value = mr.group(2);
+                List<String> values = metadataMap.getOrDefault(metadata, new ArrayList<>());
+                values.add(value);
+                metadataMap.put(metadata, values);
+            }
         }
-
         return metadataMap;
     }
 

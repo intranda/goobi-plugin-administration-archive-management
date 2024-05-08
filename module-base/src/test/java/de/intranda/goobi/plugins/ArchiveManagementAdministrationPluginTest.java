@@ -15,7 +15,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
@@ -106,10 +108,20 @@ public class ArchiveManagementAdministrationPluginTest {
         EasyMock.expect(ArchiveManagementManager.getRecordGroupByTitle(EasyMock.anyString())).andReturn(rg);
 
         List<Integer> searchList = new ArrayList<>();
-
         searchList.add(4);
         searchList.add(6);
         EasyMock.expect(ArchiveManagementManager.simpleSearch(1, null, "Milzbrand")).andReturn(searchList);
+
+        Map<String, List<String>> metadataMap = new HashMap<>();
+        List<String> meta = new ArrayList<>();
+        meta.add("value");
+        metadataMap.put("mainagencycode", meta);
+        metadataMap.put("titlestmt", meta);
+        metadataMap.put("recordid", meta);
+        metadataMap.put("unitid", meta);
+        metadataMap.put("unittitle", meta);
+
+        EasyMock.expect(ArchiveManagementManager.convertStringToMap(EasyMock.anyString())).andReturn(metadataMap).anyTimes();
 
         PowerMock.replay(ArchiveManagementManager.class);
 
@@ -527,6 +539,7 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.setDatabaseName("sample");
         plugin.setUploadFile(part);
         plugin.upload();
+        plugin.setRecordGroup(new RecordGroup(1, "sample"));
 
         // mock download, save response into temporary file
         FacesContext facesContext = EasyMock.createMock(FacesContext.class);
@@ -567,7 +580,7 @@ public class ArchiveManagementAdministrationPluginTest {
         Element eadHeader = ead.getChild("eadheader", ArchiveManagementAdministrationPlugin.ns);
         //        assertEquals("eadid", eadHeader.getChildText("eadid", ArchiveManagementAdministrationPlugin.ns));
 
-        assertEquals("archive header title",
+        assertEquals("value",
                 eadHeader.getChild("filedesc", ArchiveManagementAdministrationPlugin.ns)
                         .getChild("titlestmt", ArchiveManagementAdministrationPlugin.ns)
                         .getChildText("titleproper", ArchiveManagementAdministrationPlugin.ns));
@@ -575,14 +588,14 @@ public class ArchiveManagementAdministrationPluginTest {
         Element did = archdesc.getChild("did", ArchiveManagementAdministrationPlugin.ns);
         Element dsc = archdesc.getChild("dsc", ArchiveManagementAdministrationPlugin.ns);
 
-        assertEquals(10, did.getChildren().size());
-        assertEquals("unitid", did.getChildren().get(0).getText());
-        assertEquals(17, dsc.getChildren().size());
+        assertEquals(2, did.getChildren().size());
+        assertEquals("value", did.getChildren().get(0).getText());
+        assertEquals(2, dsc.getChildren().size());
 
-        Element c = dsc.getChildren().get(16);
+        Element c = dsc.getChildren().get(1);
         Element subDid = c.getChild("did", ArchiveManagementAdministrationPlugin.ns);
-        assertEquals("first level id", subDid.getChildText("unitid", ArchiveManagementAdministrationPlugin.ns));
-        assertEquals("first level title", subDid.getChildText("unittitle", ArchiveManagementAdministrationPlugin.ns));
+        assertEquals("value", subDid.getChildText("unitid", ArchiveManagementAdministrationPlugin.ns));
+        assertEquals("value", subDid.getChildText("unittitle", ArchiveManagementAdministrationPlugin.ns));
 
         Element processinfo = archdesc.getChild("processinfo", ArchiveManagementAdministrationPlugin.ns);
         Element list = processinfo.getChild("list", ArchiveManagementAdministrationPlugin.ns);
