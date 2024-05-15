@@ -304,7 +304,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 // get field definitions from config file
                 readConfiguration();
                 rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
-
+                rootElement.setDisplayChildren(true);
             } else {
                 Helper.setFehlerMeldung("plugin_administration_archive_creation_noRecordGroupSelected");
 
@@ -329,11 +329,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     public void createNewDatabase() {
         if (StringUtils.isNotBlank(databaseName)) {
 
-            // remove whitespaces from filename
-            databaseName = databaseName.replace(" ", "_");
             readConfiguration();
-
-            // TODO check, if database name is already in use
+            if (ArchiveManagementManager.getRecordGroupByTitle(databaseName) != null) {
+                Helper.setFehlerMeldung("plugin_administration_archive_recordGroupExists");
+                databaseName = null;
+                displayMode = "createArchive";
+                return;
+            }
 
             recordGroup = new RecordGroup();
             recordGroup.setTitle(databaseName);
@@ -1802,9 +1804,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     public void downloadArchive() {
         // validate
         validateArchive();
-
-        // save current element
-        ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
+        if (selectedEntry != null) {
+            // save current element
+            ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
+        }
         // reload all nodes from db to get every change
         rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
         loadMetadataForAllNodes();
