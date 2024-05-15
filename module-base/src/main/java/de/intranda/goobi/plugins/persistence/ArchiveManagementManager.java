@@ -124,7 +124,7 @@ public class ArchiveManagementManager implements Serializable {
                 "INSERT INTO archive_record_node (id, uuid, archive_record_group_id, hierarchy, order_number, node_type, sequence, processtitle, parent_id,label, data) VALUES ";
 
         // get next free id
-        String nextIdSql = "SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA = 'goobi' AND TABLE_NAME = 'archive_record_node'";
+        String nextIdSql = "SELECT max(id) +1 from archive_record_node";
         try (Connection connection = MySQLHelper.getInstance().getConnection()) {
             QueryRunner run = new QueryRunner();
             int nextAutoIncrementDbID = run.query(connection, nextIdSql, MySQLHelper.resultSetToIntegerHandler);
@@ -446,5 +446,15 @@ public class ArchiveManagementManager implements Serializable {
             log.error(e);
         }
         return Collections.emptyList();
+    }
+
+    public static void deleteAllNodes(Integer id) {
+        String sql = "DELETE FROM archive_record_node WHERE archive_record_group_id = ?";
+        try (Connection connection = MySQLHelper.getInstance().getConnection()) {
+            QueryRunner run = new QueryRunner();
+            run.execute(connection, sql, id);
+        } catch (SQLException e1) {
+            log.error(e1);
+        }
     }
 }

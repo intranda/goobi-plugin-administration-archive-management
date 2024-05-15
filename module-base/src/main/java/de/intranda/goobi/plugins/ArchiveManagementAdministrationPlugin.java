@@ -333,6 +333,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             databaseName = databaseName.replace(" ", "_");
             readConfiguration();
 
+            // TODO check, if database name is already in use
+
             recordGroup = new RecordGroup();
             recordGroup.setTitle(databaseName);
             ArchiveManagementManager.saveRecordGroup(recordGroup);
@@ -858,7 +860,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * upload the selected file
      */
     public void upload() {
-        if (uploadFile == null || StringUtils.isBlank(databaseName)) {
+        if (uploadFile == null) {
             Helper.setFehlerMeldung("plugin_administration_archive_missing_Data");
             return;
         }
@@ -887,13 +889,28 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         } catch (IOException e) {
             log.error(e);
         }
+        // check, if uploaded file was used before
+        recordGroup = ArchiveManagementManager.getRecordGroupByTitle(uploadedFileName);
+        if (recordGroup == null) {
+            recordGroup = new RecordGroup();
+            recordGroup.setTitle(uploadedFileName);
+        } else {
+            // replace existing records
+            ArchiveManagementManager.deleteAllNodes(recordGroup.getId());
+        }
 
         // save nodes
-        recordGroup = new RecordGroup();
-        recordGroup.setTitle(uploadedFileName);
         ArchiveManagementManager.saveRecordGroup(recordGroup);
         List<IEadEntry> nodes = rootElement.getAllNodes();
         ArchiveManagementManager.saveNodes(recordGroup.getId(), nodes);
+        databaseName = recordGroup.getTitle();
+        loadSelectedDatabase();
+        displayMode = "";
+        // update existing process ids if the uploaded EAD file has an older version
+        if (fileToUploadExists) {
+            log.debug("updating existing processes' ids");
+            updateGoobiIds();
+        }
     }
 
     /**
@@ -922,6 +939,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * @return the corrected file name as a string
      */
     private String processUploadedFileName(Part file) {
+        if (file == null) {
+            return "";
+        }
+
         String uploadedFileName = Paths.get(file.getSubmittedFileName()).getFileName().toString(); // MSIE fix.
 
         // filename must end with xml
@@ -2326,6 +2347,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public void updateSingleNode() {
         if (selectedEntry != null) {
+            if (selectedEntry.getNodeType() == null) {
+                selectedEntry.setNodeType(configuredNodes.get(0));
+            }
             ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
         }
     }
