@@ -291,7 +291,7 @@ div.no-element-selected {
     color: #000;
 }
 
-#node-type {
+#node-type, #node-id {
     border-top: 1px solid #ddd;
     border-bottom: 1px solid #ddd;
 }
@@ -662,6 +662,7 @@ div.no-element-selected {
                                                             <h:outputText
                                                                 value=" - "
                                                                 rendered="#{entry.label == null}" />
+                                                            <h:outputText value=" (#{entry.id})" style="color: #555;"/>
 
                                                             <ui:fragment rendered="#{entry.goobiProcessTitle != null}">
                                                                 <i
@@ -1057,6 +1058,25 @@ div.no-element-selected {
                                                             </div>
                                                         </h:panelGroup>
                                                         <!-- // node type as icon -->
+                                                        
+                                                        
+                                                        <!-- node id -->
+                                                         <h:panelGroup class="form-group" id="node-id">
+                                                            <div
+                                                                class="col-sm-3 control-label"
+                                                                tabindex="-1"
+                                                                style="border-top: 1px #ddd solid;">
+                                                                <h:outputText value="#{msgs.id}" />
+                                                            </div>
+                                                            <div
+                                                                class="col-sm-9"
+                                                                style="background-color: #f6f6f6; border-top: 1px #ddd solid;">
+
+                                                                <h:outputText value="#{AdministrationForm.administrationPlugin.selectedEntry.id}"/>
+
+                                                            </div>
+                                                        </h:panelGroup>
+                                                        
                                                     </div>
 
                                                     <!-- Group: Identifikation / Identity Statement Area -->
