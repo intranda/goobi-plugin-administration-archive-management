@@ -2347,7 +2347,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public void updateSingleNode() {
         if (selectedEntry != null) {
-            if (selectedEntry.getNodeType() == null) {
+            if (selectedEntry.getNodeType() == null && configuredNodes != null) {
                 selectedEntry.setNodeType(configuredNodes.get(0));
             }
             ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
