@@ -78,6 +78,13 @@
                                     fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
                                     fieldvalue="#{field.value}" />
                             </ui:fragment>
+                            <ui:fragment rendered="#{item.fieldType=='nodelink'}">
+                                <goobiio:nodelink
+                                    fieldid="#{item.name}nodelink"
+                                    fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
+                                    fieldvalue="#{field.value}" />
+                            </ui:fragment>                            
+                            
                         </x:dataList>
                     </ui:fragment>
                 </x:dataList>

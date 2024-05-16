@@ -662,7 +662,9 @@ div.no-element-selected {
                                                             <h:outputText
                                                                 value=" - "
                                                                 rendered="#{entry.label == null}" />
-                                                            <h:outputText value=" (#{entry.id})" style="color: #555;"/>
+                                                            <h:outputText
+                                                                value=" (#{entry.id})"
+                                                                style="color: #555;" />
 
                                                             <ui:fragment rendered="#{entry.goobiProcessTitle != null}">
                                                                 <i
@@ -1058,10 +1060,12 @@ div.no-element-selected {
                                                             </div>
                                                         </h:panelGroup>
                                                         <!-- // node type as icon -->
-                                                        
-                                                        
+
+
                                                         <!-- node id -->
-                                                         <h:panelGroup class="form-group" id="node-id">
+                                                        <h:panelGroup
+                                                            class="form-group"
+                                                            id="node-id">
                                                             <div
                                                                 class="col-sm-3 control-label"
                                                                 tabindex="-1"
@@ -1072,11 +1076,11 @@ div.no-element-selected {
                                                                 class="col-sm-9"
                                                                 style="background-color: #f6f6f6; border-top: 1px #ddd solid;">
 
-                                                                <h:outputText value="#{AdministrationForm.administrationPlugin.selectedEntry.id}"/>
+                                                                <h:outputText value="#{AdministrationForm.administrationPlugin.selectedEntry.id}" />
 
                                                             </div>
                                                         </h:panelGroup>
-                                                        
+
                                                     </div>
 
                                                     <!-- Group: Identifikation / Identity Statement Area -->
@@ -1752,17 +1756,60 @@ div.no-element-selected {
             </div>
         </h:panelGroup>
 
-        <script>
-									function submitSearch(e) {
-										if (e.key != 'Enter')
-											return
 
-										e.preventDefault()
-										var submit = document
-												.querySelector('[id$="SearchFilter"]');
-										submit.click()
-									}
-								</script>
+        <h:panelGroup
+            styleClass="modal bd-example-modal-lg"
+            layout="block"
+            id="linkNodeModal"
+            tabindex="-1"
+            role="dialog"
+            aria-labelledby="linkNodeModal"
+            aria-hidden="true">
 
+            <div class="modal-content-wrapper">
+                <div
+                    class="modal-dialog modal-lg"
+                    role="document">
+                    <h:panelGroup
+                        styleClass="modal-content"
+                        layout="block"
+                        id="linkNodeModalContent">
+                        <div class="modal-header">
+                            <button
+                                type="button"
+                                class="close"
+                                data-dismiss="modal"
+                                aria-label="Close">
+                                <span aria-hidden="true">
+                                    <h:outputText
+                                        value="&amp;times;"
+                                        escape="false" />
+                                </span>
+                            </button>
+                            <h4
+                                class="modal-title"
+                                style="width: 90%">#{msgs.plugin_administration_linkNodeModal}</h4>
+                        </div>
+
+                        <div class="modal-body"></div>
+
+                    </h:panelGroup></div></div></h:panelGroup>
+
+                    <script>
+																					function submitSearch(
+																							e) {
+																						if (e.key != 'Enter')
+																							return
+
+																						
+
+																						e
+																								.preventDefault()
+																						var submit = document
+																								.querySelector('[id$="SearchFilter"]');
+																						submit
+																								.click()
+																					}
+																				</script>
     </composite:implementation>
 </ui:composition>

@@ -29,7 +29,46 @@
     <tag>
         <tag-name>readonly</tag-name>
         <source>tags/io/goobi/readonly.xhtml</source>
-    </tag>    
+    </tag>
+    <tag>
+        <tag-name>nodelink</tag-name>
+        <source>tags/io/goobi/nodelink.xhtml</source>
+        <attribute>
+            <description>unique id</description>
+            <name>fieldid</name>
+            <required>true</required>
+            <type>java.lang.String</type>
+        </attribute>
+        <attribute>
+            <description>Displayed name of the field</description>
+            <name>fieldname</name>
+            <required>true</required>
+            <type>java.lang.String</type>
+        </attribute>
+        <attribute>
+            <description>Field object</description>
+            <name>field</name>
+            <required>true</required>
+            <type>org.goobi.interfaces.IMetadataField</type>
+        </attribute>
+
+        <attribute>
+            <description>id to update in ajax requests</description>
+            <name>ajaxid</name>
+            <required>true</required>
+            <type>java.lang.String</type>
+        </attribute>
+
+
+        <attribute>
+            <description>The actual value</description>
+            <name>fieldvalue</name>
+            <required>true</required>
+            <type>java.lang.String</type>
+        </attribute>
+
+
+    </tag>
     <tag>
         <tag-name>badge</tag-name>
         <source>tags/io/goobi/badge.xhtml</source>

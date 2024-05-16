@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:x="http://myfaces.apache.org/tomahawk"
+    xmlns:jsf="http://xmlns.jcp.org/jsf">
+<h:body>
+    <ui:composition>
+
+        <div class="control-label metadata-row-area-content">
+            <h:outputLabel
+                for="#{fieldid}"
+                value="#{fieldname}" />
+        </div>
+
+        <h:commandLink
+            styleClass="metadata-row-area-content close-field pull-right"
+            action="#{item.deleteValue(field)}">
+            <i class="fa fa-minus-circle"></i>
+            <f:ajax
+                execute="@this"
+                render=":#{ajaxid} :hierarchy" />
+        </h:commandLink>
+
+        <div class="metadata-row-area-content metadata-row-area-content-white leftArea-grid">
+
+            <!-- input field for the node id, read only? -->
+            <h:inputText
+                id="#{fieldid}"
+                forceId="true"
+                styleClass="form-control #{item.valid ? '' : 'validation-error'}"
+                value="#{fieldvalue}"
+                required="false"
+                readonly="false">
+                <f:ajax
+                    execute="@this"
+                    render=":#{ajaxid} :hierarchy"
+                    event="blur" />
+            </h:inputText>
+
+            <!-- search button, opens modal -->
+            <button
+                jsf:id="searchButton"
+                class="btn btn-blank me-2 float-end"
+                title="#{msgs.search}"
+                aria-label="#{msgs.search}"
+                jsf:onclick="$('#linkNodeModal').modal('show');"
+                onfocus="#{cc.attrs.onfocus}"
+                type="button"
+                data-toggle="tooltip">
+                <span class="fa fa-search" />
+
+            </button>
+
+            <!-- validation error -->
+            <h:outputText
+                styleClass="help-inline font-danger"
+                rendered="#{!item.valid}"
+                value="#{msgs[item.validationError]}" />
+
+
+        </div>
+    </ui:composition>
+</h:body>
+</html>

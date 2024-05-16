@@ -197,6 +197,7 @@
         <metadata xpath="(./ead:archdesc/ead:altformavail/ead:p | ./ead:altformavail/ead:p)[1]" xpathType="element" name="altformavail" level="5" repeatable="false" fieldType="textarea" rulesetName="AlternativeFormAvailable" />
         <metadata xpath="(./ead:archdesc/ead:relatedmaterial/ead:separatedmaterial/ead:p | ./ead:relatedmaterial/ead:separatedmaterial/ead:p)[1]" xpathType="element" name="separatedmaterial" level="5" repeatable="false" rulesetName="SeparatedMaterial"/>
         <metadata xpath="(./ead:archdesc/ead:bibliography | ./ead:bibliography)[1]" xpathType="element" name="bibliography" level="5" repeatable="false" rulesetName="BibliographicCitation"/>
+        <metadata xpath="(./ead:archdesc/ead:relatedmaterial/ead:ref | ./ead:relatedmaterial/ead:ref)" xpathType="element" name="nodelink" fieldType="nodelink" level="5" repeatable="false" /> 
 
 
         <!-- Note Area -->
