@@ -22,6 +22,9 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -75,6 +78,8 @@ import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.MetadataManager;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.VocabularyManager;
+import de.sub.goobi.validator.ExtendedDateTimeFormatLexer;
+import de.sub.goobi.validator.ExtendedDateTimeFormatParser;
 import io.goobi.workflow.locking.LockingBean;
 import lombok.Getter;
 import lombok.Setter;
@@ -1993,6 +1998,23 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private void validateMetadataField(IEadEntry node, Map<String, List<String>> valueMap, IMetadataField emf) {
         emf.setValid(true);
         if (emf.getValidationType() != null) {
+            if (emf.getValidationType().contains("date")) {
+                for (IFieldValue fv : emf.getValues()) {
+                    if (StringUtils.isNotBlank(fv.getValue())) {
+                        CharStream in = CharStreams.fromString(fv.getValue());
+                        ExtendedDateTimeFormatLexer lexer = new ExtendedDateTimeFormatLexer(in);
+                        lexer.removeErrorListeners();
+                        CommonTokenStream tokens = new CommonTokenStream(lexer);
+                        ExtendedDateTimeFormatParser parser = new ExtendedDateTimeFormatParser(tokens);
+                        parser.removeErrorListeners();
+                        parser.edtf();
+                        if (parser.getNumberOfSyntaxErrors() > 0) {
+                            emf.setValid(false);
+                            node.setValid(false);
+                        }
+                    }
+                }
+            }
             if (emf.getValidationType().contains("unique")) {
                 for (IFieldValue fv : emf.getValues()) {
                     if (StringUtils.isNotBlank(fv.getValue())) {

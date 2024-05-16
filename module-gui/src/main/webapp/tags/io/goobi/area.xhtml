@@ -45,7 +45,7 @@
                     <ui:fragment rendered="#{item.showField and item.visible}">
 
                         <x:dataList value="#{item.values}" var="field">
-	                        <ui:fragment rendered="#{item.fieldType=='input'}">
+	                        <ui:fragment rendered="#{item.fieldType=='input' or item.fieldType=='date'}">
 	                            <goobiio:input
 	                                fieldid="#{item.name}input"
 	                                fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
