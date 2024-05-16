@@ -51,9 +51,15 @@
                 jsf:onclick="$('#linkNodeModal').modal('show');"
                 onfocus="#{cc.attrs.onfocus}"
                 type="button"
-                data-toggle="tooltip">
+                data-toggle="tooltip"
+                jsf:action="#{AdministrationForm.administrationPlugin.prepareLinkNode}">
                 <span class="fa fa-search" />
-
+                <f:ajax
+                    execute="@this"
+                    render="linkNodeModalContent" />
+                <f:setPropertyActionListener
+                    value="#{field}"
+                    target="#{AdministrationForm.administrationPlugin.fieldToLink}" />
             </button>
 
             <!-- validation error -->
