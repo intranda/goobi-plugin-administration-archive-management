@@ -230,7 +230,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private List<StringPair> advancedSearch = new ArrayList<>();
 
     @Getter
-    private transient List<IEadEntry> entries;
+    @Setter
+    private boolean displayLinkedModal;
 
     @Getter
     @Setter
@@ -2437,14 +2438,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
     }
 
-    public void prepareLinkNode() {
-        entries = rootElement.getAllNodes();
-    }
-
     public void linkNode() {
 
         String idToLink = destinationEntry.getId();
         fieldToLink.setValue(idToLink);
+        displayLinkedModal = false;
     }
 
 }

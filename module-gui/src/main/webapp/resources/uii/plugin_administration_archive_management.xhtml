@@ -9,6 +9,7 @@
     xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
     xmlns:p="http://primefaces.org/ui"
     xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:jsf="http://xmlns.jcp.org/jsf"    
     xmlns:goobiio="http://goobi.io/facelets">
 
     <composite:interface>
@@ -330,7 +331,7 @@ div.no-element-selected {
 
 .validation-error {
     background-color: #ff4433;
-/*     color: #fff !important; */
+    /*     color: #fff !important; */
 }
 
 .metadata-row-area {
@@ -1776,6 +1777,7 @@ div.no-element-selected {
                         id="linkNodeModalContent">
                         <div class="modal-header">
                             <button
+                            jsf:id="closeBtn"
                                 type="button"
                                 class="close"
                                 data-dismiss="modal"
@@ -1785,6 +1787,9 @@ div.no-element-selected {
                                         value="&amp;times;"
                                         escape="false" />
                                 </span>
+                                <x:updateActionListener
+                                    property="#{AdministrationForm.administrationPlugin.displayLinkedModal}"
+                                    value="false" />
                             </button>
                             <h4
                                 class="modal-title"
@@ -1792,73 +1797,106 @@ div.no-element-selected {
                         </div>
 
                         <div class="modal-body">
-                        
-                                            <div class="table">
-                                        <h:form>
+                            <p>
+                                <h:outputText value="#{msgs.plugin_administration_linkNodeModalDesciption}" />
+                            </p>
+                            <div class="table">
+                                <h:form rendered="#{AdministrationForm.administrationPlugin.displayLinkedModal}">
 
-                                            <x:dataTable
-                                                id="linkNodeArea"
-                                                forceId="true"
-                                                value="#{AdministrationForm.administrationPlugin.entries}"
-                                                var="entry"
-                                                rowStyleClass="level-#{entry.hierarchy}">
-                                                <h:column>
+                                    <x:dataTable
+                                        id="linkNodeArea"
+                                        forceId="true"
+                                        value="#{AdministrationForm.administrationPlugin.rootElement.allNodes}"
+                                        var="entry"
+                                        rowStyleClass="level-#{entry.hierarchy}">
+                                        <h:column>
 
-                                                    <h:commandLink
-                                                        id="link2"
-                                                        immediate="true"
-                                                        styleClass="#{entry.selected ? 'table__structure-link-active' : 'table__structure-link'}"
-                                                        action="#{AdministrationForm.administrationPlugin.linkNode}"
-                                                        disabled="#{entry.selected}">
-                                                        <i
-                                                            class="fa fa-file-o"
-                                                            aria-hidden="true"></i>
-                                                        <h:outputText
-                                                            value="#{entry.label}"
-                                                            rendered="#{entry.label != null}" />
-                                                        <h:outputText
-                                                            value="#{entry.orderNumber}"
-                                                            rendered="#{entry.label == null}" />
-                                                        <x:updateActionListener
-                                                            property="#{AdministrationForm.administrationPlugin.destinationEntry}"
-                                                            value="#{entry}" />
-                                                    </h:commandLink>
-                                                </h:column>
-                                            </x:dataTable>
-                                        </h:form>
-                                    </div>
-                        
-                        </div>
-                    <div class="form-actions">
-                                        <h:form>
                                             <h:commandLink
-                                                styleClass="btn margin-sides-10 font-size-s "
-                                                type="submit">
-
+                                                id="link2"
+                                                immediate="true"
+                                                styleClass="#{entry.selected ? 'table__structure-link-active' : 'table__structure-link'}"
+                                                action="#{AdministrationForm.administrationPlugin.linkNode}"
+                                                disabled="#{entry.selected}">
+                                                <i
+                                                    class="fa fa-file-o"
+                                                    aria-hidden="true"></i>
+                                                <h:outputText
+                                                    value="#{entry.label}"
+                                                    rendered="#{entry.label != null}" />
+                                                <h:outputText
+                                                    value="#{entry.orderNumber}"
+                                                    rendered="#{entry.label == null}" />
                                                 <x:updateActionListener
-                                                    property="#{AdministrationForm.administrationPlugin.displayMode}"
-                                                    value="" />
-                                                <h:outputText value="#{msgs.abbrechen}" />
+                                                    property="#{AdministrationForm.administrationPlugin.destinationEntry}"
+                                                    value="#{entry}" />
                                             </h:commandLink>
-                                        </h:form>
-                                    </div>
-                    </h:panelGroup></div></div></h:panelGroup>
+                                        </h:column>
+                                    </x:dataTable>
+                                </h:form>
+                            </div>
 
-                    <script>
-																					function submitSearch(
-																							e) {
-																						if (e.key != 'Enter')
-																							return
+                        </div>
+                        <div class="form-actions">
+                            <h:form>
+                                <h:commandLink
+                                    styleClass="btn margin-sides-10 font-size-s "
+                                    type="submit">
 
-																						
+                                    <x:updateActionListener
+                                        property="#{AdministrationForm.administrationPlugin.displayMode}"
+                                        value="" />
+                                    <x:updateActionListener
+                                        property="#{AdministrationForm.administrationPlugin.displayLinkedModal}"
+                                        value="false" />
+                                    <h:outputText value="#{msgs.abbrechen}" />
+                                </h:commandLink>
+                            </h:form>
+                        </div>
+                    </h:panelGroup>
+                </div>
+            </div>
+        </h:panelGroup>
 
-																						e
-																								.preventDefault()
-																						var submit = document
-																								.querySelector('[id$="SearchFilter"]');
-																						submit
-																								.click()
-																					}
-																				</script>
+        <script>
+									function submitSearch(e) {
+										if (e.key != 'Enter')
+											return
+
+										
+
+																				
+
+										
+
+																														
+
+										
+
+																				
+
+										
+
+																																																				
+
+										
+
+																				
+
+										
+
+																														
+
+										
+
+																				
+
+										
+
+										e.preventDefault()
+										var submit = document
+												.querySelector('[id$="SearchFilter"]');
+										submit.click()
+									}
+								</script>
     </composite:implementation>
 </ui:composition>
