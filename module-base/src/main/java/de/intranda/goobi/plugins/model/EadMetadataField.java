@@ -134,10 +134,7 @@ public class EadMetadataField implements IMetadataField {
     public void deleteValue(IFieldValue value) {
         IFieldValue valueToDelete = null;
         for (IFieldValue fv : values) {
-            if (fv.getValue() == null && value.getValue() == null) {
-                valueToDelete = fv;
-                break;
-            } else if (fv.getValue() != null && fv.getValue().equals(value.getValue())) {
+            if ((fv.getValue() == null && value.getValue() == null) || (fv.getValue() != null && fv.getValue().equals(value.getValue()))) {
                 valueToDelete = fv;
                 break;
             }
@@ -161,6 +158,8 @@ public class EadMetadataField implements IMetadataField {
         for (IFieldValue val : values) {
             IFieldValue newValue = new FieldValue(field);
             newValue.setValue(prefix + val.getValue() + suffix);
+            newValue.setAuthorityType(val.getAuthorityType());
+            newValue.setAuthorityValue(val.getAuthorityValue());
             field.addFieldValue(newValue);
         }
         return field;

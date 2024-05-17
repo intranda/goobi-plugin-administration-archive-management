@@ -27,4 +27,12 @@ public interface IFieldValue {
     public String getValuesForXmlExport();
 
     public List<String> getSelectItemList();
+
+    public String getAuthorityType();
+
+    public void setAuthorityType(String type);
+
+    public String getAuthorityValue();
+
+    public void setAuthorityValue(String value);
 }

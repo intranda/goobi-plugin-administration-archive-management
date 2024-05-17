@@ -1802,11 +1802,10 @@ div.no-element-selected {
                             </p>
                             <div class="table">
                                 <h:form rendered="#{AdministrationForm.administrationPlugin.displayLinkedModal}">
-
                                     <x:dataTable
                                         id="linkNodeArea"
                                         forceId="true"
-                                        value="#{AdministrationForm.administrationPlugin.rootElement.allNodes}"
+                                        value="#{AdministrationForm.administrationPlugin.linkNodeList}"
                                         var="entry"
                                         rowStyleClass="level-#{entry.hierarchy}">
                                         <h:column>

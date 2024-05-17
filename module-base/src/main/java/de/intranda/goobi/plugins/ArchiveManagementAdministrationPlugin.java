@@ -40,6 +40,7 @@ import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.IFieldValue;
 import org.goobi.interfaces.IMetadataField;
 import org.goobi.interfaces.INodeType;
+import org.goobi.model.ExtendendValue;
 import org.goobi.production.cli.helper.StringPair;
 import org.goobi.production.enums.PluginType;
 import org.goobi.vocabulary.Field;
@@ -231,7 +232,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     @Getter
     @Setter
-    private boolean displayLinkedModal;
+    private boolean displayLinkedModal = false;
 
     @Getter
     @Setter
@@ -438,19 +439,19 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         for (IMetadataField emf : configuredFields) {
 
-            List<String> stringValues = new ArrayList<>();
+            List<ExtendendValue> stringValues = new ArrayList<>();
             if ("text".equalsIgnoreCase(emf.getXpathType())) {
                 XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, ns);
                 List<Text> values = engine.evaluate(element);
                 if (emf.isRepeatable()) {
                     for (Text value : values) {
                         String stringValue = value.getValue();
-                        stringValues.add(stringValue);
+                        stringValues.add(new ExtendendValue(stringValue, null, null));
                     }
                 } else if (!values.isEmpty()) {
                     Text value = values.get(0);
                     String stringValue = value.getValue();
-                    stringValues.add(stringValue);
+                    stringValues.add(new ExtendendValue(stringValue, null, null));
                 }
             } else if ("attribute".equalsIgnoreCase(emf.getXpathType())) {
                 XPathExpression<Attribute> engine = xFactory.compile(emf.getXpath(), Filters.attribute(), null, ns);
@@ -459,25 +460,29 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 if (emf.isRepeatable()) {
                     for (Attribute value : values) {
                         String stringValue = value.getValue();
-                        stringValues.add(stringValue);
+                        stringValues.add(new ExtendendValue(stringValue, null, null));
                     }
                 } else if (!values.isEmpty()) {
                     Attribute value = values.get(0);
                     String stringValue = value.getValue();
-                    stringValues.add(stringValue);
+                    stringValues.add(new ExtendendValue(stringValue, null, null));
                 }
             } else {
                 XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, ns);
                 List<Element> values = engine.evaluate(element);
                 if (emf.isRepeatable()) {
                     for (Element value : values) {
+                        String authorityType = value.getAttributeValue("SOURCE");
+                        String authorityValue = value.getAttributeValue("AUTHFILENUMBER");
                         String stringValue = value.getValue();
-                        stringValues.add(stringValue);
+                        stringValues.add(new ExtendendValue(stringValue, authorityType, authorityValue));
                     }
                 } else if (!values.isEmpty()) {
                     Element value = values.get(0);
+                    String authorityType = value.getAttributeValue("SOURCE");
+                    String authorityValue = value.getAttributeValue("AUTHFILENUMBER");
                     String stringValue = value.getValue();
-                    stringValues.add(stringValue);
+                    stringValues.add(new ExtendendValue(stringValue, authorityType, authorityValue));
                 }
             }
             addFieldToEntry(entry, emf, stringValues);
@@ -572,9 +577,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * @param stringValue
      */
 
-    private void addFieldToEntry(IEadEntry entry, IMetadataField emf, List<String> stringValues) {
-        if (StringUtils.isBlank(entry.getLabel()) && emf.getXpath().contains("unittitle") && stringValues != null && !stringValues.isEmpty()) {
-            entry.setLabel(stringValues.get(0));
+    private void addFieldToEntry(IEadEntry entry, IMetadataField emf, List<ExtendendValue> values) {
+        if (StringUtils.isBlank(entry.getLabel()) && emf.getXpath().contains("unittitle") && values != null && !values.isEmpty()) {
+            entry.setLabel(values.get(0).getValue());
         }
         IMetadataField toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable(),
                 emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild(), emf.getValidationType(),
@@ -583,17 +588,20 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         toAdd.setSelectItemList(emf.getSelectItemList());
         toAdd.setEadEntry(entry);
 
-        if (stringValues != null && !stringValues.isEmpty()) {
+        if (values != null && !values.isEmpty()) {
             toAdd.setShowField(true);
 
             // split single value into multiple fields
-            for (String stringValue : stringValues) {
+            for (ExtendendValue val : values) {
                 IFieldValue fv = new FieldValue(toAdd);
+                String stringValue = val.getValue();
+                fv.setAuthorityType(val.getAuthorityType());
+                fv.setAuthorityValue(val.getAuthorityValue());
 
                 if ("multiselect".equals(toAdd.getFieldType()) && StringUtils.isNotBlank(stringValue)) {
                     String[] splittedValues = stringValue.split("; ");
-                    for (String val : splittedValues) {
-                        fv.setMultiselectValue(val);
+                    for (String s : splittedValues) {
+                        fv.setMultiselectValue(s);
                     }
                 } else {
                     fv.setValue(stringValue);
@@ -822,9 +830,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     new EadEntry(selectedEntry.isHasChildren() ? selectedEntry.getSubEntryList().size() : 0, selectedEntry.getHierarchy() + 1);
             entry.setId(String.valueOf(UUID.randomUUID()));
             // initial metadata values
-            List<String> titleData = new ArrayList<>();
+            List<ExtendendValue> titleData = new ArrayList<>();
             if (StringUtils.isNotBlank(nodeDefaultTitle)) {
-                titleData.add(nodeDefaultTitle);
+                titleData.add(new ExtendendValue(nodeDefaultTitle, null, null));
                 entry.setLabel(nodeDefaultTitle);
             }
             for (IMetadataField emf : configuredFields) {
@@ -979,7 +987,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         for (IMetadataField emf : node.getIdentityStatementAreaList()) {
             for (IFieldValue fv : emf.getValues()) {
                 if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
+                    createEadXmlField(xmlElement, isMainElement, emf, fv);
 
                 }
             }
@@ -987,7 +995,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         for (IMetadataField emf : node.getContextAreaList()) {
             for (IFieldValue fv : emf.getValues()) {
                 if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
+                    createEadXmlField(xmlElement, isMainElement, emf, fv);
 
                 }
             }
@@ -995,7 +1003,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         for (IMetadataField emf : node.getContentAndStructureAreaAreaList()) {
             for (IFieldValue fv : emf.getValues()) {
                 if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
+                    createEadXmlField(xmlElement, isMainElement, emf, fv);
 
                 }
             }
@@ -1003,7 +1011,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         for (IMetadataField emf : node.getAccessAndUseAreaList()) {
             for (IFieldValue fv : emf.getValues()) {
                 if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
+                    createEadXmlField(xmlElement, isMainElement, emf, fv);
 
                 }
             }
@@ -1011,7 +1019,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         for (IMetadataField emf : node.getAlliedMaterialsAreaList()) {
             for (IFieldValue fv : emf.getValues()) {
                 if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
+                    createEadXmlField(xmlElement, isMainElement, emf, fv);
 
                 }
             }
@@ -1019,7 +1027,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         for (IMetadataField emf : node.getNotesAreaList()) {
             for (IFieldValue fv : emf.getValues()) {
                 if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
+                    createEadXmlField(xmlElement, isMainElement, emf, fv);
 
                 }
             }
@@ -1027,7 +1035,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         for (IMetadataField emf : node.getDescriptionControlAreaList()) {
             for (IFieldValue fv : emf.getValues()) {
                 if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
+                    createEadXmlField(xmlElement, isMainElement, emf, fv);
 
                 }
             }
@@ -1085,7 +1093,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     }
 
-    private void createEadXmlField(Element xmlElement, boolean isMainElement, IMetadataField emf, String metadataValue) {
+    private void createEadXmlField(Element xmlElement, boolean isMainElement, IMetadataField emf, IFieldValue metadataValue) {
         Element currentElement = xmlElement;
         String xpath = emf.getXpath();
         if (xpath.endsWith("[1]")) {
@@ -1131,7 +1139,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     currentElement = duplicate;
                 }
 
-                currentElement.setAttribute(field, metadataValue);
+                currentElement.setAttribute(field, metadataValue.getValuesForXmlExport());
                 written = true;
             } else {
                 // remove namespace
@@ -1220,7 +1228,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 currentElement = duplicate;
             }
 
-            currentElement.setText(metadataValue);
+            currentElement.setText(metadataValue.getValuesForXmlExport());
+
+            if (StringUtils.isNotBlank(metadataValue.getAuthorityType()) && StringUtils.isNotBlank(metadataValue.getAuthorityValue())) {
+                currentElement.setAttribute("SOURCE", metadataValue.getAuthorityType());
+                currentElement.setAttribute("AUTHFILENUMBER", metadataValue.getAuthorityValue());
+            }
         }
     }
 
@@ -2409,10 +2422,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             entry.getNotesAreaList().clear();
             entry.getDescriptionControlAreaList().clear();
 
-            Map<String, List<String>> metadata = ArchiveManagementManager.loadMetadataForNode(entry.getDatabaseId());
+            Map<String, List<ExtendendValue>> metadata = ArchiveManagementManager.loadMetadataForNode(entry.getDatabaseId());
 
             for (IMetadataField emf : configuredFields) {
-                List<String> values = metadata.get(emf.getName());
+                List<ExtendendValue> values = metadata.get(emf.getName());
                 addFieldToEntry(entry, emf, values);
             }
         }
@@ -2423,7 +2436,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         List<IEadEntry> allNodes = rootElement.getAllNodes();
 
         for (IEadEntry entry : allNodes) {
-            Map<String, List<String>> metadata = ArchiveManagementManager.convertStringToMap(entry.getData());
+            Map<String, List<ExtendendValue>> metadata = ArchiveManagementManager.convertStringToMap(entry.getData());
             entry.getIdentityStatementAreaList().clear();
             entry.getContextAreaList().clear();
             entry.getContentAndStructureAreaAreaList().clear();
@@ -2432,14 +2445,23 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             entry.getNotesAreaList().clear();
             entry.getDescriptionControlAreaList().clear();
             for (IMetadataField emf : configuredFields) {
-                List<String> values = metadata.get(emf.getName());
+                List<ExtendendValue> values = metadata.get(emf.getName());
                 addFieldToEntry(entry, emf, values);
             }
         }
     }
 
-    public void linkNode() {
+    private transient List<IEadEntry> linkNodeList;
 
+    public List<IEadEntry> getLinkNodeList() {
+        if (isDisplayLinkedModal() && linkNodeList == null) {
+            linkNodeList = rootElement.getAllNodes();
+        }
+
+        return linkNodeList;
+    }
+
+    public void linkNode() {
         String idToLink = destinationEntry.getId();
         fieldToLink.setValue(idToLink);
         displayLinkedModal = false;

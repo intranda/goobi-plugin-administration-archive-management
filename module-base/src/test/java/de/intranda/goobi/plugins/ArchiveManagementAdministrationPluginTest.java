@@ -30,6 +30,7 @@ import org.easymock.EasyMock;
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.IFieldValue;
 import org.goobi.interfaces.IMetadataField;
+import org.goobi.model.ExtendendValue;
 import org.goobi.vocabulary.VocabRecord;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -112,9 +113,9 @@ public class ArchiveManagementAdministrationPluginTest {
         searchList.add(6);
         EasyMock.expect(ArchiveManagementManager.simpleSearch(1, null, "Milzbrand")).andReturn(searchList);
 
-        Map<String, List<String>> metadataMap = new HashMap<>();
-        List<String> meta = new ArrayList<>();
-        meta.add("value");
+        Map<String, List<ExtendendValue>> metadataMap = new HashMap<>();
+        List<ExtendendValue> meta = new ArrayList<>();
+        meta.add(new ExtendendValue("value", null, null));
         metadataMap.put("mainagencycode", meta);
         metadataMap.put("titlestmt", meta);
         metadataMap.put("recordid", meta);

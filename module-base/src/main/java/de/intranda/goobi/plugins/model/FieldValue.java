@@ -20,6 +20,11 @@ public class FieldValue implements IFieldValue {
     @ToString.Exclude
     private IMetadataField field;
 
+    // e.g. gnd, viaf, geonames
+    private String authorityType;
+
+    private String authorityValue;
+
     public FieldValue(IMetadataField field) {
         this.field = field;
     }
@@ -78,7 +83,7 @@ public class FieldValue implements IFieldValue {
     @Override
     public void setValue(String value) {
         this.value = value;
-        if (field.getXpath()!= null && field.getXpath().contains("unittitle")) {
+        if (field.getXpath() != null && field.getXpath().contains("unittitle")) {
             field.getEadEntry().setLabel(value);
         }
 

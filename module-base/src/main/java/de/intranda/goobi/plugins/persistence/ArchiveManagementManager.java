@@ -20,6 +20,7 @@ import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.INodeType;
+import org.goobi.model.ExtendendValue;
 
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.RecordGroup;
@@ -34,7 +35,7 @@ public class ArchiveManagementManager implements Serializable {
 
     private static List<INodeType> configuredNodes;
 
-    private static Pattern pattern = Pattern.compile("<([^<]+?)>([^<]+)<\\/[^<]+?>");
+    private static Pattern pattern = Pattern.compile("<([^<]+?)(?: source=\"(.+)\" value=\"(.+)\")?>([^<]+)<\\/[^<]+?>");
 
     public static void setConfiguredNodes(List<INodeType> configuredNodes) {
         ArchiveManagementManager.configuredNodes = configuredNodes;
@@ -213,7 +214,7 @@ public class ArchiveManagementManager implements Serializable {
         return null;
     }
 
-    public static Map<String, List<String>> loadMetadataForNode(int id) {
+    public static Map<String, List<ExtendendValue>> loadMetadataForNode(int id) {
         try (Connection connection = MySQLHelper.getInstance().getConnection()) {
             QueryRunner run = new QueryRunner();
             return run.query(connection,
@@ -226,10 +227,10 @@ public class ArchiveManagementManager implements Serializable {
         return Collections.emptyMap();
     }
 
-    private static final ResultSetHandler<Map<String, List<String>>> resultSetMetadataHandler = new ResultSetHandler<>() {
+    private static final ResultSetHandler<Map<String, List<ExtendendValue>>> resultSetMetadataHandler = new ResultSetHandler<>() {
 
         @Override
-        public Map<String, List<String>> handle(ResultSet rs) throws SQLException {
+        public Map<String, List<ExtendendValue>> handle(ResultSet rs) throws SQLException {
             if (rs.next()) {
                 String data = rs.getString("data");
                 return convertStringToMap(data);
@@ -314,16 +315,18 @@ public class ArchiveManagementManager implements Serializable {
 
     // only call it to load/enhance the selected node. Otherwise the metadata is not needed
 
-    public static Map<String, List<String>> convertStringToMap(String data) {
-        Map<String, List<String>> metadataMap = new HashMap<>();
+    public static Map<String, List<ExtendendValue>> convertStringToMap(String data) {
+        Map<String, List<ExtendendValue>> metadataMap = new HashMap<>();
         if (StringUtils.isNotBlank(data)) {
             data = data.replace("<xml>", "").replace("</xml>", "");
             for (Matcher m = pattern.matcher(data); m.find();) {
                 MatchResult mr = m.toMatchResult();
                 String metadata = mr.group(1);
-                String value = mr.group(2);
-                List<String> values = metadataMap.getOrDefault(metadata, new ArrayList<>());
-                values.add(value);
+                String authorityType = mr.group(2);
+                String authorityValue = mr.group(3);
+                String value = mr.group(4);
+                List<ExtendendValue> values = metadataMap.getOrDefault(metadata, new ArrayList<>());
+                values.add(new ExtendendValue(value, authorityType, authorityValue));
                 metadataMap.put(metadata, values);
             }
         }
