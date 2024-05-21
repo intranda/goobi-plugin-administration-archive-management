@@ -2070,7 +2070,29 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     }
                 }
             }
+
+            // list validation
+            if (emf.getValidationType().contains("list")) {
+                List<String> possibleValues = emf.getSelectItemList();
+
+                for (IFieldValue fv : emf.getValues()) {
+
+                    if (!fv.getMultiselectSelectedValues().isEmpty()) {
+                        for (String value : fv.getMultiselectSelectedValues()) {
+                            if (!possibleValues.contains(value)) {
+                                emf.setValid(false);
+                                node.setValid(false);
+                            }
+                        }
+                    } else if (StringUtils.isNotBlank(fv.getValue()) && !possibleValues.contains(fv.getValue())) {
+                        emf.setValid(false);
+                        node.setValid(false);
+                    }
+
+                }
+            }
         }
+
     }
 
     public void updateAreaDisplay(int level) {
