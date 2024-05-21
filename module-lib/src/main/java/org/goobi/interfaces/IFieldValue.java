@@ -2,9 +2,10 @@ package org.goobi.interfaces;
 
 import java.util.List;
 
+import org.goobi.production.properties.GeonamesSearchProperty;
 import org.goobi.production.properties.GndSearchProperty;
 
-public interface IFieldValue extends GndSearchProperty {
+public interface IFieldValue extends GndSearchProperty, GeonamesSearchProperty {
 
     @Override
     public String getValue();

@@ -1804,6 +1804,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
                         Metadata md = new Metadata(prefs.getMetadataTypeByName(emf.getMetadataName()));
                         md.setValue(fv.getValue());
+                        if (StringUtils.isNotBlank(fv.getAuthorityValue())) {
+                            md.setAuthorityFile(fv.getAuthorityType(), "", fv.getAuthorityValue());
+                        }
                         logical.addMetadata(md);
                     } catch (UGHException e) {
                         log.error(e);

@@ -5,12 +5,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.geonames.Style;
+import org.geonames.Toponym;
+import org.geonames.ToponymSearchCriteria;
+import org.geonames.ToponymSearchResult;
+import org.geonames.WebService;
 import org.goobi.interfaces.IFieldValue;
 import org.goobi.interfaces.IMetadataField;
 
 import de.intranda.digiverso.normdataimporter.NormDataImporter;
 import de.intranda.digiverso.normdataimporter.model.NormData;
 import de.sub.goobi.config.ConfigurationHelper;
+import de.sub.goobi.helper.Helper;
 import lombok.Data;
 import lombok.ToString;
 
@@ -95,6 +101,7 @@ public class FieldValue implements IFieldValue {
 
     /* authority data */
 
+    // gnd search fields
     private String searchValue;
     private String searchOption;
     private List<List<NormData>> dataList;
@@ -154,4 +161,49 @@ public class FieldValue implements IFieldValue {
         setShowNoHits(getDataList() == null || getDataList().isEmpty());
     }
 
+    // geonames search fields
+    private Toponym currentToponym;
+    private List<Toponym> resultList;
+    private int totalResults;
+
+    @Override
+    public String getGeonamesNumber() {
+        return getGndNumber();
+    }
+
+    @Override
+    public void setGeonamesNumber(String number) {
+        authorityValue = number;
+    }
+
+    @Override
+    public void importGeonamesData() {
+        value = currentToponym.getName();
+        authorityValue = "" + currentToponym.getGeoNameId();
+        authorityType = "geonames";
+        currentToponym = null;
+        resultList = null;
+        totalResults = 0;
+    }
+
+    @Override
+    public void searchGeonames() {
+        String credentials = ConfigurationHelper.getInstance().getGeonamesCredentials();
+        if (credentials != null) {
+            WebService.setUserName(credentials);
+            ToponymSearchCriteria searchCriteria = new ToponymSearchCriteria();
+            searchCriteria.setNameEquals(searchValue);
+            searchCriteria.setStyle(Style.FULL);
+            try {
+                ToponymSearchResult searchResult = WebService.search(searchCriteria);
+                resultList = searchResult.getToponyms();
+                totalResults = searchResult.getTotalResultsCount();
+            } catch (Exception e) {
+                // ignore errors
+            }
+            setShowNoHits(getResultList() == null || getResultList().isEmpty());
+        } else {
+            Helper.setFehlerMeldung("geonamesList", "Missing data", "mets_geoname_account_inactive");
+        }
+    }
 }
