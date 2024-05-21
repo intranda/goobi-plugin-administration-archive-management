@@ -132,6 +132,7 @@ public class ArchiveManagementAdministrationPluginTest {
             Helper.setFehlerMeldung(EasyMock.anyString());
         }
 
+        EasyMock.expect(Helper.getTranslation(EasyMock.anyString())).andReturn("").anyTimes();
         PowerMock.replay(Helper.class);
 
         PowerMock.mockStatic(ConfigurationHelper.class);
