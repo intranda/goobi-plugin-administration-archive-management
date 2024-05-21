@@ -2,14 +2,18 @@ package org.goobi.interfaces;
 
 import java.util.List;
 
-public interface IFieldValue {
+import org.goobi.production.properties.GndSearchProperty;
 
+public interface IFieldValue extends GndSearchProperty {
+
+    @Override
     public String getValue();
 
     public List<String> getMultiselectSelectedValues();
 
     public IMetadataField getField();
 
+    @Override
     public void setValue(String value);
 
     public void setMultiselectSelectedValues(List<String> values);

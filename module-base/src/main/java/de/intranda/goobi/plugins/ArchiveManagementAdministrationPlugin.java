@@ -257,7 +257,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         } catch (ConfigurationException e2) {
             log.error(e2);
         }
-
     }
 
     public String checkDBConnection() {

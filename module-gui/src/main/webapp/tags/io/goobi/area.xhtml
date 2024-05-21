@@ -7,20 +7,14 @@
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:x="http://myfaces.apache.org/tomahawk"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:goobiio="http://goobi.io/facelets">
+    xmlns:goobiio="http://goobi.io/facelets"
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
 <h:body>
     <ui:composition>
     
         <ui:fragment id="#{area}">
         
-<!-- 
-            <h:commandLink>
-                <h:outputText value="neuarea (#{showDetails})" />
-                <x:updateActionListener
-                    property="#{showDetails}"
-                    value="#{not showDetails}" />
-            </h:commandLink>
--->
+
         
             <span class="badge-area">
                 <x:dataList var="item" value="#{itemlist}">
@@ -36,7 +30,6 @@
             </span>
 
             <div style="grid-column: 1 / span 2; width: 100%" class="form-group metadata-row-area">
-                <!-- <h:outputText value="#{dataVisible}" /> -->
                 <x:dataList
                     var="item"
                     value="#{itemlist}"
@@ -84,6 +77,39 @@
                                     fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
                                     fieldvalue="#{field.value}" />
                             </ui:fragment>                            
+                            
+                            <ui:fragment rendered="#{item.fieldType=='gnd'}">
+                            
+                            <div class="control-label metadata-row-area-content">
+            <h:outputLabel
+                for="gnd"
+                value="#{msgs['plugin_administration_archive_'.concat(item.name)]}" />
+        </div>
+
+        <h:commandLink
+            styleClass="metadata-row-area-content close-field pull-right"
+            action="#{item.deleteValue(field)}">
+            <i class="fa fa-minus-circle"></i>
+            <f:ajax
+                execute="@this"
+                render=":#{ajaxid} :hierarchy" />
+        </h:commandLink>
+                       <div class="metadata-row-area-content metadata-row-area-content-white">      
+                            
+                                <intranda:formInputGndAjax
+                                    id="gnd"
+                                    name="gnd"
+                                    render="@form"
+                                    field="#{field}"
+                                    help=""
+                                    fieldStyle=""
+                                    displayAsRequired="false"
+                                    required="false"
+                                    label="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
+                                    displayLabel="false">
+                                </intranda:formInputGndAjax>                            
+                            </div>
+                            </ui:fragment>
                             
                         </x:dataList>
                     </ui:fragment>

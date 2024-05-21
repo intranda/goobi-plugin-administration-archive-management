@@ -1,5 +1,6 @@
 package de.intranda.goobi.plugins.model;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +8,9 @@ import org.apache.commons.lang.StringUtils;
 import org.goobi.interfaces.IFieldValue;
 import org.goobi.interfaces.IMetadataField;
 
+import de.intranda.digiverso.normdataimporter.NormDataImporter;
+import de.intranda.digiverso.normdataimporter.model.NormData;
+import de.sub.goobi.config.ConfigurationHelper;
 import lombok.Data;
 import lombok.ToString;
 
@@ -87,6 +91,67 @@ public class FieldValue implements IFieldValue {
             field.getEadEntry().setLabel(value);
         }
 
+    }
+
+    /* authority data */
+
+    private String searchValue;
+    private String searchOption;
+    private List<List<NormData>> dataList;
+    private List<NormData> currentData;
+    private boolean showNoHits;
+
+    @Override
+    public String getGndNumber() {
+        return authorityValue;
+    }
+
+    @Override
+    public void setGndNumber(String arg0) {
+        // do nothing
+    }
+
+    @Override
+    public void importGndData() {
+        for (NormData normdata : currentData) {
+            if ("NORM_IDENTIFIER".equals(normdata.getKey())) {
+                String gndNumber = normdata.getValues().get(0).getText();
+                authorityValue = gndNumber;
+                authorityType = "gnd";
+            } else if ("NORM_NAME".equals(normdata.getKey())) {
+                value = normdata.getValues().get(0).getText();
+            }
+        }
+    }
+
+    @Override
+    public void searchGnd() {
+        String val = "";
+        if (StringUtils.isBlank(getSearchOption()) && StringUtils.isBlank(getSearchValue())) {
+            setShowNoHits(true);
+            return;
+        }
+        if (StringUtils.isBlank(getSearchOption())) {
+            val = "dnb.nid=" + searchValue;
+        } else {
+            val = searchValue + " and BBG=" + searchOption;
+        }
+        URL url = convertToURLEscapingIllegalCharacters("http://normdata.intranda.com/normdata/gnd/woe/" + val);
+        String string = url.toString()
+                .replace("Ä", "%C3%84")
+                .replace("Ö", "%C3%96")
+                .replace("Ü", "%C3%9C")
+                .replace("ä", "%C3%A4")
+                .replace("ö", "%C3%B6")
+                .replace("ü", "%C3%BC")
+                .replace("ß", "%C3%9F");
+        if (ConfigurationHelper.getInstance().isUseProxy()) {
+            setDataList(NormDataImporter.importNormDataList(string, 3, ConfigurationHelper.getInstance().getProxyUrl(),
+                    ConfigurationHelper.getInstance().getProxyPort()));
+        } else {
+            setDataList(NormDataImporter.importNormDataList(string, 3, null, 0));
+        }
+        setShowNoHits(getDataList() == null || getDataList().isEmpty());
     }
 
 }
