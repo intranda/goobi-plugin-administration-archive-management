@@ -14,9 +14,12 @@ import org.goobi.interfaces.IFieldValue;
 import org.goobi.interfaces.IMetadataField;
 
 import de.intranda.digiverso.normdataimporter.NormDataImporter;
+import de.intranda.digiverso.normdataimporter.model.MarcRecord;
 import de.intranda.digiverso.normdataimporter.model.NormData;
+import de.intranda.digiverso.normdataimporter.model.TagDescription;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.Helper;
+import de.sub.goobi.metadaten.search.ViafSearch;
 import lombok.Data;
 import lombok.ToString;
 
@@ -32,8 +35,22 @@ public class FieldValue implements IFieldValue {
 
     // e.g. gnd, viaf, geonames
     private String authorityType;
-
     private String authorityValue;
+
+    // gnd search fields
+    private String searchValue;
+    private String searchOption;
+    private List<List<NormData>> dataList;
+    private List<NormData> currentData;
+    private boolean showNoHits;
+
+    // geonames search fields
+    private Toponym currentToponym;
+    private List<Toponym> resultList;
+    private int totalResults;
+
+    // viaf search fields
+    private ViafSearch viafSearch = new ViafSearch();
 
     public FieldValue(IMetadataField field) {
         this.field = field;
@@ -96,17 +113,9 @@ public class FieldValue implements IFieldValue {
         if (field.getXpath() != null && field.getXpath().contains("unittitle")) {
             field.getEadEntry().setLabel(value);
         }
-
     }
 
     /* authority data */
-
-    // gnd search fields
-    private String searchValue;
-    private String searchOption;
-    private List<List<NormData>> dataList;
-    private List<NormData> currentData;
-    private boolean showNoHits;
 
     @Override
     public String getGndNumber() {
@@ -114,8 +123,8 @@ public class FieldValue implements IFieldValue {
     }
 
     @Override
-    public void setGndNumber(String arg0) {
-        // do nothing
+    public void setGndNumber(String number) {
+        authorityValue = number;
     }
 
     @Override
@@ -161,11 +170,6 @@ public class FieldValue implements IFieldValue {
         setShowNoHits(getDataList() == null || getDataList().isEmpty());
     }
 
-    // geonames search fields
-    private Toponym currentToponym;
-    private List<Toponym> resultList;
-    private int totalResults;
-
     @Override
     public String getGeonamesNumber() {
         return getGndNumber();
@@ -173,7 +177,7 @@ public class FieldValue implements IFieldValue {
 
     @Override
     public void setGeonamesNumber(String number) {
-        authorityValue = number;
+        setGndNumber(number);
     }
 
     @Override
@@ -206,4 +210,49 @@ public class FieldValue implements IFieldValue {
             Helper.setFehlerMeldung("geonamesList", "Missing data", "mets_geoname_account_inactive");
         }
     }
+
+    @Override
+    public String getViafNumber() {
+        return getGndNumber();
+    }
+
+    @Override
+    public void setViafNumber(String number) {
+        setGndNumber(number);
+    }
+
+    @Override
+    public void importViafData() {
+        if (viafSearch.getCurrentDatabase() != null) {
+            MarcRecord recordToImport = NormDataImporter.getSingleMarcRecord(viafSearch.getCurrentDatabase().getMarcRecordUrl());
+
+            List<String> names = new ArrayList<>();
+            for (TagDescription tag : viafSearch.getMainTagList()) {
+                if (tag.getSubfieldCode() == null) {
+                    String val = recordToImport.getControlfieldValue(tag.getDatafieldTag());
+                    if (StringUtils.isNotBlank(val)) {
+                        names.add(val);
+                    }
+                } else {
+                    List<String> list = recordToImport.getFieldValues(tag.getDatafieldTag(), tag.getInd1(), tag.getInd2(), tag.getSubfieldCode());
+                    if (list != null) {
+                        names.addAll(list);
+                    }
+                }
+            }
+            if (!names.isEmpty()) {
+                authorityType = "viaf";
+                authorityValue = viafSearch.getCurrentDatabase().getMarcRecordUrl();
+                value = names.get(0);
+            }
+        }
+    }
+
+    @Override
+    public void searchViaf() {
+        viafSearch.setSource(field.getViafSearchFields());
+        viafSearch.setField(field.getViafDisplayFields());
+        viafSearch.performSearchRequest();
+    }
+
 }

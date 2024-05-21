@@ -403,7 +403,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 Element list = processinfoElement.getChild("list", ns);
                 List<Element> entries = list.getChildren("item", ns);
                 IMetadataField editor =
-                        new EadMetadataField("editorName", 7, null, null, false, true, true, "readonly", null, false, null, null, false);
+                        new EadMetadataField("editorName", 7, null, null, false, true, true, "readonly", null, false, null, null, false, null, null);
 
                 for (Element item : entries) {
                     editorList.add(item.getText());
@@ -582,7 +582,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
         IMetadataField toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable(),
                 emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild(), emf.getValidationType(),
-                emf.getRegularExpression(), emf.isSearchable());
+                emf.getRegularExpression(), emf.isSearchable(), emf.getViafSearchFields(), emf.getViafDisplayFields());
         toAdd.setValidationError(emf.getValidationError());
         toAdd.setSelectItemList(emf.getSelectItemList());
         toAdd.setEadEntry(entry);
@@ -695,7 +695,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     hc.getString("@xpathType", "element"), hc.getBoolean("@repeatable", false), hc.getBoolean("@visible", true),
                     hc.getBoolean("@showField", false), hc.getString("@fieldType", "input"), hc.getString("@rulesetName", null),
                     hc.getBoolean("@importMetadataInChild", false), hc.getString("@validationType", null), hc.getString("@regularExpression"),
-                    hc.getBoolean("@searchable", false));
+                    hc.getBoolean("@searchable", false), hc.getString("@searchFields", null), hc.getString("@displayFields", null));
             configuredFields.add(field);
             if (field.isSearchable()) {
                 advancedSearchFields.add(field.getName());

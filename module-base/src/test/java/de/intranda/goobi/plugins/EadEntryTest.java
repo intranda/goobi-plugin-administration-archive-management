@@ -185,7 +185,8 @@ public class EadEntryTest {
     @Test
     public void testEadMetadataFieldAddValue() {
         EadEntry entry = new EadEntry(0, 0);
-        EadMetadataField title = new EadMetadataField("input", 1, "unittitle", "element", false, true, true, "input", null, false, null, null, false);
+        EadMetadataField title =
+                new EadMetadataField("input", 1, "unittitle", "element", false, true, true, "input", null, false, null, null, false, null, null);
         title.setEadEntry(entry);
         assertFalse(title.isFilled());
         title.addValue();
@@ -214,7 +215,7 @@ public class EadEntryTest {
         assertNull(title.getRegularExpression());
 
         EadMetadataField repeatable =
-                new EadMetadataField("input", 1, "something", "element", true, true, true, "input", null, false, null, null, false);
+                new EadMetadataField("input", 1, "something", "element", true, true, true, "input", null, false, null, null, false, null, null);
         repeatable.setEadEntry(entry);
         assertFalse(repeatable.isFilled());
         repeatable.addValue();
@@ -226,7 +227,8 @@ public class EadEntryTest {
     @Test
     public void testEadMetadataFieldAddFieldValue() {
         IEadEntry entry = new EadEntry(0, 0);
-        EadMetadataField title = new EadMetadataField("input", 1, "something", "element", false, true, true, "input", null, false, null, null, false);
+        EadMetadataField title =
+                new EadMetadataField("input", 1, "something", "element", false, true, true, "input", null, false, null, null, false, null, null);
         title.setEadEntry(entry);
         assertFalse(title.isFilled());
         title.addFieldValue(new FieldValue(title));
@@ -237,7 +239,7 @@ public class EadEntryTest {
         assertEquals(1, title.getValues().size());
 
         EadMetadataField repeatable =
-                new EadMetadataField("dropdown", 1, "something", "element", true, true, true, "dropdown", null, false, null, null, false);
+                new EadMetadataField("dropdown", 1, "something", "element", true, true, true, "dropdown", null, false, null, null, false, null, null);
         repeatable.setEadEntry(entry);
         assertFalse(repeatable.isFilled());
         repeatable.addFieldValue(new FieldValue(repeatable));

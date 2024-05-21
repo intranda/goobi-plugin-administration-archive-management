@@ -4,8 +4,9 @@ import java.util.List;
 
 import org.goobi.production.properties.GeonamesSearchProperty;
 import org.goobi.production.properties.GndSearchProperty;
+import org.goobi.production.properties.ViafSearchProperty;
 
-public interface IFieldValue extends GndSearchProperty, GeonamesSearchProperty {
+public interface IFieldValue extends GndSearchProperty, GeonamesSearchProperty, ViafSearchProperty {
 
     @Override
     public String getValue();
