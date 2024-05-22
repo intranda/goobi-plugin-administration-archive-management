@@ -42,7 +42,15 @@
 
 
         <!-- =============================== Identity Statement Area ============================== -->
-        
+                <!-- repository data group -->
+        <metadata xpath="./ead:archdesc/ead:did/ead:repository" group="true" name="repository" level="1" repeatable="false" visible="true">
+            <metadata xpath="@label" xpathType="attribute" name="repositoryLabel" level="1" repeatable="false" visible="false" />
+            <metadata xpath="ead:corpname[@role='ROLE']" xpathType="element" name="repositorycreator" level="1" repeatable="false" visible="false" />
+            <metadata xpath="ead:corpname[@id='Archon Code']" xpathType="element" name="repositorycreatorcode" level="1" repeatable="false" visible="false" />
+            <metadata xpath="ead:address/ead:addressline" xpathType="element" name="repositorycreatorcode" level="1" repeatable="true" visible="false" />
+            <metadata xpath="ead:extref/@href" xpathType="attribute" name="extrefhref" level="1" repeatable="true" visible="false" />
+            <metadata xpath="ead:extref" xpathType="element" name="extref" level="1" repeatable="true" visible="false" />
+        </metadata>
         <!-- Agency code / Agency code -->
         <metadata xpath="./ead:control/ead:maintenanceagency/ead:agencycode" xpathType="element" name="agencycode" level="1" repeatable="false" fieldType="input"/>
         

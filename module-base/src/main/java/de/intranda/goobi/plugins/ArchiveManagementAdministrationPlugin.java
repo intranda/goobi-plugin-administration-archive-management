@@ -702,8 +702,18 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             if (field.isSearchable()) {
                 advancedSearchFields.add(field.getName());
             }
+            // groups
             if (field.isGroup()) {
-                // TODO groups
+                for (HierarchicalConfiguration sub : hc.configurationsAt("/metadata")) {
+                    IMetadataField subfield = new EadMetadataField(sub.getString("@name"), sub.getInt("@level"), sub.getString("@xpath"),
+                            sub.getString("@xpathType", "element"), sub.getBoolean("@repeatable", false), sub.getBoolean("@visible", true),
+                            sub.getBoolean("@showField", false), sub.getString("@fieldType", "input"), sub.getString("@rulesetName", null),
+                            sub.getBoolean("@importMetadataInChild", false), sub.getString("@validationType", null),
+                            sub.getString("@regularExpression"),
+                            sub.getBoolean("@searchable", false), sub.getString("@searchFields", null), sub.getString("@displayFields", null),
+                            false);
+                    field.addSubfield(subfield);
+                }
             }
 
             field.setValidationError(hc.getString("/validationError"));
@@ -1098,6 +1108,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     private void createEadXmlField(Element xmlElement, boolean isMainElement, IMetadataField emf, IFieldValue metadataValue) {
+        if (emf.isGroup()) {
+            // TODO
+
+        } else {
+
+        }
+
         Element currentElement = xmlElement;
         String xpath = emf.getXpath();
         // TODO groups
