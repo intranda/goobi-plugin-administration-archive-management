@@ -89,4 +89,16 @@ public interface IMetadataField {
     public String getViafSearchFields();
 
     public String getViafDisplayFields();
+
+    // metadata groups / composite fields
+    public boolean isGroup();
+
+    public void setGroup(boolean group);
+
+    public List<IMetadataField> getSubfields();
+
+    public void setSubfields(List<IMetadataField> fields);
+
+    public void addSubfield(IMetadataField field);
+
 }

@@ -82,9 +82,13 @@ public class EadMetadataField implements IMetadataField {
     private String viafSearchFields;
     private String viafDisplayFields;
 
+    // metadata groups
+    private boolean group;
+    private List<IMetadataField> subfields = new ArrayList<>();
+
     public EadMetadataField(String name, Integer level, String xpath, String xpathType, boolean repeatable, boolean visible, boolean showField,
             String fieldType, String metadataName, boolean importMetadataInChild, String validationType, String regularExpression,
-            boolean searchable, String viafSearchFields, String viafDisplayFields) {
+            boolean searchable, String viafSearchFields, String viafDisplayFields, boolean group) {
         this.name = name;
         this.level = level;
         this.xpath = xpath;
@@ -100,6 +104,7 @@ public class EadMetadataField implements IMetadataField {
         this.searchable = searchable;
         this.viafSearchFields = viafSearchFields;
         this.viafDisplayFields = viafDisplayFields;
+        this.group = group;
     }
 
     @Override
@@ -158,8 +163,10 @@ public class EadMetadataField implements IMetadataField {
     @Override
     public IMetadataField copy(String prefix, String suffix) {
         IMetadataField field = new EadMetadataField(name, level, xpath, xpathType, repeatable, visible, showField,
-                fieldType, metadataName, importMetadataInChild, validationType, regularExpression, searchable, viafSearchFields, viafDisplayFields);
+                fieldType, metadataName, importMetadataInChild, validationType, regularExpression, searchable, viafSearchFields, viafDisplayFields,
+                group);
         field.setSelectItemList(selectItemList);
+        // TODO group
         for (IFieldValue val : values) {
             IFieldValue newValue = new FieldValue(field);
             newValue.setValue(prefix + val.getValue() + suffix);
@@ -173,5 +180,10 @@ public class EadMetadataField implements IMetadataField {
     @Override
     public IFieldValue createFieldValue() {
         return new FieldValue(this);
+    }
+
+    @Override
+    public void addSubfield(IMetadataField field) {
+        subfields.add(field);
     }
 }

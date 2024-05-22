@@ -403,7 +403,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 Element list = processinfoElement.getChild("list", ns);
                 List<Element> entries = list.getChildren("item", ns);
                 IMetadataField editor =
-                        new EadMetadataField("editorName", 7, null, null, false, true, true, "readonly", null, false, null, null, false, null, null);
+                        new EadMetadataField("editorName", 7, null, null, false, true, true, "readonly", null, false, null, null, false, null, null,
+                                false);
 
                 for (Element item : entries) {
                     editorList.add(item.getText());
@@ -582,11 +583,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
         IMetadataField toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable(),
                 emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild(), emf.getValidationType(),
-                emf.getRegularExpression(), emf.isSearchable(), emf.getViafSearchFields(), emf.getViafDisplayFields());
+                emf.getRegularExpression(), emf.isSearchable(), emf.getViafSearchFields(), emf.getViafDisplayFields(), emf.isGroup());
         toAdd.setValidationError(emf.getValidationError());
         toAdd.setSelectItemList(emf.getSelectItemList());
         toAdd.setEadEntry(entry);
-
+        // TODO groups
         if (values != null && !values.isEmpty()) {
             toAdd.setShowField(true);
 
@@ -695,10 +696,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     hc.getString("@xpathType", "element"), hc.getBoolean("@repeatable", false), hc.getBoolean("@visible", true),
                     hc.getBoolean("@showField", false), hc.getString("@fieldType", "input"), hc.getString("@rulesetName", null),
                     hc.getBoolean("@importMetadataInChild", false), hc.getString("@validationType", null), hc.getString("@regularExpression"),
-                    hc.getBoolean("@searchable", false), hc.getString("@searchFields", null), hc.getString("@displayFields", null));
+                    hc.getBoolean("@searchable", false), hc.getString("@searchFields", null), hc.getString("@displayFields", null),
+                    hc.getBoolean("group", false));
             configuredFields.add(field);
             if (field.isSearchable()) {
                 advancedSearchFields.add(field.getName());
+            }
+            if (field.isGroup()) {
+                // TODO groups
             }
 
             field.setValidationError(hc.getString("/validationError"));
@@ -1095,6 +1100,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private void createEadXmlField(Element xmlElement, boolean isMainElement, IMetadataField emf, IFieldValue metadataValue) {
         Element currentElement = xmlElement;
         String xpath = emf.getXpath();
+        // TODO groups
+
         if (xpath.endsWith("[1]")) {
             xpath = xpath.replace("[1]", "");
         }
@@ -1787,6 +1794,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     //  create metadata, add it to logical element
     private void createModsMetadata(Prefs prefs, IMetadataField emf, DocStruct logical) {
+        // TODO groups
         if (StringUtils.isNotBlank(emf.getMetadataName())) {
             for (IFieldValue fv : emf.getValues()) {
                 if (!fv.getMultiselectSelectedValues().isEmpty()) {
@@ -2389,16 +2397,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     public void duplicateEadFile() {
-        // TODO
-        // save current node
-        // get all nodes from db
-        // load metadata for all nodes
-        // create new RecordGroup
-        // duplicate all nodes using the deepCopy option
-        // save new RecordGroup and nodes
+        // TODO save current data
+        // TODO create new recordGroup
+        // TODO duplicate rootElement and its children
+        // TODO save new data
+        // TODO load copy?
 
-        // replace node ids
-        // OR create ead file with a new name, import file
     }
 
     public IConfiguration getDuplicationConfiguration() {

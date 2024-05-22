@@ -573,6 +573,8 @@ public class EadEntry implements IEadEntry {
 
     @Override
     public String getDataAsXml() {
+        // TODO group
+
         StringBuilder xml = new StringBuilder();
         xml.append("<xml>");
         for (IMetadataField field : identityStatementAreaList) {
