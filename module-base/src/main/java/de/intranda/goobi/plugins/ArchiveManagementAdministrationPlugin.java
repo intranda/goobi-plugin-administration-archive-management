@@ -456,13 +456,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     for (IMetadataField sub : emf.getSubfields()) {
                         List<ExtendendValue> valueList = getValuesFromXml(groupElement, sub);
 
-                        IMetadataField toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(),
-                                emf.isRepeatable(),
-                                emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild(),
-                                emf.getValidationType(),
-                                emf.getRegularExpression(), emf.isSearchable(), emf.getViafSearchFields(), emf.getViafDisplayFields(), emf.isGroup());
-                        toAdd.setValidationError(emf.getValidationError());
-                        toAdd.setSelectItemList(emf.getSelectItemList());
+                        IMetadataField toAdd = new EadMetadataField(sub.getName(), sub.getLevel(), sub.getXpath(), sub.getXpathType(),
+                                sub.isRepeatable(),
+                                sub.isVisible(), sub.isShowField(), sub.getFieldType(), sub.getMetadataName(), sub.isImportMetadataInChild(),
+                                sub.getValidationType(),
+                                sub.getRegularExpression(), sub.isSearchable(), sub.getViafSearchFields(), sub.getViafDisplayFields(), sub.isGroup());
+                        toAdd.setValidationError(sub.getValidationError());
+                        toAdd.setSelectItemList(sub.getSelectItemList());
                         toAdd.setEadEntry(entry);
                         if (values != null && !values.isEmpty()) {
                             toAdd.setShowField(true);
@@ -515,8 +515,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                         default:
                     }
                 }
-
-                // TODO
             } else {
                 List<ExtendendValue> valueList = getValuesFromXml(element, emf);
                 addFieldToEntry(entry, emf, valueList);
@@ -775,68 +773,61 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         advancedSearch.add(new StringPair());
 
         // configurations for metadata
-        for (HierarchicalConfiguration hc : config.configurationsAt("/metadata")) {
-            IMetadataField field = new EadMetadataField(hc.getString("@name"), hc.getInt("@level"), hc.getString("@xpath"),
-                    hc.getString("@xpathType", "element"), hc.getBoolean("@repeatable", false), hc.getBoolean("@visible", true),
-                    hc.getBoolean("@showField", false), hc.getString("@fieldType", "input"), hc.getString("@rulesetName", null),
-                    hc.getBoolean("@importMetadataInChild", false), hc.getString("@validationType", null), hc.getString("@regularExpression"),
-                    hc.getBoolean("@searchable", false), hc.getString("@searchFields", null), hc.getString("@displayFields", null),
-                    hc.getBoolean("@group", false));
+        for (HierarchicalConfiguration fieldConfig : config.configurationsAt("/metadata")) {
+            IMetadataField field = new EadMetadataField(fieldConfig.getString("@name"), fieldConfig.getInt("@level"), fieldConfig.getString("@xpath"),
+                    fieldConfig.getString("@xpathType", "element"), fieldConfig.getBoolean("@repeatable", false),
+                    fieldConfig.getBoolean("@visible", true),
+                    fieldConfig.getBoolean("@showField", false), fieldConfig.getString("@fieldType", "input"),
+                    fieldConfig.getString("@rulesetName", null),
+                    fieldConfig.getBoolean("@importMetadataInChild", false), fieldConfig.getString("@validationType", null),
+                    fieldConfig.getString("@regularExpression"),
+                    fieldConfig.getBoolean("@searchable", false), fieldConfig.getString("@searchFields", null),
+                    fieldConfig.getString("@displayFields", null),
+                    fieldConfig.getBoolean("@group", false));
+            configureField(fieldConfig, field);
             configuredFields.add(field);
-            if (field.isSearchable()) {
-                advancedSearchFields.add(field.getName());
-            }
             // groups
             if (field.isGroup()) {
-                for (HierarchicalConfiguration sub : hc.configurationsAt("/metadata")) {
-                    IMetadataField subfield = new EadMetadataField(sub.getString("@name"), sub.getInt("@level"), sub.getString("@xpath"),
-                            sub.getString("@xpathType", "element"), sub.getBoolean("@repeatable", false), sub.getBoolean("@visible", true),
-                            sub.getBoolean("@showField", false), sub.getString("@fieldType", "input"), sub.getString("@rulesetName", null),
-                            sub.getBoolean("@importMetadataInChild", false), sub.getString("@validationType", null),
-                            sub.getString("@regularExpression"),
-                            sub.getBoolean("@searchable", false), sub.getString("@searchFields", null), sub.getString("@displayFields", null),
+                for (HierarchicalConfiguration subfieldConfig : fieldConfig.configurationsAt("/metadata")) {
+                    IMetadataField subfield = new EadMetadataField(subfieldConfig.getString("@name"), subfieldConfig.getInt("@level"),
+                            subfieldConfig.getString("@xpath"),
+                            subfieldConfig.getString("@xpathType", "element"), subfieldConfig.getBoolean("@repeatable", false),
+                            subfieldConfig.getBoolean("@visible", true),
+                            subfieldConfig.getBoolean("@showField", false), subfieldConfig.getString("@fieldType", "input"),
+                            subfieldConfig.getString("@rulesetName", null),
+                            subfieldConfig.getBoolean("@importMetadataInChild", false), subfieldConfig.getString("@validationType", null),
+                            subfieldConfig.getString("@regularExpression"),
+                            subfieldConfig.getBoolean("@searchable", false), subfieldConfig.getString("@searchFields", null),
+                            subfieldConfig.getString("@displayFields", null),
                             false);
+                    configureField(subfieldConfig, subfield);
                     field.addSubfield(subfield);
                 }
             }
 
-            field.setValidationError(hc.getString("/validationError"));
-            if ("dropdown".equals(field.getFieldType()) || "multiselect".equals(field.getFieldType())) {
-                List<String> valueList = Arrays.asList(hc.getStringArray("/value"));
-                field.setSelectItemList(valueList);
-            } else if ("vocabulary".equals(field.getFieldType())) {
-                String vocabularyName = hc.getString("/vocabulary");
-                List<String> searchParameter = Arrays.asList(hc.getStringArray("/searchParameter"));
-                List<String> iFieldValueList = new ArrayList<>();
-                if (searchParameter == null) {
-                    Vocabulary currentVocabulary = VocabularyManager.getVocabularyByTitle(vocabularyName);
-                    if (currentVocabulary != null) {
-                        VocabularyManager.getAllRecords(currentVocabulary);
-                        if (currentVocabulary != null && currentVocabulary.getId() != null) {
-                            for (VocabRecord vr : currentVocabulary.getRecords()) {
-                                for (Field f : vr.getFields()) {
-                                    if (f.getDefinition().isMainEntry()) {
-                                        iFieldValueList.add(f.getValue());
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    List<StringPair> vocabularySearchFields = new ArrayList<>();
-                    for (String fieldname : searchParameter) {
-                        String[] parts = fieldname.trim().split("=");
-                        if (parts.length > 1) {
-                            String fieldName = parts[0];
-                            String value = parts[1];
-                            StringPair sp = new StringPair(fieldName, value);
-                            vocabularySearchFields.add(sp);
-                        }
-                    }
-                    List<VocabRecord> records = VocabularyManager.findRecords(vocabularyName, vocabularySearchFields);
-                    if (records != null && !records.isEmpty()) {
-                        for (VocabRecord vr : records) {
+        }
+        ArchiveManagementManager.setConfiguredNodes(configuredNodes);
+    }
+
+    private void configureField(HierarchicalConfiguration fieldConfig, IMetadataField field) {
+        if (field.isSearchable()) {
+            advancedSearchFields.add(field.getName());
+        }
+
+        field.setValidationError(fieldConfig.getString("/validationError"));
+        if ("dropdown".equals(field.getFieldType()) || "multiselect".equals(field.getFieldType())) {
+            List<String> valueList = Arrays.asList(fieldConfig.getStringArray("/value"));
+            field.setSelectItemList(valueList);
+        } else if ("vocabulary".equals(field.getFieldType())) {
+            String vocabularyName = fieldConfig.getString("/vocabulary");
+            List<String> searchParameter = Arrays.asList(fieldConfig.getStringArray("/searchParameter"));
+            List<String> iFieldValueList = new ArrayList<>();
+            if (searchParameter == null) {
+                Vocabulary currentVocabulary = VocabularyManager.getVocabularyByTitle(vocabularyName);
+                if (currentVocabulary != null) {
+                    VocabularyManager.getAllRecords(currentVocabulary);
+                    if (currentVocabulary != null && currentVocabulary.getId() != null) {
+                        for (VocabRecord vr : currentVocabulary.getRecords()) {
                             for (Field f : vr.getFields()) {
                                 if (f.getDefinition().isMainEntry()) {
                                     iFieldValueList.add(f.getValue());
@@ -846,11 +837,31 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                         }
                     }
                 }
-                field.setSelectItemList(iFieldValueList);
+            } else {
+                List<StringPair> vocabularySearchFields = new ArrayList<>();
+                for (String fieldname : searchParameter) {
+                    String[] parts = fieldname.trim().split("=");
+                    if (parts.length > 1) {
+                        String fieldName = parts[0];
+                        String value = parts[1];
+                        StringPair sp = new StringPair(fieldName, value);
+                        vocabularySearchFields.add(sp);
+                    }
+                }
+                List<VocabRecord> records = VocabularyManager.findRecords(vocabularyName, vocabularySearchFields);
+                if (records != null && !records.isEmpty()) {
+                    for (VocabRecord vr : records) {
+                        for (Field f : vr.getFields()) {
+                            if (f.getDefinition().isMainEntry()) {
+                                iFieldValueList.add(f.getValue());
+                                break;
+                            }
+                        }
+                    }
+                }
             }
-
+            field.setSelectItemList(iFieldValueList);
         }
-        ArchiveManagementManager.setConfiguredNodes(configuredNodes);
     }
 
     public void resetFlatList() {

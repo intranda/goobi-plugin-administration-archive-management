@@ -35,7 +35,14 @@ public class ArchiveManagementManager implements Serializable {
 
     private static List<INodeType> configuredNodes;
 
-    private static Pattern pattern = Pattern.compile("<([^<]+?)(?: source=\"(.+)\" value=\"(.+)\")?>([^<]+)<\\/[^<]+?>");
+    // $1 = metadata name, $2=authority type, $3 = authority value, $4 = metadata value
+    private static Pattern metadataPattern = Pattern.compile("<([^<\\/ ]+?)(?: source=\"(.+)\" value=\"(.+)\")?>([^<]+)<\\/[^<]+?>");
+
+    // $1 = group name
+    private static Pattern groupPattern = Pattern.compile("<group name=\"(.+)?\">[\\w\\W]+?<\\/group>"); //NOSONAR \w\W is needed because '.' does not include newline
+
+    // $1 = metadata name, $2=authority type, $3 = authority value, $4 = metadata value
+    private static Pattern subfieldPattern = Pattern.compile("<field name=\"(.*?)\"(?: source=\"(.+)\" value=\"(.+)\")?>([^<]+)<\\/field>");
 
     public static void setConfiguredNodes(List<INodeType> configuredNodes) {
         ArchiveManagementManager.configuredNodes = configuredNodes;
@@ -319,7 +326,7 @@ public class ArchiveManagementManager implements Serializable {
         Map<String, List<ExtendendValue>> metadataMap = new HashMap<>();
         if (StringUtils.isNotBlank(data)) {
             data = data.replace("<xml>", "").replace("</xml>", "");
-            for (Matcher m = pattern.matcher(data); m.find();) {
+            for (Matcher m = metadataPattern.matcher(data); m.find();) {
                 MatchResult mr = m.toMatchResult();
                 String metadata = mr.group(1);
                 String authorityType = mr.group(2);
@@ -329,6 +336,26 @@ public class ArchiveManagementManager implements Serializable {
                 values.add(new ExtendendValue(value, authorityType, authorityValue));
                 metadataMap.put(metadata, values);
             }
+
+            for (Matcher m = groupPattern.matcher(data); m.find();) {
+
+                MatchResult mr = m.toMatchResult();
+                String group = mr.group();
+                String groupName = mr.group(1);
+
+                for (Matcher subFields = subfieldPattern.matcher(group); subFields.find();) {
+                    MatchResult sub = subFields.toMatchResult();
+                    System.out.println("********");
+                    System.out.println("total: " + sub.group());
+                    System.out.println("name: " + sub.group(1));
+                    System.out.println("auth type: " + sub.group(2));
+                    System.out.println("auth val: " + sub.group(3));
+                    System.out.println("val: " + sub.group(4));
+
+                }
+
+            }
+
         }
         return metadataMap;
     }
