@@ -781,7 +781,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     hc.getBoolean("@showField", false), hc.getString("@fieldType", "input"), hc.getString("@rulesetName", null),
                     hc.getBoolean("@importMetadataInChild", false), hc.getString("@validationType", null), hc.getString("@regularExpression"),
                     hc.getBoolean("@searchable", false), hc.getString("@searchFields", null), hc.getString("@displayFields", null),
-                    hc.getBoolean("group", false));
+                    hc.getBoolean("@group", false));
             configuredFields.add(field);
             if (field.isSearchable()) {
                 advancedSearchFields.add(field.getName());

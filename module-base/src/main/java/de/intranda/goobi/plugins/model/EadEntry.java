@@ -573,8 +573,6 @@ public class EadEntry implements IEadEntry {
 
     @Override
     public String getDataAsXml() {
-        // TODO group
-
         StringBuilder xml = new StringBuilder();
         xml.append("<xml>");
         for (IMetadataField field : identityStatementAreaList) {
@@ -608,23 +606,28 @@ public class EadEntry implements IEadEntry {
     }
 
     private void createXmlField(StringBuilder xml, IMetadataField field) {
-        for (IFieldValue val : field.getValues()) {
-            xml.append("<").append(field.getName());
-            // save authority data
-            if (StringUtils.isNotBlank(val.getAuthorityValue()) && StringUtils.isNotBlank(val.getAuthorityType())) {
-                xml.append(" source=\"").append(val.getAuthorityType()).append("\" value=\"").append(val.getAuthorityValue()).append("\"");
-            }
-            xml.append(">");
-            if (StringUtils.isNotBlank(val.getValue())) {
-                // mask ending backslash
-                String actualValue = val.getValue();
-                if (actualValue.endsWith("\\")) {
-                    actualValue = val.getValue() + "\\";
+        // TODO group
+        if (field.isGroup()) {
+
+        } else {
+
+            for (IFieldValue val : field.getValues()) {
+                xml.append("<").append(field.getName());
+                // save authority data
+                if (StringUtils.isNotBlank(val.getAuthorityValue()) && StringUtils.isNotBlank(val.getAuthorityType())) {
+                    xml.append(" source=\"").append(val.getAuthorityType()).append("\" value=\"").append(val.getAuthorityValue()).append("\"");
                 }
-                xml.append(MySQLHelper.escapeSql(actualValue.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")));
+                xml.append(">");
+                if (StringUtils.isNotBlank(val.getValue())) {
+                    // mask ending backslash
+                    String actualValue = val.getValue();
+                    if (actualValue.endsWith("\\")) {
+                        actualValue = val.getValue() + "\\";
+                    }
+                    xml.append(MySQLHelper.escapeSql(actualValue.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")));
+                }
+                xml.append("</").append(field.getName()).append(">");
             }
-            xml.append("</").append(field.getName()).append(">");
         }
     }
-
 }
