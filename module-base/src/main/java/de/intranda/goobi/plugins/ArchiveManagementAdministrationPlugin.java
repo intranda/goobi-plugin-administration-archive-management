@@ -1223,8 +1223,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         if (fields.length > 1) {
             for (int i = 0; i < fields.length - 2; i++) {
                 String field = fields[i];
-                // reuse elements until the last element
-                groupElement = findElement(field, groupElement);
+                if (!".".equals(field)) {
+                    // reuse elements until the last element
+                    groupElement = findElement(field, groupElement);
+                }
             }
         }
         if (fields.length > 0) {
@@ -1235,11 +1237,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 conditions = lastElementName.substring(lastElementName.indexOf("["));
                 lastElementName = lastElementName.substring(0, lastElementName.indexOf("["));
             }
+            lastElementName = lastElementName.replace("ead:", "");
             groupElement = createXmlElement(groupElement, lastElementName, conditions);
         }
         for (String field : fields) {
             field = field.trim();
-            groupElement = findElement(field, groupElement);
+            if (!".".equals(field)) {
+                groupElement = findElement(field, groupElement);
+            }
         }
 
         for (IMetadataField subfield : groupField.getSubfields()) {
