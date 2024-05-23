@@ -606,11 +606,34 @@ public class EadEntry implements IEadEntry {
     }
 
     private void createXmlField(StringBuilder xml, IMetadataField field) {
-        // TODO group
         if (field.isGroup()) {
-
+            xml.append("<group name=\"").append(field.getName()).append("\">");
+            for (IMetadataField subfield : field.getSubfields()) {
+                for (IFieldValue val : subfield.getValues()) {
+                    if (StringUtils.isNotBlank(val.getValue())) {
+                        xml.append("<field name=\"").append(subfield.getName()).append("\"");
+                        if (StringUtils.isNotBlank(val.getAuthorityValue()) && StringUtils.isNotBlank(val.getAuthorityType())) {
+                            xml.append(" source=\"")
+                                    .append(val.getAuthorityType())
+                                    .append("\" value=\"")
+                                    .append(val.getAuthorityValue())
+                                    .append("\"");
+                        }
+                        xml.append(">");
+                        if (StringUtils.isNotBlank(val.getValue())) {
+                            // mask ending backslash
+                            String actualValue = val.getValue();
+                            if (actualValue.endsWith("\\")) {
+                                actualValue = val.getValue() + "\\";
+                            }
+                            xml.append(MySQLHelper.escapeSql(actualValue.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")));
+                        }
+                        xml.append("</field>");
+                    }
+                }
+            }
+            xml.append("</group>");
         } else {
-
             for (IFieldValue val : field.getValues()) {
                 xml.append("<").append(field.getName());
                 // save authority data
