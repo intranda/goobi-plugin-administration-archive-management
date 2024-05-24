@@ -40,7 +40,9 @@ import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.IFieldValue;
 import org.goobi.interfaces.IMetadataField;
 import org.goobi.interfaces.INodeType;
+import org.goobi.interfaces.IValue;
 import org.goobi.model.ExtendendValue;
+import org.goobi.model.GroupValue;
 import org.goobi.production.cli.helper.StringPair;
 import org.goobi.production.enums.PluginType;
 import org.goobi.vocabulary.Field;
@@ -454,7 +456,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     // for each sub element
 
                     for (IMetadataField sub : emf.getSubfields()) {
-                        List<ExtendendValue> valueList = getValuesFromXml(groupElement, sub);
+                        List<IValue> valueList = getValuesFromXml(groupElement, sub);
 
                         IMetadataField toAdd = new EadMetadataField(sub.getName(), sub.getLevel(), sub.getXpath(), sub.getXpathType(),
                                 sub.isRepeatable(),
@@ -468,7 +470,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                             toAdd.setShowField(true);
 
                             // split single value into multiple fields
-                            for (ExtendendValue val : valueList) {
+                            for (IValue value : valueList) {
+                                ExtendendValue val = (ExtendendValue) value;
                                 IFieldValue fv = new FieldValue(toAdd);
                                 String stringValue = val.getValue();
                                 fv.setAuthorityType(val.getAuthorityType());
@@ -490,34 +493,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                         }
                         groupClone.addSubfield(toAdd);
                     }
-                    switch (groupClone.getLevel()) {
-                        case 1:
-                            entry.getIdentityStatementAreaList().add(groupClone);
-                            break;
-                        case 2:
-                            entry.getContextAreaList().add(groupClone);
-                            break;
-                        case 3:
-                            entry.getContentAndStructureAreaAreaList().add(groupClone);
-                            break;
-                        case 4:
-                            entry.getAccessAndUseAreaList().add(groupClone);
-                            break;
-                        case 5:
-                            entry.getAlliedMaterialsAreaList().add(groupClone);
-                            break;
-                        case 6:
-                            entry.getNotesAreaList().add(groupClone);
-                            break;
-                        case 7:
-                            entry.getDescriptionControlAreaList().add(groupClone);
-                            break;
-                        default:
-                    }
+                    addFieldToNode(entry, groupClone);
                 }
             } else {
-                List<ExtendendValue> valueList = getValuesFromXml(element, emf);
-                addFieldToEntry(entry, emf, valueList);
+                List<IValue> valueList = getValuesFromXml(element, emf);
+                IMetadataField toAdd = addFieldToEntry(entry, emf, valueList);
+                addFieldToNode(entry, toAdd);
             }
         }
 
@@ -602,20 +583,20 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         return entry;
     }
 
-    private List<ExtendendValue> getValuesFromXml(Element element, IMetadataField emf) {
-        List<ExtendendValue> valueList = new ArrayList<>();
+    private List<IValue> getValuesFromXml(Element element, IMetadataField emf) {
+        List<IValue> valueList = new ArrayList<>();
         if ("text".equalsIgnoreCase(emf.getXpathType())) {
             XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, ns);
             List<Text> values = engine.evaluate(element);
             if (emf.isRepeatable()) {
                 for (Text value : values) {
                     String stringValue = value.getValue();
-                    valueList.add(new ExtendendValue(stringValue, null, null));
+                    valueList.add(new ExtendendValue(emf.getName(), stringValue, null, null));
                 }
             } else if (!values.isEmpty()) {
                 Text value = values.get(0);
                 String stringValue = value.getValue();
-                valueList.add(new ExtendendValue(stringValue, null, null));
+                valueList.add(new ExtendendValue(emf.getName(), stringValue, null, null));
             }
         } else if ("attribute".equalsIgnoreCase(emf.getXpathType())) {
             XPathExpression<Attribute> engine = xFactory.compile(emf.getXpath(), Filters.attribute(), null, ns);
@@ -624,12 +605,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             if (emf.isRepeatable()) {
                 for (Attribute value : values) {
                     String stringValue = value.getValue();
-                    valueList.add(new ExtendendValue(stringValue, null, null));
+                    valueList.add(new ExtendendValue(emf.getName(), stringValue, null, null));
                 }
             } else if (!values.isEmpty()) {
                 Attribute value = values.get(0);
                 String stringValue = value.getValue();
-                valueList.add(new ExtendendValue(stringValue, null, null));
+                valueList.add(new ExtendendValue(emf.getName(), stringValue, null, null));
             }
         } else {
             XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, ns);
@@ -639,42 +620,44 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     String authorityType = value.getAttributeValue("SOURCE");
                     String authorityValue = value.getAttributeValue("AUTHFILENUMBER");
                     String stringValue = value.getValue();
-                    valueList.add(new ExtendendValue(stringValue, authorityType, authorityValue));
+                    valueList.add(new ExtendendValue(emf.getName(), stringValue, authorityType, authorityValue));
                 }
             } else if (!values.isEmpty()) {
                 Element value = values.get(0);
                 String authorityType = value.getAttributeValue("SOURCE");
                 String authorityValue = value.getAttributeValue("AUTHFILENUMBER");
                 String stringValue = value.getValue();
-                valueList.add(new ExtendendValue(stringValue, authorityType, authorityValue));
+                valueList.add(new ExtendendValue(emf.getName(), stringValue, authorityType, authorityValue));
             }
         }
         return valueList;
     }
 
     /**
-     * Add the metaata to the configured level
-     * 
-     * @param entry
-     * @param emf
-     * @param stringValue
+     * Add the metadata to the configured level
      */
 
-    private void addFieldToEntry(IEadEntry entry, IMetadataField emf, List<ExtendendValue> values) {
-        if (StringUtils.isBlank(entry.getLabel()) && emf.getXpath().contains("unittitle") && values != null && !values.isEmpty()) {
-            entry.setLabel(values.get(0).getValue());
-        }
+    private IMetadataField addFieldToEntry(IEadEntry entry, IMetadataField emf, List<IValue> values) {
+
         IMetadataField toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable(),
                 emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild(), emf.getValidationType(),
                 emf.getRegularExpression(), emf.isSearchable(), emf.getViafSearchFields(), emf.getViafDisplayFields(), emf.isGroup());
         toAdd.setValidationError(emf.getValidationError());
         toAdd.setSelectItemList(emf.getSelectItemList());
-        toAdd.setEadEntry(entry);
+        if (entry != null) {
+            if (StringUtils.isBlank(entry.getLabel()) && emf.getXpath().contains("unittitle") && values != null && !values.isEmpty()) {
+                IValue value = values.get(0);
+                entry.setLabel(((ExtendendValue) value).getValue());
+            }
+            toAdd.setEadEntry(entry);
+        }
+
         if (values != null && !values.isEmpty()) {
             toAdd.setShowField(true);
 
             // split single value into multiple fields
-            for (ExtendendValue val : values) {
+            for (IValue value : values) {
+                ExtendendValue val = (ExtendendValue) value;
                 IFieldValue fv = new FieldValue(toAdd);
                 String stringValue = val.getValue();
                 fv.setAuthorityType(val.getAuthorityType());
@@ -694,7 +677,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             IFieldValue fv = new FieldValue(toAdd);
             toAdd.addFieldValue(fv);
         }
+        return toAdd;
 
+    }
+
+    private void addFieldToNode(IEadEntry entry, IMetadataField toAdd) {
         switch (toAdd.getLevel()) {
             case 1:
                 entry.getIdentityStatementAreaList().add(toAdd);
@@ -719,7 +706,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 break;
             default:
         }
-
     }
 
     /**
@@ -939,16 +925,17 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     new EadEntry(selectedEntry.isHasChildren() ? selectedEntry.getSubEntryList().size() : 0, selectedEntry.getHierarchy() + 1);
             entry.setId(String.valueOf(UUID.randomUUID()));
             // initial metadata values
-            List<ExtendendValue> titleData = new ArrayList<>();
+            List<IValue> titleData = new ArrayList<>();
             if (StringUtils.isNotBlank(nodeDefaultTitle)) {
-                titleData.add(new ExtendendValue(nodeDefaultTitle, null, null));
+                titleData.add(new ExtendendValue(null, nodeDefaultTitle, null, null));
                 entry.setLabel(nodeDefaultTitle);
             }
             for (IMetadataField emf : configuredFields) {
                 // TODO group
 
                 if (emf.getXpath().contains("unittitle")) {
-                    addFieldToEntry(entry, emf, titleData);
+                    IMetadataField toAdd = addFieldToEntry(entry, emf, titleData);
+                    addFieldToNode(entry, toAdd);
                 } else {
                     addFieldToEntry(entry, emf, null);
                 }
@@ -2629,12 +2616,40 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             entry.getNotesAreaList().clear();
             entry.getDescriptionControlAreaList().clear();
 
-            Map<String, List<ExtendendValue>> metadata = ArchiveManagementManager.loadMetadataForNode(entry.getDatabaseId());
+            Map<String, List<IValue>> metadata = ArchiveManagementManager.loadMetadataForNode(entry.getDatabaseId());
 
             for (IMetadataField emf : configuredFields) {
-                // TODO groups
-                List<ExtendendValue> values = metadata.get(emf.getName());
-                addFieldToEntry(entry, emf, values);
+                if (emf.isGroup()) {
+
+                    List<IValue> groups = metadata.get(emf.getName());
+                    if (groups != null) {
+                        IMetadataField newGroup = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(),
+                                emf.isRepeatable(),
+                                emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild(),
+                                emf.getValidationType(),
+                                emf.getRegularExpression(), emf.isSearchable(), emf.getViafSearchFields(), emf.getViafDisplayFields(), emf.isGroup());
+                        newGroup.setValidationError(emf.getValidationError());
+                        newGroup.setSelectItemList(emf.getSelectItemList());
+                        newGroup.setEadEntry(entry);
+
+                        for (IValue grp : groups) {
+                            GroupValue gv = (GroupValue) grp;
+
+                            Map<String, List<IValue>> groupMetadata = gv.getSubfields();
+
+                            for (IMetadataField sub : emf.getSubfields()) {
+                                IMetadataField toAdd = addFieldToEntry(entry, sub, groupMetadata.get(sub.getName()));
+                                newGroup.getSubfields().add(toAdd);
+                            }
+
+                        }
+                        addFieldToNode(entry, newGroup);
+                    }
+                } else {
+                    List<IValue> values = metadata.get(emf.getName());
+                    IMetadataField toAdd = addFieldToEntry(entry, emf, values);
+                    addFieldToNode(entry, toAdd);
+                }
             }
         }
     }
@@ -2644,7 +2659,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         List<IEadEntry> allNodes = rootElement.getAllNodes();
 
         for (IEadEntry entry : allNodes) {
-            Map<String, List<ExtendendValue>> metadata = ArchiveManagementManager.convertStringToMap(entry.getData());
+            Map<String, List<IValue>> metadata = ArchiveManagementManager.convertStringToMap(entry.getData());
             entry.getIdentityStatementAreaList().clear();
             entry.getContextAreaList().clear();
             entry.getContentAndStructureAreaAreaList().clear();
@@ -2654,8 +2669,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             entry.getDescriptionControlAreaList().clear();
             for (IMetadataField emf : configuredFields) {
                 // TODO groups
-                List<ExtendendValue> values = metadata.get(emf.getName());
-                addFieldToEntry(entry, emf, values);
+                List<IValue> values = metadata.get(emf.getName());
+                IMetadataField toAdd = addFieldToEntry(entry, emf, values);
+                addFieldToNode(entry, toAdd);
             }
         }
     }

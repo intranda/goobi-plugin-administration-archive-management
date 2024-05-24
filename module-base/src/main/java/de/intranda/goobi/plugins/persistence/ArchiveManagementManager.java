@@ -20,7 +20,9 @@ import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.INodeType;
+import org.goobi.interfaces.IValue;
 import org.goobi.model.ExtendendValue;
+import org.goobi.model.GroupValue;
 
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.RecordGroup;
@@ -221,7 +223,7 @@ public class ArchiveManagementManager implements Serializable {
         return null;
     }
 
-    public static Map<String, List<ExtendendValue>> loadMetadataForNode(int id) {
+    public static Map<String, List<IValue>> loadMetadataForNode(int id) {
         try (Connection connection = MySQLHelper.getInstance().getConnection()) {
             QueryRunner run = new QueryRunner();
             return run.query(connection,
@@ -234,10 +236,10 @@ public class ArchiveManagementManager implements Serializable {
         return Collections.emptyMap();
     }
 
-    private static final ResultSetHandler<Map<String, List<ExtendendValue>>> resultSetMetadataHandler = new ResultSetHandler<>() {
+    private static final ResultSetHandler<Map<String, List<IValue>>> resultSetMetadataHandler = new ResultSetHandler<>() {
 
         @Override
-        public Map<String, List<ExtendendValue>> handle(ResultSet rs) throws SQLException {
+        public Map<String, List<IValue>> handle(ResultSet rs) throws SQLException {
             if (rs.next()) {
                 String data = rs.getString("data");
                 return convertStringToMap(data);
@@ -322,8 +324,8 @@ public class ArchiveManagementManager implements Serializable {
 
     // only call it to load/enhance the selected node. Otherwise the metadata is not needed
 
-    public static Map<String, List<ExtendendValue>> convertStringToMap(String data) {
-        Map<String, List<ExtendendValue>> metadataMap = new HashMap<>();
+    public static Map<String, List<IValue>> convertStringToMap(String data) {
+        Map<String, List<IValue>> metadataMap = new HashMap<>();
         if (StringUtils.isNotBlank(data)) {
             data = data.replace("<xml>", "").replace("</xml>", "");
             for (Matcher m = metadataPattern.matcher(data); m.find();) {
@@ -332,8 +334,8 @@ public class ArchiveManagementManager implements Serializable {
                 String authorityType = mr.group(2);
                 String authorityValue = mr.group(3);
                 String value = mr.group(4);
-                List<ExtendendValue> values = metadataMap.getOrDefault(metadata, new ArrayList<>());
-                values.add(new ExtendendValue(value, authorityType, authorityValue));
+                List<IValue> values = metadataMap.getOrDefault(metadata, new ArrayList<>());
+                values.add(new ExtendendValue(metadata, value, authorityType, authorityValue));
                 metadataMap.put(metadata, values);
             }
 
@@ -342,18 +344,23 @@ public class ArchiveManagementManager implements Serializable {
                 MatchResult mr = m.toMatchResult();
                 String group = mr.group();
                 String groupName = mr.group(1);
+                List<IValue> values = metadataMap.getOrDefault(groupName, new ArrayList<>());
+
+                GroupValue gv = new GroupValue();
+                gv.setGroupName(groupName);
 
                 for (Matcher subFields = subfieldPattern.matcher(group); subFields.find();) {
                     MatchResult sub = subFields.toMatchResult();
-                    System.out.println("********");
-                    System.out.println("total: " + sub.group());
-                    System.out.println("name: " + sub.group(1));
-                    System.out.println("auth type: " + sub.group(2));
-                    System.out.println("auth val: " + sub.group(3));
-                    System.out.println("val: " + sub.group(4));
+                    String metadata = sub.group(1);
+                    String authorityType = sub.group(2);
+                    String authorityValue = sub.group(3);
+                    String value = sub.group(4);
 
+                    List<IValue> subvalues = gv.getSubfields().getOrDefault(metadata, new ArrayList<>());
+                    subvalues.add(new ExtendendValue(metadata, value, authorityType, authorityValue));
+                    gv.getSubfields().put(metadata, subvalues);
                 }
-
+                metadataMap.put(groupName, values);
             }
 
         }
