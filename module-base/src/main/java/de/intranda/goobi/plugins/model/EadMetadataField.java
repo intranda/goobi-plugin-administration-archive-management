@@ -109,6 +109,13 @@ public class EadMetadataField implements IMetadataField {
 
     @Override
     public boolean isFilled() {
+        if (isGroup()) {
+            for (IMetadataField f : subfields) {
+                if (f.isFilled()) {
+                    return true;
+                }
+            }
+        }
         if (values == null || values.isEmpty()) {
             return false;
         }

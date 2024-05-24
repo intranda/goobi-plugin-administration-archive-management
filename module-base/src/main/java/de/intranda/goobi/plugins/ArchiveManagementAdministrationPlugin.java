@@ -931,16 +931,15 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 entry.setLabel(nodeDefaultTitle);
             }
             for (IMetadataField emf : configuredFields) {
-                // TODO group
-
-                if (emf.getXpath().contains("unittitle")) {
+                if (emf.isGroup()) {
+                    loadGroupMetadata(entry, emf, null);
+                } else if (emf.getXpath().contains("unittitle")) {
                     IMetadataField toAdd = addFieldToEntry(entry, emf, titleData);
                     addFieldToNode(entry, toAdd);
                 } else {
                     addFieldToEntry(entry, emf, null);
                 }
             }
-
             entry.setNodeType(selectedEntry.getNodeType());
             selectedEntry.addSubEntry(entry);
             selectedEntry.setDisplayChildren(true);
@@ -2622,29 +2621,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 if (emf.isGroup()) {
 
                     List<IValue> groups = metadata.get(emf.getName());
-                    if (groups != null) {
-                        IMetadataField newGroup = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(),
-                                emf.isRepeatable(),
-                                emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild(),
-                                emf.getValidationType(),
-                                emf.getRegularExpression(), emf.isSearchable(), emf.getViafSearchFields(), emf.getViafDisplayFields(), emf.isGroup());
-                        newGroup.setValidationError(emf.getValidationError());
-                        newGroup.setSelectItemList(emf.getSelectItemList());
-                        newGroup.setEadEntry(entry);
-
-                        for (IValue grp : groups) {
-                            GroupValue gv = (GroupValue) grp;
-
-                            Map<String, List<IValue>> groupMetadata = gv.getSubfields();
-
-                            for (IMetadataField sub : emf.getSubfields()) {
-                                IMetadataField toAdd = addFieldToEntry(entry, sub, groupMetadata.get(sub.getName()));
-                                newGroup.getSubfields().add(toAdd);
-                            }
-
-                        }
-                        addFieldToNode(entry, newGroup);
-                    }
+                    loadGroupMetadata(entry, emf, groups);
                 } else {
                     List<IValue> values = metadata.get(emf.getName());
                     IMetadataField toAdd = addFieldToEntry(entry, emf, values);
@@ -2652,6 +2629,37 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 }
             }
         }
+    }
+
+    private void loadGroupMetadata(IEadEntry entry, IMetadataField emf, List<IValue> groups) {
+        IMetadataField newGroup = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(),
+                emf.isRepeatable(),
+                emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild(),
+                emf.getValidationType(),
+                emf.getRegularExpression(), emf.isSearchable(), emf.getViafSearchFields(), emf.getViafDisplayFields(), emf.isGroup());
+        newGroup.setValidationError(emf.getValidationError());
+        newGroup.setSelectItemList(emf.getSelectItemList());
+        newGroup.setEadEntry(entry);
+        if (groups != null) {
+
+            for (IValue grp : groups) {
+                GroupValue gv = (GroupValue) grp;
+
+                Map<String, List<IValue>> groupMetadata = gv.getSubfields();
+
+                for (IMetadataField sub : emf.getSubfields()) {
+                    IMetadataField toAdd = addFieldToEntry(entry, sub, groupMetadata.get(sub.getName()));
+                    newGroup.getSubfields().add(toAdd);
+                }
+
+            }
+        } else {
+            for (IMetadataField sub : emf.getSubfields()) {
+                IMetadataField toAdd = addFieldToEntry(entry, sub, null);
+                newGroup.getSubfields().add(toAdd);
+            }
+        }
+        addFieldToNode(entry, newGroup);
     }
 
     private void loadMetadataForAllNodes() {
@@ -2668,10 +2676,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             entry.getNotesAreaList().clear();
             entry.getDescriptionControlAreaList().clear();
             for (IMetadataField emf : configuredFields) {
-                // TODO groups
                 List<IValue> values = metadata.get(emf.getName());
-                IMetadataField toAdd = addFieldToEntry(entry, emf, values);
-                addFieldToNode(entry, toAdd);
+                if (emf.isGroup()) {
+                    loadGroupMetadata(entry, emf, values);
+                } else {
+                    IMetadataField toAdd = addFieldToEntry(entry, emf, values);
+                    addFieldToNode(entry, toAdd);
+                }
             }
         }
     }
