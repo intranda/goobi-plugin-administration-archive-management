@@ -41,7 +41,7 @@ public class ArchiveManagementManager implements Serializable {
     private static Pattern metadataPattern = Pattern.compile("<([^<\\/ ]+?)(?: source=\"(.+)\" value=\"(.+)\")?>([^<]+)<\\/[^<]+?>");
 
     // $1 = group name
-    private static Pattern groupPattern = Pattern.compile("<group name=\"(.+)?\">[\\w\\W]+?<\\/group>"); //NOSONAR \w\W is needed because '.' does not include newline
+    private static Pattern groupPattern = Pattern.compile("<group name=\"(.*?)\">[\\w\\W]+?<\\/group>"); //NOSONAR \w\W is needed because '.' does not include newline
 
     // $1 = metadata name, $2=authority type, $3 = authority value, $4 = metadata value
     private static Pattern subfieldPattern = Pattern.compile("<field name=\"(.*?)\"(?: source=\"(.+)\" value=\"(.+)\")?>([^<]+)<\\/field>");
@@ -348,7 +348,7 @@ public class ArchiveManagementManager implements Serializable {
 
                 GroupValue gv = new GroupValue();
                 gv.setGroupName(groupName);
-
+                values.add(gv);
                 for (Matcher subFields = subfieldPattern.matcher(group); subFields.find();) {
                     MatchResult sub = subFields.toMatchResult();
                     String metadata = sub.group(1);
