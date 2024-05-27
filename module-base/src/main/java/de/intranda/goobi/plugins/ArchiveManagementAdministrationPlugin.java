@@ -241,6 +241,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Setter
     private transient IFieldValue fieldToLink;
 
+    @Getter
+    @Setter
+    private transient IMetadataField selectedGroup;
+
     /**
      * Constructor
      */
@@ -2647,9 +2651,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
             for (IMetadataField emf : configuredFields) {
                 if (emf.isGroup()) {
-
                     List<IValue> groups = metadata.get(emf.getName());
-                    loadGroupMetadata(entry, emf, groups);
+                    for (IValue val : groups) {
+                        loadGroupMetadata(entry, emf, val);
+                    }
                 } else {
                     List<IValue> values = metadata.get(emf.getName());
                     IMetadataField toAdd = addFieldToEntry(entry, emf, values);
@@ -2659,7 +2664,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
     }
 
-    private void loadGroupMetadata(IEadEntry entry, IMetadataField emf, List<IValue> groups) {
+    private void loadGroupMetadata(IEadEntry entry, IMetadataField emf, IValue group) {
         IMetadataField newGroup = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(),
                 emf.isRepeatable(),
                 emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild(),
@@ -2668,18 +2673,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         newGroup.setValidationError(emf.getValidationError());
         newGroup.setSelectItemList(emf.getSelectItemList());
         newGroup.setEadEntry(entry);
-        if (groups != null) {
+        if (group != null) {
             newGroup.setShowField(true);
-            for (IValue grp : groups) {
-                GroupValue gv = (GroupValue) grp;
-
-                Map<String, List<IValue>> groupMetadata = gv.getSubfields();
-
-                for (IMetadataField sub : emf.getSubfields()) {
-                    IMetadataField toAdd = addFieldToEntry(entry, sub, groupMetadata.get(sub.getName()));
-                    newGroup.getSubfields().add(toAdd);
-                }
-
+            GroupValue gv = (GroupValue) group;
+            Map<String, List<IValue>> groupMetadata = gv.getSubfields();
+            for (IMetadataField sub : emf.getSubfields()) {
+                IMetadataField toAdd = addFieldToEntry(entry, sub, groupMetadata.get(sub.getName()));
+                newGroup.getSubfields().add(toAdd);
             }
         } else {
             for (IMetadataField sub : emf.getSubfields()) {
@@ -2706,7 +2706,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             for (IMetadataField emf : configuredFields) {
                 List<IValue> values = metadata.get(emf.getName());
                 if (emf.isGroup()) {
-                    loadGroupMetadata(entry, emf, values);
+                    for (IValue val : values) {
+                        loadGroupMetadata(entry, emf, val);
+                    }
                 } else {
                     IMetadataField toAdd = addFieldToEntry(entry, emf, values);
                     addFieldToNode(entry, toAdd);
@@ -2729,6 +2731,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         String idToLink = destinationEntry.getId();
         fieldToLink.setValue(idToLink);
         displayLinkedModal = false;
+    }
+
+    public void addGroup() {
+        loadGroupMetadata(selectedEntry, selectedGroup, null);
+
     }
 
 }

@@ -10,11 +10,11 @@
 <h:body>
     <ui:composition>
         <span class="badge #{styleclassname} #{item.valid ? '' : 'validation-error'}">
-            
+
             <h:commandLink
                 action="#{item.addValue}"
-                rendered="#{item.repeatable and item.showField}">
-                <i class="fa fa-plus-circle margin-right-5"/>
+                rendered="#{item.repeatable and item.showField and not item.group}">
+                <i class="fa fa-plus-circle margin-right-5" />
                 <h:outputText value="#{fieldname}" />
                 <x:updateActionListener
                     property="#{item.showField}"
@@ -24,15 +24,33 @@
                     execute="@this"
                     render=":#{ajaxid} :hierarchy" />
             </h:commandLink>
-            
+
+
             <h:commandLink
-                rendered="#{!item.repeatable or (item.repeatable and !item.showField)}">
+                action="#{AdministrationForm.administrationPlugin.addGroup}"
+                rendered="#{item.repeatable and item.showField and item.group}">
+                <i class="fa fa-plus-circle margin-right-5" />
+                <h:outputText value="#{fieldname}" />
+                <x:updateActionListener
+                    property="#{item.showField}"
+                    value="true" />
+                <x:updateActionListener
+                    property="#{AdministrationForm.administrationPlugin.selectedGroup}"
+                    value="#{item}" />
+                <f:actionListener binding="#{AdministrationForm.administrationPlugin.updateAreaDisplay(item.level)}" />
+                <f:ajax
+                    execute="@this"
+                    render=":#{ajaxid} :hierarchy" />
+            </h:commandLink>
+
+
+            <h:commandLink rendered="#{!item.repeatable or (item.repeatable and !item.showField)}">
                 <ui:fragment rendered="#{item.repeatable}">
-                    <i class="fa fa-plus-circle margin-right-5"/>
+                    <i class="fa fa-plus-circle margin-right-5" />
                 </ui:fragment>
                 <h:outputText value="#{fieldname}" />
                 <ui:fragment rendered="#{!item.valid}">
-                    <i class="fa fa-exclamation-triangle margin-left-5"/>
+                    <i class="fa fa-exclamation-triangle margin-left-5" />
                 </ui:fragment>
                 <f:actionListener binding="#{AdministrationForm.administrationPlugin.updateAreaDisplay(item.level)}" />
                 <x:updateActionListener
