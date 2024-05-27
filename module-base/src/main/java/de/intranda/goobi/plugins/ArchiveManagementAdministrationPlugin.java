@@ -2706,8 +2706,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             for (IMetadataField emf : configuredFields) {
                 List<IValue> values = metadata.get(emf.getName());
                 if (emf.isGroup()) {
-                    for (IValue val : values) {
-                        loadGroupMetadata(entry, emf, val);
+                    if (values != null) {
+                        for (IValue val : values) {
+                            loadGroupMetadata(entry, emf, val);
+                        }
+                    } else {
+                        loadGroupMetadata(entry, emf, null);
                     }
                 } else {
                     IMetadataField toAdd = addFieldToEntry(entry, emf, values);
