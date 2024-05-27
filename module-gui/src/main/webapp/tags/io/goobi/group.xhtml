@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:x="http://myfaces.apache.org/tomahawk"
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
+    xmlns:goobiio="http://goobi.io/facelets"
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
+
+<h:body>
+    <ui:composition>
+
+        <div
+            class="control-label metadata-row-area-content"
+            style="grid-column-start: span 3;">
+            <h:outputText value="#{fieldname}" />
+            <!-- TODO button to clean/remove complete group -->
+
+        </div>
+
+        <x:dataList
+            var="subfield"
+            value="#{item.subfields}">
+            <x:dataList
+                var="field"
+                value="#{subfield.values}">
+                <goobiio:fields />
+            </x:dataList>
+        </x:dataList>
+
+    </ui:composition>
+</h:body>
+</html>

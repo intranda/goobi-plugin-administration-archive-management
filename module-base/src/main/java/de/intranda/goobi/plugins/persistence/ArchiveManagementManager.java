@@ -180,9 +180,13 @@ public class ArchiveManagementManager implements Serializable {
             values.append(entry.getNodeType().getNodeName());
             values.append("', '");
             values.append(entry.getSequence());
-            values.append("', '");
-            values.append(entry.getGoobiProcessTitle());
-            values.append("', ");
+            if (entry.getGoobiProcessTitle() == null) {
+                values.append("', null, ");
+            } else {
+                values.append("', '");
+                values.append(entry.getGoobiProcessTitle());
+                values.append("', ");
+            }
             values.append(parentId);
             values.append(", '");
             values.append(label);

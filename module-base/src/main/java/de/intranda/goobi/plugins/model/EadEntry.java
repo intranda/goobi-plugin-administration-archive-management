@@ -105,7 +105,7 @@ public class EadEntry implements IEadEntry {
     private List<IMetadataField> descriptionControlAreaList = new ArrayList<>();
 
     // empty if no process was created, otherwise the name of othe process is stored
-    private String goobiProcessTitle = "";
+    private String goobiProcessTitle;
 
     // true if the validation of all metadata fields was successful
     private boolean valid = true;

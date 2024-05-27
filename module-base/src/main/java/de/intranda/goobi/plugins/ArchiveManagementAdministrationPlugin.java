@@ -92,6 +92,7 @@ import ugh.dl.DigitalDocument;
 import ugh.dl.DocStruct;
 import ugh.dl.Fileformat;
 import ugh.dl.Metadata;
+import ugh.dl.MetadataGroup;
 import ugh.dl.MetadataType;
 import ugh.dl.Prefs;
 import ugh.exceptions.UGHException;
@@ -1959,35 +1960,62 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     //  create metadata, add it to logical element
     private void createModsMetadata(Prefs prefs, IMetadataField emf, DocStruct logical) {
-        // TODO groups
+        //  groups
         if (StringUtils.isNotBlank(emf.getMetadataName())) {
-            for (IFieldValue fv : emf.getValues()) {
-                if (!fv.getMultiselectSelectedValues().isEmpty()) {
-                    for (String value : fv.getMultiselectSelectedValues()) {
+            if (emf.isGroup()) {
+                try {
+                    MetadataGroup mg = new MetadataGroup(prefs.getMetadataGroupTypeByName(emf.getMetadataName()));
+
+                    for (IMetadataField subfield : emf.getSubfields()) {
+
+                        for (IFieldValue fv : subfield.getValues()) {
+                            Metadata metadata = null;
+                            for (Metadata md : mg.getMetadataList()) {
+                                if (md.getType().getName().equals(subfield.getMetadataName())) {
+                                    metadata = md;
+                                }
+                            }
+                            if (metadata == null || (StringUtils.isNotBlank(metadata.getValue()))) {
+                                metadata = new Metadata(prefs.getMetadataTypeByName(subfield.getMetadataName()));
+                                mg.addMetadata(metadata);
+                            }
+                            metadata.setValue(fv.getValue());
+                        }
+                    }
+
+                    logical.addMetadataGroup(mg);
+                } catch (UGHException e) {
+                    log.error(e);
+                }
+            } else {
+                // regular metadata
+                for (IFieldValue fv : emf.getValues()) {
+                    if (!fv.getMultiselectSelectedValues().isEmpty()) {
+                        for (String value : fv.getMultiselectSelectedValues()) {
+                            try {
+                                Metadata md = new Metadata(prefs.getMetadataTypeByName(emf.getMetadataName()));
+                                md.setValue(value);
+                                logical.addMetadata(md);
+                            } catch (UGHException e) {
+                                log.error(e);
+                            }
+                        }
+                    } else if (StringUtils.isNotBlank(fv.getValue())) {
                         try {
+
                             Metadata md = new Metadata(prefs.getMetadataTypeByName(emf.getMetadataName()));
-                            md.setValue(value);
+                            md.setValue(fv.getValue());
+                            if (StringUtils.isNotBlank(fv.getAuthorityValue())) {
+                                md.setAuthorityFile(fv.getAuthorityType(), "", fv.getAuthorityValue());
+                            }
                             logical.addMetadata(md);
                         } catch (UGHException e) {
                             log.error(e);
                         }
                     }
-                } else if (StringUtils.isNotBlank(fv.getValue())) {
-                    try {
-
-                        Metadata md = new Metadata(prefs.getMetadataTypeByName(emf.getMetadataName()));
-                        md.setValue(fv.getValue());
-                        if (StringUtils.isNotBlank(fv.getAuthorityValue())) {
-                            md.setAuthorityFile(fv.getAuthorityType(), "", fv.getAuthorityValue());
-                        }
-                        logical.addMetadata(md);
-                    } catch (UGHException e) {
-                        log.error(e);
-                    }
                 }
             }
         }
-
     }
 
     public void downloadDocket() {
@@ -2641,7 +2669,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         newGroup.setSelectItemList(emf.getSelectItemList());
         newGroup.setEadEntry(entry);
         if (groups != null) {
-
+            newGroup.setShowField(true);
             for (IValue grp : groups) {
                 GroupValue gv = (GroupValue) grp;
 

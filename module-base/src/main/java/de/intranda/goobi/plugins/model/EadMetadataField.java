@@ -86,7 +86,7 @@ public class EadMetadataField implements IMetadataField {
     private boolean group;
     private List<IMetadataField> subfields = new ArrayList<>();
 
-    public EadMetadataField(String name, Integer level, String xpath, String xpathType, boolean repeatable, boolean visible, boolean showField,
+    public EadMetadataField(String name, Integer level, String xpath, String xpathType, boolean repeatable, boolean visible, boolean showField, //NOSONAR
             String fieldType, String metadataName, boolean importMetadataInChild, String validationType, String regularExpression,
             boolean searchable, String viafSearchFields, String viafDisplayFields, boolean group) {
         this.name = name;
@@ -173,13 +173,20 @@ public class EadMetadataField implements IMetadataField {
                 fieldType, metadataName, importMetadataInChild, validationType, regularExpression, searchable, viafSearchFields, viafDisplayFields,
                 group);
         field.setSelectItemList(selectItemList);
-        // TODO group
-        for (IFieldValue val : values) {
-            IFieldValue newValue = new FieldValue(field);
-            newValue.setValue(prefix + val.getValue() + suffix);
-            newValue.setAuthorityType(val.getAuthorityType());
-            newValue.setAuthorityValue(val.getAuthorityValue());
-            field.addFieldValue(newValue);
+        if (isGroup()) {
+            for (IMetadataField sub : subfields) {
+                IMetadataField newSubfield = sub.copy(prefix, suffix);
+                field.addSubfield(newSubfield);
+            }
+
+        } else {
+            for (IFieldValue val : values) {
+                IFieldValue newValue = new FieldValue(field);
+                newValue.setValue(prefix + val.getValue() + suffix);
+                newValue.setAuthorityType(val.getAuthorityType());
+                newValue.setAuthorityValue(val.getAuthorityValue());
+                field.addFieldValue(newValue);
+            }
         }
         return field;
     }

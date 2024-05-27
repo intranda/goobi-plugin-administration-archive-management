@@ -11,6 +11,14 @@
         <source>tags/io/goobi/area.xhtml</source>
     </tag>
     <tag>
+        <tag-name>group</tag-name>
+        <source>tags/io/goobi/group.xhtml</source>
+    </tag>    
+    <tag>
+        <tag-name>fields</tag-name>
+        <source>tags/io/goobi/fields.xhtml</source>
+    </tag>    
+    <tag>
         <tag-name>input</tag-name>
         <source>tags/io/goobi/input.xhtml</source>
     </tag>
