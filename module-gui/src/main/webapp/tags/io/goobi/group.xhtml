@@ -18,10 +18,16 @@
             class="control-label metadata-row-area-content"
             style="grid-column-start: span 3;">
             <h:outputText value="#{fieldname}" />
-            <!-- TODO button to clean/remove complete group -->
 
+            <h:commandLink
+                styleClass="metadata-row-area-content close-field pull-right"
+                action="#{AdministrationForm.administrationPlugin.selectedEntry.deleteGroup(item)}">
+                <i class="fa fa-minus-circle"></i>
+                <f:ajax
+                    execute="@this"
+                    render=":#{ajaxid} :hierarchy" />
+            </h:commandLink>
         </div>
-
         <x:dataList
             var="subfield"
             value="#{item.subfields}">

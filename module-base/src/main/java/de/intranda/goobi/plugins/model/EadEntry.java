@@ -653,4 +653,81 @@ public class EadEntry implements IEadEntry {
             }
         }
     }
+
+    public void deleteGroup(IMetadataField group) {
+        IMetadataField valueToDelete = null;
+        List<IMetadataField> fields = new ArrayList<>();
+        // find group to delete
+        switch (group.getLevel()) {
+            case 1:
+                removeGroupFromEntry(identityStatementAreaList, group, valueToDelete, fields);
+                break;
+            case 2:
+                removeGroupFromEntry(contextAreaList, group, valueToDelete, fields);
+                break;
+            case 3:
+                removeGroupFromEntry(contentAndStructureAreaAreaList, group, valueToDelete, fields);
+                break;
+            case 4:
+                removeGroupFromEntry(accessAndUseAreaList, group, valueToDelete, fields);
+                break;
+            case 5:
+                removeGroupFromEntry(alliedMaterialsAreaList, group, valueToDelete, fields);
+                break;
+            case 6:
+                removeGroupFromEntry(notesAreaList, group, valueToDelete, fields);
+                break;
+            case 7:
+                removeGroupFromEntry(descriptionControlAreaList, group, valueToDelete, fields);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void removeGroupFromEntry(List<IMetadataField> metadataList, IMetadataField group, IMetadataField valueToDelete,
+            List<IMetadataField> fields) {
+        for (IMetadataField field : metadataList) {
+            if (field.getName().equals(group.getName())) {
+                fields.add(field);
+                // check if this field is the one to delete
+                boolean allFieldMatched = true;
+                for (IMetadataField subfield : group.getSubfields()) {
+                    for (IMetadataField other : field.getSubfields()) {
+                        if (other.getName().equals(subfield.getName())) {
+                            boolean subFieldMatched = false;
+                            for (IFieldValue subVal : subfield.getValues()) {
+                                for (IFieldValue otherVal : other.getValues()) {
+                                    if ((StringUtils.isBlank(subVal.getValue()) && StringUtils.isBlank(otherVal.getValue())) ||
+                                            StringUtils.isNotBlank(subVal.getValue()) && StringUtils.isNotBlank(otherVal.getValue())
+                                                    && subVal.getValue().equals(otherVal.getValue())) {
+                                        subFieldMatched = true;
+                                    }
+                                }
+                            }
+                            allFieldMatched = allFieldMatched && subFieldMatched;
+                        }
+                    }
+                }
+                if (allFieldMatched) {
+                    valueToDelete = field;
+                }
+            }
+        }
+        if (valueToDelete != null) {
+            if (fields.size() > 1) {
+                metadataList.remove(valueToDelete);
+            } else {
+                valueToDelete.setShowField(false);
+                for (IMetadataField subfield : group.getSubfields()) {
+                    for (IFieldValue val : subfield.getValues()) {
+                        val.setAuthorityType("");
+                        val.setAuthorityValue("");
+                        val.setValue("");
+                    }
+                }
+            }
+
+        }
+    }
 }
