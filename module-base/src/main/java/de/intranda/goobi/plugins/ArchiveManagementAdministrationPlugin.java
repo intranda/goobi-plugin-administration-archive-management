@@ -733,7 +733,33 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 // do nothing
             }
         }
-
+        for (String level : config.getStringArray("/showGroup/@level")) {
+            switch (level) {
+                case "1":
+                    displayIdentityStatementArea = true;
+                    break;
+                case "2":
+                    displayContextArea = true;
+                    break;
+                case "3":
+                    displayContentArea = true;
+                    break;
+                case "4":
+                    displayAccessArea = true;
+                    break;
+                case "5":
+                    displayMaterialsArea = true;
+                    break;
+                case "6":
+                    displayNotesArea = true;
+                    break;
+                case "7":
+                    displayControlArea = true;
+                    break;
+                default:
+                    break;
+            }
+        }
         identifierMetadataName = config.getString("/processIdentifierField", "NodeId");
         identifierNodeName = config.getString("/nodeIdentifierField", "id");
 
@@ -2748,7 +2774,38 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public void addGroup() {
         loadGroupMetadata(selectedEntry, selectedGroup, null);
+    }
 
+    public void showAllFields() {
+        displayIdentityStatementArea = true;
+        displayContextArea = true;
+        displayContentArea = true;
+        displayAccessArea = true;
+        displayMaterialsArea = true;
+        displayNotesArea = true;
+        displayControlArea = true;
+
+        for (IMetadataField field : selectedEntry.getIdentityStatementAreaList()) {
+            field.setShowField(true);
+        }
+        for (IMetadataField field : selectedEntry.getContextAreaList()) {
+            field.setShowField(true);
+        }
+        for (IMetadataField field : selectedEntry.getContentAndStructureAreaAreaList()) {
+            field.setShowField(true);
+        }
+        for (IMetadataField field : selectedEntry.getAccessAndUseAreaList()) {
+            field.setShowField(true);
+        }
+        for (IMetadataField field : selectedEntry.getAlliedMaterialsAreaList()) {
+            field.setShowField(true);
+        }
+        for (IMetadataField field : selectedEntry.getNotesAreaList()) {
+            field.setShowField(true);
+        }
+        for (IMetadataField field : selectedEntry.getDescriptionControlAreaList()) {
+            field.setShowField(true);
+        }
     }
 
 }

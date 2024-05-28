@@ -9,7 +9,7 @@
     xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
     xmlns:p="http://primefaces.org/ui"
     xmlns:c="http://java.sun.com/jsp/jstl/core"
-    xmlns:jsf="http://xmlns.jcp.org/jsf"    
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
     xmlns:goobiio="http://goobi.io/facelets">
 
     <composite:interface>
@@ -944,6 +944,14 @@ div.no-element-selected {
                                                             value="#{AdministrationForm.administrationPlugin.selectedEntry.label}"
                                                             rendered="#{AdministrationForm.administrationPlugin.selectedEntry.label!=null}" />
                                                     </h3>
+
+                                                    <button
+                                                        class="btn margin-right-10 pull-right"
+                                                        jsf:id="showAll"
+                                                        jsf:action="#{AdministrationForm.administrationPlugin.showAllFields}">
+                                                        <i class="fa fa-chevron-down" />
+                                                        <f:ajax render="nodeContentArea" />
+                                                    </button>
                                                 </div>
                                                 <div
                                                     class="box-content without-margin"
@@ -1275,7 +1283,7 @@ div.no-element-selected {
                                                 value="tooltip" />
                                             <h:outputText value="#{msgs.plugin_administration_archive_saveAndExit}" />
                                         </h:commandLink>
-                                        
+
                                     </div>
                                     <!-- // Button Area on the bottom -->
 
@@ -1767,7 +1775,7 @@ div.no-element-selected {
                         id="linkNodeModalContent">
                         <div class="modal-header">
                             <button
-                            jsf:id="closeBtn"
+                                jsf:id="closeBtn"
                                 type="button"
                                 class="close"
                                 data-dismiss="modal"
@@ -1865,7 +1873,103 @@ div.no-element-selected {
 
 										
 
-																																																				
+																																								
+
+										
+
+																				
+
+										
+
+																														
+
+										
+
+																				
+
+										
+
+																																																		
+
+										
+
+																				
+
+										
+
+																														
+
+										
+
+																				
+
+										
+
+																																								
+
+										
+
+																				
+
+										
+
+																														
+
+										
+
+																				
+
+										
+
+																																																																								
+
+										
+
+																				
+
+										
+
+																														
+
+										
+
+																				
+
+										
+
+																																								
+
+										
+
+																				
+
+										
+
+																														
+
+										
+
+																				
+
+										
+
+																																																		
+
+										
+
+																				
+
+										
+
+																														
+
+										
+
+																				
+
+										
+
+																																								
 
 										
 

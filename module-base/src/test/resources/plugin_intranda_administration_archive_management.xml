@@ -229,6 +229,10 @@
         </metadata>
 
 
+        <!-- ============================= extend configured areas ============================= -->
+        <showGroup level="1" />
+        <showGroup level="3" />
+
         <!-- ============================= Structure types and Icons ================================ -->
 
     	<node name="file" ruleset="File" icon="fa fa-file-text-o" processTemplateId="309544" />
