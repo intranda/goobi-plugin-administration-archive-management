@@ -808,40 +808,26 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         field.setValidationError(fieldConfig.getString("/validationError"));
         if ("dropdown".equals(field.getFieldType()) || "multiselect".equals(field.getFieldType())) {
             List<String> valueList = Arrays.asList(fieldConfig.getStringArray("/value"));
-            field.setSelectItemList(valueList);
-        } else if ("vocabulary".equals(field.getFieldType())) {
-            String vocabularyName = fieldConfig.getString("/vocabulary");
-            List<String> searchParameter = Arrays.asList(fieldConfig.getStringArray("/searchParameter"));
-            List<String> iFieldValueList = new ArrayList<>();
-            if (searchParameter == null) {
-                Vocabulary currentVocabulary = VocabularyManager.getVocabularyByTitle(vocabularyName);
-                if (currentVocabulary != null) {
-                    VocabularyManager.getAllRecords(currentVocabulary);
-                    if (currentVocabulary != null && currentVocabulary.getId() != null) {
-                        for (VocabRecord vr : currentVocabulary.getRecords()) {
-                            for (Field f : vr.getFields()) {
-                                if (f.getDefinition().isMainEntry()) {
-                                    iFieldValueList.add(f.getValue());
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
+            if (valueList == null || valueList.isEmpty()) {
+                loadVocabulary(fieldConfig, field);
             } else {
-                List<StringPair> vocabularySearchFields = new ArrayList<>();
-                for (String fieldname : searchParameter) {
-                    String[] parts = fieldname.trim().split("=");
-                    if (parts.length > 1) {
-                        String fieldName = parts[0];
-                        String value = parts[1];
-                        StringPair sp = new StringPair(fieldName, value);
-                        vocabularySearchFields.add(sp);
-                    }
-                }
-                List<VocabRecord> records = VocabularyManager.findRecords(vocabularyName, vocabularySearchFields);
-                if (records != null && !records.isEmpty()) {
-                    for (VocabRecord vr : records) {
+                field.setSelectItemList(valueList);
+            }
+        } else if ("vocabulary".equals(field.getFieldType())) {
+            loadVocabulary(fieldConfig, field);
+        }
+    }
+
+    private void loadVocabulary(HierarchicalConfiguration fieldConfig, IMetadataField field) {
+        String vocabularyName = fieldConfig.getString("/vocabulary");
+        List<String> searchParameter = Arrays.asList(fieldConfig.getStringArray("/searchParameter"));
+        List<String> iFieldValueList = new ArrayList<>();
+        if (searchParameter == null) {
+            Vocabulary currentVocabulary = VocabularyManager.getVocabularyByTitle(vocabularyName);
+            if (currentVocabulary != null) {
+                VocabularyManager.getAllRecords(currentVocabulary);
+                if (currentVocabulary.getId() != null) {
+                    for (VocabRecord vr : currentVocabulary.getRecords()) {
                         for (Field f : vr.getFields()) {
                             if (f.getDefinition().isMainEntry()) {
                                 iFieldValueList.add(f.getValue());
@@ -851,8 +837,30 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     }
                 }
             }
-            field.setSelectItemList(iFieldValueList);
+        } else {
+            List<StringPair> vocabularySearchFields = new ArrayList<>();
+            for (String fieldname : searchParameter) {
+                String[] parts = fieldname.trim().split("=");
+                if (parts.length > 1) {
+                    String fieldName = parts[0];
+                    String value = parts[1];
+                    StringPair sp = new StringPair(fieldName, value);
+                    vocabularySearchFields.add(sp);
+                }
+            }
+            List<VocabRecord> records = VocabularyManager.findRecords(vocabularyName, vocabularySearchFields);
+            if (records != null && !records.isEmpty()) {
+                for (VocabRecord vr : records) {
+                    for (Field f : vr.getFields()) {
+                        if (f.getDefinition().isMainEntry()) {
+                            iFieldValueList.add(f.getValue());
+                            break;
+                        }
+                    }
+                }
+            }
         }
+        field.setSelectItemList(iFieldValueList);
     }
 
     public void resetFlatList() {
@@ -2594,12 +2602,24 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     public void duplicateEadFile() {
-        // TODO save current data
-        // TODO create new recordGroup
-        // TODO duplicate rootElement and its children
-        // TODO save new data
-        // TODO load copy?
 
+        if (selectedEntry != null) {
+            // save current data
+            ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
+        }
+        // create new recordGroup
+        RecordGroup clonedRecordGroup = new RecordGroup();
+        clonedRecordGroup.setTitle(recordGroup.getTitle() + " - copy");
+
+        // load all metadata and all nodes for current record group
+        loadMetadataForAllNodes();
+
+        // duplicate rootElement and its children
+        IEadEntry newRootElement = rootElement.deepCopy(getDuplicationConfiguration());
+
+        // save new data
+        ArchiveManagementManager.saveRecordGroup(clonedRecordGroup);
+        ArchiveManagementManager.saveNodes(clonedRecordGroup.getId(), newRootElement.getAllNodes());
     }
 
     public IConfiguration getDuplicationConfiguration() {
@@ -2623,17 +2643,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
             ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
         }
-    }
-
-    public void saveInDatabase() {
-        ArchiveManagementManager.createTables();
-
-        ArchiveManagementManager.saveRecordGroup(recordGroup);
-
-        IEadEntry rootElementFromDb = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
-
-        rootElement = rootElementFromDb;
-        rootElement.setDisplayChildren(true);
     }
 
     private void loadMetadataForNode(IEadEntry entry) {
