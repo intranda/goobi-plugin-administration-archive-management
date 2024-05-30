@@ -704,6 +704,23 @@ div.no-element-selected {
                                                         render="hierarchy" />
                                                 </h:commandLink>
 
+                                                <h:commandLink
+                                                    styleClass="btn btn-primary font-size-s pull-right leftArea-button"
+                                                    onclick="$('#createNodesModal').modal('show');"
+                                                    disabled="#{AdministrationForm.administrationPlugin.selectedEntry == null}"
+                                                    title="#{msgs.plugin_administration_archive_addMultipleNodes}">
+                                                    <i class="fa fa-plus"></i>
+                                                    <i class="fa fa-plus"></i>
+                                                    <f:passThroughAttribute
+                                                        name="data-toggle"
+                                                        value="tooltip" />
+                                                    <x:updateActionListener
+                                                        property="#{AdministrationForm.administrationPlugin.displayMode}"
+                                                        value="moveNode" />
+                                                    <f:ajax
+                                                        execute="hierarchy"
+                                                        render="hierarchy createNodesModalContent" />
+                                                </h:commandLink>
 
                                                 <h:commandLink
                                                     styleClass="btn font-size-s pull-right leftArea-button"
@@ -1854,136 +1871,83 @@ div.no-element-selected {
             </div>
         </h:panelGroup>
 
+
+
+
+        <h:panelGroup
+            styleClass="modal bd-example-modal-lg"
+            layout="block"
+            id="createNodesModal"
+            tabindex="-1"
+            role="dialog"
+            aria-labelledby="createNodesModal"
+            aria-hidden="true">
+
+            <div class="modal-content-wrapper">
+                <div
+                    class="modal-dialog modal-lg"
+                    role="document">
+                    <h:panelGroup
+                        styleClass="modal-content"
+                        layout="block"
+                        id="createNodesModalContent">
+                        <div class="modal-header">
+                            <button
+                                jsf:id="closeBtnCreateNodes"
+                                type="button"
+                                class="close"
+                                data-dismiss="modal"
+                                aria-label="Close">
+                                <span aria-hidden="true">
+                                    <h:outputText
+                                        value="&amp;times;"
+                                        escape="false" />
+                                </span>
+                                <x:updateActionListener
+                                    property="#{AdministrationForm.administrationPlugin.displayCreateNodesModal}"
+                                    value="false" />
+                            </button>
+                            <h4
+                                class="modal-title"
+                                style="width: 90%">#{msgs.plugin_administration_createNodesModal}</h4>
+                        </div>
+
+                        <div class="modal-body">
+                            <p>
+                                <h:outputText value="#{msgs.plugin_administration_createNodesModalDesciption}" />
+                            </p>
+                            <div class="table">
+                                <h:form rendered="#{AdministrationForm.administrationPlugin.displayCreateNodesModal}">
+                                    data
+                                </h:form>
+                            </div>
+
+                        </div>
+                        <div class="form-actions">
+                            <h:form>
+                                <h:commandLink
+                                    styleClass="btn margin-sides-10 font-size-s "
+                                    type="submit">
+                                    <x:updateActionListener
+                                        property="#{AdministrationForm.administrationPlugin.displayMode}"
+                                        value="" />
+                                    <x:updateActionListener
+                                        property="#{AdministrationForm.administrationPlugin.displayCreateNodesModal}"
+                                        value="false" />
+                                    <h:outputText value="#{msgs.abbrechen}" />
+                                </h:commandLink>
+                            </h:form>
+                        </div>
+                    </h:panelGroup>
+                </div>
+            </div>
+        </h:panelGroup>
+
+
         <script>
 									function submitSearch(e) {
 										if (e.key != 'Enter')
 											return
-
-										
-
-																				
-
-										
-
-																														
-
-										
-
-																				
-
-										
-
-																																								
-
-										
-
-																				
-
-										
-
-																														
-
-										
-
-																				
-
-										
-
-																																																		
-
-										
-
-																				
-
-										
-
-																														
-
-										
-
-																				
-
-										
-
-																																								
-
-										
-
-																				
-
-										
-
-																														
-
-										
-
-																				
-
-										
-
-																																																																								
-
-										
-
-																				
-
-										
-
-																														
-
-										
-
-																				
-
-										
-
-																																								
-
-										
-
-																				
-
-										
-
-																														
-
-										
-
-																				
-
-										
-
-																																																		
-
-										
-
-																				
-
-										
-
-																														
-
-										
-
-																				
-
-										
-
-																																								
-
-										
-
-																				
-
-										
-
-																														
-
-										
-
-																				
-
-										
 
 										e.preventDefault()
 										var submit = document

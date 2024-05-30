@@ -239,6 +239,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     @Getter
     @Setter
+    private boolean displayCreateNodesModal = false;
+
+    @Getter
+    @Setter
     private transient IFieldValue fieldToLink;
 
     @Getter
