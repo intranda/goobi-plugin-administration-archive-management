@@ -2812,4 +2812,17 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
     }
 
+    // add multiple nodes to current node
+
+    @Getter
+    @Setter
+    private int numberOfNodes;
+    @Getter
+    @Setter
+    private INodeType nodeType;
+
+    @Getter
+    @Setter
+    private DuplicationConfiguration metadataToAdd;
+
 }

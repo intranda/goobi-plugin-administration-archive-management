@@ -1917,8 +1917,19 @@ div.no-element-selected {
                                 <h:outputText value="#{msgs.plugin_administration_createNodesModalDesciption}" />
                             </p>
                             <div class="table">
-                                <h:form rendered="#{AdministrationForm.administrationPlugin.displayCreateNodesModal}">
-                                    data
+                                <h:form
+                                    styleClass="form-horizontal form-bordered"
+                                    rendered="#{AdministrationForm.administrationPlugin.displayCreateNodesModal}">
+
+                                    <!-- number of nodes to add -->
+                                    <!-- validation: value must be be a number greater than zero -->
+
+
+                                    <!-- metadata: for each field radio button for empty/generated/counter/text -->
+                                    <!-- if generated: show nothing -->
+                                    <!-- if counter: show field for prefix (static text), format (e.g. 4 digits), start value  -->
+                                    <!-- if text: show input field -->
+
                                 </h:form>
                             </div>
 
@@ -1948,6 +1959,8 @@ div.no-element-selected {
 									function submitSearch(e) {
 										if (e.key != 'Enter')
 											return
+
+										
 
 										e.preventDefault()
 										var submit = document

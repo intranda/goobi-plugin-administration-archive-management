@@ -17,6 +17,14 @@ public class DuplicationParameter implements Serializable, IParameter {
     private String suffix = "";
     private String fieldName;
 
+    private boolean counter;
+    private String counterFormat = "####";
+    private int counterStartValue = 1;
+
+    private boolean generated;
+
+    private String fieldType;
+
     public DuplicationParameter(String fieldName) {
         this.fieldName = fieldName;
     }
