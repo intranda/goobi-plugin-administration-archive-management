@@ -1,4 +1,4 @@
-package de.intranda.goobi.plugins;
+package de.intranda.goobi.plugins.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -10,11 +10,6 @@ import java.util.List;
 
 import org.goobi.interfaces.IEadEntry;
 import org.junit.Test;
-
-import de.intranda.goobi.plugins.model.EadEntry;
-import de.intranda.goobi.plugins.model.EadMetadataField;
-import de.intranda.goobi.plugins.model.FieldValue;
-import de.intranda.goobi.plugins.model.NodeType;
 
 public class EadEntryTest {
 
