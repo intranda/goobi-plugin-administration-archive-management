@@ -714,9 +714,10 @@ div.no-element-selected {
                                                     <f:passThroughAttribute
                                                         name="data-toggle"
                                                         value="tooltip" />
-                                                    <x:updateActionListener
-                                                        property="#{AdministrationForm.administrationPlugin.displayMode}"
-                                                        value="moveNode" />
+       <x:updateActionListener
+                                                        property="#{AdministrationForm.administrationPlugin.displayCreateNodesModal}"
+                                                        value="true" />                                                        
+             
                                                     <f:ajax
                                                         execute="hierarchy"
                                                         render="hierarchy createNodesModalContent" />
@@ -1808,7 +1809,7 @@ div.no-element-selected {
                             </button>
                             <h4
                                 class="modal-title"
-                                style="width: 90%">#{msgs.plugin_administration_linkNodeModal}</h4>
+                                style="width: 90%">#{msgs.plugin_administration_archive_linkNodeModal}</h4>
                         </div>
 
                         <div class="modal-body">
@@ -1909,20 +1910,65 @@ div.no-element-selected {
                             </button>
                             <h4
                                 class="modal-title"
-                                style="width: 90%">#{msgs.plugin_administration_createNodesModal}</h4>
+                                style="width: 90%">#{msgs.plugin_administration_archive_createNodesModal}</h4>
                         </div>
-
+   <h:form
+                                    styleClass="form-horizontal form-bordered"
+                                    rendered="#{AdministrationForm.administrationPlugin.displayCreateNodesModal}">
                         <div class="modal-body">
                             <p>
                                 <h:outputText value="#{msgs.plugin_administration_createNodesModalDesciption}" />
                             </p>
                             <div class="table">
-                                <h:form
-                                    styleClass="form-horizontal form-bordered"
-                                    rendered="#{AdministrationForm.administrationPlugin.displayCreateNodesModal}">
+                             
 
-                                    <!-- number of nodes to add -->
-                                    <!-- validation: value must be be a number greater than zero -->
+                                    <!-- number of nodes to add
+                                   
+                        <intranda:formInputText
+                            field="#{AdministrationForm.administrationPlugin.numberOfNodes}"
+                            forceId="false"
+                            help="#{msgs.helpnumberOfNodes}"
+                            label="#{msgs.plugin_administration_numberOfNodes}"
+                            name="numberOfNodes"
+                            readonly="false"
+                            required="true"
+                            displayAsRequired="true" >
+                            <f:validator validatorId="numberOfNodesValidator" for="customValidator" />
+                        </intranda:formInputText>
+ -->
+                                    <div class="form-group">
+                                        <div class="col-sm-3 control-label">
+                                            <h:outputLabel
+                                                for="numberOfNodes"
+                                                value="#{msgs.plugin_administration_numberOfNodes}" />
+                                            <h:panelGroup>
+                                                <i class="fa fa-asterisk pull-right font-asterisk" />
+                                            </h:panelGroup>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <x:inputText
+                                                id="numberOfNodes"
+                                                forceId="true"
+                                                styleClass="form-control"
+                                                value="#{AdministrationForm.administrationPlugin.numberOfNodes}"
+                                                readonly="false"
+                                                required="false">
+                                                <!-- validation: value must be be a number greater than zero -->
+                                                <!-- TODO don't close modal, when validation fails -->
+                                                <f:validator validatorId="numberOfNodesValidator" />
+                                            </x:inputText>
+                                            <h:message
+                                                for="numberOfNodes"
+                                                showDetail="true"
+                                                styleClass="help-inline font-danger" />
+                                            <h:outputText
+                                                styleClass="help-block font-light"
+                                                rendered="#{NavigationForm.showHelp}"
+                                                value="msgs.helpnumberOfNodes" />
+                                        </div>
+                                    </div>
+
+
 
 
                                     <!-- metadata: for each field radio button for empty/generated/counter/text -->
@@ -1930,12 +1976,22 @@ div.no-element-selected {
                                     <!-- if counter: show field for prefix (static text), format (e.g. 4 digits), start value  -->
                                     <!-- if text: show input field -->
 
-                                </h:form>
+                              
                             </div>
 
                         </div>
                         <div class="form-actions">
-                            <h:form>
+                           
+                                   <h:commandLink
+                                    id="addNodes"
+                                    styleClass="btn margin-sides-10 font-size-s"
+                                    action="#{AdministrationForm.administrationPlugin.addNodes}"
+                                    title="#{msgs.plugin_administration_archive_addNodes}">
+                                    <h:outputText value="#{msgs.plugin_administration_archive_addNodes}" />
+                                </h:commandLink>
+                            
+                            
+                            
                                 <h:commandLink
                                     styleClass="btn margin-sides-10 font-size-s "
                                     type="submit">
@@ -1947,8 +2003,8 @@ div.no-element-selected {
                                         value="false" />
                                     <h:outputText value="#{msgs.abbrechen}" />
                                 </h:commandLink>
-                            </h:form>
                         </div>
+                          </h:form>
                     </h:panelGroup>
                 </div>
             </div>
@@ -1959,6 +2015,10 @@ div.no-element-selected {
 									function submitSearch(e) {
 										if (e.key != 'Enter')
 											return
+
+										
+
+																				
 
 										
 

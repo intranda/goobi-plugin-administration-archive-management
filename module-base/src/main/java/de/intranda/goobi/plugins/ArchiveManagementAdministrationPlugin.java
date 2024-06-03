@@ -2822,7 +2822,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     @Getter
     @Setter
-    private int numberOfNodes;
+    private String numberOfNodes;
     @Getter
     @Setter
     private transient INodeType nodeType;
@@ -2830,5 +2830,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Getter
     @Setter
     private transient DuplicationConfiguration metadataToAdd;
+
+    public void addNodes() {
+        System.out.println("add " + numberOfNodes + " new nodes");
+        // TODO
+
+    }
 
 }
