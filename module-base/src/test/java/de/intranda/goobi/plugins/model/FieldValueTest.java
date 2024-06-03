@@ -1,6 +1,10 @@
 package de.intranda.goobi.plugins.model;
 
+import static org.easymock.EasyMock.anyObject;
+import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -10,33 +14,32 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.geonames.Toponym;
+import org.geonames.ToponymSearchCriteria;
+import org.geonames.ToponymSearchResult;
+import org.geonames.WebService;
 import org.goobi.interfaces.IMetadataField;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.easymock.PowerMock;
-import org.powermock.api.easymock.annotation.Mock;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import de.intranda.digiverso.normdataimporter.NormDataImporter;
 import de.intranda.digiverso.normdataimporter.model.NormData;
 import de.sub.goobi.config.ConfigurationHelper;
-import de.sub.goobi.helper.Helper;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ FieldValue.class, ConfigurationHelper.class, NormDataImporter.class, Helper.class })
+@PrepareForTest({ FieldValue.class, ConfigurationHelper.class, WebService.class, StringUtils.class })
 public class FieldValueTest {
 
     private FieldValue fieldValue;
-
-    @Mock
     private IMetadataField field;
 
     @Before
     public void setUp() {
-        field = PowerMock.createMock(IMetadataField.class);
+        field = createMock(IMetadataField.class);
         fieldValue = new FieldValue(field);
     }
 
@@ -117,42 +120,51 @@ public class FieldValueTest {
         selectItemList.add("Value2");
         selectItemList.add("Value3");
 
-        expect(field.getSelectItemList()).andReturn(selectItemList).anyTimes();
-        PowerMock.replay(field);
+        expect(field.getSelectItemList()).andReturn(selectItemList);
+        replay(field);
 
         fieldValue.setMultiselectValue("Value1");
         List<String> possibleValues = fieldValue.getPossibleValues();
         assertEquals(2, possibleValues.size());
-        assertFalse(possibleValues.contains("Value1"));
-
-        PowerMock.verify(field);
+        assertTrue(possibleValues.contains("Value2"));
+        assertTrue(possibleValues.contains("Value3"));
     }
 
     @Test
     public void testGetValuesForXmlExport() {
-        expect(field.getXpath()).andReturn("xpath").anyTimes();
-        PowerMock.replay(field);
+        expect(field.getXpath()).andReturn("someXpath").times(2);
+        replay(field);
 
-        fieldValue.setValue("SingleValue");
-        assertEquals("SingleValue", fieldValue.getValuesForXmlExport());
+        fieldValue.setValue("Value");
+        assertEquals("Value", fieldValue.getValuesForXmlExport());
 
         fieldValue.setMultiselectValue("Value1");
         fieldValue.setMultiselectValue("Value2");
         assertEquals("Value1; Value2", fieldValue.getValuesForXmlExport());
-
-        PowerMock.verify(field);
     }
 
     @Test
-    public void testAuthorityMethods() {
-        fieldValue.setGndNumber("12345");
-        assertEquals("12345", fieldValue.getGndNumber());
+    public void testSearchGeonames() throws Exception {
+        PowerMock.mockStatic(ConfigurationHelper.class);
+        ConfigurationHelper configHelperMock = createMock(ConfigurationHelper.class);
+        expect(ConfigurationHelper.getInstance()).andReturn(configHelperMock).anyTimes();
+        expect(configHelperMock.getGeonamesCredentials()).andReturn("username");
 
-        fieldValue.setGeonamesNumber("67890");
-        assertEquals("67890", fieldValue.getGeonamesNumber());
+        PowerMock.mockStatic(WebService.class);
+        ToponymSearchResult searchResultMock = createMock(ToponymSearchResult.class);
+        expect(WebService.search(anyObject(ToponymSearchCriteria.class))).andReturn(searchResultMock);
+        expect(searchResultMock.getToponyms()).andReturn(new ArrayList<>());
+        expect(searchResultMock.getTotalResultsCount()).andReturn(0);
 
-        fieldValue.setViafNumber("54321");
-        assertEquals("54321", fieldValue.getViafNumber());
+        replay(configHelperMock, searchResultMock);
+        PowerMock.replay(ConfigurationHelper.class, WebService.class);
+
+        fieldValue.setSearchValue("Berlin");
+        fieldValue.searchGeonames();
+
+        assertTrue(fieldValue.isShowNoHits());
+
+        verify(configHelperMock, searchResultMock);
+        PowerMock.verify(ConfigurationHelper.class, WebService.class);
     }
-
 }
