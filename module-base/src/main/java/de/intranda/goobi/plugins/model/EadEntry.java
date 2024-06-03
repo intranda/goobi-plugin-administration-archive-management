@@ -379,7 +379,7 @@ public class EadEntry implements IEadEntry {
         other.setOrderNumber(orderNumber);
 
         // create new id
-        other.setId(String.valueOf(UUID.randomUUID()));
+        other.setId("id_" + UUID.randomUUID());
 
         // copy all metadata
         for (IMetadataField field : identityStatementAreaList) {

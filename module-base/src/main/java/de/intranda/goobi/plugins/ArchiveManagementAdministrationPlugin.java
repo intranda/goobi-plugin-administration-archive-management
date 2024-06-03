@@ -368,7 +368,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             ArchiveManagementManager.saveRecordGroup(recordGroup);
 
             rootElement = new EadEntry(0, 0);
-            rootElement.setId(String.valueOf(UUID.randomUUID()));
+            rootElement.setId("id_" + UUID.randomUUID());
 
             rootElement.setDisplayChildren(true);
             INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
@@ -588,7 +588,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         // generate new id, if id is null
         if (entry.getId() == null) {
-            entry.setId(String.valueOf(UUID.randomUUID()));
+            entry.setId("id_" + UUID.randomUUID());
         }
 
         return entry;
@@ -968,7 +968,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         if (selectedEntry != null) {
             EadEntry entry =
                     new EadEntry(selectedEntry.isHasChildren() ? selectedEntry.getSubEntryList().size() : 0, selectedEntry.getHierarchy() + 1);
-            entry.setId(String.valueOf(UUID.randomUUID()));
+            entry.setId("id_" + UUID.randomUUID());
             // initial metadata values
             List<IValue> titleData = new ArrayList<>();
             if (StringUtils.isNotBlank(nodeDefaultTitle)) {
@@ -2764,6 +2764,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
     }
 
+    // link nodes to other nodes
+
     public List<IEadEntry> getLinkNodeList() {
         if (isDisplayLinkedModal() && linkNodeList == null) {
             linkNodeList = rootElement.getAllNodes();
@@ -2823,10 +2825,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private int numberOfNodes;
     @Getter
     @Setter
-    private INodeType nodeType;
+    private transient INodeType nodeType;
 
     @Getter
     @Setter
-    private DuplicationConfiguration metadataToAdd;
+    private transient DuplicationConfiguration metadataToAdd;
 
 }
