@@ -249,6 +249,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Setter
     private transient IMetadataField selectedGroup;
 
+    private transient List<IEadEntry> linkNodeList;
+
     /**
      * Constructor
      */
@@ -2691,8 +2693,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             for (IMetadataField emf : configuredFields) {
                 if (emf.isGroup()) {
                     List<IValue> groups = metadata.get(emf.getName());
-                    for (IValue val : groups) {
-                        loadGroupMetadata(entry, emf, val);
+                    if (groups != null) {
+                        for (IValue val : groups) {
+                            loadGroupMetadata(entry, emf, val);
+                        }
                     }
                 } else {
                     List<IValue> values = metadata.get(emf.getName());
@@ -2760,8 +2764,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
     }
 
-    private transient List<IEadEntry> linkNodeList;
-
     public List<IEadEntry> getLinkNodeList() {
         if (isDisplayLinkedModal() && linkNodeList == null) {
             linkNodeList = rootElement.getAllNodes();
@@ -2781,34 +2783,36 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     public void showAllFields() {
-        displayIdentityStatementArea = true;
-        displayContextArea = true;
-        displayContentArea = true;
-        displayAccessArea = true;
-        displayMaterialsArea = true;
-        displayNotesArea = true;
-        displayControlArea = true;
+        if (selectedEntry != null) {
+            displayIdentityStatementArea = true;
+            displayContextArea = true;
+            displayContentArea = true;
+            displayAccessArea = true;
+            displayMaterialsArea = true;
+            displayNotesArea = true;
+            displayControlArea = true;
 
-        for (IMetadataField field : selectedEntry.getIdentityStatementAreaList()) {
-            field.setShowField(true);
-        }
-        for (IMetadataField field : selectedEntry.getContextAreaList()) {
-            field.setShowField(true);
-        }
-        for (IMetadataField field : selectedEntry.getContentAndStructureAreaAreaList()) {
-            field.setShowField(true);
-        }
-        for (IMetadataField field : selectedEntry.getAccessAndUseAreaList()) {
-            field.setShowField(true);
-        }
-        for (IMetadataField field : selectedEntry.getAlliedMaterialsAreaList()) {
-            field.setShowField(true);
-        }
-        for (IMetadataField field : selectedEntry.getNotesAreaList()) {
-            field.setShowField(true);
-        }
-        for (IMetadataField field : selectedEntry.getDescriptionControlAreaList()) {
-            field.setShowField(true);
+            for (IMetadataField field : selectedEntry.getIdentityStatementAreaList()) {
+                field.setShowField(true);
+            }
+            for (IMetadataField field : selectedEntry.getContextAreaList()) {
+                field.setShowField(true);
+            }
+            for (IMetadataField field : selectedEntry.getContentAndStructureAreaAreaList()) {
+                field.setShowField(true);
+            }
+            for (IMetadataField field : selectedEntry.getAccessAndUseAreaList()) {
+                field.setShowField(true);
+            }
+            for (IMetadataField field : selectedEntry.getAlliedMaterialsAreaList()) {
+                field.setShowField(true);
+            }
+            for (IMetadataField field : selectedEntry.getNotesAreaList()) {
+                field.setShowField(true);
+            }
+            for (IMetadataField field : selectedEntry.getDescriptionControlAreaList()) {
+                field.setShowField(true);
+            }
         }
     }
 

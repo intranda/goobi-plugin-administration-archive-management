@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import org.easymock.EasyMock;
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.IFieldValue;
 import org.goobi.interfaces.IMetadataField;
+import org.goobi.interfaces.INodeType;
 import org.goobi.interfaces.IValue;
 import org.goobi.model.ExtendendValue;
 import org.goobi.vocabulary.VocabRecord;
@@ -60,7 +62,8 @@ import de.sub.goobi.persistence.managers.VocabularyManager;
 import io.goobi.workflow.locking.LockingBean;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ ConfigurationHelper.class, ArchiveManagementManager.class, VocabularyManager.class, ProcessManager.class, Helper.class })
+@PrepareForTest({ ConfigurationHelper.class, ArchiveManagementManager.class, VocabularyManager.class, ProcessManager.class, Helper.class,
+        IEadEntry.class, INodeType.class })
 @PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*",
         "org.w3c.*" })
 public class ArchiveManagementAdministrationPluginTest {
@@ -70,8 +73,13 @@ public class ArchiveManagementAdministrationPluginTest {
 
     private static String resourcesFolder;
 
+    private IEadEntry selectedEntry;
+    private IEadEntry parentNode;
+    private IEadEntry copyNode;
+    private INodeType nodeType;
+
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() {
         resourcesFolder = "src/test/resources/"; // for junit tests in eclipse
         if (!Files.exists(Paths.get(resourcesFolder))) {
             resourcesFolder = "target/test-classes/"; // to run mvn test from cli or in jenkins
@@ -103,6 +111,7 @@ public class ArchiveManagementAdministrationPluginTest {
         ArchiveManagementManager.saveRecordGroup(EasyMock.anyObject());
         ArchiveManagementManager.setConfiguredNodes(EasyMock.anyObject());
         ArchiveManagementManager.deleteNodes(EasyMock.anyObject());
+        EasyMock.expect(ArchiveManagementManager.loadMetadataForNode(EasyMock.anyInt())).andReturn(new HashMap<>()).anyTimes();
         EasyMock.expect(ArchiveManagementManager.loadRecordGroup(EasyMock.anyInt())).andReturn(getSampleData()).anyTimes();
 
         EasyMock.expect(ArchiveManagementManager.getRecordGroupByTitle(EasyMock.anyString())).andReturn(null);
@@ -154,10 +163,46 @@ public class ArchiveManagementAdministrationPluginTest {
 
         EasyMock.replay(configurationHelper);
         PowerMock.replay(ConfigurationHelper.class);
+
+        selectedEntry = PowerMock.createMock(IEadEntry.class);
+        parentNode = PowerMock.createMock(IEadEntry.class);
+        copyNode = PowerMock.createMock(IEadEntry.class);
+        nodeType = PowerMock.createMock(INodeType.class);
+
+        // Setting up mocks for selectedEntry
+        EasyMock.expect(nodeType.getNodeName()).andReturn("someType").anyTimes();
+        EasyMock.expectLastCall();
+
+        EasyMock.expect(selectedEntry.getNodeType()).andReturn(nodeType).anyTimes();
+        EasyMock.expect(selectedEntry.getParentNode()).andReturn(parentNode).anyTimes();
+        EasyMock.expect(selectedEntry.deepCopy(EasyMock.anyObject())).andReturn(copyNode).anyTimes();
+        EasyMock.expect(selectedEntry.getDatabaseId()).andReturn(1).anyTimes();
+        EasyMock.expect(selectedEntry.getLabel()).andReturn("label").anyTimes();
+        EasyMock.expect(selectedEntry.getAllNodes()).andReturn(Collections.emptyList()).anyTimes();
+        selectedEntry.setSelected(EasyMock.anyBoolean());
+        EasyMock.expect(selectedEntry.getIdentityStatementAreaList()).andReturn(new ArrayList<>()).anyTimes();
+        EasyMock.expect(selectedEntry.getContextAreaList()).andReturn(new ArrayList<>()).anyTimes();
+        EasyMock.expect(selectedEntry.getContentAndStructureAreaAreaList()).andReturn(new ArrayList<>()).anyTimes();
+        EasyMock.expect(selectedEntry.getAccessAndUseAreaList()).andReturn(new ArrayList<>()).anyTimes();
+        EasyMock.expect(selectedEntry.getAlliedMaterialsAreaList()).andReturn(new ArrayList<>()).anyTimes();
+        EasyMock.expect(selectedEntry.getNotesAreaList()).andReturn(new ArrayList<>()).anyTimes();
+        EasyMock.expect(selectedEntry.getDescriptionControlAreaList()).andReturn(new ArrayList<>()).anyTimes();
+
+        // Setting up mocks for parentNode
+        EasyMock.expect(parentNode.getSubEntryList()).andReturn(Collections.singletonList(selectedEntry)).anyTimes();
+        parentNode.addSubEntry(copyNode);
+        EasyMock.expectLastCall().once();
+
+        // Setting up mocks for copyNode
+        copyNode.setOrderNumber(2);
+        EasyMock.expectLastCall().once();
+
+        PowerMock.replay(selectedEntry, parentNode, copyNode);
+
     }
 
     @Test
-    public void testConstructor() throws IOException {
+    public void testConstructor() {
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         assertNotNull(plugin);
     }
@@ -165,7 +210,6 @@ public class ArchiveManagementAdministrationPluginTest {
     @Test
     public void testListDatabases() {
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
-        //        plugin.setDatastoreUrl("http://localhost:8984/");
         List<String> databases = plugin.getPossibleDatabases();
         assertEquals(3, databases.size());
         assertEquals("first database", databases.get(0));
@@ -221,7 +265,6 @@ public class ArchiveManagementAdministrationPluginTest {
 
         List<IMetadataField> fieldList = entry.getIdentityStatementAreaList();
         IMetadataField agencycode = null;
-        //        IMetadataField eadid = null;
         IMetadataField recordid = null;
         IMetadataField unitid = null;
         IMetadataField unittitle = null;
@@ -1152,6 +1195,117 @@ public class ArchiveManagementAdministrationPluginTest {
         assertTrue(plugin.isFileToUploadExists());
     }
 
+    @Test
+    public void testUpdateAreaDisplay() {
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+
+        // Initial checks to ensure all display flags are false
+        assertFalse(plugin.isDisplayIdentityStatementArea());
+        assertFalse(plugin.isDisplayContextArea());
+        assertFalse(plugin.isDisplayContentArea());
+        assertFalse(plugin.isDisplayAccessArea());
+        assertFalse(plugin.isDisplayMaterialsArea());
+        assertFalse(plugin.isDisplayNotesArea());
+        assertFalse(plugin.isDisplayControlArea());
+
+        // Test level 1
+        plugin.updateAreaDisplay(1);
+        assertTrue(plugin.isDisplayIdentityStatementArea());
+        assertFalse(plugin.isDisplayContextArea());
+        assertFalse(plugin.isDisplayContentArea());
+        assertFalse(plugin.isDisplayAccessArea());
+        assertFalse(plugin.isDisplayMaterialsArea());
+        assertFalse(plugin.isDisplayNotesArea());
+        assertFalse(plugin.isDisplayControlArea());
+
+        // Reset and test level 2
+        resetDisplayFlags(plugin);
+        plugin.updateAreaDisplay(2);
+        assertFalse(plugin.isDisplayIdentityStatementArea());
+        assertTrue(plugin.isDisplayContextArea());
+        assertFalse(plugin.isDisplayContentArea());
+        assertFalse(plugin.isDisplayAccessArea());
+        assertFalse(plugin.isDisplayMaterialsArea());
+        assertFalse(plugin.isDisplayNotesArea());
+        assertFalse(plugin.isDisplayControlArea());
+
+        // Reset and test level 3
+        resetDisplayFlags(plugin);
+        plugin.updateAreaDisplay(3);
+        assertFalse(plugin.isDisplayIdentityStatementArea());
+        assertFalse(plugin.isDisplayContextArea());
+        assertTrue(plugin.isDisplayContentArea());
+        assertFalse(plugin.isDisplayAccessArea());
+        assertFalse(plugin.isDisplayMaterialsArea());
+        assertFalse(plugin.isDisplayNotesArea());
+        assertFalse(plugin.isDisplayControlArea());
+
+        // Reset and test level 4
+        resetDisplayFlags(plugin);
+        plugin.updateAreaDisplay(4);
+        assertFalse(plugin.isDisplayIdentityStatementArea());
+        assertFalse(plugin.isDisplayContextArea());
+        assertFalse(plugin.isDisplayContentArea());
+        assertTrue(plugin.isDisplayAccessArea());
+        assertFalse(plugin.isDisplayMaterialsArea());
+        assertFalse(plugin.isDisplayNotesArea());
+        assertFalse(plugin.isDisplayControlArea());
+
+        // Reset and test level 5
+        resetDisplayFlags(plugin);
+        plugin.updateAreaDisplay(5);
+        assertFalse(plugin.isDisplayIdentityStatementArea());
+        assertFalse(plugin.isDisplayContextArea());
+        assertFalse(plugin.isDisplayContentArea());
+        assertFalse(plugin.isDisplayAccessArea());
+        assertTrue(plugin.isDisplayMaterialsArea());
+        assertFalse(plugin.isDisplayNotesArea());
+        assertFalse(plugin.isDisplayControlArea());
+
+        // Reset and test level 6
+        resetDisplayFlags(plugin);
+        plugin.updateAreaDisplay(6);
+        assertFalse(plugin.isDisplayIdentityStatementArea());
+        assertFalse(plugin.isDisplayContextArea());
+        assertFalse(plugin.isDisplayContentArea());
+        assertFalse(plugin.isDisplayAccessArea());
+        assertFalse(plugin.isDisplayMaterialsArea());
+        assertTrue(plugin.isDisplayNotesArea());
+        assertFalse(plugin.isDisplayControlArea());
+
+        // Reset and test level 7
+        resetDisplayFlags(plugin);
+        plugin.updateAreaDisplay(7);
+        assertFalse(plugin.isDisplayIdentityStatementArea());
+        assertFalse(plugin.isDisplayContextArea());
+        assertFalse(plugin.isDisplayContentArea());
+        assertFalse(plugin.isDisplayAccessArea());
+        assertFalse(plugin.isDisplayMaterialsArea());
+        assertFalse(plugin.isDisplayNotesArea());
+        assertTrue(plugin.isDisplayControlArea());
+
+        // Reset and test default case (invalid level)
+        resetDisplayFlags(plugin);
+        plugin.updateAreaDisplay(0);
+        assertFalse(plugin.isDisplayIdentityStatementArea());
+        assertFalse(plugin.isDisplayContextArea());
+        assertFalse(plugin.isDisplayContentArea());
+        assertFalse(plugin.isDisplayAccessArea());
+        assertFalse(plugin.isDisplayMaterialsArea());
+        assertFalse(plugin.isDisplayNotesArea());
+        assertFalse(plugin.isDisplayControlArea());
+    }
+
+    private void resetDisplayFlags(ArchiveManagementAdministrationPlugin plugin) {
+        plugin.setDisplayIdentityStatementArea(false);
+        plugin.setDisplayContextArea(false);
+        plugin.setDisplayContentArea(false);
+        plugin.setDisplayAccessArea(false);
+        plugin.setDisplayMaterialsArea(false);
+        plugin.setDisplayNotesArea(false);
+        plugin.setDisplayControlArea(false);
+    }
+
     private IEadEntry getSampleData() {
         IEadEntry rootNode = new EadEntry(0, 0);
         rootNode.setLabel("label");
@@ -1245,4 +1399,59 @@ public class ArchiveManagementAdministrationPluginTest {
         };
         return part;
     }
+
+    @Test
+    public void testDuplicateNode() {
+
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.getPossibleDatabases();
+        plugin.setDatabaseName("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+
+        // Set the selected entry
+        plugin.setSelectedEntry(selectedEntry);
+
+        // Invoke the method
+        plugin.duplicateNode();
+
+        IEadEntry duplicatedNode = plugin.getSelectedEntry();
+        assertNotNull(duplicatedNode);
+    }
+
+    @Test
+    public void testLinkNodeList() {
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.getPossibleDatabases();
+        plugin.setDatabaseName("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+
+        // don't show node modal
+        List<IEadEntry> fixture = plugin.getLinkNodeList();
+        assertNull(fixture);
+
+        plugin.setDisplayLinkedModal(true);
+
+        fixture = plugin.getLinkNodeList();
+        assertEquals(7, fixture.size());
+    }
+
+    @Test
+    public void testShowAllFields() {
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.getPossibleDatabases();
+        plugin.setDatabaseName("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+
+        assertFalse(plugin.isDisplayControlArea());
+
+        // no node selected
+        plugin.showAllFields();
+        assertFalse(plugin.isDisplayControlArea());
+
+        // select a node
+        plugin.setSelectedEntry(plugin.getRootElement());
+        plugin.showAllFields();
+        assertTrue(plugin.isDisplayControlArea());
+    }
+
 }
