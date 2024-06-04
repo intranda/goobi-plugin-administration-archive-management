@@ -1,0 +1,116 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:composite="http://xmlns.jcp.org/jsf/composite"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:x="http://myfaces.apache.org/tomahawk"
+    xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites">
+
+    <composite:interface>
+    </composite:interface>
+
+    <composite:implementation>
+        <h:panelGroup
+            styleClass="modal bd-example-modal-lg"
+            layout="block"
+            id="linkNodeModal"
+            tabindex="-1"
+            role="dialog"
+            aria-labelledby="linkNodeModal"
+            aria-hidden="true">
+
+            <div class="modal-content-wrapper">
+                <div
+                    class="modal-dialog modal-lg"
+                    role="document">
+                    <h:panelGroup
+                        styleClass="modal-content"
+                        layout="block"
+                        id="linkNodeModalContent">
+                        <div class="modal-header">
+                            <button
+                                jsf:id="closeBtn"
+                                type="button"
+                                class="close"
+                                data-dismiss="modal"
+                                aria-label="Close">
+                                <span aria-hidden="true">
+                                    <h:outputText
+                                        value="&amp;times;"
+                                        escape="false" />
+                                </span>
+                                <x:updateActionListener
+                                    property="#{AdministrationForm.administrationPlugin.displayLinkedModal}"
+                                    value="false" />
+                            </button>
+                            <h4
+                                class="modal-title"
+                                style="width: 90%">#{msgs.plugin_administration_archive_linkNodeModal}</h4>
+                        </div>
+
+                        <div class="modal-body">
+                            <p>
+                                <h:outputText value="#{msgs.plugin_administration_linkNodeModalDesciption}" />
+                            </p>
+                            <div class="table">
+                                <h:form rendered="#{AdministrationForm.administrationPlugin.displayLinkedModal}">
+                                    <x:dataTable
+                                        id="linkNodeArea"
+                                        forceId="true"
+                                        value="#{AdministrationForm.administrationPlugin.linkNodeList}"
+                                        var="entry"
+                                        rowStyleClass="level-#{entry.hierarchy}">
+                                        <h:column>
+
+                                            <h:commandLink
+                                                id="link2"
+                                                immediate="true"
+                                                styleClass="#{entry.selected ? 'table__structure-link-active' : 'table__structure-link'}"
+                                                action="#{AdministrationForm.administrationPlugin.linkNode}"
+                                                disabled="#{entry.selected}">
+                                                <i
+                                                    class="fa fa-file-o"
+                                                    aria-hidden="true"></i>
+                                                <h:outputText
+                                                    value="#{entry.label}"
+                                                    rendered="#{entry.label != null}" />
+                                                <h:outputText
+                                                    value="#{entry.orderNumber}"
+                                                    rendered="#{entry.label == null}" />
+                                                <x:updateActionListener
+                                                    property="#{AdministrationForm.administrationPlugin.destinationEntry}"
+                                                    value="#{entry}" />
+                                            </h:commandLink>
+                                        </h:column>
+                                    </x:dataTable>
+                                </h:form>
+                            </div>
+
+                        </div>
+                        <div class="form-actions">
+                            <h:form>
+                                <h:commandLink
+                                    styleClass="btn margin-sides-10 font-size-s "
+                                    type="submit">
+
+                                    <x:updateActionListener
+                                        property="#{AdministrationForm.administrationPlugin.displayMode}"
+                                        value="" />
+                                    <x:updateActionListener
+                                        property="#{AdministrationForm.administrationPlugin.displayLinkedModal}"
+                                        value="false" />
+                                    <h:outputText value="#{msgs.abbrechen}" />
+                                </h:commandLink>
+                            </h:form>
+                        </div>
+                    </h:panelGroup>
+                </div>
+            </div>
+        </h:panelGroup>
+
+    </composite:implementation>
+</ui:composition>
+

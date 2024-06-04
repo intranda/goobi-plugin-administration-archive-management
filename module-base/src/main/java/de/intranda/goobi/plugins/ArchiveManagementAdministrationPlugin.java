@@ -2825,16 +2825,21 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private String numberOfNodes;
     @Getter
     @Setter
-    private transient INodeType nodeType;
+    private String nodeType;
 
-    @Getter
-    @Setter
-    private transient DuplicationConfiguration metadataToAdd;
+    private transient IConfiguration metadataToAdd;
+
+    public IConfiguration getMetadataToAdd() {
+        if (metadataToAdd == null && rootElement != null) {
+            metadataToAdd = new DuplicationConfiguration(rootElement);
+        }
+        return metadataToAdd;
+    }
 
     public void addNodes() {
         System.out.println("add " + numberOfNodes + " new nodes");
         // TODO
-
+        System.out.println("Type: " + nodeType);
     }
 
 }
