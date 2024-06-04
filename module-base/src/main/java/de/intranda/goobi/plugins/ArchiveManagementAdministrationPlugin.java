@@ -330,6 +330,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 // get field definitions from config file
                 readConfiguration();
                 rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
+                loadMetadataForNode(rootElement);
                 rootElement.setDisplayChildren(true);
             } else {
                 Helper.setFehlerMeldung("plugin_administration_archive_creation_noRecordGroupSelected");
