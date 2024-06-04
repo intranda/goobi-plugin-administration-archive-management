@@ -125,42 +125,10 @@
                                     <!-- metadata: for each field radio button for empty/generated/counter/text -->
 
                                     <ui:repeat
-                                        value="#{AdministrationForm.administrationPlugin.metadataToAdd.identityStatementArea}"
+                                        value="#{AdministrationForm.administrationPlugin.metadataToAdd}"
                                         var="entry">
-                                        <h:panelGroup
-                                            styleClass="row table-row"
-                                            layout="block"
-                                            id="fieldrow">
-                                            <div class="col-sm-3 control-label">
-                                                <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
-                                                <h:selectOneRadio value="#{entry.fieldType}">
-                                                    <f:ajax
-                                                        execute="@this"
-                                                        render="fieldrow" />
-                                                    <f:selectItem
-                                                        itemLabel="#{msgs.generated}"
-                                                        itemValue="generated" />
-                                                    <f:selectItem
-                                                        itemLabel="#{msgs.counter}"
-                                                        itemValue="counter" />
-                                                    <f:selectItem
-                                                        itemLabel="#{msgs.text}"
-                                                        itemValue="text" />
-                                                </h:selectOneRadio>
-                                            </div>
-                                            <div class="col-sm-9">
-                                                <h:panelGroup rendered="#{entry.fieldType == 'generated'}">generated</h:panelGroup>
-                                                <h:panelGroup rendered="#{entry.fieldType == 'text'}">text</h:panelGroup>
-                                                <h:panelGroup rendered="#{entry.fieldType == 'counter'}">counter</h:panelGroup>
-                                            </div>
-                                        </h:panelGroup>
+                                        <ui:include src="nodeMetadata.xhtml" />
                                     </ui:repeat>
-
-                                    <!-- if generated: show nothing -->
-                                    <!-- if counter: show field for prefix (static text), format (e.g. 4 digits), start value  -->
-                                    <!-- if text: show input field -->
-
-
                                 </div>
 
                             </div>
@@ -173,8 +141,6 @@
                                     title="#{msgs.plugin_administration_archive_addNodes}">
                                     <h:outputText value="#{msgs.plugin_administration_archive_addNodes}" />
                                 </h:commandLink>
-
-
 
                                 <h:commandLink
                                     styleClass="btn margin-sides-10 font-size-s "

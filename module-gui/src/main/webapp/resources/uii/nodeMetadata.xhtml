@@ -1,0 +1,95 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:composite="http://xmlns.jcp.org/jsf/composite"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:x="http://myfaces.apache.org/tomahawk"
+    xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites">
+
+    <composite:interface>
+    </composite:interface>
+
+    <composite:implementation>
+
+        <h:panelGroup
+            styleClass="row table-row"
+            layout="block"
+            id="fieldrow">
+            <div class="col-sm-3 control-label">
+                <!-- select metadata field -->
+                <h:selectOneMenu
+                    value="#{entry.fieldName}"
+                    styleClass="form-select form-control"
+                    pt:aria-label="#{msgs.fieldname}"
+                    id="fieldname">
+                    <f:selectItem
+                        itemValue=""
+                        itemLabel="#{msgs.bitteAuswaehlen}" />
+                    <f:selectItems
+                        var="fieldname"
+                        value="#{AdministrationForm.administrationPlugin.metadataFieldNames}"
+                        itemValue="#{fieldname}"
+                        itemLabel="#{msgs['plugin_administration_archive_'.concat(fieldname)]}" />
+                    <f:ajax
+                        execute="@this"
+                        render="@this" />
+                </h:selectOneMenu>
+<!-- select type for the current field -->
+                <h:selectOneRadio value="#{entry.fieldType}">
+                    <f:ajax
+                        execute="@this"
+                        render="fieldrow" />
+                    <f:selectItem
+                        itemLabel="#{msgs.generated}"
+                        itemValue="generated" />
+                    <f:selectItem
+                        itemLabel="#{msgs.counter}"
+                        itemValue="counter" />
+                    <f:selectItem
+                        itemLabel="#{msgs.text}"
+                        itemValue="text" />
+                </h:selectOneRadio>
+            </div>
+            <div class="col-sm-9">
+
+                <!-- if generated: show nothing -->
+                <h:panelGroup rendered="#{entry.fieldType == 'generated'}"></h:panelGroup>
+                <!-- if counter: show field for prefix (static text), format (e.g. 4 digits), start value  -->
+                <h:panelGroup rendered="#{entry.fieldType == 'counter'}">
+                    <h:inputText
+                        styleClass="form-control"
+                        value="#{entry.prefix}">
+                        <f:passThroughAttribute
+                            name="placeholder"
+                            value="#{msgs.prefix}" />
+                    </h:inputText>
+                    <h:inputText
+                        styleClass="form-control"
+                        value="#{entry.counterFormat}">
+                        <f:passThroughAttribute
+                            name="placeholder"
+                            value="#{msgs.counterFormat}" />
+                    </h:inputText>
+                    <h:inputText
+                        styleClass="form-control"
+                        value="#{entry.counterStartValue}">
+                        <f:passThroughAttribute
+                            name="placeholder"
+                            value="#{msgs.counterStartValue}" />
+                    </h:inputText>
+                </h:panelGroup>
+                <!-- if text: show input field -->
+                <h:panelGroup rendered="#{entry.fieldType == 'text'}">
+                    <h:inputText
+                        styleClass="form-control"
+                        value="#{entry.prefix}" />
+                </h:panelGroup>
+            </div>
+        </h:panelGroup>
+
+    </composite:implementation>
+</ui:composition>
+

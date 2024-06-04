@@ -40,6 +40,7 @@ import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.IFieldValue;
 import org.goobi.interfaces.IMetadataField;
 import org.goobi.interfaces.INodeType;
+import org.goobi.interfaces.IParameter;
 import org.goobi.interfaces.IValue;
 import org.goobi.model.ExtendendValue;
 import org.goobi.model.GroupValue;
@@ -60,6 +61,7 @@ import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
 import de.intranda.goobi.plugins.model.DuplicationConfiguration;
+import de.intranda.goobi.plugins.model.DuplicationParameter;
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.EadMetadataField;
 import de.intranda.goobi.plugins.model.FieldValue;
@@ -250,6 +252,17 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private transient IMetadataField selectedGroup;
 
     private transient List<IEadEntry> linkNodeList;
+
+    @Getter
+    @Setter
+    private String numberOfNodes;
+    @Getter
+    @Setter
+    private String nodeType;
+
+    private transient List<IParameter> metadataToAdd;
+    @Getter
+    private List<String> metadataFieldNames = new ArrayList<>();
 
     /**
      * Constructor
@@ -827,6 +840,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     configureField(subfieldConfig, subfield);
                     field.addSubfield(subfield);
                 }
+            } else if (field.isShowField()) {
+                metadataFieldNames.add(field.getName());
             }
 
         }
@@ -2821,26 +2836,81 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     // add multiple nodes to current node
 
-    @Getter
-    @Setter
-    private String numberOfNodes;
-    @Getter
-    @Setter
-    private String nodeType;
-
-    private transient IConfiguration metadataToAdd;
-
-    public IConfiguration getMetadataToAdd() {
+    public List<IParameter> getMetadataToAdd() {
         if (metadataToAdd == null && rootElement != null) {
-            metadataToAdd = new DuplicationConfiguration(rootElement);
+            metadataToAdd = new ArrayList<>();
+            // for now use 5 fields - TODO option to add/delete fields
+            metadataToAdd.add(new DuplicationParameter(""));
+            metadataToAdd.add(new DuplicationParameter(""));
+            metadataToAdd.add(new DuplicationParameter(""));
+            metadataToAdd.add(new DuplicationParameter(""));
+            metadataToAdd.add(new DuplicationParameter(""));
         }
         return metadataToAdd;
     }
 
     public void addNodes() {
-        System.out.println("add " + numberOfNodes + " new nodes");
-        // TODO
-        System.out.println("Type: " + nodeType);
-    }
+        if (selectedEntry != null) {
 
+            INodeType selectedNodeType = null;
+            for (INodeType node : configuredNodes) {
+                if (node.getNodeName().equals(nodeType)) {
+                    selectedNodeType = node;
+                }
+
+                int nodes = Integer.parseInt(numberOfNodes);
+                for (int counter = 0; counter < nodes; counter++) {
+                    IEadEntry entry =
+                            new EadEntry(selectedEntry.isHasChildren() ? selectedEntry.getSubEntryList().size() : 0,
+                                    selectedEntry.getHierarchy() + 1);
+                    entry.setId("id_" + UUID.randomUUID());
+                    entry.setNodeType(selectedNodeType);
+                    selectedEntry.addSubEntry(entry);
+
+                    // initialize all metadata fields
+                    for (IMetadataField emf : configuredFields) {
+                        if (emf.isGroup()) {
+                            loadGroupMetadata(entry, emf, null);
+                        } else {
+                            IParameter configuredField = null;
+                            for (IParameter param : metadataToAdd) {
+                                if (emf.getName().equals(param.getFieldName())) {
+                                    configuredField = param;
+                                }
+                            }
+                            List<IValue> metadataValues = null;
+                            if (configuredField != null) {
+                                String value = null;
+                                switch (configuredField.getFieldType()) {
+                                    case "generated":
+                                        value = "id_" + UUID.randomUUID();
+                                        break;
+                                    case "text":
+                                        value = configuredField.getPrefix();
+                                        break;
+                                    case "counter":
+                                        value = configuredField.getPrefix()
+                                                + String.format(configuredField.getCounterFormat(), configuredField.getCounterStartValue() + counter);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                IValue val = new ExtendendValue(emf.getName(), value, null, null);
+                                metadataValues.add(val);
+                            }
+
+                            addFieldToEntry(entry, emf, metadataValues);
+                        }
+                    }
+
+                    // get values from
+
+                }
+
+                System.out.println("add " + numberOfNodes + " new nodes");
+                // TODO
+                System.out.println("Type: " + nodeType);
+            }
+        }
+    }
 }
