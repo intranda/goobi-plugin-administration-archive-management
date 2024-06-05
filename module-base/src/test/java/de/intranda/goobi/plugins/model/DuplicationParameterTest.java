@@ -25,7 +25,7 @@ public class DuplicationParameterTest {
         assertEquals("", duplicationParameter.getPrefix());
         assertEquals("", duplicationParameter.getSuffix());
         assertFalse(duplicationParameter.isCounter());
-        assertEquals("####", duplicationParameter.getCounterFormat());
+        assertEquals("%04d", duplicationParameter.getCounterFormat());
         assertEquals(1, duplicationParameter.getCounterStartValue());
         assertFalse(duplicationParameter.isGenerated());
         assertNull(duplicationParameter.getFieldType());
