@@ -623,35 +623,34 @@ public class ArchiveManagementAdministrationPluginTest {
         Document doc = new SAXBuilder(XMLReaders.NONVALIDATING).build(file);
 
         Element ead = doc.getRootElement();
-        Element eadHeader = ead.getChild("eadheader", ArchiveManagementAdministrationPlugin.ns);
-        //        assertEquals("eadid", eadHeader.getChildText("eadid", ArchiveManagementAdministrationPlugin.ns));
+        Element eadHeader = ead.getChild("eadheader", plugin.getNameSpaceWrite());
 
         assertEquals("value",
-                eadHeader.getChild("filedesc", ArchiveManagementAdministrationPlugin.ns)
-                        .getChild("titlestmt", ArchiveManagementAdministrationPlugin.ns)
-                        .getChildText("titleproper", ArchiveManagementAdministrationPlugin.ns));
-        Element archdesc = ead.getChild("archdesc", ArchiveManagementAdministrationPlugin.ns);
-        Element did = archdesc.getChild("did", ArchiveManagementAdministrationPlugin.ns);
-        Element dsc = archdesc.getChild("dsc", ArchiveManagementAdministrationPlugin.ns);
+                eadHeader.getChild("filedesc", plugin.getNameSpaceWrite())
+                        .getChild("titlestmt", plugin.getNameSpaceWrite())
+                        .getChildText("titleproper", plugin.getNameSpaceWrite()));
+        Element archdesc = ead.getChild("archdesc", plugin.getNameSpaceWrite());
+        Element did = archdesc.getChild("did", plugin.getNameSpaceWrite());
+        Element dsc = archdesc.getChild("dsc", plugin.getNameSpaceWrite());
 
         assertEquals(2, did.getChildren().size());
         assertEquals("value", did.getChildren().get(0).getText());
         assertEquals(2, dsc.getChildren().size());
 
         Element c = dsc.getChildren().get(1);
-        Element subDid = c.getChild("did", ArchiveManagementAdministrationPlugin.ns);
-        assertEquals("value", subDid.getChildText("unitid", ArchiveManagementAdministrationPlugin.ns));
-        assertEquals("value", subDid.getChildText("unittitle", ArchiveManagementAdministrationPlugin.ns));
+        Element subDid = c.getChild("did", plugin.getNameSpaceWrite());
+        assertEquals("value", subDid.getChildText("unitid", plugin.getNameSpaceWrite()));
+        assertEquals("value", subDid.getChildText("unittitle", plugin.getNameSpaceWrite()));
 
-        Element processinfo = archdesc.getChild("processinfo", ArchiveManagementAdministrationPlugin.ns);
-        Element list = processinfo.getChild("list", ArchiveManagementAdministrationPlugin.ns);
-        assertEquals("", list.getChildText("item", ArchiveManagementAdministrationPlugin.ns));
+        Element processinfo = archdesc.getChild("processinfo", plugin.getNameSpaceWrite());
+        Element list = processinfo.getChild("list", plugin.getNameSpaceWrite());
+        assertEquals("", list.getChildText("item", plugin.getNameSpaceWrite()));
 
-        Element event = ead.getChild("control", ArchiveManagementAdministrationPlugin.ns)
-                .getChild("maintenancehistory", ArchiveManagementAdministrationPlugin.ns)
-                .getChild("maintenanceevent", ArchiveManagementAdministrationPlugin.ns);
-        assertEquals("Created", event.getChild("eventtype", ArchiveManagementAdministrationPlugin.ns).getText());
-        assertNotNull(event.getChild("eventdatetime", ArchiveManagementAdministrationPlugin.ns).getText());
+        Element event = ead.getChild("control", plugin.getNameSpaceWrite())
+                .getChild("maintenancehistory", plugin.getNameSpaceWrite())
+                .getChild("maintenanceevent", plugin.getNameSpaceWrite());
+        assertEquals("Created", event.getChild("eventtype", plugin.getNameSpaceWrite()).getText());
+        assertNotNull(event.getChild("eventdatetime", plugin.getNameSpaceWrite()).getText());
 
     }
 

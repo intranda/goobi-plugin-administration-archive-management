@@ -146,7 +146,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Setter
     private transient IEadEntry destinationEntry;
 
-    public static final Namespace ns = Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9");
+    private Namespace nameSpaceRead;
+    @Getter
+    private Namespace nameSpaceWrite;
     private static XPathFactory xFactory = XPathFactory.instance();
 
     private XMLConfiguration xmlConfig;
@@ -413,7 +415,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         Element eadElement = null;
         Element collection = document.getRootElement();
         if ("collection".equals(collection.getName())) {
-            eadElement = collection.getChild("ead", ns);
+            eadElement = collection.getChild("ead", nameSpaceRead);
         } else {
             eadElement = collection;
         }
@@ -423,12 +425,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         rootElement.setNodeType(rootType);
         rootElement.setDisplayChildren(true);
 
-        Element archdesc = eadElement.getChild("archdesc", ns);
+        Element archdesc = eadElement.getChild("archdesc", nameSpaceRead);
         if (archdesc != null) {
-            Element processinfoElement = archdesc.getChild("processinfo", ns);
+            Element processinfoElement = archdesc.getChild("processinfo", nameSpaceRead);
             if (processinfoElement != null) {
-                Element list = processinfoElement.getChild("list", ns);
-                List<Element> entries = list.getChildren("item", ns);
+                Element list = processinfoElement.getChild("list", nameSpaceRead);
+                List<Element> entries = list.getChildren("item", nameSpaceRead);
                 IMetadataField editor =
                         new EadMetadataField("editorName", 7, null, null, false, true, true, "readonly", null, false, null, null, false, null, null,
                                 false);
@@ -442,18 +444,19 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 rootElement.getDescriptionControlAreaList().add(editor);
             }
         }
-        Element control = eadElement.getChild("control", ns);
-        if (control != null) {
-            Element maintenancehistory = control.getChild("maintenancehistory", ns);
-            if (maintenancehistory != null) {
-                List<Element> events = maintenancehistory.getChildren("maintenanceevent", ns);
-                for (Element event : events) {
-                    String eventtype = event.getChildText("eventtype", ns);
-                    String eventdatetime = event.getChildText("eventdatetime", ns);
-                    eventList.add(new StringPair(eventtype, eventdatetime));
-                }
-            }
-        }
+        // TODO get this from a configured field, store it as a group
+        //        Element control = eadElement.getChild("control", nameSpaceRead);
+        //        if (control != null) {
+        //            Element maintenancehistory = control.getChild("maintenancehistory", nameSpaceRead);
+        //            if (maintenancehistory != null) {
+        //                List<Element> events = maintenancehistory.getChildren("maintenanceevent", nameSpaceRead);
+        //                for (Element event : events) {
+        //                    String eventtype = event.getChildText("eventtype", nameSpaceRead);
+        //                    String eventdatetime = event.getChildText("eventdatetime", nameSpaceRead);
+        //                    eventList.add(new StringPair(eventtype, eventdatetime));
+        //                }
+        //            }
+        //        }
         getDuplicationConfiguration();
     }
 
@@ -467,7 +470,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         for (IMetadataField emf : configuredFields) {
             if (emf.isGroup()) {
                 // find group root element
-                XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, ns);
+                XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, nameSpaceRead);
                 List<Element> values = engine.evaluate(element);
                 for (Element groupElement : values) {
                     IMetadataField groupClone = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(),
@@ -527,16 +530,16 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
         }
 
-        Element eadheader = element.getChild("eadheader", ns);
+        Element eadheader = element.getChild("eadheader", nameSpaceRead);
 
         entry.setId(element.getAttributeValue("id"));
         if (eadheader != null) {
             try {
-                Element filedesc = eadheader.getChild("filedesc", ns);
+                Element filedesc = eadheader.getChild("filedesc", nameSpaceRead);
                 if (filedesc != null) {
-                    Element titlestmt = filedesc.getChild("titlestmt", ns);
+                    Element titlestmt = filedesc.getChild("titlestmt", nameSpaceRead);
                     if (titlestmt != null) {
-                        String titleproper = titlestmt.getChildText("titleproper", ns);
+                        String titleproper = titlestmt.getChildText("titleproper", nameSpaceRead);
                         entry.setLabel(titleproper);
                     }
                 }
@@ -548,7 +551,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         // nodeType
         // get child elements
         List<Element> clist = null;
-        Element archdesc = element.getChild("archdesc", ns);
+        Element archdesc = element.getChild("archdesc", nameSpaceRead);
         if (archdesc != null) {
             String nodeTypeName = archdesc.getAttributeValue("localtype");
             for (INodeType nt : configuredNodes) {
@@ -556,16 +559,16 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     entry.setNodeType(nt);
                 }
             }
-            Element dsc = archdesc.getChild("dsc", ns);
+            Element dsc = archdesc.getChild("dsc", nameSpaceRead);
             if (dsc != null) {
                 // read process title
-                List<Element> altformavailList = dsc.getChildren("altformavail", ns);
+                List<Element> altformavailList = dsc.getChildren("altformavail", nameSpaceRead);
                 for (Element altformavail : altformavailList) {
                     if ("goobi_process".equals(altformavail.getAttributeValue("localtype"))) {
                         entry.setGoobiProcessTitle(altformavail.getText());
                     }
                 }
-                clist = dsc.getChildren("c", ns);
+                clist = dsc.getChildren("c", nameSpaceRead);
             }
 
         } else {
@@ -575,7 +578,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     entry.setNodeType(nt);
                 }
             }
-            List<Element> altformavailList = element.getChildren("altformavail", ns);
+            List<Element> altformavailList = element.getChildren("altformavail", nameSpaceRead);
             for (Element altformavail : altformavailList) {
                 if ("goobi_process".equals(altformavail.getAttributeValue("localtype"))) {
                     entry.setGoobiProcessTitle(altformavail.getText());
@@ -586,7 +589,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             entry.setNodeType(configuredNodes.get(0));
         }
         if (clist == null) {
-            clist = element.getChildren("c", ns);
+            clist = element.getChildren("c", nameSpaceRead);
         }
         if (clist != null) {
             int subOrder = 0;
@@ -611,7 +614,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private List<IValue> getValuesFromXml(Element element, IMetadataField emf) {
         List<IValue> valueList = new ArrayList<>();
         if ("text".equalsIgnoreCase(emf.getXpathType())) {
-            XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, ns);
+            XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, nameSpaceRead);
             List<Text> values = engine.evaluate(element);
             if (emf.isRepeatable()) {
                 for (Text value : values) {
@@ -624,7 +627,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 valueList.add(new ExtendendValue(emf.getName(), stringValue, null, null));
             }
         } else if ("attribute".equalsIgnoreCase(emf.getXpathType())) {
-            XPathExpression<Attribute> engine = xFactory.compile(emf.getXpath(), Filters.attribute(), null, ns);
+            XPathExpression<Attribute> engine = xFactory.compile(emf.getXpath(), Filters.attribute(), null, nameSpaceRead);
             List<Attribute> values = engine.evaluate(element);
 
             if (emf.isRepeatable()) {
@@ -638,7 +641,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 valueList.add(new ExtendendValue(emf.getName(), stringValue, null, null));
             }
         } else {
-            XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, ns);
+            XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, nameSpaceRead);
             List<Element> values = engine.evaluate(element);
             if (emf.isRepeatable()) {
                 for (Element value : values) {
@@ -753,6 +756,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 // do nothing
             }
         }
+
+        nameSpaceRead = Namespace.getNamespace("ead", config.getString("/eadNamespaceRead", "urn:isbn:1-931666-22-9"));
+        nameSpaceWrite = Namespace.getNamespace("ead", config.getString("/eadNamespaceWrite", "urn:isbn:1-931666-22-9"));
+
         for (String level : config.getStringArray("/showGroup/@level")) {
             switch (level) {
                 case "1":
@@ -1225,19 +1232,19 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             if (StringUtils.isNotBlank(node.getId())) {
                 xmlElement.setAttribute("id", node.getId());
             }
-            Element archdesc = xmlElement.getChild("archdesc", ns);
+            Element archdesc = xmlElement.getChild("archdesc", nameSpaceWrite);
             if (archdesc == null) {
-                archdesc = new Element("archdesc", ns);
+                archdesc = new Element("archdesc", nameSpaceWrite);
                 xmlElement.addContent(archdesc);
             }
-            dsc = archdesc.getChild("dsc", ns);
+            dsc = archdesc.getChild("dsc", nameSpaceWrite);
             if (dsc == null) {
-                dsc = new Element("dsc", ns);
+                dsc = new Element("dsc", nameSpaceWrite);
                 archdesc.addContent(dsc);
             }
 
             if (StringUtils.isNotBlank(node.getGoobiProcessTitle())) {
-                Element altformavail = new Element("altformavail", ns);
+                Element altformavail = new Element("altformavail", nameSpaceWrite);
                 altformavail.setAttribute("localtype", "goobi_process");
                 altformavail.setText(node.getGoobiProcessTitle());
                 dsc.addContent(altformavail);
@@ -1255,14 +1262,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         for (IEadEntry subNode : node.getSubEntryList()) {
             if (dsc == null) {
-                dsc = new Element("dsc", ns);
+                dsc = new Element("dsc", nameSpaceWrite);
                 xmlElement.addContent(dsc);
             }
 
-            Element c = new Element("c", ns);
+            Element c = new Element("c", nameSpaceWrite);
             dsc.addContent(c);
             if (StringUtils.isNotBlank(subNode.getGoobiProcessTitle())) {
-                Element altformavail = new Element("altformavail", ns);
+                Element altformavail = new Element("altformavail", nameSpaceWrite);
                 altformavail.setAttribute("localtype", "goobi_process");
                 altformavail.setText(subNode.getGoobiProcessTitle());
                 c.addContent(altformavail);
@@ -1336,7 +1343,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 // create attribute on current element
                 // duplicate current element if attribute is not empty
                 if (currentElement.getAttribute(field) != null) {
-                    Element duplicate = new Element(currentElement.getName(), ns);
+                    Element duplicate = new Element(currentElement.getName(), nameSpaceWrite);
                     for (Attribute attr : currentElement.getAttributes()) {
                         if (!attr.getName().equals(field)) {
                             duplicate.setAttribute(attr.getName(), attr.getValue());
@@ -1355,14 +1362,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         if (!written) {
             // duplicate current element if not empty
             if (StringUtils.isNotBlank(currentElement.getText()) || !currentElement.getChildren().isEmpty()) {
-                Element duplicate = new Element(currentElement.getName(), ns);
+                Element duplicate = new Element(currentElement.getName(), nameSpaceWrite);
                 for (Attribute attr : currentElement.getAttributes()) {
                     duplicate.setAttribute(attr.getName(), attr.getValue());
                 }
 
                 if (!currentElement.getChildren().isEmpty()) {
                     for (Element child : currentElement.getChildren()) {
-                        Element duplicateChild = new Element(child.getName(), ns);
+                        Element duplicateChild = new Element(child.getName(), nameSpaceWrite);
                         duplicateChild.setText(child.getText());
                         duplicate.addContent(duplicateChild);
                     }
@@ -1393,7 +1400,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
 
         // check if element exists, re-use if possible
-        Element element = currentElement.getChild(field, ns);
+        Element element = currentElement.getChild(field, nameSpaceWrite);
         if (element == null) {
             element = createXmlElement(currentElement, field, conditions);
         } else if (conditions != null) {
@@ -1472,7 +1479,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     private Element createXmlElement(Element currentElement, String field, String conditions) {
         Element element;
-        element = new Element(field, ns);
+        element = new Element(field, nameSpaceWrite);
         currentElement.addContent(element);
         if (conditions != null) {
             String[] conditionArray = conditions.split("\\[");
@@ -1508,7 +1515,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     String[] attr = condition.split("=");
                     if (attr.length > 1) {
                         String strName = attr[1].replace("'", "");
-                        Element eltChild = new Element(attr[0], ns);
+                        Element eltChild = new Element(attr[0], nameSpaceWrite);
                         eltChild.setText(strName);
                         element.addContent(eltChild);
                     }
@@ -2105,7 +2112,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         // create ead document
         Document document = new Document();
 
-        Element eadRoot = new Element("ead", ns);
+        Element eadRoot = new Element("ead", nameSpaceWrite);
         document.setRootElement(eadRoot);
         addMetadata(eadRoot, rootElement);
         createEventFields(eadRoot);
@@ -2139,26 +2146,26 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     private void createEventFields(Element eadElement) {
 
-        Element archdesc = eadElement.getChild("archdesc", ns);
+        Element archdesc = eadElement.getChild("archdesc", nameSpaceWrite);
         if (archdesc == null) {
-            archdesc = new Element("archdesc", ns);
+            archdesc = new Element("archdesc", nameSpaceWrite);
             eadElement.addContent(archdesc);
         }
-        Element processinfoElement = archdesc.getChild("processinfo", ns);
+        Element processinfoElement = archdesc.getChild("processinfo", nameSpaceWrite);
         if (processinfoElement == null) {
-            processinfoElement = new Element("processinfo", ns);
+            processinfoElement = new Element("processinfo", nameSpaceWrite);
             archdesc.addContent(processinfoElement);
         }
-        Element list = processinfoElement.getChild("list", ns);
+        Element list = processinfoElement.getChild("list", nameSpaceWrite);
         if (list == null) {
-            list = new Element("list", ns);
+            list = new Element("list", nameSpaceWrite);
             processinfoElement.addContent(list);
         }
         if (!editorList.contains(username)) {
             editorList.add(username);
         }
         for (String editor : editorList) {
-            Element item = new Element("item", ns);
+            Element item = new Element("item", nameSpaceWrite);
             item.setText(editor);
             list.addContent(item);
         }
@@ -2171,29 +2178,29 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         String date = formatter.format(new Date());
         eventList.add(new StringPair(eventType, date));
 
-        Element control = eadElement.getChild("control", ns);
+        Element control = eadElement.getChild("control", nameSpaceWrite);
         if (control == null) {
-            control = new Element("control", ns);
+            control = new Element("control", nameSpaceWrite);
             eadElement.addContent(control);
         }
 
-        Element maintenancehistory = control.getChild("maintenancehistory", ns);
+        Element maintenancehistory = control.getChild("maintenancehistory", nameSpaceWrite);
 
         if (maintenancehistory == null) {
-            maintenancehistory = new Element("maintenancehistory", ns);
+            maintenancehistory = new Element("maintenancehistory", nameSpaceWrite);
             control.addContent(maintenancehistory);
         }
-        for (StringPair pair : eventList) {
-            Element maintenanceevent = new Element("maintenanceevent", ns);
-            maintenancehistory.addContent(maintenanceevent);
-            Element eventtype = new Element("eventtype", ns);
-            eventtype.setText(pair.getOne());
-            maintenanceevent.addContent(eventtype);
-            Element eventdatetime = new Element("eventdatetime", ns);
-            eventdatetime.setText(pair.getTwo());
-            maintenanceevent.addContent(eventdatetime);
-        }
-
+        // TODO save this as a regular group
+        //        for (StringPair pair : eventList) {
+        //            Element maintenanceevent = new Element("maintenanceevent", nameSpaceWrite);
+        //            maintenancehistory.addContent(maintenanceevent);
+        //            Element eventtype = new Element("eventtype", nameSpaceWrite);
+        //            eventtype.setText(pair.getOne());
+        //            maintenanceevent.addContent(eventtype);
+        //            Element eventdatetime = new Element("eventdatetime", nameSpaceWrite);
+        //            eventdatetime.setText(pair.getTwo());
+        //            maintenanceevent.addContent(eventdatetime);
+        //        }
     }
 
     public String saveArchiveAndLeave() {

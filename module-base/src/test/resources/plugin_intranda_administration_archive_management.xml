@@ -233,6 +233,10 @@
         <showGroup level="1" />
         <showGroup level="3" />
 
+        <!-- namespaces to read and write ead files -->
+        <eadNamespaceRead>urn:isbn:1-931666-22-9</eadNamespaceRead>
+        <eadNamespaceWrite>http://ead3.archivists.org/schema/</eadNamespaceWrite>
+
         <!-- ============================= Structure types and Icons ================================ -->
 
     	<node name="file" ruleset="File" icon="fa fa-file-text-o" processTemplateId="309544" />

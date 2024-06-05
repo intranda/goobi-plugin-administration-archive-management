@@ -214,6 +214,17 @@
 -->
 
 
+        <!-- extend configured areas -->
+        <showGroup level="1" />
+        <showGroup level="3" />
+        <!-- namespaces to read and write ead files -->
+        <!-- namespace for ead2: urn:isbn:1-931666-22-9 -->
+        <!-- namespace for ead3: http://ead3.archivists.org/schema/ -->
+        
+        <eadNamespaceRead>urn:isbn:1-931666-22-9</eadNamespaceRead>
+        <eadNamespaceWrite>urn:isbn:1-931666-22-9</eadNamespaceWrite>
+
+
         <node name="file" ruleset="File" icon="fa fa-file-text-o" processTemplateId="309544" />
         <node name="folder" ruleset="Folder" icon="fa fa-folder-open-o" processTemplateId="309544"/>
         <node name="image" ruleset="Picture" icon="fa fa-file-image-o" processTemplateId="309544" />
