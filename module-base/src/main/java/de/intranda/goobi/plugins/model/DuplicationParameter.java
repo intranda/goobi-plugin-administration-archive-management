@@ -18,7 +18,7 @@ public class DuplicationParameter implements Serializable, IParameter {
     private String fieldName;
 
     private boolean counter;
-    private String counterFormat = "####";
+    private String counterFormat = "%04d";
     private int counterStartValue = 1;
 
     private boolean generated;

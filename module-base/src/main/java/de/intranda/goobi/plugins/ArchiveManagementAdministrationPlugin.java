@@ -840,7 +840,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     configureField(subfieldConfig, subfield);
                     field.addSubfield(subfield);
                 }
-            } else if (field.isShowField()) {
+            } else if (field.isVisible()) {
                 metadataFieldNames.add(field.getName());
             }
 
@@ -1029,9 +1029,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
             // delete elements in the database
             ArchiveManagementManager.deleteNodes(nodesToDelete);
-
+            selectedEntry = null;
             // select the parent node
             setSelectedEntry(parentNode);
+            flatEntryList = null;
 
         }
 
@@ -2857,59 +2858,54 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 if (node.getNodeName().equals(nodeType)) {
                     selectedNodeType = node;
                 }
+            }
+            int nodes = Integer.parseInt(numberOfNodes);
+            for (int counter = 0; counter < nodes; counter++) {
+                IEadEntry entry =
+                        new EadEntry(selectedEntry.isHasChildren() ? selectedEntry.getSubEntryList().size() : 0,
+                                selectedEntry.getHierarchy() + 1);
+                entry.setId("id_" + UUID.randomUUID());
+                entry.setNodeType(selectedNodeType);
+                selectedEntry.addSubEntry(entry);
 
-                int nodes = Integer.parseInt(numberOfNodes);
-                for (int counter = 0; counter < nodes; counter++) {
-                    IEadEntry entry =
-                            new EadEntry(selectedEntry.isHasChildren() ? selectedEntry.getSubEntryList().size() : 0,
-                                    selectedEntry.getHierarchy() + 1);
-                    entry.setId("id_" + UUID.randomUUID());
-                    entry.setNodeType(selectedNodeType);
-                    selectedEntry.addSubEntry(entry);
-
-                    // initialize all metadata fields
-                    for (IMetadataField emf : configuredFields) {
-                        if (emf.isGroup()) {
-                            loadGroupMetadata(entry, emf, null);
-                        } else {
-                            IParameter configuredField = null;
-                            for (IParameter param : metadataToAdd) {
-                                if (emf.getName().equals(param.getFieldName())) {
-                                    configuredField = param;
-                                }
+                // initialize all metadata fields
+                for (IMetadataField emf : configuredFields) {
+                    if (emf.isGroup()) {
+                        loadGroupMetadata(entry, emf, null);
+                    } else {
+                        IParameter configuredField = null;
+                        for (IParameter param : metadataToAdd) {
+                            if (emf.getName().equals(param.getFieldName())) {
+                                configuredField = param;
                             }
-                            List<IValue> metadataValues = null;
-                            if (configuredField != null) {
-                                String value = null;
-                                switch (configuredField.getFieldType()) {
-                                    case "generated":
-                                        value = "id_" + UUID.randomUUID();
-                                        break;
-                                    case "text":
-                                        value = configuredField.getPrefix();
-                                        break;
-                                    case "counter":
-                                        value = configuredField.getPrefix()
-                                                + String.format(configuredField.getCounterFormat(), configuredField.getCounterStartValue() + counter);
-                                        break;
-                                    default:
-                                        break;
-                                }
-                                IValue val = new ExtendendValue(emf.getName(), value, null, null);
-                                metadataValues.add(val);
-                            }
-
-                            addFieldToEntry(entry, emf, metadataValues);
                         }
+                        List<IValue> metadataValues = new ArrayList<>();
+                        if (configuredField != null) {
+                            String value = null;
+                            switch (configuredField.getFieldType()) {
+                                case "generated":
+                                    value = "id_" + UUID.randomUUID();
+                                    break;
+                                case "text":
+                                    value = configuredField.getPrefix();
+                                    break;
+                                case "counter":
+                                    value = configuredField.getPrefix()
+                                            + String.format(configuredField.getCounterFormat(), configuredField.getCounterStartValue() + counter);
+                                    break;
+                                default:
+                                    break;
+                            }
+                            IValue val = new ExtendendValue(emf.getName(), value, null, null);
+                            metadataValues.add(val);
+                        }
+
+                        IMetadataField toAdd = addFieldToEntry(entry, emf, metadataValues);
+                        addFieldToNode(entry, toAdd);
                     }
-
-                    // get values from
-
                 }
-
-                System.out.println("add " + numberOfNodes + " new nodes");
-                // TODO
-                System.out.println("Type: " + nodeType);
+                // save new node
+                ArchiveManagementManager.saveNode(recordGroup.getId(), entry);
             }
         }
     }
