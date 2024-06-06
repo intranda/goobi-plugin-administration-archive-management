@@ -2847,14 +2847,19 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     public List<IParameter> getMetadataToAdd() {
         if (metadataToAdd == null && rootElement != null) {
             metadataToAdd = new ArrayList<>();
-            // for now use 5 fields - TODO option to add/delete fields
-            metadataToAdd.add(new DuplicationParameter(""));
-            metadataToAdd.add(new DuplicationParameter(""));
             metadataToAdd.add(new DuplicationParameter(""));
             metadataToAdd.add(new DuplicationParameter(""));
             metadataToAdd.add(new DuplicationParameter(""));
         }
         return metadataToAdd;
+    }
+
+    public void addMetadataRow() {
+        metadataToAdd.add(new DuplicationParameter(""));
+    }
+
+    public void removeMetadataRow(IParameter row) {
+        metadataToAdd.remove(row);
     }
 
     public void addNodes() {

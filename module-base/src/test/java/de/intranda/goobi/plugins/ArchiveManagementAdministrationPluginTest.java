@@ -252,7 +252,7 @@ public class ArchiveManagementAdministrationPluginTest {
     }
 
     @Test
-    public void testUpLoadXmlFile() {
+    public void testUpLoadXmlFile() { //NOSONAR
         Part part = prepareFileUpload();
 
         LockingBean.resetAllLocks();
@@ -263,7 +263,6 @@ public class ArchiveManagementAdministrationPluginTest {
 
         IEadEntry entry = plugin.getRootElement();
 
-        List<IMetadataField> fieldList = entry.getIdentityStatementAreaList();
         IMetadataField agencycode = null;
         IMetadataField recordid = null;
         IMetadataField unitid = null;
@@ -413,7 +412,6 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals(0, entry.getHierarchy().intValue());
         assertEquals("archive header title", entry.getLabel());
 
-        //        assertEquals("eadid", eadid.getValues().get(0).getValue());
         assertEquals("recordid", recordid.getValues().get(0).getValue());
         assertEquals("agencycode", agencycode.getValues().get(0).getValue());
         assertEquals("unitid", unitid.getValues().get(0).getValue());
@@ -453,7 +451,7 @@ public class ArchiveManagementAdministrationPluginTest {
         IEadEntry firstSub = entry.getSubEntryList().get(0);
         assertEquals(0, firstSub.getOrderNumber().intValue());
         assertEquals(1, firstSub.getHierarchy().intValue());
-        fieldList = firstSub.getIdentityStatementAreaList();
+        List<IMetadataField> fieldList = firstSub.getIdentityStatementAreaList();
         for (IMetadataField emf : fieldList) {
             switch (emf.getName()) {
                 case "unitid":
@@ -481,9 +479,6 @@ public class ArchiveManagementAdministrationPluginTest {
         fieldList = second.getIdentityStatementAreaList();
         for (IMetadataField emf : fieldList) {
             switch (emf.getName()) {
-                case "unitid":
-                    unitid = emf;
-                    break;
                 case "unittitle":
                     unittitle = emf;
                     break;
@@ -497,9 +492,6 @@ public class ArchiveManagementAdministrationPluginTest {
         fieldList = second.getIdentityStatementAreaList();
         for (IMetadataField emf : fieldList) {
             switch (emf.getName()) {
-                case "unitid":
-                    unitid = emf;
-                    break;
                 case "unittitle":
                     unittitle = emf;
                     break;
@@ -513,9 +505,6 @@ public class ArchiveManagementAdministrationPluginTest {
         fieldList = second.getIdentityStatementAreaList();
         for (IMetadataField emf : fieldList) {
             switch (emf.getName()) {
-                case "unitid":
-                    unitid = emf;
-                    break;
                 case "unittitle":
                     unittitle = emf;
                     break;
@@ -529,9 +518,6 @@ public class ArchiveManagementAdministrationPluginTest {
         fieldList = third.getIdentityStatementAreaList();
         for (IMetadataField emf : fieldList) {
             switch (emf.getName()) {
-                case "unitid":
-                    unitid = emf;
-                    break;
                 case "unittitle":
                     unittitle = emf;
                     break;
@@ -543,9 +529,6 @@ public class ArchiveManagementAdministrationPluginTest {
         fieldList = fourth.getIdentityStatementAreaList();
         for (IMetadataField emf : fieldList) {
             switch (emf.getName()) {
-                case "unitid":
-                    unitid = emf;
-                    break;
                 case "unittitle":
                     unittitle = emf;
                     break;
@@ -562,12 +545,6 @@ public class ArchiveManagementAdministrationPluginTest {
         fieldList = fifth.getIdentityStatementAreaList();
         for (IMetadataField emf : fieldList) {
             switch (emf.getName()) {
-                case "unitid":
-                    unitid = emf;
-                    break;
-                case "unittitle":
-                    unittitle = emf;
-                    break;
                 case "descriptionLevel":
                     descriptionLevel = emf;
                     break;
@@ -1057,7 +1034,7 @@ public class ArchiveManagementAdministrationPluginTest {
     }
 
     @Test
-    public void testValidateArchive() {
+    public void testValidateArchive() { //NOSONAR
         Part part = prepareFileUpload();
 
         LockingBean.resetAllLocks();
@@ -1196,7 +1173,7 @@ public class ArchiveManagementAdministrationPluginTest {
     }
 
     @Test
-    public void testUpdateAreaDisplay() {
+    public void testUpdateAreaDisplay() { //NOSONAR
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
 
         // Initial checks to ensure all display flags are false

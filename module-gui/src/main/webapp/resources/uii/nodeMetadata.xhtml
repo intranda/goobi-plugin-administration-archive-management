@@ -37,7 +37,7 @@
                         execute="@this"
                         render="@this" />
                 </h:selectOneMenu>
-<!-- select type for the current field -->
+                <!-- select type for the current field -->
                 <h:selectOneRadio value="#{entry.fieldType}">
                     <f:ajax
                         execute="@this"
@@ -53,7 +53,7 @@
                         itemValue="text" />
                 </h:selectOneRadio>
             </div>
-            <div class="col-sm-9">
+            <div class="col-sm-8">
 
                 <!-- if generated: show nothing -->
                 <h:panelGroup rendered="#{entry.fieldType == 'generated'}"></h:panelGroup>
@@ -88,6 +88,34 @@
                         value="#{entry.prefix}" />
                 </h:panelGroup>
             </div>
+            <div class="col-sm-1">
+                <button
+                    jsf:action="#{AdministrationForm.administrationPlugin.addMetadataRow}"
+                    title="#{msgs.conditionAdd}"
+                    aria-label="#{msgs.conditionAdd}"
+                    jsf:id="addCondition"
+                    class="btn btn-primary fa fa-plus"
+                    style="margin-right: 5px">
+                    <f:passThroughAttribute
+                        name="data-toggle"
+                        value="tooltip" />
+                    <f:ajax
+                        execute="@this"
+                        render="@form" />
+                </button>
+                <button
+                    jsf:action="#{AdministrationForm.administrationPlugin.removeMetadataRow(entry)}"
+                    title="#{msgs.conditionRemove}"
+                    aria-label="#{msgs.conditionRemove}"
+                    jsf:rendered="#{AdministrationForm.administrationPlugin.metadataToAdd.size() > 1}"
+                    jsf:id="removeCondition"
+                    class="btn btn-primary fa fa-minus">
+                    <f:ajax
+                        execute="@this"
+                        render="@form" />
+                </button>
+            </div>
+
         </h:panelGroup>
 
     </composite:implementation>
