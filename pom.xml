@@ -13,6 +13,7 @@
     <module>module-base</module>
     <module>module-gui</module>
     <module>module-lib</module>
+    <module>module-job</module>
   </modules>
   <repositories>
     <repository>
