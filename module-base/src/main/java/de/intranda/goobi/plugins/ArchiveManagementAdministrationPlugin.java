@@ -2105,17 +2105,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             // save current element
             ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
         }
+        Document document = createEadFile();
         // reload all nodes from db to get every change
         rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
         loadMetadataForAllNodes();
 
-        // create ead document
-        Document document = new Document();
-
-        Element eadRoot = new Element("ead", nameSpaceWrite);
-        document.setRootElement(eadRoot);
-        addMetadata(eadRoot, rootElement);
-        createEventFields(eadRoot);
         //  write document to servlet output stream
         String downloadFileName = recordGroup.getTitle().replace(" ", "_");
         if (!downloadFileName.endsWith(".xml")) {
@@ -2141,7 +2135,21 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
             facesContext.responseComplete();
         }
+    }
 
+    public Document createEadFile() {
+        // reload all nodes from db to get every change
+        rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
+        loadMetadataForAllNodes();
+
+        Document document = new Document();
+
+        Element eadRoot = new Element("ead", nameSpaceWrite);
+        document.setRootElement(eadRoot);
+        addMetadata(eadRoot, rootElement);
+        createEventFields(eadRoot);
+
+        return document;
     }
 
     private void createEventFields(Element eadElement) {

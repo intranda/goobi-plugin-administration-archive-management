@@ -3,6 +3,7 @@ package org.goobi.interfaces;
 import java.util.List;
 
 import org.goobi.production.plugin.interfaces.IAdministrationPlugin;
+import org.jdom2.Document;
 
 public interface IArchiveManagementAdministrationPlugin extends IAdministrationPlugin {
 
@@ -22,6 +23,8 @@ public interface IArchiveManagementAdministrationPlugin extends IAdministrationP
     public void setDatabaseName(String databaseName);
 
     public void createNewDatabase();
+
+    public Document createEadFile();
 
     // create new node as last child of the selected node
     public void setSelectedEntry(IEadEntry entry);
