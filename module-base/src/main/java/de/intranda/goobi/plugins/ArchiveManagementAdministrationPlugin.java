@@ -196,8 +196,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     private String nodeDefaultTitle;
 
-    private List<StringPair> eventList = new ArrayList<>();
-    private List<String> editorList = new ArrayList<>();
     private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     private String username = "";
@@ -410,8 +408,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * get root node from ead document
      */
     private void parseEadFile(Document document) {
-        eventList = new ArrayList<>();
-        editorList = new ArrayList<>();
         Element eadElement = null;
         Element collection = document.getRootElement();
         if ("collection".equals(collection.getName())) {
@@ -425,38 +421,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         rootElement.setNodeType(rootType);
         rootElement.setDisplayChildren(true);
 
-        Element archdesc = eadElement.getChild("archdesc", nameSpaceRead);
-        if (archdesc != null) {
-            Element processinfoElement = archdesc.getChild("processinfo", nameSpaceRead);
-            if (processinfoElement != null) {
-                Element list = processinfoElement.getChild("list", nameSpaceRead);
-                List<Element> entries = list.getChildren("item", nameSpaceRead);
-                IMetadataField editor =
-                        new EadMetadataField("editorName", 7, null, null, false, true, true, "readonly", null, false, null, null, false, null, null,
-                                false);
-
-                for (Element item : entries) {
-                    editorList.add(item.getText());
-                    IFieldValue fv = new FieldValue(editor);
-                    fv.setValue(item.getText());
-                    editor.addFieldValue(fv);
-                }
-                rootElement.getDescriptionControlAreaList().add(editor);
-            }
-        }
-        // TODO get this from a configured field, store it as a group
-        //        Element control = eadElement.getChild("control", nameSpaceRead);
-        //        if (control != null) {
-        //            Element maintenancehistory = control.getChild("maintenancehistory", nameSpaceRead);
-        //            if (maintenancehistory != null) {
-        //                List<Element> events = maintenancehistory.getChildren("maintenanceevent", nameSpaceRead);
-        //                for (Element event : events) {
-        //                    String eventtype = event.getChildText("eventtype", nameSpaceRead);
-        //                    String eventdatetime = event.getChildText("eventdatetime", nameSpaceRead);
-        //                    eventList.add(new StringPair(eventtype, eventdatetime));
-        //                }
-        //            }
-        //        }
         getDuplicationConfiguration();
     }
 
@@ -1148,6 +1112,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         boolean isMainElement = false;
         if ("ead".equals(xmlElement.getName())) {
             isMainElement = true;
+            updateChangeHistory(node);
         }
 
         for (IMetadataField emf : node.getIdentityStatementAreaList()) {
@@ -1277,7 +1242,58 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
             addMetadata(c, subNode);
         }
+    }
 
+    private void updateChangeHistory(IEadEntry node) {
+        // set maintenancestatus
+        for (IMetadataField field : node.getIdentityStatementAreaList()) {
+            if ("maintenancestatus".equals(field.getName())) {
+                IFieldValue value = field.getValues().get(0);
+                if (StringUtils.isBlank(value.getValue())) {
+                    value.setValue("revised");
+                }
+            }
+
+            // maintenancehistory
+            if ("maintenancehistory".equals(field.getName())) {
+                GroupValue newHistoryEvent = new GroupValue();
+                newHistoryEvent.setGroupName(field.getName());
+
+                List<IValue> val = new ArrayList<>();
+                val.add(new ExtendendValue("eventtype", "revised", null, null));
+                newHistoryEvent.getSubfields().put("", val);
+
+                String date = formatter.format(new Date());
+                val = new ArrayList<>();
+                val.add(new ExtendendValue("eventdatetime", date, null, null));
+                newHistoryEvent.getSubfields().put("", val);
+
+                val = new ArrayList<>();
+                val.add(new ExtendendValue("agent", username, null, null));
+                newHistoryEvent.getSubfields().put("", val);
+
+                loadGroupMetadata(node, field, newHistoryEvent);
+            }
+        }
+
+        // add current user to editor list
+        for (IMetadataField field : node.getDescriptionControlAreaList()) {
+            if ("editorName".equals(field.getName())) {
+                boolean match = false;
+                for (IFieldValue value : field.getValues()) {
+                    if (username.equals(value.getValue())) {
+                        match = true;
+                    }
+                }
+                if (!match) {
+                    IFieldValue val = new FieldValue(field);
+                    val.setValue(username);
+                    field.addFieldValue(val);
+                }
+            }
+        }
+        // save updated node
+        ArchiveManagementManager.saveNode(recordGroup.getId(), node);
     }
 
     private void createEadGroupField(Element xmlElement, IMetadataField groupField, boolean isMainElement) {
@@ -2137,6 +2153,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
     }
 
+    @Override
     public Document createEadFile() {
         // reload all nodes from db to get every change
         rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
@@ -2147,68 +2164,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         Element eadRoot = new Element("ead", nameSpaceWrite);
         document.setRootElement(eadRoot);
         addMetadata(eadRoot, rootElement);
-        createEventFields(eadRoot);
 
         return document;
-    }
-
-    private void createEventFields(Element eadElement) {
-
-        Element archdesc = eadElement.getChild("archdesc", nameSpaceWrite);
-        if (archdesc == null) {
-            archdesc = new Element("archdesc", nameSpaceWrite);
-            eadElement.addContent(archdesc);
-        }
-        Element processinfoElement = archdesc.getChild("processinfo", nameSpaceWrite);
-        if (processinfoElement == null) {
-            processinfoElement = new Element("processinfo", nameSpaceWrite);
-            archdesc.addContent(processinfoElement);
-        }
-        Element list = processinfoElement.getChild("list", nameSpaceWrite);
-        if (list == null) {
-            list = new Element("list", nameSpaceWrite);
-            processinfoElement.addContent(list);
-        }
-        if (!editorList.contains(username)) {
-            editorList.add(username);
-        }
-        for (String editor : editorList) {
-            Element item = new Element("item", nameSpaceWrite);
-            item.setText(editor);
-            list.addContent(item);
-        }
-        String eventType;
-        if (eventList.isEmpty()) {
-            eventType = "Created";
-        } else {
-            eventType = "Modified";
-        }
-        String date = formatter.format(new Date());
-        eventList.add(new StringPair(eventType, date));
-
-        Element control = eadElement.getChild("control", nameSpaceWrite);
-        if (control == null) {
-            control = new Element("control", nameSpaceWrite);
-            eadElement.addContent(control);
-        }
-
-        Element maintenancehistory = control.getChild("maintenancehistory", nameSpaceWrite);
-
-        if (maintenancehistory == null) {
-            maintenancehistory = new Element("maintenancehistory", nameSpaceWrite);
-            control.addContent(maintenancehistory);
-        }
-        // TODO save this as a regular group
-        //        for (StringPair pair : eventList) {
-        //            Element maintenanceevent = new Element("maintenanceevent", nameSpaceWrite);
-        //            maintenancehistory.addContent(maintenanceevent);
-        //            Element eventtype = new Element("eventtype", nameSpaceWrite);
-        //            eventtype.setText(pair.getOne());
-        //            maintenanceevent.addContent(eventtype);
-        //            Element eventdatetime = new Element("eventdatetime", nameSpaceWrite);
-        //            eventdatetime.setText(pair.getTwo());
-        //            maintenanceevent.addContent(eventdatetime);
-        //        }
     }
 
     public String saveArchiveAndLeave() {
