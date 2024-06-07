@@ -416,7 +416,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             eadElement = collection;
         }
 
-        rootElement = parseElement(0, 0, eadElement, false);
+        rootElement = parseElement(0, 0, eadElement);
         INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
         rootElement.setNodeType(rootType);
         rootElement.setDisplayChildren(true);
@@ -428,7 +428,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * read the metadata for the current xml node. - create an {@link EadEntry} - execute the configured xpaths on the current node - add the metadata
      * to one of the 7 levels - check if the node has sub nodes - call the method recursively for all sub nodes
      */
-    private IEadEntry parseElement(int order, int hierarchy, Element element, boolean fastMode) {
+    private IEadEntry parseElement(int order, int hierarchy, Element element) {
         IEadEntry entry = new EadEntry(order, hierarchy);
 
         for (IMetadataField emf : configuredFields) {
@@ -560,7 +560,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             int subHierarchy = hierarchy + 1;
             for (Element c : clist) {
 
-                IEadEntry child = parseElement(subOrder, subHierarchy, c, fastMode);
+                IEadEntry child = parseElement(subOrder, subHierarchy, c);
                 entry.addSubEntry(child);
                 child.setParentNode(entry);
                 subOrder++;
@@ -1253,7 +1253,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     value.setValue("revised");
                 }
             }
-
+        }
+        for (IMetadataField field : node.getIdentityStatementAreaList()) {
             // maintenancehistory
             if ("maintenancehistory".equals(field.getName())) {
                 GroupValue newHistoryEvent = new GroupValue();
@@ -1261,18 +1262,19 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
                 List<IValue> val = new ArrayList<>();
                 val.add(new ExtendendValue("eventtype", "revised", null, null));
-                newHistoryEvent.getSubfields().put("", val);
+                newHistoryEvent.getSubfields().put("eventtype", val);
 
                 String date = formatter.format(new Date());
                 val = new ArrayList<>();
                 val.add(new ExtendendValue("eventdatetime", date, null, null));
-                newHistoryEvent.getSubfields().put("", val);
+                newHistoryEvent.getSubfields().put("eventdatetime", val);
 
                 val = new ArrayList<>();
                 val.add(new ExtendendValue("agent", username, null, null));
-                newHistoryEvent.getSubfields().put("", val);
+                newHistoryEvent.getSubfields().put("agent", val);
 
                 loadGroupMetadata(node, field, newHistoryEvent);
+                break;
             }
         }
 
@@ -1297,37 +1299,36 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     private void createEadGroupField(Element xmlElement, IMetadataField groupField, boolean isMainElement) {
+
+        if (!groupField.isFilled()) {
+            return;
+        }
+
         String xpath = getXpath(isMainElement, groupField);
         String strRegex = "/(?=[^\\]]*(?:\\[|$))";
         String[] fields = xpath.split(strRegex);
         Element groupElement = xmlElement;
 
-        if (fields.length > 1) {
-            for (int i = 0; i < fields.length - 2; i++) {
-                String field = fields[i];
-                if (!".".equals(field)) {
-                    // reuse elements until the last element
-                    groupElement = findElement(field, groupElement);
-                }
-            }
-        }
-        if (fields.length > 0) {
-            // always create a new entry for the last element
-            String lastElementName = fields[fields.length - 1];
-            String conditions = null;
-            if (lastElementName.contains("[")) {
-                conditions = lastElementName.substring(lastElementName.indexOf("["));
-                lastElementName = lastElementName.substring(0, lastElementName.indexOf("["));
-            }
-            lastElementName = lastElementName.replace("ead:", "");
-            groupElement = createXmlElement(groupElement, lastElementName, conditions);
-        }
-        for (String field : fields) {
-            field = field.trim();
+        String lastElement = fields[fields.length - 1];
+
+        String[] prevElements = Arrays.copyOf(fields, fields.length - 1);
+
+        for (int i = 0; i < prevElements.length; i++) {
+            String field = fields[i];
             if (!".".equals(field)) {
+                // reuse elements until the last element
                 groupElement = findElement(field, groupElement);
             }
         }
+
+        // always create a new entry for the last element
+        String conditions = null;
+        if (lastElement.contains("[")) {
+            conditions = lastElement.substring(lastElement.indexOf("["));
+            lastElement = lastElement.substring(0, lastElement.indexOf("["));
+        }
+        lastElement = lastElement.replace("ead:", "");
+        groupElement = createXmlElement(groupElement, lastElement, conditions);
 
         for (IMetadataField subfield : groupField.getSubfields()) {
             for (IFieldValue fv : subfield.getValues()) {
@@ -2122,9 +2123,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
         }
         Document document = createEadFile();
-        // reload all nodes from db to get every change
-        rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
-        loadMetadataForAllNodes();
 
         //  write document to servlet output stream
         String downloadFileName = recordGroup.getTitle().replace(" ", "_");

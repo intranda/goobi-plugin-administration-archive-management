@@ -1,7 +1,20 @@
 <config_plugin>
 
-    <basexUrl>http://localhost:8984/</basexUrl>
-    <eadExportFolder>/opt/digiverso/basex/import</eadExportFolder>
+
+    <export>
+        <!-- export folder -->
+        <folder>/opt/digiverso/viewer/hotfolder</folder>
+
+        <!-- record group to export. Use the database names.
+         The generated file name is the same as the name in goobi, spaces are replaced with underscore,
+         '.xml' is added, if extensiion is missing.
+         -->
+        <file>112236_hub_edit.xml</file>
+        <file>2215.xml</file>
+        <file>EAD_Export_Koch_Foto_DDB_EAD.XML.xml</file>
+    </export>
+
+
     <config>
         <!-- define the name(s) of all archives for the plugin -->
         <archive>*</archive>
@@ -69,6 +82,16 @@
         <metadata xpath="./ead:eadheader/ead:profiledesc/ead:creation/ead:date" xpathType="element" name="creationdate" level="1" repeatable="false" visible="false"/>
         <metadata xpath="./ead:eadheader/ead:filedesc/ead:titlestmt/ead:titleproper" xpathType="element" name="titleproper" level="1" repeatable="false" visible="false"/>
 
+        <metadata xpath="./ead:control/ead:recordid" xpathType="element" name="recordid" level="1" repeatable="false" fieldType="input" rulesetName="RecordID" />
+        <metadata xpath="./ead:control/ead:maintenancestatus/@value" xpathType="attribute" name="maintenancestatus" level="1" repeatable="false" visible="false"/>
+        <metadata xpath="./ead:control/ead:maintenancehistory/ead:maintenanceevent" group="true" name="maintenancehistory" level="1" repeatable="true" visible="false" fieldType="group">
+            <metadata xpath="ead:eventtype" xpathType="element" name="eventtype" level="1" repeatable="false" visible="false" />
+            <metadata xpath="ead:agent" xpathType="element" name="agent" level="1" repeatable="false" visible="false"  />
+            <metadata xpath="ead:eventdescription" xpathType="element" name="eventdescription" level="1" repeatable="false" visible="false" />
+            <metadata xpath="ead:eventdatetime" xpathType="element" name="eventdatetime" level="1" repeatable="false" visible="false" />
+        </metadata>        
+
+
         <!-- repository data-->
         <metadata xpath="./ead:archdesc/ead:did/ead:repository/@label" xpathType="attribute" name="repositoryLabel" level="1" repeatable="false" visible="false"/>
 
@@ -86,7 +109,6 @@
 
         <metadata xpath="./ead:eadheader/ead:eadid" xpathType="element" name="eadid" level="1" repeatable="false" showField="false" fieldType="input" rulesetName="EADID"/>
  
-        <metadata xpath="./ead:control/ead:recordid" xpathType="element" name="recordid" level="1" repeatable="false" fieldType="input" rulesetName="RecordID"/>
         <metadata xpath="(./ead:archdesc/ead:did/ead:unitid[not(@type)] | ./ead:did/ead:unitid[not(@type)])[1]" xpathType="element" name="unitid" level="1" repeatable="false" showField="false" fieldType="input" rulesetName="UnitID"/>
 
         <metadata xpath="./ead:did/ead:unitid[@type='Vorl. Nr.']" xpathType="element" name="Number" level="1" repeatable="true" />
@@ -212,6 +234,7 @@
         7.3 Datum oder Zeitraum der Verzeichnung Date(s) of description
 
 -->
+        <metadata xpath="./ead:archdesc/ead:processinfo/ead:list/ead:item" xpathType="element" name="editorName" level="7" repeatable="true" fieldType="textarea" visible="false" />
 
 
         <!-- extend configured areas -->

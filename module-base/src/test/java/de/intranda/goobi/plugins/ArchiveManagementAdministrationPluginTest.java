@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
 import org.easymock.EasyMock;
+import org.goobi.beans.User;
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.IFieldValue;
 import org.goobi.interfaces.IMetadataField;
@@ -137,7 +138,12 @@ public class ArchiveManagementAdministrationPluginTest {
         PowerMock.replay(ArchiveManagementManager.class);
 
         PowerMock.mockStatic(Helper.class);
-        EasyMock.expect(Helper.getCurrentUser()).andReturn(null).anyTimes();
+        User user = new User();
+        user.setId(1);
+        user.setNachname("lastname");
+        user.setVorname("firstname");
+
+        EasyMock.expect(Helper.getCurrentUser()).andReturn(user).anyTimes();
         for (int i = 0; i < 4; i++) {
             Helper.setFehlerMeldung(EasyMock.anyString());
         }
@@ -619,16 +625,11 @@ public class ArchiveManagementAdministrationPluginTest {
         assertEquals("value", subDid.getChildText("unitid", plugin.getNameSpaceWrite()));
         assertEquals("value", subDid.getChildText("unittitle", plugin.getNameSpaceWrite()));
 
-        Element processinfo = archdesc.getChild("processinfo", plugin.getNameSpaceWrite());
-        Element list = processinfo.getChild("list", plugin.getNameSpaceWrite());
-        assertEquals("", list.getChildText("item", plugin.getNameSpaceWrite()));
-
-        // TODO temporary disabled, enable it after event group is implemented
-        //        Element event = ead.getChild("control", plugin.getNameSpaceWrite())
-        //                .getChild("maintenancehistory", plugin.getNameSpaceWrite())
-        //                .getChild("maintenanceevent", plugin.getNameSpaceWrite());
-        //        assertEquals("Created", event.getChild("eventtype", plugin.getNameSpaceWrite()).getText());
-        //        assertNotNull(event.getChild("eventdatetime", plugin.getNameSpaceWrite()).getText());
+        Element event = ead.getChild("control", plugin.getNameSpaceWrite())
+                .getChild("maintenancehistory", plugin.getNameSpaceWrite())
+                .getChild("maintenanceevent", plugin.getNameSpaceWrite());
+        assertEquals("revised", event.getChild("eventtype", plugin.getNameSpaceWrite()).getText());
+        assertNotNull(event.getChild("eventdatetime", plugin.getNameSpaceWrite()).getText());
 
     }
 
