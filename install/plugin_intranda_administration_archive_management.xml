@@ -179,9 +179,17 @@
             rulesetName="ContentDescription" />
         <metadata xpath="(./ead:archdesc/ead:appraisal/ead:p | ./ead:appraisal/ead:p)[1]" xpathType="element" name="appraisal" level="3" repeatable="false" fieldType="textarea"
             rulesetName="AppraisalInformation" />
-        <metadata xpath="(./ead:archdesc/ead:accruals/ead:p | ./ead:accruals/ead:p)[1]" xpathType="element" name="accruals" level="3" repeatable="true" fieldType="textarea" rulesetName="Additions" />
         <metadata xpath="(./ead:archdesc/ead:arrangement/ead:p | ./ead:arrangement/ead:p)[1]" xpathType="element" name="arrangement" level="3" repeatable="false" fieldType="textarea"
             rulesetName="Arrangement" />
+
+
+        <!-- accruals group-->
+        <metadata xpath="(./ead:archdesc/ead:accruals | ./ead:accruals)" group="true" name="accruals" level="3" repeatable="true" visible="true" fieldType="group">
+            <!--allowed sub fields are blockquote, chronlist, head, list, p, table-->
+            <metadata xpath="ead:head" xpathType="element" name="accruals_head" level="3" repeatable="false" visible="true" />
+            <metadata xpath="ead:p" xpathType="element" name="accruals_p" level="3" repeatable="false" visible="true" />
+        </metadata>
+
 
 
         <!-- Condition of Access and Use Area -->
@@ -231,27 +239,27 @@
         -->
         </metadata>
 
-        <metadata xpath="(./ead:archdesc/ead:phystech/ead:p | ./ead:phystech/ead:p)[1]" xpathType="element" name="phystech" level="4" repeatable="false" fieldType="textarea" rulesetName="PhysTech" />
-        <metadata xpath="(./ead:archdesc/ead:otherfindaid | ./ead:otherfindaid)" xpathType="element" name="otherfindaid" level="4" repeatable="true" fieldType="textarea" rulesetName="OtherFindAid" />
+        <metadata xpath="(./ead:archdesc/ead:phystech/ead:p | ./ead:phystech/ead:p)" xpathType="element" name="phystech" level="4" repeatable="false" fieldType="textarea" rulesetName="PhysTech" />
+        <metadata xpath="(./ead:archdesc/ead:otherfindaid/ead:p | ./ead:otherfindaid/ead:p)" xpathType="element" name="otherfindaid" level="4" repeatable="true" fieldType="textarea" rulesetName="OtherFindAid" />
 
         <!-- Allied Materials Area -->
-        <metadata xpath="(./ead:archdesc/ead:originalsloc/ead:p | ./ead:originalsloc/ead:p)[1]" xpathType="element" name="originalsloc" level="5" repeatable="false" fieldType="textarea"
-            rulesetName="OriginalsLocation" />
-        <metadata xpath="(./ead:archdesc/ead:altformavail/ead:p | ./ead:altformavail/ead:p)" xpathType="element" name="altformavail" level="5" repeatable="false" fieldType="textarea"
-            rulesetName="AlternativeFormAvailable" />
+
+        <!-- Location of Originals group-->
+        <metadata xpath="(./ead:archdesc/ead:originalsloc | ./ead:originalsloc)" group="true" name="originalsloc" level="5" repeatable="true" visible="true" fieldType="group">
+            <metadata xpath="ead:head" xpathType="element" name="originalsloc_head" level="5" repeatable="false" visible="true" />
+            <metadata xpath="ead:p" xpathType="element" name="originalsloc_p" level="5" repeatable="false" visible="true" />
+        </metadata>
+
+        <!-- Alternative Form Available group-->
+        <metadata xpath="(./ead:archdesc/ead:altformavail | ./ead:altformavail)" group="true" name="altformavail" level="5" repeatable="true" visible="true" fieldType="group">
+            <metadata xpath="ead:head" xpathType="element" name="altformavail_head" level="5" repeatable="false" visible="true" />
+            <metadata xpath="ead:p" xpathType="element" name="altformavail_p" level="5" repeatable="false" visible="true" />
+        </metadata>
         <metadata xpath="(./ead:archdesc/ead:separatedmaterial/ead:p | ./ead:separatedmaterial/ead:p)[1]" xpathType="element" name="separatedmaterial" level="5" repeatable="false"
             rulesetName="SeparatedMaterial" />
         <metadata xpath="(./ead:archdesc/ead:bibliography | ./ead:bibliography)[1]" xpathType="element" name="bibliography" level="5" repeatable="false" rulesetName="BibliographicCitation" />
 
         <metadata xpath="(./ead:archdesc/ead:relatedmaterial/ead:ref | ./ead:relatedmaterial/ead:ref)" xpathType="element" name="nodelink" fieldType="nodelink" level="5" repeatable="false" />
-
-        <metadata xpath="(./ead:archdesc/ead:accruals | ./ead:accruals)" group="true" name="accruals" level="1" repeatable="true" visible="true" fieldType="group">
-            <!--allowed
-            sub fields are blockquote, chronlist, head, list, p, table-->
-            <metadata xpath="ead:head" xpathType="element" name="accruals_head" level="1" repeatable="false" visible="false" />
-            <metadata xpath="ead:p" xpathType="element" name="accruals_p" level="1" repeatable="false" visible="false" />
-        </metadata>
-
 
         <!-- Note Area -->
         <metadata xpath="(./ead:archdesc/ead:odd/ead:p | ./ead:odd/ead:p)[1]" xpathType="element" name="oddnote" level="6" repeatable="false" fieldType="textarea" rulesetName="Odd" />
@@ -268,9 +276,10 @@
 
 
         <!-- extend configured areas -->
+        <!--
         <showGroup level="1" />
         <showGroup level="3" />
-
+-->
         <eadNamespaceRead>urn:isbn:1-931666-22-9</eadNamespaceRead>
         <eadNamespaceWrite>http://ead3.archivists.org/schema/</eadNamespaceWrite>
 
