@@ -628,7 +628,8 @@ public class EadEntry implements IEadEntry {
                             }
                             xml.append(
                                     MySQLHelper
-                                            .escapeSql(actualValue.replaceAll("&(?![A-Za-z]+;)", "&amp;").replace("<", "&lt;").replace(">", "&gt;")));
+                                            .escapeSql(
+                                                    actualValue.replaceAll("&(?!amp;|gt;|lt;)", "&amp;").replace("<", "&lt;").replace(">", "&gt;")));
                         }
                         xml.append("</field>");
                     }
