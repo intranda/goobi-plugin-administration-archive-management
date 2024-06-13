@@ -811,7 +811,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     configureField(subfieldConfig, subfield);
                     field.addSubfield(subfield);
                 }
-            } else if (field.isVisible()) {
+            }
+            if (field.isVisible()) {
                 metadataFieldNames.add(field.getName());
             }
 
@@ -2684,6 +2685,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                         for (IValue val : groups) {
                             loadGroupMetadata(entry, emf, val);
                         }
+                    } else {
+                        loadGroupMetadata(entry, emf, null);
                     }
                 } else {
                     List<IValue> values = metadata.get(emf.getName());
