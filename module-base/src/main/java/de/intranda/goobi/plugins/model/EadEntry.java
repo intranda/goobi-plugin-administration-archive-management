@@ -626,7 +626,9 @@ public class EadEntry implements IEadEntry {
                             if (actualValue.endsWith("\\")) {
                                 actualValue = val.getValue() + "\\";
                             }
-                            xml.append(MySQLHelper.escapeSql(actualValue.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")));
+                            xml.append(
+                                    MySQLHelper
+                                            .escapeSql(actualValue.replaceAll("&(?![A-Za-z]+;)", "&amp;").replace("<", "&lt;").replace(">", "&gt;")));
                         }
                         xml.append("</field>");
                     }
