@@ -91,7 +91,6 @@
         <!-- repository data group -->
         <metadata xpath="./ead:archdesc/ead:did/ead:repository" group="true" name="repository" level="1" repeatable="true" visible="true" fieldType="group" rulesetName="Repository">
             <metadata xpath="@label" xpathType="attribute" name="repositoryLabel" level="1" repeatable="false" visible="true" rulesetName="RepositoryLabel" />
-            <metadata xpath="ead:corpname[@id='Archon Code']" xpathType="element" name="repositorycreatorcode" level="1" repeatable="false" visible="true" rulesetName="RepositoryCode" />
             <metadata xpath="ead:address/ead:addressline" xpathType="element" name="repositoryaddressline" level="1" repeatable="true" visible="true" rulesetName="RepositoryAddress" />
             <metadata xpath="ead:extref/@href" xpathType="attribute" name="extrefhref" level="1" repeatable="true" visible="true" rulesetName="RepositoryLink" />
             <metadata xpath="ead:extref" xpathType="element" name="extref" level="1" repeatable="true" visible="true" rulesetName="RepositoryLinkName" />
@@ -144,11 +143,8 @@
                 rulesetName="Format" />
         </metadata>
 
-        <metadata xpath="(./ead:archdesc/ead:did/ead:physdescstructured | ./ead:did/ead:physdescstructured)[1]" xpathType="element" name="physdescstructured" level="1" repeatable="false"
+        <metadata xpath="(./ead:archdesc/ead:did/ead:physdescstructured/ead:physfacet | ./ead:did/ead:physdescstructured/ead:physfacet)" xpathType="element" name="physdescstructured" level="1" repeatable="false"
             rulesetName="physicalDescriptionExtent" />
-
-        <metadata xpath="(./ead:archdesc/ead:did/ead:physdesc/ead:physfacet | ./ead:did/ead:physdesc/ead:physfacet)[1]" xpathType="element" name="physdescphysfacet" level="1" repeatable="false"
-            rulesetName="Format" />
 
 
         <!-- Context Area -->
