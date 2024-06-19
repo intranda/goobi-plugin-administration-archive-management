@@ -75,10 +75,10 @@ public class ArchiveManagementManager implements Serializable {
         sql.append("parent_id int(11), ");
         sql.append("label text, ");
         sql.append("data text, ");
-        sql.append("KEY 'label' ('label'(768)), ");
-        sql.append("KEY 'archive_record_group_id' ('archive_record_group_id'), ");
-        sql.append("KEY 'sequence' ('sequence'), ");
-        sql.append("KEY 'parent_id' ('parent_id') ");
+        sql.append("KEY label (label(768)), ");
+        sql.append("KEY archive_record_group_id (archive_record_group_id), ");
+        sql.append("KEY sequence (sequence), ");
+        sql.append("KEY parent_id (parent_id) ");
         sql.append(") ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4; ");
 
         try {
