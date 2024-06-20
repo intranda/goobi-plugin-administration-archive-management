@@ -609,29 +609,33 @@ public class EadEntry implements IEadEntry {
         if (field.isGroup()) {
             xml.append("<group name=\"").append(field.getName()).append("\">");
             for (IMetadataField subfield : field.getSubfields()) {
-                for (IFieldValue val : subfield.getValues()) {
-                    if (StringUtils.isNotBlank(val.getValue())) {
-                        xml.append("<field name=\"").append(subfield.getName()).append("\"");
-                        if (StringUtils.isNotBlank(val.getAuthorityValue()) && StringUtils.isNotBlank(val.getAuthorityType())) {
-                            xml.append(" source=\"")
-                                    .append(val.getAuthorityType())
-                                    .append("\" value=\"")
-                                    .append(val.getAuthorityValue())
-                                    .append("\"");
-                        }
-                        xml.append(">");
+                if (subfield.getValues() != null) {
+                    for (IFieldValue val : subfield.getValues()) {
                         if (StringUtils.isNotBlank(val.getValue())) {
-                            // mask ending backslash
-                            String actualValue = val.getValue();
-                            if (actualValue.endsWith("\\")) {
-                                actualValue = val.getValue() + "\\";
+                            xml.append("<field name=\"").append(subfield.getName()).append("\"");
+                            if (StringUtils.isNotBlank(val.getAuthorityValue()) && StringUtils.isNotBlank(val.getAuthorityType())) {
+                                xml.append(" source=\"")
+                                        .append(val.getAuthorityType())
+                                        .append("\" value=\"")
+                                        .append(val.getAuthorityValue())
+                                        .append("\"");
                             }
-                            xml.append(
-                                    MySQLHelper
-                                            .escapeSql(
-                                                    actualValue.replaceAll("&(?!amp;|gt;|lt;)", "&amp;").replace("<", "&lt;").replace(">", "&gt;")));
+                            xml.append(">");
+                            if (StringUtils.isNotBlank(val.getValue())) {
+                                // mask ending backslash
+                                String actualValue = val.getValue();
+                                if (actualValue.endsWith("\\")) {
+                                    actualValue = val.getValue() + "\\";
+                                }
+                                xml.append(
+                                        MySQLHelper
+                                                .escapeSql(
+                                                        actualValue.replaceAll("&(?!amp;|gt;|lt;)", "&amp;")
+                                                                .replace("<", "&lt;")
+                                                                .replace(">", "&gt;")));
+                            }
+                            xml.append("</field>");
                         }
-                        xml.append("</field>");
                     }
                 }
             }
