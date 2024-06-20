@@ -1117,81 +1117,25 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
 
         for (IMetadataField emf : node.getIdentityStatementAreaList()) {
-            if (emf.isGroup()) {
-                createEadGroupField(xmlElement, emf, isMainElement);
-            } else {
-                for (IFieldValue fv : emf.getValues()) {
-                    if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                        createEadXmlField(xmlElement, isMainElement, emf, fv);
-
-                    }
-                }
-            }
+            createEadElement(xmlElement, isMainElement, emf);
         }
         for (IMetadataField emf : node.getContextAreaList()) {
-            if (emf.isGroup()) {
-                createEadGroupField(xmlElement, emf, isMainElement);
-            } else {
-                for (IFieldValue fv : emf.getValues()) {
-                    if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                        createEadXmlField(xmlElement, isMainElement, emf, fv);
-
-                    }
-                }
-            }
+            createEadElement(xmlElement, isMainElement, emf);
         }
         for (IMetadataField emf : node.getContentAndStructureAreaAreaList()) {
-            if (emf.isGroup()) {
-                createEadGroupField(xmlElement, emf, isMainElement);
-            } else {
-                for (IFieldValue fv : emf.getValues()) {
-                    if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                        createEadXmlField(xmlElement, isMainElement, emf, fv);
-
-                    }
-                }
-            }
+            createEadElement(xmlElement, isMainElement, emf);
         }
         for (IMetadataField emf : node.getAccessAndUseAreaList()) {
-            if (emf.isGroup()) {
-                createEadGroupField(xmlElement, emf, isMainElement);
-            } else {
-                for (IFieldValue fv : emf.getValues()) {
-                    if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                        createEadXmlField(xmlElement, isMainElement, emf, fv);
-                    }
-                }
-            }
+            createEadElement(xmlElement, isMainElement, emf);
         }
         for (IMetadataField emf : node.getAlliedMaterialsAreaList()) {
-            for (IFieldValue fv : emf.getValues()) {
-                if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                    createEadXmlField(xmlElement, isMainElement, emf, fv);
-
-                }
-            }
+            createEadElement(xmlElement, isMainElement, emf);
         }
         for (IMetadataField emf : node.getNotesAreaList()) {
-            if (emf.isGroup()) {
-                createEadGroupField(xmlElement, emf, isMainElement);
-            } else {
-                for (IFieldValue fv : emf.getValues()) {
-                    if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                        createEadXmlField(xmlElement, isMainElement, emf, fv);
-                    }
-                }
-            }
+            createEadElement(xmlElement, isMainElement, emf);
         }
         for (IMetadataField emf : node.getDescriptionControlAreaList()) {
-            if (emf.isGroup()) {
-                createEadGroupField(xmlElement, emf, isMainElement);
-            } else {
-                for (IFieldValue fv : emf.getValues()) {
-                    if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                        createEadXmlField(xmlElement, isMainElement, emf, fv);
-                    }
-                }
-            }
+            createEadElement(xmlElement, isMainElement, emf);
         }
         Element dsc = null;
         if (isMainElement) {
@@ -1242,6 +1186,19 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
 
             addMetadata(c, subNode);
+        }
+    }
+
+    private void createEadElement(Element xmlElement, boolean isMainElement, IMetadataField emf) {
+        if (emf.isGroup()) {
+            createEadGroupField(xmlElement, emf, isMainElement);
+        } else {
+            for (IFieldValue fv : emf.getValues()) {
+                if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
+                    createEadXmlField(xmlElement, isMainElement, emf, fv);
+
+                }
+            }
         }
     }
 

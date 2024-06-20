@@ -177,7 +177,7 @@ public class ArchiveManagementManager implements Serializable {
             values.append(", ");
             values.append(entry.getOrderNumber());
             values.append(", '");
-            values.append(entry.getNodeType().getNodeName());
+            values.append(entry.getNodeType() == null ? "" : entry.getNodeType().getNodeName());
             values.append("', '");
             values.append(entry.getSequence());
             if (entry.getGoobiProcessTitle() == null) {
