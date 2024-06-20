@@ -1541,10 +1541,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         selectedEntry.setParentNode(destinationEntry);
         destinationEntry.addSubEntry(selectedEntry);
-        selectedEntry.getParentNode().reOrderElements();
+        destinationEntry.reOrderElements();
+        selectedEntry.updateHierarchy();
         ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
         setSelectedEntry(selectedEntry);
         displayMode = "";
+        flatEntryList = null;
     }
 
     public void moveNodeUp() {
