@@ -7,22 +7,17 @@
     xmlns:x="http://myfaces.apache.org/tomahawk"
     xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
     xmlns:jsf="http://xmlns.jcp.org/jsf"
-    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites">
-
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
     <composite:interface>
     </composite:interface>
-
     <composite:implementation>
-
         <h:panelGroup
-            styleClass="modal bd-example-modal-lg"
+            styleClass="modal fade"
             layout="block"
             id="createNodesModal"
             tabindex="-1"
             role="dialog"
-            aria-labelledby="createNodesModal"
-            aria-hidden="true">
-
+            aria-labelledby="createNodesModalTitle">
             <div class="modal-content-wrapper">
                 <div
                     class="modal-dialog modal-lg"
@@ -31,120 +26,99 @@
                         styleClass="modal-content"
                         layout="block"
                         id="createNodesModalContent">
-                        <div class="modal-header">
+                        <div class="modal-header bg-action text-white d-flex justify-content-between">
+                            <h4
+                                class="modal-title"
+                                id="createNodesModalTitle">
+                                #{msgs.plugin_administration_archive_createNodesModal}
+                            </h4>
                             <button
                                 jsf:id="closeBtnCreateNodes"
                                 type="button"
-                                class="close"
+                                class="btn text-white"
                                 data-dismiss="modal"
-                                aria-label="Close">
-                                <span aria-hidden="true">
-                                    <h:outputText
-                                        value="&amp;times;"
-                                        escape="false" />
-                                </span>
+                                aria-label="Close"
+                                data-bs-dismiss="modal">
+                                <span
+                                    aria-hidden="true"
+                                    class="fa fa-times" />
                                 <x:updateActionListener
                                     property="#{AdministrationForm.administrationPlugin.displayCreateNodesModal}"
                                     value="false" />
                             </button>
-                            <h4
-                                class="modal-title"
-                                style="width: 90%">#{msgs.plugin_administration_archive_createNodesModal}</h4>
                         </div>
                         <h:form
-                            styleClass="form-horizontal form-bordered"
                             rendered="#{AdministrationForm.administrationPlugin.displayCreateNodesModal}">
-                            <div class="modal-body">
-                                <p>
+                            <div class="modal-body p-0">
+                                <p class="border-bottom m-0 p-3">
                                     <h:outputText value="#{msgs.plugin_administration_createNodesModalDesciption}" />
                                 </p>
-                                <div class="table">
-
-
                                     <!-- number of nodes to add
-                                   
-                        <intranda:formInputText
-                            field="#{AdministrationForm.administrationPlugin.numberOfNodes}"
-                            forceId="false"
-                            help="#{msgs.helpnumberOfNodes}"
-                            label="#{msgs.plugin_administration_numberOfNodes}"
-                            name="numberOfNodes"
-                            readonly="false"
-                            required="true"
-                            displayAsRequired="true" >
-                            <f:validator validatorId="numberOfNodesValidator" for="customValidator" />
-                        </intranda:formInputText>
- -->
-                                    <div class="form-group">
-                                        <div class="col-sm-3 control-label">
-                                            <h:outputLabel
-                                                for="numberOfNodes"
-                                                value="#{msgs.plugin_administration_numberOfNodes}" />
-                                            <h:panelGroup>
-                                                <i class="fa fa-asterisk pull-right font-asterisk" />
-                                            </h:panelGroup>
-                                        </div>
-                                        <div class="col-sm-9">
-                                            <x:inputText
-                                                id="numberOfNodes"
-                                                forceId="true"
-                                                styleClass="form-control"
-                                                value="#{AdministrationForm.administrationPlugin.numberOfNodes}"
-                                                readonly="false"
-                                                required="false">
-                                                <!-- validation: value must be be a number greater than zero -->
-                                                <!-- TODO don't close modal, when validation fails -->
-                                                <f:validator validatorId="numberOfNodesValidator" />
-                                            </x:inputText>
-                                            <h:message
-                                                for="numberOfNodes"
-                                                showDetail="true"
-                                                styleClass="help-inline font-danger" />
-                                            <h:outputText
-                                                styleClass="help-block font-light"
-                                                rendered="#{NavigationForm.showHelp}"
-                                                value="msgs.helpnumberOfNodes" />
-                                        </div>
+
+                                <intranda:formInputText
+                                    field="#{AdministrationForm.administrationPlugin.numberOfNodes}"
+                                    forceId="false"
+                                    help="#{msgs.helpnumberOfNodes}"
+                                    label="#{msgs.plugin_administration_numberOfNodes}"
+                                    name="numberOfNodes"
+                                    readonly="false"
+                                    required="true"
+                                    displayAsRequired="true" >
+                                    <f:validator validatorId="numberOfNodesValidator" for="customValidator" />
+                                </intranda:formInputText>
+                                -->
+                                <div class="form-row">
+                                    <div class="form-label">
+                                        <intranda:formLabel
+                                            labelFor="numberOfNodes"
+                                            label="#{msgs.plugin_administration_numberOfNodes}"
+                                            labelRequired="true" />
                                     </div>
-
-
-                                    <intranda:formInputDropDownAjax
-                                        name="selectNodeType"
-                                        label="#{msgs.plugin_administration_nodeType}"
-                                        field="#{AdministrationForm.administrationPlugin.nodeType}"
-                                        help="#{msgs.help_plugin_administration_nodeType}"
-                                        selectItems="#{AdministrationForm.administrationPlugin.configuredNodes}"
-                                        fieldStyle="form-control"
-                                        required="true"
-                                        var="var"
-                                        itemValue="#{var.nodeName}"
-                                        itemLabel="#{msgs['plugin_administration_archive_nodeType_'.concat(var.nodeName)]}"
-                                        ajaxEvent="change"
-                                        render="@this" />
-
-                                    <!-- metadata: for each field radio button for empty/generated/counter/text -->
-
-                                    <ui:repeat
-                                        value="#{AdministrationForm.administrationPlugin.metadataToAdd}"
-                                        var="entry">
-                                        <ui:include src="nodeMetadata.xhtml" />
-                                    </ui:repeat>
+                                    <div class="form-input">
+                                        <x:inputText
+                                            id="numberOfNodes"
+                                            forceId="true"
+                                            styleClass="form-control"
+                                            value="#{AdministrationForm.administrationPlugin.numberOfNodes}"
+                                            readonly="false"
+                                            required="false">
+                                            <!-- validation: value must be be a number greater than zero -->
+                                            <!-- TODO don't close modal, when validation fails -->
+                                            <f:validator validatorId="numberOfNodesValidator" />
+                                        </x:inputText>
+                                        <h:message
+                                            for="numberOfNodes"
+                                            showDetail="true"
+                                            styleClass="help-inline font-danger" />
+                                        <h:outputText
+                                            styleClass="help-block font-light"
+                                            rendered="#{NavigationForm.showHelp}"
+                                            value="msgs.helpnumberOfNodes" />
+                                    </div>
                                 </div>
-
+                                <intranda:formInputDropDownAjax
+                                    name="selectNodeType"
+                                    label="#{msgs.plugin_administration_nodeType}"
+                                    field="#{AdministrationForm.administrationPlugin.nodeType}"
+                                    help="#{msgs.help_plugin_administration_nodeType}"
+                                    selectItems="#{AdministrationForm.administrationPlugin.configuredNodes}"
+                                    fieldStyle="form-select"
+                                    required="true"
+                                    var="var"
+                                    itemValue="#{var.nodeName}"
+                                    itemLabel="#{msgs['plugin_administration_archive_nodeType_'.concat(var.nodeName)]}"
+                                    ajaxEvent="change"
+                                    render="@this" />
+                                <!-- metadata: for each field radio button for empty/generated/counter/text -->
+                                <ui:repeat
+                                    value="#{AdministrationForm.administrationPlugin.metadataToAdd}"
+                                    var="entry">
+                                    <ui:include src="nodeMetadata.xhtml" />
+                                </ui:repeat>
                             </div>
-                            <div class="form-actions">
-
+                            <div class="modal-footer">
                                 <h:commandLink
-                                    id="addNodes"
-                                    styleClass="btn margin-sides-10 font-size-s"
-                                    action="#{AdministrationForm.administrationPlugin.addNodes}"
-                                    title="#{msgs.plugin_administration_archive_addNodes}">
-                                    <h:outputText value="#{msgs.plugin_administration_archive_addNodes}" />
-                                </h:commandLink>
-
-                                <h:commandLink
-                                    styleClass="btn margin-sides-10 font-size-s "
-                                    type="submit">
+                                    styleClass="btn btn-blank">
                                     <x:updateActionListener
                                         property="#{AdministrationForm.administrationPlugin.displayMode}"
                                         value="" />
@@ -153,13 +127,19 @@
                                         value="false" />
                                     <h:outputText value="#{msgs.abbrechen}" />
                                 </h:commandLink>
+                                <h:commandLink
+                                    id="addNodes"
+                                    styleClass="btn btn-action"
+                                    action="#{AdministrationForm.administrationPlugin.addNodes}"
+                                    title="#{msgs.plugin_administration_archive_addNodes}"
+                                    type="submit">
+                                    <h:outputText value="#{msgs.plugin_administration_archive_addNodes}" />
+                                </h:commandLink>
                             </div>
                         </h:form>
                     </h:panelGroup>
                 </div>
             </div>
         </h:panelGroup>
-
     </composite:implementation>
 </ui:composition>
-
