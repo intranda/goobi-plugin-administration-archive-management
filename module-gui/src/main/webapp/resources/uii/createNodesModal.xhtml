@@ -14,17 +14,17 @@
           <h:panelGroup
             styleClass="modal fade"
             layout="block"
-            id="duplicationBox"
+            id="createNodesModal"
             tabindex="-1"
             role="dialog"
-            aria-labelledby="duplicationBoxTitle">
+            aria-labelledby="createNodesModal">
             <div class="modal-content-wrapper">
                 <div
                     class="modal-dialog modal-dialog-scrollable modal-lg">
                     <h:panelGroup
                         styleClass="modal-content"
                         layout="block"
-                        id="relationshipModalContent">
+                        id="createNodesModalContent">
                         <div class="modal-header bg-action text-white d-flex justify-content-between">
                             <h3
                             class="modal-title h4"
@@ -226,7 +226,7 @@
                                     <h:outputText value="#{msgs.cancel}" />
                                 </a>
                                 <h:commandLink
-                                    id="duplicateNode"
+                                    id="addNodes"
                                     styleClass="btn btn-action"
                                     action="#{AdministrationForm.administrationPlugin.duplicateNode}"
                                     title="#{msgs.plugin_administration_archive_duplicateNode}">
