@@ -8,17 +8,14 @@
     xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
     xmlns:jsf="http://xmlns.jcp.org/jsf"
     xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites">
-
     <composite:interface>
     </composite:interface>
-
     <composite:implementation>
-
         <h:panelGroup
-            styleClass="row table-row"
+            styleClass="form-row"
             layout="block"
             id="fieldrow">
-            <div class="col-sm-3 control-label">
+            <div class="form-label d-flex flex-column gap-2">
                 <!-- select metadata field -->
                 <h:selectOneMenu
                     value="#{entry.fieldName}"
@@ -38,7 +35,11 @@
                         render="@this" />
                 </h:selectOneMenu>
                 <!-- select type for the current field -->
-                <h:selectOneRadio value="#{entry.fieldType}">
+                <h:selectOneMenu
+                    value="#{entry.fieldType}"
+                    styleClass="form-select"
+                    pt:aria-label="#{msgs.fieldtype}"
+                    id="fieldtype">
                     <f:ajax
                         execute="@this"
                         render="fieldrow" />
@@ -51,73 +52,79 @@
                     <f:selectItem
                         itemLabel="#{msgs.text}"
                         itemValue="text" />
-                </h:selectOneRadio>
+                </h:selectOneMenu>
             </div>
-            <div class="col-sm-8">
-
-                <!-- if generated: show nothing -->
-                <h:panelGroup rendered="#{entry.fieldType == 'generated'}"></h:panelGroup>
-                <!-- if counter: show field for prefix (static text), format (e.g. 4 digits), start value  -->
-                <h:panelGroup rendered="#{entry.fieldType == 'counter'}">
-                    <h:inputText
-                        styleClass="form-control"
-                        value="#{entry.prefix}">
+            <div class="form-input d-flex flex-nowrap gap-2">
+                <div class="flex-grow-1 ">
+                    <!-- if generated: show nothing -->
+                    <h:panelGroup rendered="#{entry.fieldType == 'generated'}"></h:panelGroup>
+                    <!-- if counter: show field for prefix (static text), format (e.g. 4 digits), start value  -->
+                    <h:panelGroup
+                        display="block"
+                        rendered="#{entry.fieldType == 'counter'}"
+                        styleClass="d-flex flex-column gap-2">
+                        <h:inputText
+                            styleClass="form-control"
+                            value="#{entry.prefix}">
+                            <f:passThroughAttribute
+                                name="placeholder"
+                                value="#{msgs.prefix}" />
+                        </h:inputText>
+                        <h:inputText
+                            styleClass="form-control"
+                            value="#{entry.counterFormat}">
+                            <f:passThroughAttribute
+                                name="placeholder"
+                                value="#{msgs.counterFormat}" />
+                        </h:inputText>
+                        <h:inputText
+                            styleClass="form-control"
+                            value="#{entry.counterStartValue}">
+                            <f:passThroughAttribute
+                                name="placeholder"
+                                value="#{msgs.counterStartValue}" />
+                        </h:inputText>
+                    </h:panelGroup>
+                    <!-- if text: show input field -->
+                    <h:panelGroup rendered="#{entry.fieldType == 'text'}">
+                        <h:inputText
+                            styleClass="form-control"
+                            value="#{entry.prefix}" />
+                    </h:panelGroup>
+                </div>
+                <div class="d-flex flex-column justify-content-center gap-2">
+                    <button
+                        jsf:action="#{AdministrationForm.administrationPlugin.addMetadataRow}"
+                        title="#{msgs.conditionAdd}"
+                        aria-label="#{msgs.conditionAdd}"
+                        jsf:id="addCondition"
+                        class="btn btn-primary">
+                        <span
+                            aria-hidden="true"
+                            class="fa fa-plus" />
                         <f:passThroughAttribute
-                            name="placeholder"
-                            value="#{msgs.prefix}" />
-                    </h:inputText>
-                    <h:inputText
-                        styleClass="form-control"
-                        value="#{entry.counterFormat}">
-                        <f:passThroughAttribute
-                            name="placeholder"
-                            value="#{msgs.counterFormat}" />
-                    </h:inputText>
-                    <h:inputText
-                        styleClass="form-control"
-                        value="#{entry.counterStartValue}">
-                        <f:passThroughAttribute
-                            name="placeholder"
-                            value="#{msgs.counterStartValue}" />
-                    </h:inputText>
-                </h:panelGroup>
-                <!-- if text: show input field -->
-                <h:panelGroup rendered="#{entry.fieldType == 'text'}">
-                    <h:inputText
-                        styleClass="form-control"
-                        value="#{entry.prefix}" />
-                </h:panelGroup>
+                            name="data-toggle"
+                            value="tooltip" />
+                        <f:ajax
+                            execute="@this"
+                            render="@form" />
+                    </button>
+                    <button
+                        jsf:action="#{AdministrationForm.administrationPlugin.removeMetadataRow(entry)}"
+                        title="#{msgs.conditionRemove}"
+                        aria-label="#{msgs.conditionRemove}"
+                        jsf:rendered="#{AdministrationForm.administrationPlugin.metadataToAdd.size() > 1}"
+                        jsf:id="removeCondition"
+                        class="btn btn-primary">
+                        <span
+                            aria-hidden="true"
+                            class="fa fa-minus" />
+                        <f:ajax
+                            execute="@this"
+                            render="@form" />
+                    </button>
+                </div>
             </div>
-            <div class="col-sm-1">
-                <button
-                    jsf:action="#{AdministrationForm.administrationPlugin.addMetadataRow}"
-                    title="#{msgs.conditionAdd}"
-                    aria-label="#{msgs.conditionAdd}"
-                    jsf:id="addCondition"
-                    class="btn btn-primary fa fa-plus"
-                    style="margin-right: 5px">
-                    <f:passThroughAttribute
-                        name="data-toggle"
-                        value="tooltip" />
-                    <f:ajax
-                        execute="@this"
-                        render="@form" />
-                </button>
-                <button
-                    jsf:action="#{AdministrationForm.administrationPlugin.removeMetadataRow(entry)}"
-                    title="#{msgs.conditionRemove}"
-                    aria-label="#{msgs.conditionRemove}"
-                    jsf:rendered="#{AdministrationForm.administrationPlugin.metadataToAdd.size() > 1}"
-                    jsf:id="removeCondition"
-                    class="btn btn-primary fa fa-minus">
-                    <f:ajax
-                        execute="@this"
-                        render="@form" />
-                </button>
-            </div>
-
         </h:panelGroup>
-
     </composite:implementation>
 </ui:composition>
-
