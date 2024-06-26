@@ -10,34 +10,32 @@
     xmlns:jsf="http://xmlns.jcp.org/jsf"
     xmlns:goobiio="http://goobi.io/facelets"
     xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
-
 <h:body>
     <ui:composition>
-
-        <div
-            class="control-label metadata-row-area-content"
-            style="grid-column-start: span 3;">
-            <h:outputText value="#{fieldname}" />
-
-            <h:commandLink
-                styleClass="metadata-row-area-content close-field pull-right"
-                action="#{AdministrationForm.administrationPlugin.selectedEntry.deleteGroup(item)}">
-                <i class="fa fa-minus-circle"></i>
-                <f:ajax
-                    execute="@this"
-                    render=":#{ajaxid} :hierarchy" />
-            </h:commandLink>
+        <div class="row">
+            <div
+                class="form-label d-flex justify-content-between">
+                <h:outputText value="#{fieldname}" />
+                <h:commandLink
+                    action="#{AdministrationForm.administrationPlugin.selectedEntry.deleteGroup(item)}">
+                    <span class="fa fa-minus-circle" />
+                    <f:ajax
+                        execute="@this"
+                        render=":#{ajaxid} :hierarchy" />
+                </h:commandLink>
+            </div>
+            <div class="form-input">
+                <x:dataList
+                    var="subfield"
+                    value="#{item.subfields}">
+                    <x:dataList
+                        var="field"
+                        value="#{subfield.values}">
+                        <goobiio:fields />
+                    </x:dataList>
+                </x:dataList>
+            </div>
         </div>
-        <x:dataList
-            var="subfield"
-            value="#{item.subfields}">
-            <x:dataList
-                var="field"
-                value="#{subfield.values}">
-                <goobiio:fields />
-            </x:dataList>
-        </x:dataList>
-
     </ui:composition>
 </h:body>
 </html>

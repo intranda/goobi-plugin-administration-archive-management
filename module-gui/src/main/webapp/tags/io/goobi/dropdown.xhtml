@@ -5,50 +5,49 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:x="http://myfaces.apache.org/tomahawk"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:x="http://myfaces.apache.org/tomahawk">
-<h:body>
-    <ui:composition>
-        
-        <div class="control-label metadata-row-area-content">
-            <h:outputLabel
-                for="#{fieldid}"
-                value="#{fieldname}" />
-        </div>
-    
-        <h:commandLink
-            styleClass="close-field pull-right metadata-row-area-content"
-            action="#{item.deleteValue(field)}">
-            <i class="fa fa-minus-circle"></i>
-            <f:ajax
-                execute="@this"
-                render=":#{ajaxid} :hierarchy" />
-        </h:commandLink>
-
-        <div class="metadata-row-area-content metadata-row-area-content-white">
-            <h:selectOneMenu
-                id="#{fieldid}"
-                forceId="true"
-                styleClass="form-control #{item.valid ? '' : 'validation-error'}"
-                value="#{fieldvalue}"
-                required="false"
-                readonly="false">
-                <f:selectItem
-                    itemValue=""
-                    itemLabel="#{msgs.bitteAuswaehlen}" />
-                <f:selectItems value="#{selectItems}" />
-                <f:ajax
-                    event="change"
-                    execute="@this"
-                    render=":#{ajaxid} :hierarchy" />
-            </h:selectOneMenu>
-            <h:message
-                for="#{fieldid}"
-                showDetail="true"
-                styleClass="help-inline font-danger" />
-            <h:outputText styleClass="help-inline font-danger" rendered="#{!item.valid}" value="#{msgs[item.validationError]}"/>
-        </div>
-
-    </ui:composition>
-</h:body>
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
+    <h:body>
+        <ui:composition>
+            <div class="form-row">
+                <div class="form-label d-flex justify-content-between">
+                    <intranda:formLabel
+                        labelFor="#{fieldid}"
+                        label="#{fieldname}" />
+                    <h:commandLink
+                        action="#{item.deleteValue(field)}"
+                        styleClass="btn">
+                        <span class="fa fa-minus-circle" />
+                        <f:ajax
+                            execute="@this"
+                            render=":#{ajaxid} :hierarchy" />
+                    </h:commandLink>
+                </div>
+                <div class="form-input">
+                    <h:selectOneMenu
+                        id="#{fieldid}"
+                        forceId="true"
+                        styleClass="form-select #{item.valid ? '' : 'validation-error'}"
+                        value="#{fieldvalue}"
+                        required="false"
+                        readonly="false">
+                        <f:selectItem
+                            itemValue=""
+                            itemLabel="#{msgs.bitteAuswaehlen}" />
+                        <f:selectItems value="#{selectItems}" />
+                        <f:ajax
+                            event="change"
+                            execute="@this"
+                            render=":#{ajaxid} :hierarchy" />
+                    </h:selectOneMenu>
+                    <h:message
+                        for="#{fieldid}"
+                        showDetail="true"
+                        styleClass="help-inline font-danger" />
+                    <h:outputText styleClass="help-inline font-danger" rendered="#{!item.valid}" value="#{msgs[item.validationError]}"/>
+                </div>
+            </div>
+        </ui:composition>
+    </h:body>
 </html>

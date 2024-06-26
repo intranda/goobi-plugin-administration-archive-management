@@ -9,16 +9,13 @@
     xmlns:x="http://myfaces.apache.org/tomahawk">
 <h:body>
     <ui:composition>
-        
-            <div class="control-label metadata-row-area-content">
+        <div class="form-row">
+            <div class="form-label">
                 <h:outputLabel
                     for="#{fieldid}"
                     value="#{fieldname}" />
             </div>
-            
-            <div></div>
-            
-            <div class="metadata-row-area-content metadata-row-area-content-white">
+            <div class="form-input">
                 <h:inputText
                     id="#{fieldid}"
                     forceId="true"
@@ -27,11 +24,9 @@
                     required="false"
                     readonly="true">
                 </h:inputText>
-                
                 <h:outputText styleClass="help-inline font-danger" rendered="#{!item.valid}" value="#{msgs[item.validationError]}"/>
-                
             </div>
-            
+        </div>
     </ui:composition>
 </h:body>
 </html>
