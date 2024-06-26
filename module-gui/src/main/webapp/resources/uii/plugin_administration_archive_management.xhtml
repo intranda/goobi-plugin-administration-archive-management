@@ -14,146 +14,6 @@
     <composite:interface>
     </composite:interface>
     <composite:implementation>
-        <style>
-div.container {
-    min-height: 30em;
-    position: relative
-}
-div.center {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    margin-right: -50%;
-    padding: 20px 60px 40px 60px;
-    border: 1px solid #ddd;
-    transform: translate(-50%, -50%);
-    width: 60%;
-}
-div.grid-content {
-    display: grid;
-    grid-template-columns: 50% 50%;
-    grid-gap: 10px;
-    /* margin-left: -15px; */
-    /* margin-right: -15px; */
-}
-div.leftArea {
-    padding-left: 15px;
-    min-height: 300px;
-}
-div.rightArea {
-    padding-right: 15px;
-}
-div.rightArea .center p {
-    text-align: center;
-}
-div.no-element-selected {
-    min-height: 10em;
-    padding: 20px 60px;
-    background: lightgrey;
-    border: 1px solid black;
-}
-.table {
-    min-height: 400px;
-}
-.table .fa {
-    margin-right: 10px;
-}
-.table a {
-    color: black;
-    text-decoration: none;
-}
-.table__structure-link-active {
-    font-weight: 700;
-    color: #368ee0 !important;
-}
-.table__structure-link-searched {
-    font-weight: 700;
-}
-.close-field {
-    color: #777;
-}
-.without-margin {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-}
-.leftArea-grid {
-    display: grid;
-    grid-template-columns: auto 40px;
-}
-.button-area {
-    border-left: 2px solid #666;
-    margin-top: -20px;
-    margin-bottom: -20px;
-    margin-right: -7px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-}
-.searchfilter {
-    /*     max-width: 30%; */
-    display: inline-block;
-    width: 30%;
-}
-.input-group-btn .btn {
-    height: 25px;
-}
-.box-title h3 {
-    max-width: 70%;
-}
-.search-btn {
-    padding-bottom: 2px;
-    padding-top: 2px;
-    background-color: #666;
-    color: #ddd;
-}
-#node-type, #node-id {
-    border-top: 1px solid #ddd;
-    border-bottom: 1px solid #ddd;
-}
-.node-type-selection {
-    border-left: none !important;
-    display: flex !important;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    background: #f6f6f6 !important;
-}
-.form-horizontal .form-group::before {
-    display: none;
-    content: "";
-}
-#process-creation-button i {
-    background: #368ee0;
-}
-.btn.btn-primary.dropdown-toggle.fa.pull-right {
-    background: #368ee0;
-}
-.validation-error {
-    background-color: #ff4433;
-    /*     color: #fff !important; */
-}
-.metadata-row-area {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 25% auto 1fr;
-    justify-items: start;
-    justify-content: start;
-    align-items: stretch;
-    justify-items: stretch;
-    /*         border-top: 1px solid #ddd; */
-    margin-top: 5px !important;
-}
-.metadata-row-area-content {
-    padding: 8px !important;
-    border-top: 1px solid #ddd;
-}
-.metadata-row-area-content-white {
-    background-color: #fff;
-    border-left: 1px solid #ddd;
-}
-.table-row {
-    margin-left: 0px;
-    margin-right: 0px;
-}
-</style>
         <h:head>
             <f:metadata>
                 <f:viewParam
@@ -485,7 +345,6 @@ div.no-element-selected {
                                             data-bs-toggle="tooltip">
                                             <button
                                                 class="btn btn-primary dropdown-toggle fa fa-files-o py-2"
-                                                style="margin: 0; padding-left: 4px; padding-right: 4px;"
                                                 data-bs-toggle="dropdown">
                                                 <span class="caret"></span>
                                             </button>
@@ -496,7 +355,8 @@ div.no-element-selected {
                                                     <li>
                                                         <h:commandLink
                                                             action="#{AdministrationForm.administrationPlugin.createProcesses}"
-                                                            pt:aria-label="#{template.two}">
+                                                            pt:aria-label="#{template.two}"
+                                                            styleClass="dropdown-item">
                                                             <h:outputText value="#{template.two}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.selectedTemplate}"
@@ -1041,23 +901,23 @@ div.no-element-selected {
                                         <!-- // Group: Verzeichnungskontrolle / Description Control Area -->
                                     </h:panelGroup>
                                 </div>
+                                <!-- Button Area on the bottom -->
+                                <div class="box__actions">
+                                    <h:commandLink
+                                        styleClass="btn btn-success"
+                                        id="saveAndExit"
+                                        action="#{AdministrationForm.administrationPlugin.saveArchiveAndLeave}">
+                                        <span class="fa fa-save" />
+                                        <span>
+                                            <h:outputText value="#{msgs.plugin_administration_archive_saveAndExit}" />
+                                        </span>
+                                        <f:passThroughAttribute
+                                            name="data-bs-toggle"
+                                            value="tooltip" />
+                                    </h:commandLink>
+                                </div>
+                                <!-- // Button Area on the bottom -->
                             </intranda:box>
-                            <!-- Button Area on the bottom -->
-                            <div class="form-actions">
-                                <h:commandLink
-                                    styleClass="btn btn-success"
-                                    id="saveAndExit"
-                                    action="#{AdministrationForm.administrationPlugin.saveArchiveAndLeave}">
-                                    <span class="fa fa-save" />
-                                    <span>
-                                        <h:outputText value="#{msgs.plugin_administration_archive_saveAndExit}" />
-                                    </span>
-                                    <f:passThroughAttribute
-                                        name="data-bs-toggle"
-                                        value="tooltip" />
-                                </h:commandLink>
-                            </div>
-                            <!-- // Button Area on the bottom -->
                         </div>
                         <!-- // Right area for loaded node -->
                     </div>
