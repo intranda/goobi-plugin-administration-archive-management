@@ -7,272 +7,236 @@
     xmlns:x="http://myfaces.apache.org/tomahawk"
     xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
     xmlns:jsf="http://xmlns.jcp.org/jsf"
-    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites">
-
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
     <composite:interface>
     </composite:interface>
-
     <composite:implementation>
-          <h:panelGroup
-            styleClass="modal bd-example-modal-lg"
+        <h:panelGroup
+            styleClass="modal fade"
             layout="block"
             id="duplicationBox"
             tabindex="-1"
             role="dialog"
-            aria-labelledby="duplicationBox"
-            aria-hidden="true">
-
+            aria-labelledby="duplicationBoxTitle">
             <div class="modal-content-wrapper">
                 <div
-                    class="modal-dialog modal-lg"
-                    role="document">
+                    class="modal-dialog modal-dialog-scrollable modal-lg">
                     <h:panelGroup
                         styleClass="modal-content"
                         layout="block"
                         id="relationshipModalContent">
-                        <div class="modal-header">
+                        <div class="modal-header bg-action text-white d-flex justify-content-between">
+                            <h3
+                            class="modal-title h4"
+                            id="duplicationBoxTitle">
+                            #{msgs.plugin_administration_archive_duplicateNode}
+                        </h3>
                             <button
                                 type="button"
-                                class="close"
-                                data-dismiss="modal"
+                                class="btn text-white"
+                                data-bs-dismiss="modal"
                                 aria-label="Close">
-                                <span aria-hidden="true">
-                                    <h:outputText
-                                        value="&amp;times;"
-                                        escape="false" />
-                                </span>
+                                <span
+                                    aria-hidden="true"
+                                    class="fa fa-times" />
                             </button>
-                            <h4
-                                class="modal-title"
-                                style="width: 90%">#{msgs.plugin_administration_archive_duplicateNode}</h4>
                         </div>
                         <h:form
-                            styleClass="form-horizontal form-bordered"
                             onkeypress="submitOnEnter(event, 'duplicateNode');"
                             prependId="false">
-
-                            <div class="modal-body">
-
-                                <div class="row">
-                                    <div class="col-sm-4"></div>
-                                    <div class="col-sm-4">#{msgs.plugin_administration_archive_prefix}</div>
-                                    <div class="col-sm-4">#{msgs.plugin_administration_archive_suffix}</div>
-                                </div>
-                                <div style="height: 50vh; overflow-y: scroll;">
-                                    <h3>#{msgs.plugin_administration_archive_area_identity}</h3>
-                                    <ui:repeat
-                                        value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.identityStatementArea}"
-                                        var="entry">
-                                        <div class="row table-row">
-                                            <div class="col-sm-4 control-label">
-                                                <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <h:inputText
-                                                    styleClass="form-control"
-                                                    value="#{entry.prefix}" />
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <h:inputText
-                                                    styleClass="form-control"
-                                                    value="#{entry.suffix}" />
-                                            </div>
-                                        </div>
-                                    </ui:repeat>
-
-                                    <h3>#{msgs.plugin_administration_archive_area_context}</h3>
-                                    <ui:repeat
-                                        value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.contextArea}"
-                                        var="entry">
-                                        <div class="row table-row">
-                                            <div class="col-sm-4 control-label">
-                                                <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <h:inputText
-                                                    styleClass="form-control"
-                                                    value="#{entry.prefix}" />
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <h:inputText
-                                                    styleClass="form-control"
-                                                    value="#{entry.suffix}" />
-                                            </div>
-                                        </div>
-                                    </ui:repeat>
-
-                                    <h3>#{msgs.plugin_administration_archive_area_context}</h3>
-                                    <ui:repeat
-                                        value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.contextArea}"
-                                        var="entry">
-                                        <div class="row table-row">
-                                            <div class="col-sm-4 control-label">
-                                                <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <h:inputText
-                                                    styleClass="form-control"
-                                                    value="#{entry.prefix}" />
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <h:inputText
-                                                    styleClass="form-control"
-                                                    value="#{entry.suffix}" />
-                                            </div>
-                                        </div>
-                                    </ui:repeat>
-
-                                    <h3>#{msgs.plugin_administration_archive_area_content}</h3>
-                                    <ui:repeat
-                                        value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.contentArea}"
-                                        var="entry">
-                                        <div class="row table-row">
-                                            <div class="col-sm-4 control-label">
-                                                <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <h:inputText
-                                                    styleClass="form-control"
-                                                    value="#{entry.prefix}" />
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <h:inputText
-                                                    styleClass="form-control"
-                                                    value="#{entry.suffix}" />
-                                            </div>
-                                        </div>
-                                    </ui:repeat>
-
-                                    <h3>#{msgs.plugin_administration_archive_area_context}</h3>
-                                    <ui:repeat
-                                        value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.contextArea}"
-                                        var="entry">
-                                        <div class="row table-row">
-                                            <div class="col-sm-4 control-label">
-                                                <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <h:inputText
-                                                    styleClass="form-control"
-                                                    value="#{entry.prefix}" />
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <h:inputText
-                                                    styleClass="form-control"
-                                                    value="#{entry.suffix}" />
-                                            </div>
-                                        </div>
-                                    </ui:repeat>
-
-                                    <h3>#{msgs.plugin_administration_archive_area_access}</h3>
-                                    <ui:repeat
-                                        value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.accessArea}"
-                                        var="entry">
-                                        <div class="row table-row">
-                                            <div class="col-sm-4 control-label">
-                                                <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <h:inputText
-                                                    styleClass="form-control"
-                                                    value="#{entry.prefix}" />
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <h:inputText
-                                                    styleClass="form-control"
-                                                    value="#{entry.suffix}" />
-                                            </div>
-                                        </div>
-                                    </ui:repeat>
-
-                                    <h3>#{msgs.plugin_administration_archive_area_materials}</h3>
-                                    <ui:repeat
-                                        value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.alliedMaterialsArea}"
-                                        var="entry">
-                                        <div class="row table-row">
-                                            <div class="col-sm-4 control-label">
-                                                <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <h:inputText
-                                                    styleClass="form-control"
-                                                    value="#{entry.prefix}" />
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <h:inputText
-                                                    styleClass="form-control"
-                                                    value="#{entry.suffix}" />
-                                            </div>
-                                        </div>
-                                    </ui:repeat>
-
-                                    <h3>#{msgs.plugin_administration_archive_area_notes}</h3>
-                                    <ui:repeat
-                                        value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.notesArea}"
-                                        var="entry">
-                                        <div class="row table-row">
-                                            <div class="col-sm-4 control-label">
-                                                <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <h:inputText
-                                                    styleClass="form-control"
-                                                    value="#{entry.prefix}" />
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <h:inputText
-                                                    styleClass="form-control"
-                                                    value="#{entry.suffix}" />
-                                            </div>
-                                        </div>
-                                    </ui:repeat>
-
-                                    <h3>#{msgs.plugin_administration_archive_area_descriptionControl}</h3>
-                                    <ui:repeat
-                                        value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.descriptionArea}"
-                                        var="entry">
-                                        <div class="row table-row">
-                                            <div class="col-sm-4 control-label">
-                                                <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <h:inputText
-                                                    styleClass="form-control"
-                                                    value="#{entry.prefix}" />
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <h:inputText
-                                                    styleClass="form-control"
-                                                    value="#{entry.suffix}" />
-                                            </div>
-                                        </div>
-                                    </ui:repeat>
-                                </div>
+                            <div class="modal-body scroll-container">
+                                <table class="table w-100">
+                                    <tbody>
+                                        <tr>
+                                            <th scope="col" class="h5 pt-2">#{msgs.plugin_administration_archive_area_identity}</th>
+                                            <th scope="col" class="h6 pt-2">#{msgs.plugin_administration_archive_prefix}</th>
+                                            <th scope="col" class="h6 pt-2">#{msgs.plugin_administration_archive_suffix}</th>
+                                        </tr>
+                                        <ui:repeat
+                                            value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.identityStatementArea}"
+                                            var="entry">
+                                            <tr>
+                                                <td>
+                                                    <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
+                                                </td>
+                                                <td>
+                                                    <h:inputText
+                                                        styleClass="form-control"
+                                                        value="#{entry.prefix}" />
+                                                </td>
+                                                <td>
+                                                    <h:inputText
+                                                        styleClass="form-control"
+                                                        value="#{entry.suffix}" />
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                        <tr>
+                                            <th class="h5 pt-2">#{msgs.plugin_administration_archive_area_context}</th>
+                                            <th class="h6 pt-2">#{msgs.plugin_administration_archive_prefix}</th>
+                                            <th class="h6 pt-2">#{msgs.plugin_administration_archive_suffix}</th>
+                                        </tr>
+                                        <ui:repeat
+                                            value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.contextArea}"
+                                            var="entry">
+                                            <tr>
+                                                <td>
+                                                    <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
+                                                </td>
+                                                <td>
+                                                    <h:inputText
+                                                        styleClass="form-control"
+                                                        value="#{entry.prefix}" />
+                                                </td>
+                                                <td>
+                                                    <h:inputText
+                                                        styleClass="form-control"
+                                                        value="#{entry.suffix}" />
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                        <tr>
+                                            <th class="h5 pt-2">#{msgs.plugin_administration_archive_area_content}</th>
+                                            <th class="h6 pt-2">#{msgs.plugin_administration_archive_prefix}</th>
+                                            <th class="h6 pt-2">#{msgs.plugin_administration_archive_suffix}</th>
+                                        </tr><ui:repeat
+                                            value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.contentArea}"
+                                            var="entry">
+                                            <tr>
+                                                <td>
+                                                    <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
+                                                </td>
+                                                <td>
+                                                    <h:inputText
+                                                        styleClass="form-control"
+                                                        value="#{entry.prefix}" />
+                                                </td>
+                                                <td>
+                                                    <h:inputText
+                                                        styleClass="form-control"
+                                                        value="#{entry.suffix}" />
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                        <tr>
+                                            <th class="h5 pt-2">#{msgs.plugin_administration_archive_area_access}</th>
+                                            <th class="h6 pt-2">#{msgs.plugin_administration_archive_prefix}</th>
+                                            <th class="h6 pt-2">#{msgs.plugin_administration_archive_suffix}</th>
+                                        </tr>
+                                        <ui:repeat
+                                            value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.accessArea}"
+                                            var="entry">
+                                            <tr>
+                                                <td>
+                                                    <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
+                                                </td>
+                                                <td>
+                                                    <h:inputText
+                                                        styleClass="form-control"
+                                                        value="#{entry.prefix}" />
+                                                </td>
+                                                <td>
+                                                    <h:inputText
+                                                        styleClass="form-control"
+                                                        value="#{entry.suffix}" />
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                        <tr>
+                                            <th class="h5 pt-2">#{msgs.plugin_administration_archive_area_materials}</th>
+                                            <th class="h6 pt-2">#{msgs.plugin_administration_archive_prefix}</th>
+                                            <th class="h6 pt-2">#{msgs.plugin_administration_archive_suffix}</th>
+                                        </tr>
+                                        <ui:repeat
+                                            value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.alliedMaterialsArea}"
+                                            var="entry">
+                                            <tr>
+                                                <td>
+                                                    <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
+                                                </td>
+                                                <td>
+                                                    <h:inputText
+                                                        styleClass="form-control"
+                                                        value="#{entry.prefix}" />
+                                                </td>
+                                                <td>
+                                                    <h:inputText
+                                                        styleClass="form-control"
+                                                        value="#{entry.suffix}" />
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                        <tr>
+                                            <th class="h5 pt-2">#{msgs.plugin_administration_archive_area_notes}</th>
+                                            <th class="h6 pt-2">#{msgs.plugin_administration_archive_prefix}</th>
+                                            <th class="h6 pt-2">#{msgs.plugin_administration_archive_suffix}</th>
+                                        </tr>
+                                        <ui:repeat
+                                            value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.notesArea}"
+                                            var="entry">
+                                            <tr>
+                                                <td>
+                                                    <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
+                                                </td>
+                                                <td>
+                                                    <h:inputText
+                                                        styleClass="form-control"
+                                                        value="#{entry.prefix}" />
+                                                </td>
+                                                <td>
+                                                    <h:inputText
+                                                        styleClass="form-control"
+                                                        value="#{entry.suffix}" />
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                        <tr>
+                                            <th class="h5 pt-2">#{msgs.plugin_administration_archive_area_descriptionControl}</th>
+                                            <th class="h6 pt-2">#{msgs.plugin_administration_archive_prefix}</th>
+                                            <th class="h6 pt-2">#{msgs.plugin_administration_archive_suffix}</th>
+                                        </tr>
+                                        <ui:repeat
+                                            value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.descriptionArea}"
+                                            var="entry">
+                                            <tr>
+                                                <td>
+                                                    <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
+                                                </td>
+                                                <td>
+                                                    <h:inputText
+                                                        styleClass="form-control"
+                                                        value="#{entry.prefix}" />
+                                                </td>
+                                                <td>
+                                                    <h:inputText
+                                                        styleClass="form-control"
+                                                        value="#{entry.suffix}" />
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                </table>
                             </div>
                             <div class="modal-footer">
-                                <h:commandLink
-                                    id="duplicateNode"
-                                    styleClass="btn margin-sides-10 font-size-s"
-                                    action="#{AdministrationForm.administrationPlugin.duplicateNode}"
-                                    title="#{msgs.plugin_administration_archive_duplicateNode}">
-                                    <h:outputText value="#{msgs.plugin_administration_archive_duplicateNode}" />
-                                </h:commandLink>
                                 <!-- cancel/abort -->
                                 <a
-                                    class="btn pull-left"
+                                    class="btn btn-blank"
                                     title="#{msgs.cancel}"
                                     data-dismiss="modal">
                                     <h:outputText value="#{msgs.cancel}" />
                                 </a>
+                                <h:commandLink
+                                    id="duplicateNode"
+                                    styleClass="btn btn-action"
+                                    action="#{AdministrationForm.administrationPlugin.duplicateNode}"
+                                    title="#{msgs.plugin_administration_archive_duplicateNode}">
+                                    <h:outputText value="#{msgs.plugin_administration_archive_duplicateNode}" />
+                                </h:commandLink>
                             </div>
-
-
                         </h:form>
                     </h:panelGroup>
                 </div>
             </div>
         </h:panelGroup>
-
-        </composite:implementation>
+    </composite:implementation>
 </ui:composition>
-
