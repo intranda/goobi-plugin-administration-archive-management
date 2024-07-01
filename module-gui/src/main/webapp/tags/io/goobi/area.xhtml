@@ -12,20 +12,20 @@
     <h:body>
         <ui:composition>
             <ui:fragment id="#{area}">
-                <span class="p-2 flex-grow-1">
+                <span class="p-2 flex-grow-1 d-flex justify-content-end flex-wrap flex-basis-75">
                     <x:dataList
                         var="item"
                         value="#{itemlist}">
                         <!--  and (!item.showField or !showDetails) -->
                         <ui:fragment rendered="#{item.visible}">
                             <goobiio:badge
-                                styleclassname="#{!item.filled ? 'badge-light-blue' : 'badge-inverse-light-blue'}"
+                                styleclassname="#{!item.filled ? 'badge-light-grey' : 'badge-inverse-light-grey'}"
                                 fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
                                 showfield="#{item.showField}" />
                         </ui:fragment>
                     </x:dataList>
                 </span>
-                <div class="w-100">
+                <div class="border-top w-100">
                     <x:dataList
                         var="item"
                         value="#{itemlist}"
@@ -83,7 +83,7 @@
                                                 <span class="fa fa-minus-circle" />
                                                 <f:ajax
                                                     execute="@this"
-                                                    render=":#{ajaxid} :hierarchy" />
+                                                    render="nodeBox::nodeBox:#{ajaxid} :hierarchy:hierarchy" />
                                             </h:commandLink>
                                         </div>
                                         <div class="form-input">
@@ -112,7 +112,7 @@
                                                 <span class="fa fa-minus-circle" />
                                                 <f:ajax
                                                     execute="@this"
-                                                    render=":#{ajaxid} :hierarchy" />
+                                                    render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
                                             </h:commandLink>
                                         </div>
                                         <div class="form-input">
@@ -142,7 +142,7 @@
                                                 <span class="fa fa-minus-circle" />
                                                 <f:ajax
                                                     execute="@this"
-                                                    render=":#{ajaxid} :hierarchy" />
+                                                    render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
                                             </h:commandLink>
                                         </div>
                                         <div class="form-input">

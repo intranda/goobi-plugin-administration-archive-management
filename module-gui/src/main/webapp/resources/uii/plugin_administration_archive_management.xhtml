@@ -162,17 +162,18 @@
             <h:panelGroup
                 id="details"
                 layout="block"
-                styleClass="row"
+                styleclass="row"
                 rendered="#{AdministrationForm.administrationPlugin.databaseName != NULL and AdministrationForm.administrationPlugin.displayMode == ''}">
                 <h:form
                     styleClass="form-horizontal form-bordered"
                     id="ead-details"
                     prependId="false">
                     <div class="row">
-                        <div class="col-12 col-lg-6">
+                        <div class="col-12 col-lg-6 pb-2">
                             <intranda:box
                                 boxType="neutral"
-                                boxTitle="false">
+                                boxTitle="false"
+                                id="hierarchy">
                                 <intranda:boxTitle
                                     title="#{AdministrationForm.administrationPlugin.databaseName}"
                                     icon="fa fa-archive">
@@ -227,76 +228,78 @@
                                     </div>
                                 </intranda:boxTitle>
                                 <div class="d-flex flex-nowrap justify-content-between">
-                                    <div class="p-2 w-100">
-                                        <ui:repeat
-                                            var="entry"
-                                            value="#{AdministrationForm.administrationPlugin.flatEntryList}">
-                                            <div
-                                                class="treeView-item py-1"
-                                                style="--level: #{entry.hierarchy};">
-                                                <div class="spacer" />
-                                                <div class="toggle">
-                                                    <h:commandLink
-                                                        id="expand"
-                                                        action="#{AdministrationForm.administrationPlugin.resetFlatList}"
-                                                        class="#{entry.displayChildren ? 'expand' : 'expanded'} text-black"
-                                                        rendered="#{entry.hasChildren and !entry.displaySearch}">
-                                                        <span
-                                                            class="#{entry.displayChildren ? 'fa fa-caret-down fa-lg' : 'fa fa-caret-right fa-lg'}"
-                                                            aria-hidden="true" />
-                                                        <x:updateActionListener
-                                                            property="#{entry.displayChildren}"
-                                                            value="#{not entry.displayChildren}" />
-                                                        <f:ajax
-                                                            execute="ead-details"
-                                                            render="ead-details"
-                                                            onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
-                                                    </h:commandLink>
-                                                </div>
-                                                <div class="content">
-                                                    <h:commandLink
-                                                        id="link2"
-                                                        immediate="true"
-                                                        styleClass="ps-1 #{entry.selected ? 'fw-700' : ''} #{entry.searchFound ? 'table__structure-link-searched' : ''} #{entry.valid ? '' : 'bg-hot text-white p-1'} #{entry.valid and !entry.selected ? 'text-black' : '' }">
-                                                        <span
-                                                            class="#{entry.nodeType.icon}"
-                                                            aria-hidden="true" />
-                                                        <span>
-                                                            <h:outputText
-                                                                value="#{entry.label}"
-                                                                rendered="#{entry.label != null}" />
-                                                            <h:outputText
-                                                                value=" - "
-                                                                rendered="#{entry.label == null}" />
-                                                            <span class="text-secondary">
-                                                                <h:outputText value=" (#{entry.id})" />
-                                                            </span>
-                                                        </span>
-                                                        <ui:fragment rendered="#{entry.goobiProcessTitle != null}">
+                                    <div class="scroll-container p-2 w-100">
+                                        <div>
+                                            <ui:repeat
+                                                var="entry"
+                                                value="#{AdministrationForm.administrationPlugin.flatEntryList}">
+                                                <div
+                                                    class="treeView-item py-1"
+                                                    style="--level: #{entry.hierarchy};">
+                                                    <div class="spacer" />
+                                                    <div class="toggle">
+                                                        <h:commandLink
+                                                            id="expand"
+                                                            action="#{AdministrationForm.administrationPlugin.resetFlatList}"
+                                                            class="#{entry.displayChildren ? 'expand' : 'expanded'} text-black"
+                                                            rendered="#{entry.hasChildren and !entry.displaySearch}">
                                                             <span
-                                                                class="fa fa-cog font-light margin-left-5"
+                                                                class="#{entry.displayChildren ? 'fa fa-caret-down fa-lg' : 'fa fa-caret-right fa-lg'}"
                                                                 aria-hidden="true" />
-                                                        </ui:fragment>
-                                                        <ui:fragment rendered="#{!entry.valid}">
+                                                            <x:updateActionListener
+                                                                property="#{entry.displayChildren}"
+                                                                value="#{not entry.displayChildren}" />
+                                                            <f:ajax
+                                                                execute="ead-details"
+                                                                render="ead-details"
+                                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                        </h:commandLink>
+                                                    </div>
+                                                    <div class="content">
+                                                        <h:commandLink
+                                                            id="link2"
+                                                            immediate="true"
+                                                            styleClass="ps-1 #{entry.selected ? 'fw-700' : ''} #{entry.searchFound ? 'table__structure-link-searched' : ''} #{entry.valid ? '' : 'bg-hot text-white p-1'} #{entry.valid and !entry.selected ? 'text-black' : '' }">
                                                             <span
-                                                                class="fa fa-exclamation-triangle margin-left-5"
-                                                                style="margin-right: 5px;" />
-                                                        </ui:fragment>
-                                                        <x:updateActionListener
-                                                            property="#{AdministrationForm.administrationPlugin.selectedEntry}"
-                                                            value="#{entry}" />
-                                                        <f:ajax
-                                                            execute="ead-details"
-                                                            render="hierarchy ead-details globalMessage"
-                                                            onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
-                                                    </h:commandLink>
+                                                                class="#{entry.nodeType.icon}"
+                                                                aria-hidden="true" />
+                                                            <span>
+                                                                <h:outputText
+                                                                    value="#{entry.label}"
+                                                                    rendered="#{entry.label != null}" />
+                                                                <h:outputText
+                                                                    value=" - "
+                                                                    rendered="#{entry.label == null}" />
+                                                                <span class="text-secondary">
+                                                                    <h:outputText value=" (#{entry.id})" />
+                                                                </span>
+                                                            </span>
+                                                            <ui:fragment rendered="#{entry.goobiProcessTitle != null}">
+                                                                <span
+                                                                    class="fa fa-cog font-light margin-left-5"
+                                                                    aria-hidden="true" />
+                                                            </ui:fragment>
+                                                            <ui:fragment rendered="#{!entry.valid}">
+                                                                <span
+                                                                    class="fa fa-exclamation-triangle margin-left-5"
+                                                                    style="margin-right: 5px;" />
+                                                            </ui:fragment>
+                                                            <x:updateActionListener
+                                                                property="#{AdministrationForm.administrationPlugin.selectedEntry}"
+                                                                value="#{entry}" />
+                                                            <f:ajax
+                                                                execute="ead-details"
+                                                                render="hierarchy ead-details globalMessage"
+                                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                        </h:commandLink>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </ui:repeat>
+                                            </ui:repeat>
+                                        </div>
                                     </div>
                                     <div class="p-2 flex-shrink-1 d-flex flex-column gap-2">
                                         <h:commandLink
-                                            styleClass="btn btn-primary"
+                                            styleClass="btn btn-neutral-600"
                                             action="#{AdministrationForm.administrationPlugin.addNode}"
                                             title="#{msgs.plugin_administration_archive_newNode}">
                                             <span class="fa fa-plus" />
@@ -309,7 +312,7 @@
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                         </h:commandLink>
                                         <h:commandLink
-                                            styleClass="btn btn-primary d-flex flex-nowrap py-2"
+                                            styleClass="btn btn-neutral-600 d-flex flex-nowrap py-2"
                                             onclick="$('#createNodesModal').modal('show');"
                                             disabled="#{AdministrationForm.administrationPlugin.selectedEntry == null}"
                                             title="#{msgs.plugin_administration_archive_addMultipleNodes}">
@@ -355,8 +358,7 @@
                                                     <li>
                                                         <h:commandLink
                                                             action="#{AdministrationForm.administrationPlugin.createProcesses}"
-                                                            pt:aria-label="#{template.two}"
-                                                            styleClass="dropdown-item">
+                                                            pt:aria-label="#{template.two}">
                                                             <h:outputText value="#{template.two}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.selectedTemplate}"
@@ -389,11 +391,11 @@
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
                                         </h:commandLink>
+                                        <div class="my-auto" />
                                         <h:commandLink
-                                            styleClass="btn btn-primary"
+                                            styleClass="btn btn-neutral-600"
                                             action="#{AdministrationForm.administrationPlugin.moveNodeUp}"
-                                            title="#{msgs.plugin_administration_archive_moveNodeUp}"
-                                            style="margin-top: 150px;">
+                                            title="#{msgs.plugin_administration_archive_moveNodeUp}">
                                             <span class="fa fa-chevron-up" />
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
@@ -404,7 +406,7 @@
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                         </h:commandLink>
                                         <h:commandLink
-                                            styleClass="btn btn-primary"
+                                            styleClass="btn btn-neutral-600"
                                             action="#{AdministrationForm.administrationPlugin.moveNodeDown}"
                                             title="#{msgs.plugin_administration_archive_moveNodeDown}">
                                             <span class="fa fa-chevron-down" />
@@ -417,7 +419,7 @@
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                         </h:commandLink>
                                         <h:commandLink
-                                            styleClass="btn btn-primary"
+                                            styleClass="btn btn-neutral-600"
                                             action="#{AdministrationForm.administrationPlugin.moveHierarchyDown}"
                                             title="#{msgs.plugin_administration_archive_moveHierarchyDown}">
                                             <span class="fa fa-chevron-right" />
@@ -430,7 +432,7 @@
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                         </h:commandLink>
                                         <h:commandLink
-                                            styleClass="btn btn-primary"
+                                            styleClass="btn btn-neutral-600"
                                             action="#{AdministrationForm.administrationPlugin.moveHierarchyUp}"
                                             title="#{msgs.plugin_administration_archive_moveHierarchyUp}">
                                             <span class="fa fa-chevron-left" />
@@ -444,7 +446,7 @@
                                         </h:commandLink>
                                         <!-- move node to another position in separate view -->
                                         <h:commandLink
-                                            styleClass="btn btn-primary"
+                                            styleClass="btn btn-neutral-600"
                                             action="#{AdministrationForm.administrationPlugin.prepareMoveNode}"
                                             title="#{msgs.plugin_administration_archive_moveNode}">
                                             <span class="fa fa-arrows" />
@@ -457,7 +459,7 @@
                                         </h:commandLink>
                                         <!-- duplicate selected node and insert it as last sibling -->
                                         <h:commandLink
-                                            styleClass="btn btn-primary"
+                                            styleClass="btn btn-neutral-600"
                                             onclick="$('#duplicationBox').modal('show');"
                                             title="#{msgs.plugin_administration_archive_duplicateNode}">
                                             <span class="fa fa-files-o" />
@@ -548,7 +550,7 @@
                                     </button>
                                     </div>
                                 </intranda:boxTitle>
-                                <div class="box__content-inner">
+                                <div>
                                     <!-- no node selected -->
                                     <h:outputText
                                         rendered="#{AdministrationForm.administrationPlugin.selectedEntry == null}"
@@ -563,14 +565,14 @@
                                         <div class="processcreation">
                                             <!-- process title -->
                                             <h:panelGroup
-                                                class="row"
+                                                class="form-row"
                                                 id="process-creation-area">
                                                 <div
-                                                    class="col-12 col-md-3 p-2"
+                                                    class="form-label"
                                                     tabindex="-1">
                                                     <h:outputText value="#{msgs.plugin_administration_archive_process}" />
                                                 </div>
-                                                <div class="col-12 col-md-9">
+                                                <div class="form-input">
                                                     <div class="w-100 d-flex flex-nowrap justify-content-between">
                                                         <!-- no process exists, so allow creation of a process here -->
                                                         <ui:fragment
@@ -639,15 +641,15 @@
                                             <!-- //process title -->
                                             <!-- node type as icon -->
                                             <h:panelGroup
-                                                class="row"
+                                                class="form-row"
                                                 id="node-type">
                                                 <div
-                                                    class="col-12 col-md-3 p-2"
+                                                    class="form-label"
                                                     tabindex="-1">
                                                     <h:outputText value="#{msgs.plugin_administration_archive_nodeType}" />
                                                 </div>
                                                 <div
-                                                    class="col-12 col-md-9">
+                                                    class="form-input">
                                                     <x:dataList
                                                         value="#{AdministrationForm.administrationPlugin.configuredNodes}"
                                                         var="nodeType">
@@ -661,7 +663,7 @@
                                                                 value="#{nodeType}"
                                                                 target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
                                                             <f:ajax
-                                                                render="node-type :hierarchy"
+                                                                render="node-type :hierarchy:hierarchy"
                                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                                             <f:passThroughAttribute
                                                                 name="data-bs-toggle"
@@ -673,15 +675,15 @@
                                             <!-- // node type as icon -->
                                             <!-- node id -->
                                             <h:panelGroup
-                                                class="row"
+                                                class="form-row"
                                                 id="node-id">
                                                 <div
-                                                    class="col-12 col-md-3 p-2"
+                                                    class="form-label"
                                                     tabindex="-1">
                                                     <h:outputText value="#{msgs.id}" />
                                                 </div>
                                                 <div
-                                                    class="col-12 col-md-9">
+                                                    class="form-input">
                                                     <h:outputText value="#{AdministrationForm.administrationPlugin.selectedEntry.id}" />
                                                 </div>
                                             </h:panelGroup>
@@ -690,7 +692,7 @@
                                         <h:panelGroup
                                             layout="block"
                                             id="identity-statement-area"
-                                            styleClass="d-flex flex-wrap justify-content-between">
+                                            styleClass="d-flex flex-wrap justify-content-between bg-neutral-200">
                                             <h:commandLink
                                                 styleClass="p-2"
                                                 title="#{msgs.plugin_administration_archive_show_details}">
@@ -722,7 +724,7 @@
                                         <!-- Group: Kontext / Context Area -->
                                         <h:panelGroup
                                             layout="block"
-                                            styleClass="d-flex flex-wrap justify-content-between"
+                                            styleClass="d-flex flex-wrap justify-content-between bg-neutral-200"
                                             id="context-area">
                                             <h:commandLink
                                                 styleClass="p-2"
@@ -752,7 +754,7 @@
                                         <!-- Group: Inhalt und innere Ordnung / Content and Structure Area -->
                                         <h:panelGroup
                                             layout="block"
-                                            styleClass="d-flex flex-wrap justify-content-between"
+                                            styleClass="d-flex flex-wrap justify-content-between bg-neutral-200"
                                             id="content-area">
                                             <h:commandLink
                                                 styleClass="p-2"
@@ -782,7 +784,7 @@
                                         <!-- Group: Zugangs- und Benutzungsbedingungen / Conditions of Access and Use Area -->
                                         <h:panelGroup
                                             layout="block"
-                                            styleClass="d-flex flex-wrap justify-content-between"
+                                            styleClass="d-flex flex-wrap justify-content-between bg-neutral-200"
                                             id="access-area">
                                             <h:commandLink
                                                 styleClass="p-2"
@@ -812,7 +814,7 @@
                                         <!-- Group: Sachverwandte Unterlagen / Allied Material Area -->
                                         <h:panelGroup
                                             layout="block"
-                                            styleClass="d-flex flex-wrap justify-content-between"
+                                            styleClass="d-flex flex-wrap justify-content-between bg-neutral-200"
                                             id="materials-area">
                                             <h:commandLink
                                                 styleClass="p-2"
@@ -842,7 +844,7 @@
                                         <!-- Group: Anmerkungen / Note Area -->
                                         <h:panelGroup
                                             layout="block"
-                                            styleClass="d-flex flex-wrap justify-content-between"
+                                            styleClass="d-flex flex-wrap justify-content-between bg-neutral-200"
                                             id="notes-area">
                                             <h:commandLink
                                                 styleClass="p-2"
@@ -872,7 +874,7 @@
                                         <!-- Group: Verzeichnungskontrolle / Description Control Area -->
                                         <h:panelGroup
                                             layout="block"
-                                            styleClass="d-flex flex-wrap justify-content-between"
+                                            styleClass="d-flex flex-wrap justify-content-between bg-neutral-200"
                                             id="control-area">
                                             <h:commandLink
                                                 styleClass="p-2"

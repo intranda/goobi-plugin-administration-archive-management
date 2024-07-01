@@ -18,7 +18,7 @@
                     <span class="fa fa-minus-circle" />
                     <f:ajax
                         execute="@this"
-                        render=":#{ajaxid} :hierarchy" />
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
                 </h:commandLink>
             </div>
             <div class="form-input">
@@ -36,7 +36,7 @@
                     <f:ajax
                         event="change"
                         execute="@this"
-                        render=":#{ajaxid} :hierarchy" />
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
                 </h:selectOneMenu>
                 <div>
                     <x:dataList
@@ -48,7 +48,7 @@
                             </span>
                             <f:ajax
                                 execute="@this"
-                                render=":#{ajaxid} :hierarchy" />
+                                render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
                         </h:commandLink>
                     </x:dataList>
                 </div>

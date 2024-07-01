@@ -21,7 +21,7 @@
                     <span class="fa fa-minus-circle" />
                     <f:ajax
                         execute="@this"
-                        render=":#{ajaxid} :hierarchy" />
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
                 </h:commandLink>
             </div>
             <div class="form-input d-flex gap-2 flex-nowrap">
@@ -35,7 +35,7 @@
                     readonly="false">
                     <f:ajax
                         execute="@this"
-                        render=":#{ajaxid} :hierarchy"
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
                         event="blur" />
                 </h:inputText>
                 <!-- search button, opens modal -->

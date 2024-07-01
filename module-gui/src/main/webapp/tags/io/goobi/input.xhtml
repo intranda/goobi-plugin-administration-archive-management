@@ -19,7 +19,7 @@
                     <span class="fa fa-minus-circle" />
                     <f:ajax
                         execute="@this"
-                        render=":#{ajaxid} :hierarchy" />
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
                 </h:commandLink>
             </div>
             <div class="form-input">
@@ -32,7 +32,7 @@
                     readonly="false">
                     <f:ajax
                         execute="@this"
-                        render=":#{ajaxid} :hierarchy"
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
                         event="blur" />
                 </h:inputText>
                 <h:outputText styleClass="help-inline font-danger" rendered="#{!item.valid}" value="#{msgs[item.validationError]}"/>

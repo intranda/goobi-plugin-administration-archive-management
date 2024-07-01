@@ -13,7 +13,7 @@
                 <h:commandLink
                     action="#{item.addValue}"
                     rendered="#{item.repeatable and item.showField and not item.group}"
-                    styleClass="#{item.filled ? 'text-white' : ''}">
+                    styleClass="#{item.filled ? 'text-white' : 'text-neutral-600'}">
                     <span class="fa fa-plus-circle" />
                     <span>
                         <h:outputText value="#{fieldname}" />
@@ -24,7 +24,7 @@
                     <f:actionListener binding="#{AdministrationForm.administrationPlugin.updateAreaDisplay(item.level)}" />
                     <f:ajax
                         execute="@this"
-                        render=":#{ajaxid} :hierarchy" />
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
                 </h:commandLink>
                 <h:commandLink
                     action="#{AdministrationForm.administrationPlugin.addGroup}"
@@ -43,11 +43,11 @@
                     <f:actionListener binding="#{AdministrationForm.administrationPlugin.updateAreaDisplay(item.level)}" />
                     <f:ajax
                         execute="@this"
-                        render=":#{ajaxid} :hierarchy" />
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
                 </h:commandLink>
                 <h:commandLink
                     rendered="#{!item.repeatable or (item.repeatable and !item.showField)}"
-                    styleClass="#{item.filled ? 'text-white' : ''}">
+                    styleClass="#{item.filled ? 'text-white' : 'text-neutral-600'}">
                     <ui:fragment rendered="#{item.repeatable}">
                         <span class="fa fa-plus-circle" />
                     </ui:fragment>
@@ -63,7 +63,7 @@
                         value="true" />
                     <f:ajax
                         execute="@this"
-                        render=":#{ajaxid} :hierarchy" />
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
                 </h:commandLink>
             </span>
         </ui:composition>
