@@ -772,8 +772,10 @@ public class EadEntry implements IEadEntry {
         if (mf.isGroup()) {
             for (IMetadataField subfield : mf.getSubfields()) {
                 fingerprintBuilder.append(subfield.getName());
-                for (IFieldValue val : subfield.getValues()) {
-                    fingerprintBuilder.append(val.getValue());
+                if (subfield.getValues() != null) {
+                    for (IFieldValue val : subfield.getValues()) {
+                        fingerprintBuilder.append(val.getValue());
+                    }
                 }
             }
         } else {

@@ -185,6 +185,10 @@ public class ArchiveManagementAdministrationPluginTest {
         EasyMock.expect(selectedEntry.getDatabaseId()).andReturn(1).anyTimes();
         EasyMock.expect(selectedEntry.getLabel()).andReturn("label").anyTimes();
         EasyMock.expect(selectedEntry.getAllNodes()).andReturn(Collections.emptyList()).anyTimes();
+        EasyMock.expect(selectedEntry.getFingerprint()).andReturn("").anyTimes();
+        selectedEntry.calculateFingerprint();
+        selectedEntry.calculateFingerprint();
+
         selectedEntry.setSelected(EasyMock.anyBoolean());
         EasyMock.expect(selectedEntry.getIdentityStatementAreaList()).andReturn(new ArrayList<>()).anyTimes();
         EasyMock.expect(selectedEntry.getContextAreaList()).andReturn(new ArrayList<>()).anyTimes();
