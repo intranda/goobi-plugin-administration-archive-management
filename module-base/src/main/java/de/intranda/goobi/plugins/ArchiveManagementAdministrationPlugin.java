@@ -1109,43 +1109,43 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         return uploadedFileName;
     }
 
-    private void addMetadata(Element xmlElement, IEadEntry node) {
+    private void addMetadata(Element currentElement, IEadEntry node, Element xmlRootElement) {
         boolean isMainElement = false;
-        if ("ead".equals(xmlElement.getName())) {
+        if ("ead".equals(currentElement.getName())) {
             isMainElement = true;
             updateChangeHistory(node);
         }
 
         for (IMetadataField emf : node.getIdentityStatementAreaList()) {
-            createEadElement(xmlElement, isMainElement, emf);
+            createEadElement(currentElement, isMainElement, emf, xmlRootElement);
         }
         for (IMetadataField emf : node.getContextAreaList()) {
-            createEadElement(xmlElement, isMainElement, emf);
+            createEadElement(currentElement, isMainElement, emf, xmlRootElement);
         }
         for (IMetadataField emf : node.getContentAndStructureAreaAreaList()) {
-            createEadElement(xmlElement, isMainElement, emf);
+            createEadElement(currentElement, isMainElement, emf, xmlRootElement);
         }
         for (IMetadataField emf : node.getAccessAndUseAreaList()) {
-            createEadElement(xmlElement, isMainElement, emf);
+            createEadElement(currentElement, isMainElement, emf, xmlRootElement);
         }
         for (IMetadataField emf : node.getAlliedMaterialsAreaList()) {
-            createEadElement(xmlElement, isMainElement, emf);
+            createEadElement(currentElement, isMainElement, emf, xmlRootElement);
         }
         for (IMetadataField emf : node.getNotesAreaList()) {
-            createEadElement(xmlElement, isMainElement, emf);
+            createEadElement(currentElement, isMainElement, emf, xmlRootElement);
         }
         for (IMetadataField emf : node.getDescriptionControlAreaList()) {
-            createEadElement(xmlElement, isMainElement, emf);
+            createEadElement(currentElement, isMainElement, emf, xmlRootElement);
         }
         Element dsc = null;
         if (isMainElement) {
             if (StringUtils.isNotBlank(node.getId())) {
-                xmlElement.setAttribute("id", node.getId());
+                currentElement.setAttribute("id", node.getId());
             }
-            Element archdesc = xmlElement.getChild("archdesc", nameSpaceWrite);
+            Element archdesc = currentElement.getChild("archdesc", nameSpaceWrite);
             if (archdesc == null) {
                 archdesc = new Element("archdesc", nameSpaceWrite);
-                xmlElement.addContent(archdesc);
+                currentElement.addContent(archdesc);
             }
             dsc = archdesc.getChild("dsc", nameSpaceWrite);
             if (dsc == null) {
@@ -1161,19 +1161,19 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
 
         } else {
-            dsc = xmlElement;
+            dsc = currentElement;
             if (StringUtils.isNotBlank(node.getId())) {
-                xmlElement.setAttribute("id", node.getId());
+                currentElement.setAttribute("id", node.getId());
             }
             if (node.getNodeType() != null) {
-                xmlElement.setAttribute("otherlevel", node.getNodeType().getNodeName());
+                currentElement.setAttribute("otherlevel", node.getNodeType().getNodeName());
             }
         }
 
         for (IEadEntry subNode : node.getSubEntryList()) {
             if (dsc == null) {
                 dsc = new Element("dsc", nameSpaceWrite);
-                xmlElement.addContent(dsc);
+                currentElement.addContent(dsc);
             }
 
             Element c = new Element("c", nameSpaceWrite);
@@ -1185,17 +1185,17 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 c.addContent(altformavail);
             }
 
-            addMetadata(c, subNode);
+            addMetadata(c, subNode, xmlRootElement);
         }
     }
 
-    private void createEadElement(Element xmlElement, boolean isMainElement, IMetadataField emf) {
+    private void createEadElement(Element xmlElement, boolean isMainElement, IMetadataField emf, Element xmlRootElement) {
         if (emf.isGroup()) {
-            createEadGroupField(xmlElement, emf, isMainElement);
+            createEadGroupField(xmlElement, emf, isMainElement, xmlRootElement);
         } else {
             for (IFieldValue fv : emf.getValues()) {
                 if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                    createEadXmlField(xmlElement, isMainElement, emf, fv);
+                    createEadXmlField(xmlElement, isMainElement, emf, fv, xmlRootElement);
 
                 }
             }
@@ -1256,16 +1256,25 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         ArchiveManagementManager.saveNode(recordGroup.getId(), node);
     }
 
-    private void createEadGroupField(Element xmlElement, IMetadataField groupField, boolean isMainElement) {
+    private void createEadGroupField(Element xmlElement, IMetadataField groupField, boolean isMainElement, Element xmlRootElement) {
 
         if (!groupField.isFilled()) {
             return;
         }
 
         String xpath = getXpath(isMainElement, groupField);
+        if (StringUtils.isBlank(xpath)) {
+            // dont export internal fields
+            return;
+        }
+
         String strRegex = "/(?=[^\\]]*(?:\\[|$))";
         String[] fields = xpath.split(strRegex);
+
         Element groupElement = xmlElement;
+        if (xpath.contains("ead:control")) {
+            groupElement = xmlRootElement;
+        }
 
         String lastElement = fields[fields.length - 1];
 
@@ -1291,16 +1300,25 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         for (IMetadataField subfield : groupField.getSubfields()) {
             for (IFieldValue fv : subfield.getValues()) {
                 if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                    createEadXmlField(groupElement, isMainElement, subfield, fv);
+                    createEadXmlField(groupElement, isMainElement, subfield, fv, xmlRootElement);
                 }
             }
         }
     }
 
-    private void createEadXmlField(Element xmlElement, boolean isMainElement, IMetadataField emf, IFieldValue metadataValue) {
+    private void createEadXmlField(Element xmlElement, boolean isMainElement, IMetadataField emf, IFieldValue metadataValue, Element xmlRootElement) {
+        if (StringUtils.isBlank(emf.getXpath())) {
+            // don't export internal fields
+            return;
+        }
 
         Element currentElement = xmlElement;
         String xpath = getXpath(isMainElement, emf);
+
+        if (xpath.contains("ead:control")) {
+            currentElement = xmlRootElement;
+        }
+
         // split xpath on URL_SEPARATOR, unless within square brackets
         String strRegex = "/(?=[^\\]]*(?:\\[|$))";
         String[] fields = xpath.split(strRegex);
@@ -1453,8 +1471,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     private Element createXmlElement(Element currentElement, String field, String conditions) {
-        Element element;
-        element = new Element(field, nameSpaceWrite);
+        Element element = new Element(field, nameSpaceWrite);
         currentElement.addContent(element);
         if (conditions != null) {
             String[] conditionArray = conditions.split("\\[");
@@ -2121,7 +2138,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         Element eadRoot = new Element("ead", nameSpaceWrite);
         document.setRootElement(eadRoot);
-        addMetadata(eadRoot, rootElement);
+        addMetadata(eadRoot, rootElement, eadRoot);
 
         return document;
     }
