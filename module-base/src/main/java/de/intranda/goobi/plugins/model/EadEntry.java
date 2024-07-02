@@ -737,4 +737,50 @@ public class EadEntry implements IEadEntry {
 
         }
     }
+
+    @Getter
+    private String fingerprint;
+
+    @Override
+    public void calculateFingerprint() {
+        StringBuilder fingerprintBuilder = new StringBuilder();
+        for (IMetadataField mf : identityStatementAreaList) {
+            addFingerprint(fingerprintBuilder, mf);
+        }
+        for (IMetadataField mf : contextAreaList) {
+            addFingerprint(fingerprintBuilder, mf);
+        }
+        for (IMetadataField mf : contentAndStructureAreaAreaList) {
+            addFingerprint(fingerprintBuilder, mf);
+        }
+        for (IMetadataField mf : accessAndUseAreaList) {
+            addFingerprint(fingerprintBuilder, mf);
+        }
+        for (IMetadataField mf : alliedMaterialsAreaList) {
+            addFingerprint(fingerprintBuilder, mf);
+        }
+        for (IMetadataField mf : notesAreaList) {
+            addFingerprint(fingerprintBuilder, mf);
+        }
+        for (IMetadataField mf : descriptionControlAreaList) {
+            addFingerprint(fingerprintBuilder, mf);
+        }
+        fingerprint = fingerprintBuilder.toString();
+    }
+
+    private void addFingerprint(StringBuilder fingerprintBuilder, IMetadataField mf) {
+        if (mf.isGroup()) {
+            for (IMetadataField subfield : mf.getSubfields()) {
+                fingerprintBuilder.append(subfield.getName());
+                for (IFieldValue val : subfield.getValues()) {
+                    fingerprintBuilder.append(val.getValue());
+                }
+            }
+        } else {
+            fingerprintBuilder.append(mf.getName());
+            for (IFieldValue val : mf.getValues()) {
+                fingerprintBuilder.append(val.getValue());
+            }
+        }
+    }
 }

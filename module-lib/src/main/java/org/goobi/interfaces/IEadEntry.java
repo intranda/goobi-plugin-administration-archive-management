@@ -142,4 +142,8 @@ public interface IEadEntry extends Comparable<IEadEntry> {
 
     public void setData(String data);
 
+    public String getFingerprint();
+
+    public void calculateFingerprint();
+
 }

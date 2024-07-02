@@ -392,6 +392,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             loadMetadataForNode(rootElement);
 
             selectedEntry = rootElement;
+
             displayMode = "";
             getDuplicationConfiguration();
         } else {
@@ -571,7 +572,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         if (entry.getId() == null) {
             entry.setId("id_" + UUID.randomUUID());
         }
-
+        entry.calculateFingerprint();
         return entry;
     }
 
@@ -980,6 +981,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             selectedEntry = entry;
             selectedEntry.setSelected(true);
             flatEntryList = null;
+            selectedEntry.calculateFingerprint();
             ArchiveManagementManager.saveNode(recordGroup.getId(), entry);
         }
     }
@@ -2146,6 +2148,15 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     public String saveArchiveAndLeave() {
         // save current node
         if (selectedEntry != null) {
+            // update node history, if node was changed
+            String oldFingerPrint = selectedEntry.getFingerprint();
+            selectedEntry.calculateFingerprint();
+            String newFingerPrint = selectedEntry.getFingerprint();
+
+            if (StringUtils.isNotBlank(oldFingerPrint) && StringUtils.isNotBlank(newFingerPrint) && !oldFingerPrint.equals(newFingerPrint)) {
+                updateChangeHistory(selectedEntry);
+            }
+
             ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
         }
 
@@ -2592,7 +2603,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             copy.setOrderNumber(selectedEntry.getParentNode().getSubEntryList().size() + 1);
 
             selectedEntry.getParentNode().addSubEntry(copy);
+            // update node history, if node was changed
+            String oldFingerPrint = selectedEntry.getFingerprint();
+            selectedEntry.calculateFingerprint();
+            String newFingerPrint = selectedEntry.getFingerprint();
 
+            if (StringUtils.isNotBlank(oldFingerPrint) && StringUtils.isNotBlank(newFingerPrint) && !oldFingerPrint.equals(newFingerPrint)) {
+                updateChangeHistory(selectedEntry);
+            }
             ArchiveManagementManager.saveNode(recordGroup.getId(), copy);
         }
     }
@@ -2601,6 +2619,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         if (selectedEntry != null) {
             // save current data
+            // update node history, if node was changed
+            String oldFingerPrint = selectedEntry.getFingerprint();
+            selectedEntry.calculateFingerprint();
+            String newFingerPrint = selectedEntry.getFingerprint();
+
+            if (StringUtils.isNotBlank(oldFingerPrint) && StringUtils.isNotBlank(newFingerPrint) && !oldFingerPrint.equals(newFingerPrint)) {
+                updateChangeHistory(selectedEntry);
+            }
             ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
         }
         // create new recordGroup
@@ -2637,6 +2663,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             if (selectedEntry.getNodeType() == null && configuredNodes != null) {
                 selectedEntry.setNodeType(configuredNodes.get(0));
             }
+            // update node history, if node was changed
+            String oldFingerPrint = selectedEntry.getFingerprint();
+            selectedEntry.calculateFingerprint();
+            String newFingerPrint = selectedEntry.getFingerprint();
+
+            if (StringUtils.isNotBlank(oldFingerPrint) && StringUtils.isNotBlank(newFingerPrint) && !oldFingerPrint.equals(newFingerPrint)) {
+                updateChangeHistory(selectedEntry);
+            }
             ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
         }
     }
@@ -2670,6 +2704,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     addFieldToNode(entry, toAdd);
                 }
             }
+            entry.calculateFingerprint();
         }
     }
 
@@ -2858,6 +2893,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                         addFieldToNode(entry, toAdd);
                     }
                 }
+                entry.calculateFingerprint();
                 // save new node
                 ArchiveManagementManager.saveNode(recordGroup.getId(), entry);
             }
