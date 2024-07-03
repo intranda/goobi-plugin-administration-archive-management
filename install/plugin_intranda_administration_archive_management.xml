@@ -266,6 +266,13 @@
         7.2 Verzeichnungsgrundsätze Rules or Conventions
         7.3 Datum oder Zeitraum der Verzeichnung Date(s) of description
         -->
+
+        <metadata xpath="./ead:processinfo/ead:p" xpathType="element" name="ArchivistNote" level="6" repeatable="false" fieldType="textarea" rulesetName="ArchivistNote" />
+        <metadata xpath="./ead:control/ead:localtypedeclaration" xpathType="element" name="Conventions" level="2" repeatable="false" fieldType="vocabulary" rulesetName="Conventions">
+            <vocabulary>Standards</vocabulary>
+        </metadata>
+        <metadata xpath="./ead:processinfo/ead:chronlist/ead:chronitem/ead:datesingle" xpathType="element" name="DescriptionDates" level="6" repeatable="false" fieldType="textarea" rulesetName="DescriptionDates" />
+        
         <metadata xpath="./ead:archdesc/ead:processinfo/ead:list/ead:item" xpathType="element" name="editorName" level="7" repeatable="true" fieldType="textarea" visible="false" />
 
 
