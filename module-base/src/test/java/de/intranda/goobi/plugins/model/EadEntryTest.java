@@ -2,13 +2,17 @@ package de.intranda.goobi.plugins.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.goobi.interfaces.IConfiguration;
 import org.goobi.interfaces.IEadEntry;
+import org.goobi.interfaces.IMetadataField;
 import org.junit.Test;
 
 public class EadEntryTest {
@@ -71,6 +75,14 @@ public class EadEntryTest {
         assertFalse(entry.isSelected());
         entry.setSelected(true);
         assertTrue(entry.isSelected());
+    }
+
+    @Test
+    public void testSearchFound() {
+        EadEntry entry = new EadEntry(1, 1);
+        assertFalse(entry.isSearchFound());
+        entry.setSearchFound(true);
+        assertTrue(entry.isSearchFound());
     }
 
     @Test
@@ -245,5 +257,181 @@ public class EadEntryTest {
         assertEquals(1, repeatable.getValues().size());
         repeatable.addFieldValue(new FieldValue(repeatable));
         assertEquals(2, repeatable.getValues().size());
+    }
+
+    @Test
+    public void testEquals() {
+        IEadEntry entry = new EadEntry(0, 0);
+
+        // same object
+        assertEquals(entry, entry);
+
+        // different classes
+        assertNotEquals(entry, "string class");
+
+        // different hierarchy
+        assertNotEquals(entry, new EadEntry(0, 1));
+
+        // different order
+        assertNotEquals(entry, new EadEntry(1, 0));
+
+        // same hierarchy and order
+        assertEquals(entry, new EadEntry(0, 0));
+    }
+
+    @Test
+    public void testHashCode() {
+        EadEntry entry = new EadEntry(1, 1);
+        assertEquals(954273, entry.hashCode());
+    }
+
+    @Test
+    public void testUpdateHierarchy() {
+        EadEntry entry = new EadEntry(2, 2);
+        EadEntry sub = new EadEntry(2, 2);
+        entry.addSubEntry(sub);
+
+        assertEquals(2, entry.getHierarchy().intValue());
+        assertEquals(2, sub.getHierarchy().intValue());
+
+        entry.updateHierarchy();
+
+        assertEquals(0, entry.getHierarchy().intValue());
+        assertEquals(1, sub.getHierarchy().intValue());
+    }
+
+    @Test
+    public void testMarkAsFound() {
+        EadEntry entry = new EadEntry(0, 0);
+        EadEntry sub = new EadEntry(1, 0);
+        EadEntry third = new EadEntry(2, 0);
+        entry.addSubEntry(sub);
+        sub.addSubEntry(third);
+
+        // none is marked to be displayed
+        assertFalse(entry.isDisplaySearch());
+        assertFalse(sub.isDisplaySearch());
+        assertFalse(third.isDisplaySearch());
+
+        // now we 'find' the second entry
+        sub.markAsFound();
+
+        // the marked entry and the parent are displayed, the child is still hidden
+        assertTrue(entry.isDisplaySearch());
+        assertTrue(sub.isDisplaySearch());
+        assertFalse(third.isDisplaySearch());
+
+        // reset search list
+        entry.resetFoundList();
+        // none is marked to be displayed
+        assertFalse(entry.isDisplaySearch());
+        assertFalse(sub.isDisplaySearch());
+        assertFalse(third.isDisplaySearch());
+    }
+
+    @Test
+    public void testSearchList() {
+        EadEntry entry = new EadEntry(0, 0);
+        EadEntry sub = new EadEntry(1, 0);
+        EadEntry third = new EadEntry(2, 0);
+        entry.addSubEntry(sub);
+        sub.addSubEntry(third);
+
+        // nothing is marked, list is empty
+        assertTrue(entry.getSearchList().isEmpty());
+
+        // second record is marked
+        sub.markAsFound();
+        assertEquals(2, entry.getSearchList().size());
+    }
+
+    @Test
+    public void testAreaVisible() {
+        EadEntry entry = new EadEntry(0, 0);
+        assertFalse(entry.isIdentityStatementAreaVisible());
+        assertFalse(entry.isContextAreaVisible());
+        assertFalse(entry.isContentAndStructureAreaAreaVisible());
+        assertFalse(entry.isAccessAndUseAreaVisible());
+        assertFalse(entry.isAlliedMaterialsAreaVisible());
+        assertFalse(entry.isNotesAreaVisible());
+        assertFalse(entry.isDescriptionControlAreaVisible());
+    }
+
+    @Test
+    public void testDeepCopy() {
+        EadEntry entry = new EadEntry(4, 4);
+        IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true,
+                "input", "metadataName", false, "required",
+                "regex", true, "viafSearchFields", "viafDisplayFields", false);
+        field.addValue();
+        List<IMetadataField> list = new ArrayList<>();
+        list.add(field);
+        entry.setIdentityStatementAreaList(list);
+        entry.setContextAreaList(list);
+        entry.setContentAndStructureAreaAreaList(list);
+        entry.setAccessAndUseAreaList(list);
+        entry.setAccessAndUseAreaList(list);
+
+        entry.setAlliedMaterialsAreaList(list);
+        entry.setNotesAreaList(list);
+        entry.setDescriptionControlAreaList(list);
+
+        IConfiguration configuration = new DuplicationConfiguration(entry);
+
+        IEadEntry other = entry.deepCopy(configuration);
+        assertEquals(entry.getHierarchy(), other.getHierarchy());
+        assertEquals(entry.getOrderNumber(), other.getOrderNumber());
+    }
+
+    @Test
+    public void testCompareTo() {
+        EadEntry entry = new EadEntry(0, 0);
+        EadEntry other = new EadEntry(1, 1);
+
+        assertEquals(0, entry.compareTo(entry));
+        assertEquals(-1, entry.compareTo(other));
+        assertEquals(1, other.compareTo(entry));
+    }
+
+    @Test
+    public void testSequence() {
+        EadEntry entry = new EadEntry(0, 0);
+        EadEntry sub = new EadEntry(0, 1);
+        EadEntry third = new EadEntry(0, 2);
+        entry.addSubEntry(sub);
+        sub.addSubEntry(third);
+
+        assertEquals("", entry.getSequence());
+        assertEquals("0", sub.getSequence());
+        assertEquals("0.0", third.getSequence());
+    }
+
+    @Test
+    public void testDataAsXml() {
+        EadEntry entry = new EadEntry(4, 4);
+        IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true,
+                "input", "metadataName", false, "required",
+                "regex", true, "viafSearchFields", "viafDisplayFields", false);
+        field.addValue();
+        List<IMetadataField> list = new ArrayList<>();
+        list.add(field);
+        entry.setIdentityStatementAreaList(list);
+        assertEquals("<xml></name></xml>", entry.getDataAsXml());
+    }
+
+    @Test
+    public void testFingerprint() {
+        EadEntry entry = new EadEntry(4, 4);
+        IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true,
+                "input", "metadataName", false, "required",
+                "regex", true, "viafSearchFields", "viafDisplayFields", false);
+        field.addValue();
+        field.getValues().get(0).setValue("value");
+        List<IMetadataField> list = new ArrayList<>();
+        list.add(field);
+        entry.setIdentityStatementAreaList(list);
+        assertNull(entry.getFingerprint());
+        entry.calculateFingerprint();
+        assertEquals("namevalue", entry.getFingerprint());
     }
 }

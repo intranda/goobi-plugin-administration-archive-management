@@ -111,6 +111,9 @@ public class EadEntry implements IEadEntry {
     private boolean valid = true;
     private String data;
 
+    @Getter
+    private String fingerprint;
+
     public EadEntry(Integer order, Integer hierarchy) {
         this.orderNumber = order;
         this.hierarchy = hierarchy;
@@ -737,9 +740,6 @@ public class EadEntry implements IEadEntry {
 
         }
     }
-
-    @Getter
-    private String fingerprint;
 
     @Override
     public void calculateFingerprint() {
