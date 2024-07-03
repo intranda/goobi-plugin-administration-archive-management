@@ -146,4 +146,6 @@ public interface IEadEntry extends Comparable<IEadEntry> {
 
     public void calculateFingerprint();
 
+    public boolean isChildrenHaveProcesses();
+
 }

@@ -785,4 +785,24 @@ public class EadEntry implements IEadEntry {
             }
         }
     }
+
+    @Override
+    public boolean isChildrenHaveProcesses() {
+        if (goobiProcessTitle != null) {
+            return false;
+        }
+        for (IEadEntry sub : subEntryList) {
+            if (sub.getGoobiProcessTitle() != null) {
+                return true;
+            }
+        }
+        for (IEadEntry sub : subEntryList) {
+            if (sub.isChildrenHaveProcesses()) {
+                return true;
+            }
+        }
+        return false;
+
+    }
+
 }
