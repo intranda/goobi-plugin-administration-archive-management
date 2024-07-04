@@ -138,6 +138,19 @@ public class EadEntryTest {
     }
 
     @Test
+    public void testAllNodes() {
+
+        EadEntry entry = new EadEntry(0, 0);
+        EadEntry second = new EadEntry(0, 1);
+        EadEntry third = new EadEntry(0, 2);
+        entry.addSubEntry(second);
+        second.addSubEntry(third);
+
+        List<IEadEntry> list = entry.getAllNodes();
+        assertEquals(3, list.size());
+    }
+
+    @Test
     public void testGetMoveToDestinationList() {
         EadEntry root = new EadEntry(0, 0);
         EadEntry firstRootChild = new EadEntry(0, 1);
@@ -355,13 +368,34 @@ public class EadEntryTest {
         assertFalse(entry.isAlliedMaterialsAreaVisible());
         assertFalse(entry.isNotesAreaVisible());
         assertFalse(entry.isDescriptionControlAreaVisible());
+
+        IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required",
+                "regex", true, "viafSearchFields", "viafDisplayFields", false);
+        field.addValue();
+        List<IMetadataField> list = new ArrayList<>();
+        list.add(field);
+        entry.setIdentityStatementAreaList(list);
+        entry.setContextAreaList(list);
+        entry.setContentAndStructureAreaAreaList(list);
+        entry.setAccessAndUseAreaList(list);
+        entry.setAccessAndUseAreaList(list);
+        entry.setAlliedMaterialsAreaList(list);
+        entry.setNotesAreaList(list);
+        entry.setDescriptionControlAreaList(list);
+
+        assertTrue(entry.isIdentityStatementAreaVisible());
+        assertTrue(entry.isContextAreaVisible());
+        assertTrue(entry.isContentAndStructureAreaAreaVisible());
+        assertTrue(entry.isAccessAndUseAreaVisible());
+        assertTrue(entry.isAlliedMaterialsAreaVisible());
+        assertTrue(entry.isNotesAreaVisible());
+        assertTrue(entry.isDescriptionControlAreaVisible());
     }
 
     @Test
     public void testDeepCopy() {
         EadEntry entry = new EadEntry(4, 4);
-        IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true,
-                "input", "metadataName", false, "required",
+        IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required",
                 "regex", true, "viafSearchFields", "viafDisplayFields", false);
         field.addValue();
         List<IMetadataField> list = new ArrayList<>();
@@ -409,29 +443,103 @@ public class EadEntryTest {
     @Test
     public void testDataAsXml() {
         EadEntry entry = new EadEntry(4, 4);
-        IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true,
-                "input", "metadataName", false, "required",
-                "regex", true, "viafSearchFields", "viafDisplayFields", false);
-        field.addValue();
-        List<IMetadataField> list = new ArrayList<>();
-        list.add(field);
-        entry.setIdentityStatementAreaList(list);
-        assertEquals("<xml></name></xml>", entry.getDataAsXml());
-    }
-
-    @Test
-    public void testFingerprint() {
-        EadEntry entry = new EadEntry(4, 4);
-        IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true,
-                "input", "metadataName", false, "required",
+        IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required",
                 "regex", true, "viafSearchFields", "viafDisplayFields", false);
         field.addValue();
         field.getValues().get(0).setValue("value");
         List<IMetadataField> list = new ArrayList<>();
         list.add(field);
         entry.setIdentityStatementAreaList(list);
+        assertEquals("<xml><name>value</name></xml>", entry.getDataAsXml());
+    }
+
+    @Test
+    public void testGroupDataAsXml() {
+        EadEntry entry = new EadEntry(4, 4);
+
+        IMetadataField grp = new EadMetadataField("group", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required",
+                "regex", true, "viafSearchFields", "viafDisplayFields", true);
+
+        List<IMetadataField> list = new ArrayList<>();
+        list.add(grp);
+        entry.setIdentityStatementAreaList(list);
+
+        IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true,
+                "input", "metadataName", false, "required",
+                "regex", true, "viafSearchFields", "viafDisplayFields", false);
+        field.addValue();
+        field.getValues().get(0).setValue("value");
+        grp.addSubfield(field);
+
+        assertEquals("<xml><group name=\"group\"><field name=\"name\">value</field></group></xml>", entry.getDataAsXml());
+    }
+
+    @Test
+    public void testFingerprint() {
+        EadEntry entry = new EadEntry(4, 4);
+        IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required",
+                "regex", true, "viafSearchFields", "viafDisplayFields", false);
+        field.addValue();
+        field.getValues().get(0).setValue("value");
+
+        IMetadataField grp = new EadMetadataField("group", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required", "regex",
+                true, "viafSearchFields", "viafDisplayFields", true);
+        grp.addSubfield(field);
+        List<IMetadataField> list = new ArrayList<>();
+        list.add(grp);
+
+        list.add(field);
+        entry.setIdentityStatementAreaList(list);
         assertNull(entry.getFingerprint());
         entry.calculateFingerprint();
-        assertEquals("namevalue", entry.getFingerprint());
+        assertEquals("namevaluenamevalue", entry.getFingerprint());
+    }
+
+    @Test
+    public void testDeleteGroup() {
+        EadEntry entry = new EadEntry(4, 4);
+
+        IMetadataField grp = new EadMetadataField("group", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required", "regex",
+                true, "viafSearchFields", "viafDisplayFields", true);
+        List<IMetadataField> list = new ArrayList<>();
+        list.add(grp);
+        entry.setIdentityStatementAreaList(list);
+
+        IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true,
+                "input", "metadataName", false, "required",
+                "regex", true, "viafSearchFields", "viafDisplayFields", false);
+        field.addValue();
+        field.getValues().get(0).setValue("value");
+        grp.addSubfield(field);
+
+        assertTrue(grp.isFilled());
+        entry.deleteGroup(grp);
+        assertFalse(grp.isFilled());
+
+    }
+
+    @Test
+    public void testChildrenHaveProcesses() {
+
+        EadEntry entry = new EadEntry(0, 0);
+        EadEntry second = new EadEntry(0, 1);
+        EadEntry third = new EadEntry(0, 2);
+        entry.addSubEntry(second);
+        second.addSubEntry(third);
+
+        // third one has no children and no process
+        assertFalse(third.isChildrenHaveProcesses());
+        // second has a child without process
+        assertFalse(second.isChildrenHaveProcesses());
+        // first one has no children with a process
+        assertFalse(entry.isChildrenHaveProcesses());
+
+        // now the third process has a process
+        third.setGoobiProcessTitle("title");
+        // still false as the node has a process itself
+        assertFalse(third.isChildrenHaveProcesses());
+        assertTrue(second.isChildrenHaveProcesses());
+        assertTrue(entry.isChildrenHaveProcesses());
+
     }
 }

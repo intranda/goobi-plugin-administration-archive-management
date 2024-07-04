@@ -3,6 +3,7 @@ package de.intranda.goobi.plugins;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang3.StringUtils;
+import org.goobi.beans.Batch;
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
 import org.goobi.beans.User;
@@ -86,6 +88,7 @@ import de.sub.goobi.persistence.managers.VocabularyManager;
 import de.sub.goobi.validator.ExtendedDateTimeFormatLexer;
 import de.sub.goobi.validator.ExtendedDateTimeFormatParser;
 import io.goobi.workflow.locking.LockingBean;
+import io.goobi.workflow.xslt.XsltToPdf;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -1757,13 +1760,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         return processTemplates;
     }
 
-    public void createProcess() {
+    public Process createProcess() {
         // abort if no node is selected
         if (selectedEntry == null) {
-            return;
+            return null;
         }
         if (selectedEntry.getNodeType() == null) {
-            return;
+            return null;
         }
         Integer processTemplateId = null;
         if (StringUtils.isBlank(selectedTemplate)) {
@@ -1775,7 +1778,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         // load process template
         processTemplate = ProcessManager.getProcessById(processTemplateId);
         if (processTemplate == null) {
-            return;
+            return null;
         }
 
         Prefs prefs = processTemplate.getRegelsatz().getPreferences();
@@ -1879,7 +1882,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 String message2 = "Uniqueness of the generated process name is not guaranteed, aborting.";
                 log.error(message2);
                 Helper.setFehlerMeldung(message2);
-                return;
+                return null;
             }
         }
         log.debug("processTitle = " + processTitle);
@@ -1931,7 +1934,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 myThread.startOrPutToQueue();
             }
         }
-
+        return process;
     }
 
     private void addNoteId(Prefs prefs, DocStruct logical) {
@@ -2090,7 +2093,39 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             return;
         }
         Process process = ProcessManager.getProcessByExactTitle(selectedEntry.getGoobiProcessTitle());
-        process.downloadDocket();
+
+        if (process.getBatch() == null) {
+            process.downloadDocket();
+        } else {
+            // load all processes of the batch
+
+            List<Process> docket = ProcessManager.getProcesses(null, " istTemplate = false AND batchID = " + process.getBatch().getBatchId(), 0,
+                    Integer.MAX_VALUE, null);
+            if (docket.size() == 1) {
+                process.downloadDocket();
+            } else {
+                FacesContext facesContext = FacesContextHelper.getCurrentFacesContext();
+                Path xsltfile = Paths.get(ConfigurationHelper.getInstance().getXsltFolder(), "docket_multipage.xsl");
+                HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+                String fileName = "batch_docket" + ".pdf";
+                ServletContext servletContext = (ServletContext) facesContext.getExternalContext().getContext();
+                String contentType = servletContext.getMimeType(fileName);
+                response.setContentType(contentType);
+                response.setHeader("Content-Disposition", "attachment;filename=\"" + fileName + "\"");
+
+                try {
+                    ServletOutputStream out = response.getOutputStream();
+                    XsltToPdf ern = new XsltToPdf();
+                    ern.startExport(docket, out, xsltfile.toString());
+                    out.flush();
+                } catch (IOException e) {
+                    log.error("IOException while exporting run note", e);
+                }
+
+                facesContext.responseComplete();
+            }
+
+        }
 
     }
 
@@ -2354,16 +2389,30 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             return;
         }
 
-        createProcessesForChildren(selectedEntry);
+        List<Process> processList = new ArrayList<>();
+        createProcessesForChildren(selectedEntry, processList);
+        // if more than one process was created, put them into a batch
+        if (processList.size() > 1) {
+            Batch batch = new Batch();
+            ProcessManager.saveBatch(batch);
+            for (Process proc : processList) {
+                proc.setBatch(batch);
+                try {
+                    ProcessManager.saveProcess(proc);
+                } catch (DAOException e) {
+                    log.error(e);
+                }
+            }
+        }
     }
 
-    private void createProcessesForChildren(IEadEntry currentEntry) {
+    private void createProcessesForChildren(IEadEntry currentEntry, List<Process> processList) {
 
         setSelectedEntry(currentEntry);
-
         if (!currentEntry.isHasChildren() && currentEntry.getGoobiProcessTitle() == null) {
             try {
-                createProcess();
+                Process proc = createProcess();
+                processList.add(proc);
                 Helper.setMeldung("Created " + currentEntry.getGoobiProcessTitle() + " for " + currentEntry.getLabel());
             } catch (Exception e) {
                 Helper.setFehlerMeldung(e.getMessage());
@@ -2372,7 +2421,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         } else if (currentEntry.isHasChildren()) {
 
             for (IEadEntry childEntry : currentEntry.getSubEntryList()) {
-                createProcessesForChildren(childEntry);
+                createProcessesForChildren(childEntry, processList);
             }
         }
     }

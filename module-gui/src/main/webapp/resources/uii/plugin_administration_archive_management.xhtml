@@ -277,7 +277,13 @@
                                                             </span>
                                                             <ui:fragment rendered="#{entry.goobiProcessTitle != null}">
                                                                 <span
-                                                                    class="fa fa-cog font-light margin-left-5"
+                                                                    class="fa fa-cog  margin-left-5"
+                                                                    aria-hidden="true" />
+                                                            </ui:fragment>
+                                                            
+                                                        <ui:fragment rendered="#{entry.childrenHaveProcesses}">
+                                                                <span
+                                                                    class="fa fa-cog  opacity-50 margin-left-5"
                                                                     aria-hidden="true" />
                                                             </ui:fragment>
                                                             <ui:fragment rendered="#{!entry.valid}">
