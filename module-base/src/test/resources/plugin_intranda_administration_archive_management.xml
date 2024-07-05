@@ -7,6 +7,10 @@
         <archive>*</archive>
         <!-- default title for a new node -->
         <nodeDefaultTitle>Document</nodeDefaultTitle>
+        
+        <title name="shelfmarksource" type="NORMAL" />
+        <title name="TitleDocMain" type="CAMEL_CASE" />
+        
         <!-- define metadata fields. All fields are displayed on the UI based on the level and the order within this file.
                 - @name: contains the internal name of the field. The value can be used to translate the field in the messages files. The field must start with a letter and can not contain any white spaces.
                 - @level: metadata level, allowed values are 1-7:
@@ -227,7 +231,7 @@
         <!-- ============================= Description Control Area ================================ -->
 
         <!-- Verzeichnungsgrundsätze / Rules or Conventions -->
-        <metadata xpath="./ead:control/ead:conventiondeclaration" xpathType="element" name="conventiondeclaration" level="7" repeatable="false" fieldType="multiselect" rulesetName="ConventionDeclaration">
+        <metadata xpath="./ead:control/ead:conventiondeclaration" xpathType="text" name="conventiondeclaration" level="7" repeatable="true" fieldType="multiselect" rulesetName="ConventionDeclaration">
             <value>val 1</value>
             <value>val 2</value>
             <value>val 3</value>
