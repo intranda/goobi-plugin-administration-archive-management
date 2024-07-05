@@ -29,7 +29,7 @@
                 <h:commandLink
                     action="#{AdministrationForm.administrationPlugin.addGroup}"
                     rendered="#{item.repeatable and item.showField and item.group}"
-                    styleClass="#{item.filled ? 'text-white' : ''}">
+                    styleClass="#{item.filled ? 'text-white' : 'text-neutral-600'}">
                     <span class="fa fa-plus-circle" />
                     <span>
                         <h:outputText value="#{fieldname}" />

@@ -51,98 +51,71 @@
                 fieldvalue="#{field.value}" />
         </ui:fragment>
         <ui:fragment rendered="#{subfield.fieldType=='gnd'}">
-            <div class="form-row">
-                <div class="form-label d-flex justify-content-between">
-                    <h:outputLabel
-                        for="gnd"
-                        value="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}" />
-                    <h:commandLink
-                        styleClass="metadata-row-area-content close-field pull-right"
-                        action="#{subfield.deleteValue(field)}">
-                        <span class="fa fa-minus-circle" />
-                        <f:ajax
-                            execute="@this"
-                            render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
-                    </h:commandLink>
-                </div>
-                <div class="form-input">
-                    <intranda:formInputGndAjax
-                        id="gnd"
-                        name="gnd"
-                        render="@form"
-                        field="#{field}"
-                        help=""
-                        fieldStyle=""
-                        displayAsRequired="false"
-                        required="false"
-                        label=""
-                        displayLabel="false">
-                    </intranda:formInputGndAjax>
-                </div>
-            </div>
+            <intranda:formInputGndAjax
+                id="gnd"
+                name="gnd"
+                render="@form"
+                field="#{field}"
+                help=""
+                fieldStyle=""
+                displayAsRequired="false"
+                required="false"
+                label="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}"
+                displayLabel="false">
+                <h:commandLink
+                    styleClass="btn ms-auto"
+                    action="#{subfield.deleteValue(field)}">
+                    <span class="fa fa-minus-circle" />
+                    <f:ajax
+                        execute="@this"
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                </h:commandLink>
+            </intranda:formInputGndAjax>
         </ui:fragment>
         <ui:fragment rendered="#{subfield.fieldType=='geonames'}">
-            <div class="form-row">
-                <div class="form-label d-flex justify-content-between">
-                    <h:outputLabel
-                        for="geonames"
-                        value="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}" />
-                    <h:commandLink
-                        styleClass="metadata-row-area-content close-field pull-right"
-                        action="#{subfield.deleteValue(field)}">
-                        <span class="fa fa-minus-circle" />
-                        <f:ajax
-                            execute="@this"
-                            render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
-                    </h:commandLink>
-                </div>
-                <div class="form-input">
-                    <intranda:formInputGeonamesAjax
-                        id="geonames"
-                        name="geonames"
-                        field="#{field}"
-                        help="#{msgs.help}"
-                        render="@form"
-                        fieldStyle="form-control"
-                        displayAsRequired="false"
-                        required="false"
-                        submitDataAction="#{field.importGeonamesData()}"
-                        label=""
-                        displayLabel="false">
-                    </intranda:formInputGeonamesAjax>
-                </div>
-            </div>
+            <intranda:formInputGeonamesAjax
+                id="geonames"
+                name="geonames"
+                field="#{field}"
+                help="#{msgs.help}"
+                render="@form"
+                fieldStyle="form-control"
+                displayAsRequired="false"
+                required="false"
+                submitDataAction="#{field.importGeonamesData()}"
+                label="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}"
+                displayLabel="false">
+                <h:commandLink
+                    styleClass="btn ms-auto"
+                    action="#{subfield.deleteValue(field)}">
+                    <span class="fa fa-minus-circle" />
+                    <f:ajax
+                        execute="@this"
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                </h:commandLink>
+            </intranda:formInputGeonamesAjax>
         </ui:fragment>
         <ui:fragment rendered="#{subfield.fieldType=='viaf'}">
-            <div class="form-row">
-                <div class="form-label d-flex justify-content-between">
-                    <h:outputLabel
-                        for="viaf"
-                        value="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}" />
-                    <h:commandLink
-                        styleClass="metadata-row-area-content close-field pull-right"
-                        action="#{subfield.deleteValue(field)}">
-                        <span class="fa fa-minus-circle" />
-                        <f:ajax
-                            execute="@this"
-                            render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
-                    </h:commandLink>
-                </div>
-                <div class="form-input">
-                    <intranda:formInputViafAjax
-                        id="viaf"
-                        name="viaf"
-                        field="#{field}"
-                        help="#{msgs.help}"
-                        render="@form"
-                        fieldStyle="form-control"
-                        displayAsRequired="false"
-                        required="false"
-                        label=""
-                        displayLabel="false">
-                    </intranda:formInputViafAjax>
-                </div>
-            </div>
+            <intranda:formInputViafAjax
+                id="viaf"
+                name="viaf"
+                field="#{field}"
+                help="#{msgs.help}"
+                render="@form"
+                fieldStyle="form-control"
+                displayAsRequired="false"
+                required="false"
+                label=""
+                displayLabel="false">
+                <h:commandLink
+                    styleClass="btn ms-auto"
+                    action="#{subfield.deleteValue(field)}">
+                    <span class="fa fa-minus-circle" />
+                    <f:ajax
+                        execute="@this"
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                </h:commandLink>
+            </intranda:formInputViafAjax>
         </ui:fragment>
     </ui:composition>
 </h:body>

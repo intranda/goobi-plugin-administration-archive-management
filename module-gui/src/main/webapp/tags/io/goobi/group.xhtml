@@ -12,19 +12,20 @@
     xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
 <h:body>
     <ui:composition>
-        <div class="row">
-            <div
-                class="form-label d-flex justify-content-between">
+        <intranda:fieldSet>
+            <legend
+                class="fieldSet-legend d-flex justify-content-between">
                 <h:outputText value="#{fieldname}" />
                 <h:commandLink
-                    action="#{AdministrationForm.administrationPlugin.selectedEntry.deleteGroup(item)}">
+                    action="#{AdministrationForm.administrationPlugin.selectedEntry.deleteGroup(item)}"
+                    styleClass="btn ms-auto">
                     <span class="fa fa-minus-circle" />
                     <f:ajax
                         execute="@this"
                         render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
                 </h:commandLink>
-            </div>
-            <div class="form-input">
+            </legend>
+            <div class="form-rows">
                 <x:dataList
                     var="subfield"
                     value="#{item.subfields}">
@@ -35,7 +36,7 @@
                     </x:dataList>
                 </x:dataList>
             </div>
-        </div>
+        </intranda:fieldSet>
     </ui:composition>
 </h:body>
 </html>

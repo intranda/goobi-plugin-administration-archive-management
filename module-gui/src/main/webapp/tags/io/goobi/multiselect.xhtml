@@ -38,12 +38,12 @@
                         execute="@this"
                         render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
                 </h:selectOneMenu>
-                <div>
+                <div class="pt-1">
                     <x:dataList
                         value="#{selectedItems}"
                         var="selection">
                         <h:commandLink action="#{field.removeSelectedValue(selection)}">
-                            <span class="badge">
+                            <span class="badge badge-light-grey">
                                 <h:outputText value="#{msgs[selection]}" />
                             </span>
                             <f:ajax
