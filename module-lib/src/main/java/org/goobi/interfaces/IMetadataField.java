@@ -95,10 +95,14 @@ public interface IMetadataField {
 
     public void setGroup(boolean group);
 
-    public List<IMetadataField> getSubfields();
+    public List<IMetadataGroup> getGroups();
 
-    public void setSubfields(List<IMetadataField> fields);
+    public void setGroups(List<IMetadataGroup> groups);
 
-    public void addSubfield(IMetadataField field);
+    public IMetadataGroup createGroup();
+
+    public void addGroup(IMetadataGroup group);
+
+    public void deleteGroup(IMetadataGroup group);
 
 }

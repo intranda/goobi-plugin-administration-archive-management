@@ -7,6 +7,7 @@ import org.apache.commons.lang.StringUtils;
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.IFieldValue;
 import org.goobi.interfaces.IMetadataField;
+import org.goobi.interfaces.IMetadataGroup;
 
 import lombok.Data;
 import lombok.ToString;
@@ -84,7 +85,7 @@ public class EadMetadataField implements IMetadataField {
 
     // metadata groups
     private boolean group;
-    private List<IMetadataField> subfields = new ArrayList<>();
+    private List<IMetadataGroup> groups = new ArrayList<>();
 
     public EadMetadataField(String name, Integer level, String xpath, String xpathType, boolean repeatable, boolean visible, boolean showField, //NOSONAR
             String fieldType, String metadataName, boolean importMetadataInChild, String validationType, String regularExpression,
@@ -110,9 +111,11 @@ public class EadMetadataField implements IMetadataField {
     @Override
     public boolean isFilled() {
         if (isGroup()) {
-            for (IMetadataField f : subfields) {
-                if (f.isFilled()) {
-                    return true;
+            for (IMetadataGroup grp : groups) {
+                for (IMetadataField f : grp.getFields()) {
+                    if (f.isFilled()) {
+                        return true;
+                    }
                 }
             }
         }
@@ -176,9 +179,13 @@ public class EadMetadataField implements IMetadataField {
                 group);
         field.setSelectItemList(selectItemList);
         if (isGroup()) {
-            for (IMetadataField sub : subfields) {
-                IMetadataField newSubfield = sub.copy(prefix, suffix);
-                field.addSubfield(newSubfield);
+            for (IMetadataGroup grp : groups) {
+                IMetadataGroup newGroup = new EadMetadataGroup(this);
+                field.getGroups().add(newGroup);
+                for (IMetadataField f : grp.getFields()) {
+                    IMetadataField newSubfield = f.copy(prefix, suffix);
+                    newGroup.getFields().add(newSubfield);
+                }
             }
 
         } else {
@@ -199,7 +206,53 @@ public class EadMetadataField implements IMetadataField {
     }
 
     @Override
-    public void addSubfield(IMetadataField field) {
-        subfields.add(field);
+    public IMetadataGroup createGroup() {
+        if (!groups.isEmpty() && !isFilled()) {
+            return groups.get(0);
+        }
+
+        IMetadataGroup newGroup = new EadMetadataGroup(this);
+        if (!groups.isEmpty()) {
+            IMetadataGroup other = groups.get(0);
+            for (IMetadataField f : other.getFields()) {
+                boolean fieldExists = false;
+                for (IMetadataField createdField : newGroup.getFields()) {
+                    if (createdField.getName().equals(f.getName())) {
+                        fieldExists = true;
+                        break;
+                    }
+                }
+                if (!fieldExists) {
+                    IMetadataField field = new EadMetadataField(f.getName(), f.getLevel(), f.getXpath(), f.getXpathType(), f.isRepeatable(),
+                            f.isVisible(), f.isShowField(), f.getFieldType(), f.getMetadataName(), importMetadataInChild, f.getValidationType(),
+                            f.getRegularExpression(), f.isSearchable(), f.getViafSearchFields(), f.getViafDisplayFields(), f.isGroup());
+                    newGroup.getFields().add(field);
+                }
+            }
+        }
+        groups.add(newGroup);
+        return newGroup;
+    }
+
+    @Override
+    public void addGroup(IMetadataGroup group) {
+        groups.add(group);
+    }
+
+    @Override
+    public void deleteGroup(IMetadataGroup group) {
+        // if more than one group exists, remove it
+        if (groups.size() > 1) {
+            groups.remove(group);
+        } else {
+            // otherwise clear all fields
+            for (IMetadataField f : group.getFields()) {
+                for (IFieldValue val : f.getValues()) {
+                    f.deleteValue(val);
+                }
+            }
+            showField = false;
+        }
+
     }
 }

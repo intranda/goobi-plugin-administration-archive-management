@@ -11,6 +11,7 @@ import org.goobi.interfaces.IConfiguration;
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.IFieldValue;
 import org.goobi.interfaces.IMetadataField;
+import org.goobi.interfaces.IMetadataGroup;
 import org.goobi.interfaces.INodeType;
 import org.goobi.interfaces.IParameter;
 
@@ -611,33 +612,35 @@ public class EadEntry implements IEadEntry {
     private void createXmlField(StringBuilder xml, IMetadataField field) {
         if (field.isGroup()) {
             xml.append("<group name=\"").append(field.getName()).append("\">");
-            for (IMetadataField subfield : field.getSubfields()) {
-                if (subfield.getValues() != null) {
-                    for (IFieldValue val : subfield.getValues()) {
-                        if (StringUtils.isNotBlank(val.getValue())) {
-                            xml.append("<field name=\"").append(subfield.getName()).append("\"");
-                            if (StringUtils.isNotBlank(val.getAuthorityValue()) && StringUtils.isNotBlank(val.getAuthorityType())) {
-                                xml.append(" source=\"")
-                                        .append(val.getAuthorityType())
-                                        .append("\" value=\"")
-                                        .append(val.getAuthorityValue())
-                                        .append("\"");
-                            }
-                            xml.append(">");
+            for (IMetadataGroup group : field.getGroups()) {
+                for (IMetadataField subfield : group.getFields()) {
+                    if (subfield.getValues() != null) {
+                        for (IFieldValue val : subfield.getValues()) {
                             if (StringUtils.isNotBlank(val.getValue())) {
-                                // mask ending backslash
-                                String actualValue = val.getValue();
-                                if (actualValue.endsWith("\\")) {
-                                    actualValue = val.getValue() + "\\";
+                                xml.append("<field name=\"").append(subfield.getName()).append("\"");
+                                if (StringUtils.isNotBlank(val.getAuthorityValue()) && StringUtils.isNotBlank(val.getAuthorityType())) {
+                                    xml.append(" source=\"")
+                                            .append(val.getAuthorityType())
+                                            .append("\" value=\"")
+                                            .append(val.getAuthorityValue())
+                                            .append("\"");
                                 }
-                                xml.append(
-                                        MySQLHelper
-                                                .escapeSql(
-                                                        actualValue.replaceAll("&(?!amp;|gt;|lt;)", "&amp;")
-                                                                .replace("<", "&lt;")
-                                                                .replace(">", "&gt;")));
+                                xml.append(">");
+                                if (StringUtils.isNotBlank(val.getValue())) {
+                                    // mask ending backslash
+                                    String actualValue = val.getValue();
+                                    if (actualValue.endsWith("\\")) {
+                                        actualValue = val.getValue() + "\\";
+                                    }
+                                    xml.append(
+                                            MySQLHelper
+                                                    .escapeSql(
+                                                            actualValue.replaceAll("&(?!amp;|gt;|lt;)", "&amp;")
+                                                                    .replace("<", "&lt;")
+                                                                    .replace(">", "&gt;")));
+                                }
+                                xml.append("</field>");
                             }
-                            xml.append("</field>");
                         }
                     }
                 }
@@ -664,81 +667,8 @@ public class EadEntry implements IEadEntry {
         }
     }
 
-    public void deleteGroup(IMetadataField group) {
-        IMetadataField valueToDelete = null;
-        List<IMetadataField> fields = new ArrayList<>();
-        // find group to delete
-        switch (group.getLevel()) {
-            case 1:
-                removeGroupFromEntry(identityStatementAreaList, group, valueToDelete, fields);
-                break;
-            case 2:
-                removeGroupFromEntry(contextAreaList, group, valueToDelete, fields);
-                break;
-            case 3:
-                removeGroupFromEntry(contentAndStructureAreaAreaList, group, valueToDelete, fields);
-                break;
-            case 4:
-                removeGroupFromEntry(accessAndUseAreaList, group, valueToDelete, fields);
-                break;
-            case 5:
-                removeGroupFromEntry(alliedMaterialsAreaList, group, valueToDelete, fields);
-                break;
-            case 6:
-                removeGroupFromEntry(notesAreaList, group, valueToDelete, fields);
-                break;
-            case 7:
-                removeGroupFromEntry(descriptionControlAreaList, group, valueToDelete, fields);
-                break;
-            default:
-                break;
-        }
-    }
-
-    private void removeGroupFromEntry(List<IMetadataField> metadataList, IMetadataField group, IMetadataField valueToDelete,
-            List<IMetadataField> fields) {
-        for (IMetadataField field : metadataList) {
-            if (field.getName().equals(group.getName())) {
-                fields.add(field);
-                // check if this field is the one to delete
-                boolean allFieldMatched = true;
-                for (IMetadataField subfield : group.getSubfields()) {
-                    for (IMetadataField other : field.getSubfields()) {
-                        if (other.getName().equals(subfield.getName())) {
-                            boolean subFieldMatched = false;
-                            for (IFieldValue subVal : subfield.getValues()) {
-                                for (IFieldValue otherVal : other.getValues()) {
-                                    if ((StringUtils.isBlank(subVal.getValue()) && StringUtils.isBlank(otherVal.getValue())) ||
-                                            StringUtils.isNotBlank(subVal.getValue()) && StringUtils.isNotBlank(otherVal.getValue())
-                                                    && subVal.getValue().equals(otherVal.getValue())) {
-                                        subFieldMatched = true;
-                                    }
-                                }
-                            }
-                            allFieldMatched = allFieldMatched && subFieldMatched;
-                        }
-                    }
-                }
-                if (allFieldMatched) {
-                    valueToDelete = field;
-                }
-            }
-        }
-        if (valueToDelete != null) {
-            if (fields.size() > 1) {
-                metadataList.remove(valueToDelete);
-            } else {
-                valueToDelete.setShowField(false);
-                for (IMetadataField subfield : group.getSubfields()) {
-                    for (IFieldValue val : subfield.getValues()) {
-                        val.setAuthorityType("");
-                        val.setAuthorityValue("");
-                        val.setValue("");
-                    }
-                }
-            }
-
-        }
+    public void deleteGroup(IMetadataGroup group) {
+        group.getField().deleteGroup(group);
     }
 
     @Override
@@ -770,11 +700,13 @@ public class EadEntry implements IEadEntry {
 
     private void addFingerprint(StringBuilder fingerprintBuilder, IMetadataField mf) {
         if (mf.isGroup()) {
-            for (IMetadataField subfield : mf.getSubfields()) {
-                fingerprintBuilder.append(subfield.getName());
-                if (subfield.getValues() != null) {
-                    for (IFieldValue val : subfield.getValues()) {
-                        fingerprintBuilder.append(val.getValue());
+            for (IMetadataGroup group : mf.getGroups()) {
+                for (IMetadataField subfield : group.getFields()) {
+                    fingerprintBuilder.append(subfield.getName());
+                    if (subfield.getValues() != null) {
+                        for (IFieldValue val : subfield.getValues()) {
+                            fingerprintBuilder.append(val.getValue());
+                        }
                     }
                 }
             }
