@@ -95,6 +95,12 @@ public interface IMetadataField {
 
     public void setGroup(boolean group);
 
+    public List<IMetadataField> getSubfields();
+
+    public void setSubfields(List<IMetadataField> fields);
+
+    public void addSubfield(IMetadataField field);
+    
     public List<IMetadataGroup> getGroups();
 
     public void setGroups(List<IMetadataGroup> groups);

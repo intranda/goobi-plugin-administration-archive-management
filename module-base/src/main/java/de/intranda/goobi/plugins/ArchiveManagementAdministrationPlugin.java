@@ -448,7 +448,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     groups.add(gv);
                     gv.setGroupName(emf.getName());
                     // for each sub element
-                    for (IMetadataField sub : emf.getGroups().get(0).getFields()) {
+                    for (IMetadataField sub : emf.getSubfields()) {
                         List<IValue> valueList = getValuesFromXml(groupElement, sub);
                         gv.getSubfields().put(sub.getName(), valueList);
                     }
@@ -763,9 +763,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             configuredFields.add(field);
             // groups
             if (field.isGroup()) {
-                IMetadataGroup grp = field.createGroup();
                 for (HierarchicalConfiguration subfieldConfig : fieldConfig.configurationsAt("/metadata")) {
-
                     IMetadataField subfield = new EadMetadataField(subfieldConfig.getString("@name"), subfieldConfig.getInt("@level"),
                             subfieldConfig.getString("@xpath"),
                             subfieldConfig.getString("@xpathType", "element"), subfieldConfig.getBoolean("@repeatable", false),
@@ -778,7 +776,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                             subfieldConfig.getString("@displayFields", null),
                             false);
                     configureField(subfieldConfig, subfield);
-                    grp.getFields().add(subfield);
+                    field.addSubfield(subfield);
                 }
             }
             if (field.isVisible()) {
@@ -1202,7 +1200,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 newHistoryEvent.getSubfields().put("agent", val);
                 List<IValue> grps = new ArrayList<>();
                 grps.add(newHistoryEvent);
-                loadGroupMetadata(node, field, grps);
+                addGroupData(field, grps);
                 break;
             }
         }
@@ -2723,95 +2721,75 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
     }
 
-    private void loadGroupMetadata(IEadEntry entry, IMetadataField emf, List<IValue> groups) {
-        IMetadataField newGroup = null;
-        switch (emf.getLevel()) {
-            case 1:
-                for (IMetadataField field : entry.getIdentityStatementAreaList()) {
-                    if (field.getName().equals(emf.getName())) {
-                        newGroup = emf;
-                    }
-                }
-                break;
-            case 2:
-                for (IMetadataField field : entry.getContextAreaList()) {
-                    if (field.getName().equals(emf.getName())) {
-                        newGroup = emf;
-                    }
-                }
-                break;
-            case 3:
-                for (IMetadataField field : entry.getContentAndStructureAreaAreaList()) {
-                    if (field.getName().equals(emf.getName())) {
-                        newGroup = emf;
-                    }
-                }
-                break;
-            case 4:
-                for (IMetadataField field : entry.getAccessAndUseAreaList()) {
-                    if (field.getName().equals(emf.getName())) {
-                        newGroup = emf;
-                    }
-                }
-                break;
-            case 5:
-                for (IMetadataField field : entry.getAlliedMaterialsAreaList()) {
-                    if (field.getName().equals(emf.getName())) {
-                        newGroup = emf;
-                    }
-                }
-                break;
-            case 6:
-                for (IMetadataField field : entry.getNotesAreaList()) {
-                    if (field.getName().equals(emf.getName())) {
-                        newGroup = emf;
-                    }
-                }
-                break;
-            case 7:
-                for (IMetadataField field : entry.getDescriptionControlAreaList()) {
-                    if (field.getName().equals(emf.getName())) {
-                        newGroup = emf;
-                    }
-                }
-                break;
-            default:
+    private void loadGroupMetadata(IEadEntry entry, IMetadataField template, List<IValue> groups) {
+        IMetadataField instance = new EadMetadataField(template.getName(), template.getLevel(), template.getXpath(), template.getXpathType(),
+                template.isRepeatable(),
+                template.isVisible(), template.isShowField(), template.getFieldType(), template.getMetadataName(), template.isImportMetadataInChild(),
+                template.getValidationType(),
+                template.getRegularExpression(), template.isSearchable(), template.getViafSearchFields(), template.getViafDisplayFields(),
+                template.isGroup());
+        instance.setValidationError(template.getValidationError());
+        instance.setSelectItemList(template.getSelectItemList());
+        instance.setEadEntry(entry);
+
+        // sub fields
+        for (IMetadataField sub : template.getSubfields()) {
+            IMetadataField toAdd = addFieldToEntry(entry, sub, null);
+            instance.getSubfields().add(toAdd);
         }
 
-        if (newGroup == null) {
-            newGroup = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(),
-                    emf.isRepeatable(),
-                    emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild(),
-                    emf.getValidationType(),
-                    emf.getRegularExpression(), emf.isSearchable(), emf.getViafSearchFields(), emf.getViafDisplayFields(), emf.isGroup());
-            newGroup.setValidationError(emf.getValidationError());
-            newGroup.setSelectItemList(emf.getSelectItemList());
-            newGroup.setEadEntry(entry);
-            addFieldToNode(entry, newGroup);
-            for (IMetadataField subfField : emf.getGroups().get(0).getFields()) {
-                IMetadataField toAdd = new EadMetadataField(subfField.getName(), subfField.getLevel(), subfField.getXpath(), subfField.getXpathType(),
-                        subfField.isRepeatable(),
-                        subfField.isVisible(), subfField.isShowField(), subfField.getFieldType(), subfField.getMetadataName(),
-                        subfField.isImportMetadataInChild(), subfField.getValidationType(),
-                        subfField.getRegularExpression(), subfField.isSearchable(), subfField.getViafSearchFields(), subfField.getViafDisplayFields(),
-                        subfField.isGroup());
-                toAdd.setValidationError(subfField.getValidationError());
-                toAdd.setSelectItemList(subfField.getSelectItemList());
-            }
-        }
+        addGroupData(instance, groups);
+        addFieldToNode(entry, instance);
+    }
 
+    private void addGroupData(IMetadataField instance, List<IValue> groups) {
         if (groups != null) {
             for (IValue groupData : groups) {
-                IMetadataGroup eadGroup = emf.createGroup();
+                IMetadataGroup eadGroup = instance.createGroup();
                 GroupValue gv = (GroupValue) groupData;
                 Map<String, List<IValue>> groupMetadata = gv.getSubfields();
 
                 for (IMetadataField sub : eadGroup.getFields()) {
                     List<IValue> values = groupMetadata.get(sub.getName());
-                    addFieldToEntry(entry, emf, values);
+
+                    if (values != null && !values.isEmpty()) {
+                        instance.setShowField(true);
+
+                        // split single value into multiple fields
+                        for (IValue value : values) {
+                            ExtendendValue val = (ExtendendValue) value;
+                            String stringValue = val.getValue();
+                            IFieldValue fv = null;
+                            for (IFieldValue v : sub.getValues()) {
+                                if (StringUtils.isBlank(v.getValue())) {
+                                    fv = v;
+                                }
+                            }
+                            if (fv == null) {
+                                fv = new FieldValue(sub);
+                                sub.addFieldValue(fv);
+                            }
+                            fv.setAuthorityType(val.getAuthorityType());
+                            fv.setAuthorityValue(val.getAuthorityValue());
+
+                            if ("multiselect".equals(sub.getFieldType()) && StringUtils.isNotBlank(stringValue)) {
+                                String[] splittedValues = stringValue.split("; ");
+                                for (String s : splittedValues) {
+                                    fv.setMultiselectValue(s);
+                                }
+                            } else {
+                                fv.setValue(stringValue);
+                            }
+
+                        }
+                    } else {
+                        IFieldValue fv = new FieldValue(sub);
+                        sub.addFieldValue(fv);
+                    }
                 }
             }
-
+        } else {
+            instance.createGroup();
         }
     }
 
@@ -2858,7 +2836,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     public void addGroup() {
-        loadGroupMetadata(selectedEntry, selectedGroup, null);
+        addGroupData(selectedGroup, null);
     }
 
     public void showAllFields() {

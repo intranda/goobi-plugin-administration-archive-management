@@ -611,8 +611,8 @@ public class EadEntry implements IEadEntry {
 
     private void createXmlField(StringBuilder xml, IMetadataField field) {
         if (field.isGroup()) {
-            xml.append("<group name=\"").append(field.getName()).append("\">");
             for (IMetadataGroup group : field.getGroups()) {
+                xml.append("<group name=\"").append(field.getName()).append("\">");
                 for (IMetadataField subfield : group.getFields()) {
                     if (subfield.getValues() != null) {
                         for (IFieldValue val : subfield.getValues()) {

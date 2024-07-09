@@ -84,6 +84,8 @@ public class EadMetadataField implements IMetadataField {
     private String viafDisplayFields;
 
     // metadata groups
+    private List<IMetadataField> subfields = new ArrayList<>();
+
     private boolean group;
     private List<IMetadataGroup> groups = new ArrayList<>();
 
@@ -206,32 +208,30 @@ public class EadMetadataField implements IMetadataField {
     }
 
     @Override
+    public void addSubfield(IMetadataField field) {
+        subfields.add(field);
+    }
+
+    @Override
     public IMetadataGroup createGroup() {
         if (!groups.isEmpty() && !isFilled()) {
             return groups.get(0);
         }
 
         IMetadataGroup newGroup = new EadMetadataGroup(this);
-        if (!groups.isEmpty()) {
-            IMetadataGroup other = groups.get(0);
-            for (IMetadataField f : other.getFields()) {
-                boolean fieldExists = false;
-                for (IMetadataField createdField : newGroup.getFields()) {
-                    if (createdField.getName().equals(f.getName())) {
-                        fieldExists = true;
-                        break;
-                    }
-                }
-                if (!fieldExists) {
-                    IMetadataField field = new EadMetadataField(f.getName(), f.getLevel(), f.getXpath(), f.getXpathType(), f.isRepeatable(),
-                            f.isVisible(), f.isShowField(), f.getFieldType(), f.getMetadataName(), importMetadataInChild, f.getValidationType(),
-                            f.getRegularExpression(), f.isSearchable(), f.getViafSearchFields(), f.getViafDisplayFields(), f.isGroup());
-                    newGroup.getFields().add(field);
-                }
-            }
+
+        for (IMetadataField f : subfields) {
+
+            IMetadataField field = new EadMetadataField(f.getName(), f.getLevel(), f.getXpath(), f.getXpathType(), f.isRepeatable(),
+                    f.isVisible(), f.isShowField(), f.getFieldType(), f.getMetadataName(), f.isImportMetadataInChild(), f.getValidationType(),
+                    f.getRegularExpression(), f.isSearchable(), f.getViafSearchFields(), f.getViafDisplayFields(), f.isGroup());
+            field.addValue();
+            newGroup.getFields().add(field);
+
         }
         groups.add(newGroup);
         return newGroup;
+
     }
 
     @Override
@@ -247,8 +247,10 @@ public class EadMetadataField implements IMetadataField {
         } else {
             // otherwise clear all fields
             for (IMetadataField f : group.getFields()) {
-                for (IFieldValue val : f.getValues()) {
-                    f.deleteValue(val);
+                if (f.getValues() != null) {
+                    for (IFieldValue val : f.getValues()) {
+                        f.deleteValue(val);
+                    }
                 }
             }
             showField = false;
