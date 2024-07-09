@@ -12,12 +12,14 @@
     xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
 <h:body>
     <ui:composition>
+    <x:dataList var="group" value="#{item.groups}">
+
         <fieldset>
             <legend
                 class="fieldSet-legend d-flex justify-content-between">
                 <h:outputText value="#{fieldname}" />
                 <h:commandLink
-                    action="#{AdministrationForm.administrationPlugin.selectedEntry.deleteGroup(item)}"
+                    action="#{AdministrationForm.administrationPlugin.selectedEntry.deleteGroup(group)}"
                     styleClass="btn ms-auto">
                     <span class="fa fa-minus-circle" />
                     <f:ajax
@@ -28,7 +30,7 @@
             <div class="form-rows">
                 <x:dataList
                     var="subfield"
-                    value="#{item.subfields}">
+                    value="#{group.fields}">                    
                     <x:dataList
                         var="field"
                         value="#{subfield.values}">
@@ -37,6 +39,7 @@
                 </x:dataList>
             </div>
         </fieldset>
+        </x:dataList>
     </ui:composition>
 </h:body>
 </html>

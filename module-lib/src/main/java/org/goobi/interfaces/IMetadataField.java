@@ -100,5 +100,15 @@ public interface IMetadataField {
     public void setSubfields(List<IMetadataField> fields);
 
     public void addSubfield(IMetadataField field);
+    
+    public List<IMetadataGroup> getGroups();
+
+    public void setGroups(List<IMetadataGroup> groups);
+
+    public IMetadataGroup createGroup();
+
+    public void addGroup(IMetadataGroup group);
+
+    public void deleteGroup(IMetadataGroup group);
 
 }

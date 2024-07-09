@@ -13,6 +13,7 @@ import java.util.List;
 import org.goobi.interfaces.IConfiguration;
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.IMetadataField;
+import org.goobi.interfaces.IMetadataGroup;
 import org.junit.Test;
 
 public class EadEntryTest {
@@ -460,6 +461,8 @@ public class EadEntryTest {
         IMetadataField grp = new EadMetadataField("group", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required",
                 "regex", true, "viafSearchFields", "viafDisplayFields", true);
 
+        IMetadataGroup group = grp.createGroup();
+
         List<IMetadataField> list = new ArrayList<>();
         list.add(grp);
         entry.setIdentityStatementAreaList(list);
@@ -469,7 +472,7 @@ public class EadEntryTest {
                 "regex", true, "viafSearchFields", "viafDisplayFields", false);
         field.addValue();
         field.getValues().get(0).setValue("value");
-        grp.addSubfield(field);
+        group.getFields().add(field);
 
         assertEquals("<xml><group name=\"group\"><field name=\"name\">value</field></group></xml>", entry.getDataAsXml());
     }
@@ -484,7 +487,9 @@ public class EadEntryTest {
 
         IMetadataField grp = new EadMetadataField("group", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required", "regex",
                 true, "viafSearchFields", "viafDisplayFields", true);
-        grp.addSubfield(field);
+
+        IMetadataGroup group = grp.createGroup();
+        group.getFields().add(field);
         List<IMetadataField> list = new ArrayList<>();
         list.add(grp);
 
@@ -504,16 +509,17 @@ public class EadEntryTest {
         List<IMetadataField> list = new ArrayList<>();
         list.add(grp);
         entry.setIdentityStatementAreaList(list);
+        IMetadataGroup group = grp.createGroup();
 
         IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true,
                 "input", "metadataName", false, "required",
                 "regex", true, "viafSearchFields", "viafDisplayFields", false);
         field.addValue();
         field.getValues().get(0).setValue("value");
-        grp.addSubfield(field);
+        group.getFields().add(field);
 
         assertTrue(grp.isFilled());
-        entry.deleteGroup(grp);
+        grp.deleteGroup(group);
         assertFalse(grp.isFilled());
 
     }
