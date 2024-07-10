@@ -36,4 +36,6 @@ public interface IArchiveManagementAdministrationPlugin extends IAdministrationP
     public List<INodeType> getConfiguredNodes();
 
     public List<IMetadataField> getConfiguredFields();
+
+    List<IRecordGroup> getRecordGroups();
 }

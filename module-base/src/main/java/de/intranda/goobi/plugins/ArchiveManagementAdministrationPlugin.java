@@ -44,6 +44,7 @@ import org.goobi.interfaces.IMetadataField;
 import org.goobi.interfaces.IMetadataGroup;
 import org.goobi.interfaces.INodeType;
 import org.goobi.interfaces.IParameter;
+import org.goobi.interfaces.IRecordGroup;
 import org.goobi.interfaces.IValue;
 import org.goobi.model.ExtendendValue;
 import org.goobi.model.GroupValue;
@@ -302,14 +303,18 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     @Override
     public List<String> getPossibleDatabases() {
-
-        List<RecordGroup> allRecordGroups = ArchiveManagementManager.getAllRecordGroups();
+        List<IRecordGroup> allRecordGroups = getRecordGroups();
 
         List<String> databases = new ArrayList<>();
-        for (RecordGroup rec : allRecordGroups) {
+        for (IRecordGroup rec : allRecordGroups) {
             databases.add(rec.getTitle());
         }
         return databases;
+    }
+
+    @Override
+    public List<IRecordGroup> getRecordGroups() {
+        return ArchiveManagementManager.getAllRecordGroups();
     }
 
     /**
@@ -320,9 +325,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public List<String> getPossibleDatabaseNames() {
         List<String> databases = new ArrayList<>();
-        List<RecordGroup> allRecordGroups = ArchiveManagementManager.getAllRecordGroups();
+        List<IRecordGroup> allRecordGroups = getRecordGroups();
 
-        for (RecordGroup rec : allRecordGroups) {
+        for (IRecordGroup rec : allRecordGroups) {
             databases.add(rec.getTitle());
         }
 
@@ -1048,7 +1053,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         String uploadedFileName = processUploadedFileName(file);
 
-        RecordGroup rg = ArchiveManagementManager.getRecordGroupByTitle(uploadedFileName);
+        IRecordGroup rg = ArchiveManagementManager.getRecordGroupByTitle(uploadedFileName);
 
         fileToUploadExists = rg != null;
     }

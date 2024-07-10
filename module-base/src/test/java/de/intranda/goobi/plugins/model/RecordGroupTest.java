@@ -4,19 +4,20 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import org.goobi.interfaces.IRecordGroup;
 import org.junit.Test;
 
 public class RecordGroupTest {
 
     @Test
     public void testConstructor() {
-        RecordGroup recordGroup = new RecordGroup();
+        IRecordGroup recordGroup = new RecordGroup();
         assertNotNull(recordGroup);
     }
 
     @Test
     public void testArgsConstructor() {
-        RecordGroup recordGroup = new RecordGroup(null, null);
+        IRecordGroup recordGroup = new RecordGroup(null, null);
         assertNotNull(recordGroup);
 
         recordGroup = new RecordGroup(1, null);

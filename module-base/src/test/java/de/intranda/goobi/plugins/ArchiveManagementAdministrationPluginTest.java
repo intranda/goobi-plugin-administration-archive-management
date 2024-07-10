@@ -33,6 +33,7 @@ import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.IFieldValue;
 import org.goobi.interfaces.IMetadataField;
 import org.goobi.interfaces.INodeType;
+import org.goobi.interfaces.IRecordGroup;
 import org.goobi.interfaces.IValue;
 import org.goobi.model.ExtendendValue;
 import org.goobi.vocabulary.VocabRecord;
@@ -93,7 +94,7 @@ public class ArchiveManagementAdministrationPluginTest {
     public void setUp() throws Exception {
 
         PowerMock.mockStatic(ArchiveManagementManager.class);
-        List<RecordGroup> grps = new ArrayList<>();
+        List<IRecordGroup> grps = new ArrayList<>();
         grps.add(new RecordGroup(1, "first database"));
         grps.add(new RecordGroup(2, "another_file"));
         grps.add(new RecordGroup(3, "something"));

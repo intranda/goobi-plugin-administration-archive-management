@@ -12,6 +12,18 @@
         <file>EAD_Export_Koch_Foto_DDB_EAD.XML.xml</file>
     </export>
 
+    <backup>
+        <!-- backup folder -->
+        <folder>/tmp/</folder>
+        <!-- number of backups for each inventory -->
+        <numberOfFiles>10</numberOfFiles>
+        <!-- tool to create the backup files -->
+        <tool>/usr/bin/mysqldump</tool>
+        <!-- database password. The user name, database name, tables etc. can be recognised automatically, but the password must be entered.-->
+        <!-- Leave empty if access is possible without authentication (e.g. configured in ~/.my.cnf)  -->
+        <password></password>
+    </backup>
+
     <config>
         <!-- define the name(s) of all archives for the plugin -->
         <archive>*</archive>

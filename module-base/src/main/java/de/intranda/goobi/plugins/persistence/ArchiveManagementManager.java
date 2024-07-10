@@ -20,6 +20,7 @@ import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.INodeType;
+import org.goobi.interfaces.IRecordGroup;
 import org.goobi.interfaces.IValue;
 import org.goobi.model.ExtendendValue;
 import org.goobi.model.GroupValue;
@@ -103,7 +104,7 @@ public class ArchiveManagementManager implements Serializable {
         }
     }
 
-    public static List<RecordGroup> getAllRecordGroups() {
+    public static List<IRecordGroup> getAllRecordGroups() {
         try (Connection connection = MySQLHelper.getInstance().getConnection()) {
             QueryRunner run = new QueryRunner();
             return run.query(connection, "SELECT * FROM archive_record_group ORDER BY title", new BeanListHandler<>(RecordGroup.class));
