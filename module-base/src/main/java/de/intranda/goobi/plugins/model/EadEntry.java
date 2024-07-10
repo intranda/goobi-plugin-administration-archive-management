@@ -612,18 +612,18 @@ public class EadEntry implements IEadEntry {
     private void createXmlField(StringBuilder xml, IMetadataField field) {
         if (field.isGroup()) {
             for (IMetadataGroup group : field.getGroups()) {
-                xml.append("<group name=\"").append(field.getName()).append("\">");
+                xml.append("<group name='").append(field.getName()).append("'>");
                 for (IMetadataField subfield : group.getFields()) {
                     if (subfield.getValues() != null) {
                         for (IFieldValue val : subfield.getValues()) {
                             if (StringUtils.isNotBlank(val.getValue())) {
-                                xml.append("<field name=\"").append(subfield.getName()).append("\"");
+                                xml.append("<field name='").append(subfield.getName()).append("'");
                                 if (StringUtils.isNotBlank(val.getAuthorityValue()) && StringUtils.isNotBlank(val.getAuthorityType())) {
-                                    xml.append(" source=\"")
+                                    xml.append(" source='")
                                             .append(val.getAuthorityType())
-                                            .append("\" value=\"")
+                                            .append("\" value='")
                                             .append(val.getAuthorityValue())
-                                            .append("\"");
+                                            .append("'");
                                 }
                                 xml.append(">");
                                 if (StringUtils.isNotBlank(val.getValue())) {
@@ -637,6 +637,7 @@ public class EadEntry implements IEadEntry {
                                                     .escapeSql(
                                                             actualValue.replaceAll("&(?!amp;|gt;|lt;)", "&amp;")
                                                                     .replace("<", "&lt;")
+                                                                    .replace("\"", "\\\"")
                                                                     .replace(">", "&gt;")));
                                 }
                                 xml.append("</field>");
@@ -644,15 +645,15 @@ public class EadEntry implements IEadEntry {
                         }
                     }
                 }
+                xml.append("</group>");
             }
-            xml.append("</group>");
         } else {
             for (IFieldValue val : field.getValues()) {
                 if (StringUtils.isNotBlank(val.getValue())) {
                     xml.append("<").append(field.getName());
                     // save authority data
                     if (StringUtils.isNotBlank(val.getAuthorityValue()) && StringUtils.isNotBlank(val.getAuthorityType())) {
-                        xml.append(" source=\"").append(val.getAuthorityType()).append("\" value=\"").append(val.getAuthorityValue()).append("\"");
+                        xml.append(" source='").append(val.getAuthorityType()).append("' value='").append(val.getAuthorityValue()).append("'");
                     }
                     xml.append(">");
                     // mask ending backslash
@@ -660,9 +661,10 @@ public class EadEntry implements IEadEntry {
                     if (actualValue.endsWith("\\")) {
                         actualValue = val.getValue() + "\\";
                     }
-                    xml.append(MySQLHelper.escapeSql(actualValue.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")));
+                    xml.append(
+                            MySQLHelper.escapeSql(actualValue.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "\\\"")));
+                    xml.append("</").append(field.getName()).append(">");
                 }
-                xml.append("</").append(field.getName()).append(">");
             }
         }
     }
