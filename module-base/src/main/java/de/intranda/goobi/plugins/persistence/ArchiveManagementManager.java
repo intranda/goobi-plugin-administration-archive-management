@@ -191,9 +191,9 @@ public class ArchiveManagementManager implements Serializable {
             values.append(parentId);
             values.append(", '");
             values.append(label);
-            values.append("', '");
+            values.append("', \"");
             values.append(entry.getDataAsXml());
-            values.append("'");
+            values.append("\"");
             values.append(")");
             // save every 50 records or when we reached the last one
             if (i % 50 == 49 || i + 1 == nodes.size()) {

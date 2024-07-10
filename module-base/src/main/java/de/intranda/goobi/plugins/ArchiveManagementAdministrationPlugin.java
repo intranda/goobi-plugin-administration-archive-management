@@ -2958,4 +2958,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
         }
     }
+
+    public boolean isReadOnlyModus() {
+        // TODO check user permissions
+        return false;
+    }
 }
