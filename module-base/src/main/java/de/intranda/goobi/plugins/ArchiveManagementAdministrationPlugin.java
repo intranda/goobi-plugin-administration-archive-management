@@ -296,16 +296,16 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 // role for write access: Plugin_Administration_Archive_Management_Write
                 // role for file upload access: Plugin_Administration_Archive_Management_Upload
                 // role for creation access: Plugin_Administration_Archive_Management_New
-                // user.isSuperAdmin() ||
-                if ((user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Write"))) {
+
+                if ((user.isSuperAdmin() || user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Write"))) {
                     readOnlyMode = false;
                 }
 
-                if ((user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Upload"))) {
+                if (user.isSuperAdmin() || (user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Upload"))) {
                     allowFileUpload = true;
                 }
 
-                if ((user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_New"))) {
+                if (user.isSuperAdmin() || (user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_New"))) {
                     allowCreation = true;
                 }
 
