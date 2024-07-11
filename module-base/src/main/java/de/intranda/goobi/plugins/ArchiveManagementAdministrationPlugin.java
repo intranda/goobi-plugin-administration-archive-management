@@ -269,6 +269,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Getter
     private List<String> metadataFieldNames = new ArrayList<>();
 
+    private boolean readOnlyMode = true;
+
+    @Getter
+    private boolean allowFileUpload = false;
+
+    @Getter
+    private boolean allowCreation = false;
+
     /**
      * Constructor
      */
@@ -283,6 +291,24 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             User user = Helper.getCurrentUser();
             if (user != null) {
                 username = user.getNachVorname();
+
+                // role for read access: Plugin_Administration_Archive_Management
+                // role for write access: Plugin_Administration_Archive_Management_Write
+                // role for file upload access: Plugin_Administration_Archive_Management_Upload
+                // role for creation access: Plugin_Administration_Archive_Management_New
+                // user.isSuperAdmin() ||
+                if ((user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Write"))) {
+                    readOnlyMode = false;
+                }
+
+                if ((user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Upload"))) {
+                    allowFileUpload = true;
+                }
+
+                if ((user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_New"))) {
+                    allowCreation = true;
+                }
+
             }
 
         } catch (ConfigurationException e2) {
@@ -2960,7 +2986,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     public boolean isReadOnlyModus() {
-        // TODO check user permissions
-        return false;
+        return readOnlyMode;
     }
 }
