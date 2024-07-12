@@ -5,6 +5,7 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -130,4 +131,31 @@ public class FieldValueTest {
         fieldValue.setMultiselectValue("Value2");
         assertEquals("Value1; Value2", fieldValue.getValuesForXmlExport());
     }
+
+    @Test
+    public void testEquals() {
+        assertNotEquals(fieldValue, null);
+        assertEquals(fieldValue, fieldValue);
+        FieldValue other = new FieldValue(field);
+        assertEquals(fieldValue, other);
+
+        other.setValue("value");
+        assertNotEquals(fieldValue, other);
+    }
+
+    @Test
+    public void testHashCode() {
+        assertEquals(-419959154, fieldValue.hashCode());
+        fieldValue.setValue("value");
+        assertEquals(-1814807184, fieldValue.hashCode());
+    }
+
+    @Test
+    public void testToString() {
+        assertEquals(
+                "FieldValue(value=null, multiselectSelectedValues=[], authorityType=null, authorityValue=null, searchValue=null, searchOption=null, showNoHits=false, totalResults=0)",
+                fieldValue.toString());
+
+    }
+
 }

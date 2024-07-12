@@ -13,6 +13,11 @@ import org.junit.Test;
 import org.powermock.api.easymock.PowerMock;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 
+import de.a9d3.testing.checks.DefensiveCopyingCheck;
+import de.a9d3.testing.checks.GetterIsSetterCheck;
+import de.a9d3.testing.checks.PublicVariableCheck;
+import de.a9d3.testing.executer.SingleThreadExecutor;
+
 @PrepareForTest(DuplicationConfiguration.class)
 public class DuplicationConfigurationTest {
 
@@ -25,6 +30,14 @@ public class DuplicationConfigurationTest {
         mockEadEntry = PowerMock.createMock(IEadEntry.class);
         mockField1 = PowerMock.createMock(IMetadataField.class);
         mockField2 = PowerMock.createMock(IMetadataField.class);
+    }
+
+    @Test
+    public void baseTest() {
+        SingleThreadExecutor executor = new SingleThreadExecutor();
+
+        assertTrue(executor.execute(DuplicationConfiguration.class,
+                Arrays.asList(new DefensiveCopyingCheck(), new GetterIsSetterCheck(), new PublicVariableCheck())));
     }
 
     @Test

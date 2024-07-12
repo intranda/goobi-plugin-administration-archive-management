@@ -21,10 +21,12 @@ import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.Helper;
 import de.sub.goobi.metadaten.search.ViafSearch;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 @Data
 @ToString
+@EqualsAndHashCode(exclude = { "field", "viafSearch" })
 public class FieldValue implements IFieldValue {
 
     private String value;
@@ -40,16 +42,21 @@ public class FieldValue implements IFieldValue {
     // gnd search fields
     private String searchValue;
     private String searchOption;
+    @ToString.Exclude
     private List<List<NormData>> dataList;
+    @ToString.Exclude
     private List<NormData> currentData;
     private boolean showNoHits;
 
     // geonames search fields
+    @ToString.Exclude
     private Toponym currentToponym;
+    @ToString.Exclude
     private List<Toponym> resultList;
     private int totalResults;
 
     // viaf search fields
+    @ToString.Exclude
     private ViafSearch viafSearch = new ViafSearch();
 
     public FieldValue(IMetadataField field) {

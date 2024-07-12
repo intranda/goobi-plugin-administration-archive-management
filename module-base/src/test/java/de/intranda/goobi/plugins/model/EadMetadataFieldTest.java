@@ -5,6 +5,7 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -98,6 +99,44 @@ public class EadMetadataFieldTest {
 
         assertEquals(1, eadMetadataField.getValues().size());
         assertEquals("", eadMetadataField.getValues().get(0).getValue());
-
     }
+
+    @Test
+    public void testEquals() {
+        // null is not equals
+        assertNotEquals(eadMetadataField, null);
+        // same object equals
+        assertEquals(eadMetadataField, eadMetadataField);
+
+        // another object with the same values
+        assertEquals(eadMetadataField, new EadMetadataField("name", 1, "xpath", "text", false, true, true,
+                "input", "metadataName", false, "required",
+                "regex", true, "viafSearchFields", "viafDisplayFields", false));
+
+        // another object with different values
+        assertNotEquals(eadMetadataField, new EadMetadataField("other", 1, "xpath", "text", false, true, true,
+                "input", "metadataName", false, "required",
+                "regex", true, "viafSearchFields", "viafDisplayFields", false));
+
+        assertNotEquals(eadMetadataField, new EadMetadataField("name", 1, "xpath", "text", false, true, true,
+                "input", "metadataName", false, "required",
+                "regex", true, "viafSearchFields", "viafDisplayFields", true));
+    }
+
+    @Test
+    public void testHashCode() {
+        assertEquals(-2140113554, eadMetadataField.hashCode());
+        eadMetadataField.setFieldType("other");
+        assertEquals(939726416, eadMetadataField.hashCode());
+        eadMetadataField.setMetadataName("metadata");
+        assertEquals(-760088929, eadMetadataField.hashCode());
+    }
+
+    @Test
+    public void testToString() {
+        assertEquals(
+                "EadMetadataField(name=name, level=1, xpath=xpath, xpathType=text, repeatable=false, values=null, visible=true, showField=true, selectItemList=null, fieldType=input, metadataName=metadataName, importMetadataInChild=false, validationType=required, regularExpression=regex, valid=true, validationError=null, searchable=true, viafSearchFields=viafSearchFields, viafDisplayFields=viafDisplayFields, subfields=[], group=false, groups=[])",
+                eadMetadataField.toString());
+    }
+
 }
