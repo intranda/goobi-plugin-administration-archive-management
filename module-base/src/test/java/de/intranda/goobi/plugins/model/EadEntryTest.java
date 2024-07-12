@@ -474,7 +474,7 @@ public class EadEntryTest {
         field.getValues().get(0).setValue("value");
         group.getFields().add(field);
 
-        assertEquals("<xml><group name=\"group\"><field name=\"name\">value</field></group></xml>", entry.getDataAsXml());
+        assertEquals("<xml><group name='group'><field name='name'>value</field></group></xml>", entry.getDataAsXml());
     }
 
     @Test

@@ -140,6 +140,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
         PowerMock.mockStatic(Helper.class);
         User user = new User();
+        user.setSuperAdmin(true);
         user.setId(1);
         user.setNachname("lastname");
         user.setVorname("firstname");
