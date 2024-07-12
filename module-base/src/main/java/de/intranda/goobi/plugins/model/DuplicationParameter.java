@@ -4,11 +4,13 @@ import java.io.Serializable;
 
 import org.goobi.interfaces.IParameter;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@EqualsAndHashCode
 public class DuplicationParameter implements Serializable, IParameter {
 
     private static final long serialVersionUID = -4579421096881958611L;
@@ -29,4 +31,15 @@ public class DuplicationParameter implements Serializable, IParameter {
         this.fieldName = fieldName;
     }
 
+    public DuplicationParameter(DuplicationParameter other) {
+        this.prefix = other.getPrefix();
+        this.suffix = other.getSuffix();
+        this.fieldName = other.getFieldName();
+        this.counter = other.isCounter();
+        this.counterFormat = other.getCounterFormat();
+        this.counterStartValue = other.getCounterStartValue();
+        this.generated = other.isGenerated();
+        this.fieldType = other.getFieldType();
+
+    }
 }
