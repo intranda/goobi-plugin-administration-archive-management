@@ -83,7 +83,6 @@ import de.sub.goobi.helper.XmlTools;
 import de.sub.goobi.helper.enums.ManipulationType;
 import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.helper.exceptions.DAOException;
-import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.MetadataManager;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.VocabularyManager;
@@ -102,6 +101,7 @@ import ugh.dl.Metadata;
 import ugh.dl.MetadataGroup;
 import ugh.dl.MetadataType;
 import ugh.dl.Prefs;
+import ugh.exceptions.DocStructHasNoTypeException;
 import ugh.exceptions.UGHException;
 import ugh.fileformats.mets.MetsMods;
 
@@ -1885,42 +1885,18 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
         log.debug("processTitle = " + processTitle);
 
-        // create process based on configured process template
-        Process process = new Process();
-        process.setTitel(processTitle);
-        selectedEntry.setGoobiProcessTitle(processTitle);
-        process.setIstTemplate(false);
-        process.setInAuswahllisteAnzeigen(false);
-        process.setProjekt(processTemplate.getProjekt());
-        process.setRegelsatz(processTemplate.getRegelsatz());
-        process.setDocket(processTemplate.getDocket());
-
-        bhelp.SchritteKopieren(processTemplate, process);
-        bhelp.ScanvorlagenKopieren(processTemplate, process);
-        bhelp.WerkstueckeKopieren(processTemplate, process);
-        bhelp.EigenschaftenKopieren(processTemplate, process);
-
-        bhelp.EigenschaftHinzufuegen(process, "Template", processTemplate.getTitel());
-        bhelp.EigenschaftHinzufuegen(process, "TemplateID", selectedTemplate);
-
-        // save process
-        try {
-            ProcessManager.saveProcess(process);
-        } catch (DAOException e1) {
-            log.error(e1);
-        }
         try {
             DocStruct physical = digDoc.createDocStruct(prefs.getDocStrctTypeByName("BoundBook"));
             digDoc.setPhysicalDocStruct(physical);
             Metadata imageFiles = new Metadata(prefs.getMetadataTypeByName("pathimagefiles"));
-            imageFiles.setValue(process.getImagesTifDirectory(false));
+            imageFiles.setValue(processTitle + "_media");
             physical.addMetadata(imageFiles);
-            // save fileformat
-            process.writeMetadataFile(fileformat);
-        } catch (UGHException | IOException | SwapException e) {
+        } catch (DocStructHasNoTypeException | UGHException e) {
             log.error(e);
-
         }
+
+        // create process based on configured process template
+        Process process = bhelp.createAndSaveNewProcess(processTemplate, processTitle, fileformat);
 
         // save current node
         ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
