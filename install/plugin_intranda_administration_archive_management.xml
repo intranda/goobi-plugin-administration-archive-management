@@ -20,7 +20,6 @@
         <!-- use id from parent node instead of id from node -->
         <useIdFromParent>false</useIdFromParent>
         
-
         <!-- Optional title generation, if nothing is configured, process titles are built based on the node ID -->
         <!-- attribute value: contains a static text. If it is empty, it is assumed that a metadata value is being searched for -->
         <!-- attribute name: contains the metadata name to use -->
@@ -32,10 +31,8 @@
         <title name="static" type="CAMEL_CASE" value="STATIC TEXT"  />
         <title name="CatalogIDDigital" type="AFTER_LAST_SEPARATOR"    />
         -->
-
-
         
-        <!-- // configurations for generating process titles // -->
+        <!-- // configurations for generating process titles -->
         
         <!-- define metadata fields. All fields are displayed on the UI based on the level and the order within this file.
                 - @name: contains the internal name of the field. The value can be used to translate the field in the messages files. The field must start with a letter and can not contain any white spaces.
