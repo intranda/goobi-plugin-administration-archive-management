@@ -35,9 +35,9 @@ Furthermore, the plugin needs an additional configuration file, which must be lo
 ## Installing the BaseX database
 The plugin reads and writes standardised EAD files. The XML database BaseX is used for this purpose, within which the EAD files are stored and indexed, so that this processing of the data can take place with high performance. The prerequisite for the installation of BaseX is Java 1.8. The commissioning of this database is carried out somewhat differently depending on the intended use, depending on whether the plugin is to be installed for productive operation or for further development.
 
-[Installation for productive operation](installation_for_productive_use_de.md)
+[Installation for productive operation](page_01_00_en.md)
 
-[Installation for developers](installation_for_development_de.md)
+[Installation for developers](page_02_00_en.md)
 
 
 ## Overview and functionality
@@ -131,4 +131,4 @@ In addition to the captured metadata, a new `create` or `modified event` includi
 ## Configuration
 After the installation has been completed, the configuration of the plugin and the corresponding interface can take place. This is described in detail on the following page:
 
-[Configuration of the plugins](configuration_en.md)
+[Configuration of the plugins](page_03_00_en.md)
