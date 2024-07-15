@@ -11,7 +11,7 @@ This documentation describes the installation, configuration and use of the Admi
 
 ## Installation
 
-## Installing the plugin
+### Installing the plugin
 The plugin consists in total of the following files to be installed
 
 ```bash
@@ -32,7 +32,7 @@ Furthermore, the plugin needs an additional configuration file, which must be lo
 /opt/digiverso/goobi/config/plugin_intranda_administration_archive_management.xml
 ```
 
-## Installing the BaseX database
+### Installing the BaseX database
 The plugin reads and writes standardised EAD files. The XML database BaseX is used for this purpose, within which the EAD files are stored and indexed, so that this processing of the data can take place with high performance. The prerequisite for the installation of BaseX is Java 1.8. The commissioning of this database is carried out somewhat differently depending on the intended use, depending on whether the plugin is to be installed for productive operation or for further development.
 
 [Installation for productive operation](page_01_00_en.md)
