@@ -559,6 +559,12 @@
                                             <f:ajax
                                                 render="nodeBox:nodeContentArea"
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                            <f:passThroughAttribute
+                                                name="data-bs-toggle"
+                                                value="tooltip" />                                                
+                                            <f:passThroughAttribute
+                                                name="data-bs-title"
+                                                value="#{msgs.plugin_administration_archive_showAllFields}" />
                                         </button>
                                         <button
                                             class="btn d-flex align-items-center btn--title-action"
