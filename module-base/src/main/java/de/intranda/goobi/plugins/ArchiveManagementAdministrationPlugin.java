@@ -281,6 +281,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Getter
     private boolean allowCreation = false;
 
+    private boolean allowAllInventories;
+    private List<String> inventoryList = new ArrayList<>();
+
     @Getter
     private String exportFolder;
 
@@ -303,6 +306,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 // role for write access: Plugin_Administration_Archive_Management_Write
                 // role for file upload access: Plugin_Administration_Archive_Management_Upload
                 // role for creation access: Plugin_Administration_Archive_Management_New
+                // role to access all: Plugin_Administration_Archive_Management_All_Inventories
+                // role to access the inventory 'XYZ':  Plugin_Administration_Archive_Management_Inventory_XYZ
 
                 if ((user.isSuperAdmin() || user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Write"))) {
                     readOnlyMode = false;
@@ -314,6 +319,16 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
                 if (user.isSuperAdmin() || (user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_New"))) {
                     allowCreation = true;
+                }
+
+                if (user.isSuperAdmin() || (user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_All_Inventories"))) {
+                    allowAllInventories = true;
+                } else {
+                    for (String role : user.getAllUserRoles()) {
+                        if (role.startsWith("Plugin_Administration_Archive_Management_Inventory_")) {
+                            inventoryList.add(role.replace("Plugin_Administration_Archive_Management_Inventory_", ""));
+                        }
+                    }
                 }
 
             }
@@ -340,7 +355,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         List<String> databases = new ArrayList<>();
         for (IRecordGroup rec : allRecordGroups) {
-            databases.add(rec.getTitle());
+            // allow access if username is null (api request), access is granted to all or to the specific record
+            if (username == null || allowAllInventories || inventoryList.contains(rec.getTitle())) {
+                databases.add(rec.getTitle());
+            }
         }
         return databases;
     }
