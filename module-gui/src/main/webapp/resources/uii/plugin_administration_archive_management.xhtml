@@ -202,7 +202,7 @@
                                             style="min-width: 15rem;"
                                             id="filterField"
                                             value="#{AdministrationForm.administrationPlugin.searchValue}"
-                                            onkeypress="submitSearch(event)">
+                                            onkeyup="submitSearch(event)">
                                         </h:inputText>
                                         <x:commandLink
                                             id="SearchFilter"
@@ -481,9 +481,7 @@
                                         <h:commandLink
                                             styleClass="btn btn-neutral-600"
                                             onclick="$('#duplicationBox').modal('show');"
-                                            title="#{msgs.plugin_administration_archive_duplicateNode}"
-                                            
-                                            >
+                                            title="#{msgs.plugin_administration_archive_duplicateNode}">
                                             <span class="fa fa-files-o" />
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
@@ -496,8 +494,8 @@
                                     </fieldSet>
                                 </div>
                                 <div class="box__actions pe-2">
-                                
-                                <h:commandLink
+
+                                    <h:commandLink
                                         styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.readOnlyModus ? 'disabled' : ''}"
                                         type="submit"
                                         action="#{AdministrationForm.administrationPlugin.eadExport}"
@@ -510,7 +508,7 @@
                                             <h:outputText value="#{msgs.plugin_administration_archive_eadExport}" />
                                         </span>
                                     </h:commandLink>
-                                
+
                                     <h:commandLink
                                         styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowCreation ? '' : 'disabled'}"
                                         action="#{AdministrationForm.administrationPlugin.duplicateEadFile}"
@@ -576,7 +574,7 @@
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
-                                                value="tooltip" />                                                
+                                                value="tooltip" />
                                             <f:passThroughAttribute
                                                 name="data-bs-title"
                                                 value="#{msgs.plugin_administration_archive_showAllFields}" />
@@ -1062,41 +1060,19 @@
 										if (e.key != 'Enter')
 											return
 
-										
-
-																				
-
-										
-
-																														
-
-										
-
-																				
-
-										
-
-																																								
-
-										
-
-																				
-
-										
-
-																														
-
-										
-
-																				
-
-										
-
 										e.preventDefault()
 										var submit = document
 												.querySelector('[id$="SearchFilter"]');
 										submit.click()
 									}
+									// use this script to enable live search. Its disabled for now for performance reasons
+									//	function submitSearch(e) {
+									//	if (e.currentTarget.value.length > 2 || e.key == 'Enter') {
+									//	    e.preventDefault()
+									//	    var submit = document.querySelector('[id$="SearchFilter"]');
+									//		submit.click()
+									//		}
+									//	}
 								</script>
     </composite:implementation>
 </ui:composition>
