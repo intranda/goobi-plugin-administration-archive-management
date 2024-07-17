@@ -496,6 +496,21 @@
                                     </fieldSet>
                                 </div>
                                 <div class="box__actions pe-2">
+                                
+                                <h:commandLink
+                                        styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.readOnlyModus ? 'disabled' : ''}"
+                                        type="submit"
+                                        action="#{AdministrationForm.administrationPlugin.eadExport}"
+                                        disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}">
+                                        <f:passThroughAttribute
+                                            name="data-bs-toggle"
+                                            value="tooltip" />
+                                        <span class="fa fa-globe" />
+                                        <span>
+                                            <h:outputText value="#{msgs.plugin_administration_archive_eadExport}" />
+                                        </span>
+                                    </h:commandLink>
+                                
                                     <h:commandLink
                                         styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowCreation ? '' : 'disabled'}"
                                         action="#{AdministrationForm.administrationPlugin.duplicateEadFile}"

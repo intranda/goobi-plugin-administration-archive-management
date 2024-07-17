@@ -3,6 +3,7 @@ package de.intranda.goobi.plugins;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -279,6 +280,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     @Getter
     private boolean allowCreation = false;
+
+    @Getter
+    private String exportFolder;
 
     /**
      * Constructor
@@ -721,6 +725,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 // do nothing
             }
         }
+
+        exportFolder = xmlConfig.getString("/export/folder");
 
         nameSpaceRead = Namespace.getNamespace("ead", config.getString("/eadNamespaceRead", "urn:isbn:1-931666-22-9"));
         nameSpaceWrite = Namespace.getNamespace("ead", config.getString("/eadNamespaceWrite", "urn:isbn:1-931666-22-9"));
@@ -2968,5 +2974,22 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public boolean isReadOnlyModus() {
         return readOnlyMode;
+    }
+
+    public void eadExport() {
+        if (StringUtils.isBlank(exportFolder)) {
+            Helper.setFehlerMeldung("plugin_administration_archive_eadExportNotConfigured");
+            return;
+        }
+
+        Path downloadFile = Paths.get(exportFolder, databaseName.replace(" ", "_"));
+        Document document = createEadFile();
+        XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
+        try {
+            outputter.output(document, Files.newOutputStream(downloadFile));
+        } catch (IOException e) {
+            log.error(e);
+        }
+
     }
 }
