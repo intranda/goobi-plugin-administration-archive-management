@@ -55,6 +55,7 @@ public class Converter {
 
         // load mapping file
         XMLConfiguration config = new XMLConfiguration(mappingFile);
+        config.setExpressionEngine(new XPathExpressionEngine());
 
         Map<String, String> xpathMap = new HashMap<>();
         for (HierarchicalConfiguration hc : config.configurationsAt("/field")) {

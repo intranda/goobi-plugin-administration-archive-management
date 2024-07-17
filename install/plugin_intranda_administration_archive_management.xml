@@ -128,7 +128,7 @@
         </metadata>
         <metadata xpath="(./ead:archdesc/ead:did/ead:unitdatestructured | ./ead:did/ead:unitdatestructured)[1]" xpathType="element" name="unitdatestructured" level="1" repeatable="false"
             validationType="date" rulesetName="DateOfOrigin" showField="true" />
-        <metadata xpath="(./ead:archdesc/@level | ./@level)[1]" xpathType="attribute" name="descriptionLevel" level="1" repeatable="false" fieldType="dropdown">
+        <metadata xpath="(./ead:archdesc/@level | ./@level)[1]" xpathType="attribute" name="descriptionLevel" level="1" repeatable="false" fieldType="dropdown" validationType="list">
             <value>collection</value>
             <value>fonds</value>
             <value>class</value>
@@ -183,16 +183,14 @@
             <metadata xpath="ead:p" xpathType="element" name="AcquisitionNotes" level="2" repeatable="false" visible="false" fieldType="textarea" rulesetName="AcquisitionNotes"/>
         </metadata>
 
-
+        <!--
         <metadata xpath="(./ead:archdesc/ead:acqinfo/ead:p | ./ead:acqinfo/ead:p)[1]" xpathType="element" name="acqinfo" level="2" repeatable="false" fieldType="dropdown"
             rulesetName="AquisitionInformation">
             <value>value 1</value>
             <value>value 2</value>
-            <!--<vocabulary>Abgebende
-            Stelle</vocabulary>-->
             <value>...</value>
         </metadata>
-
+        -->
         <!-- Content and Structure Area -->
         <metadata xpath="(./ead:archdesc/ead:scopecontent/ead:p | ./ead:scopecontent/ead:p)[1]" xpathType="element" name="scopecontent" level="3" repeatable="false" fieldType="textarea"
             rulesetName="ContentDescription" />
