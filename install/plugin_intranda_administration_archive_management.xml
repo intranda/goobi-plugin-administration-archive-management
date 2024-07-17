@@ -210,11 +210,7 @@
         <!-- Condition of Access and Use Area -->
         <metadata xpath="(./ead:archdesc/ead:accessrestrict/ead:p | ./ead:accessrestrict/ead:p)[1]" xpathType="element" name="accessrestrict" level="4" repeatable="false" fieldType="dropdown"
             rulesetName="RestrictionOnAccessLicense" importMetadataInChild="true">
-            <!--TODO:
-            use vocabulary in Lux -->
-            <value>open access</value>
-            <value>restricted</value>
-            <value>required registration</value>
+            <vocabulary>Access restrictions</vocabulary>
         </metadata>
 
         <metadata xpath="(./ead:archdesc/ead:userestrict/ead:p | ./ead:userestrict/ead:p)[1]" xpathType="element" name="userestrict" level="4" repeatable="false" fieldType="dropdown"
@@ -231,16 +227,7 @@
 
         <metadata xpath="./ead:did/ead:langmaterial/ead:language" xpathType="element" name="langmaterial" level="4" repeatable="true" fieldType="textarea" rulesetName="DocLanguage"
             importMetadataInChild="false">
-            <value>eng</value>
-            <value>ger</value>
-            <value>dut</value>
-            <value>fre</value>
-            <value>esp</value>
-            <value>ita</value>
-            <value>lat</value>
-            <value>pol</value>
-            <value>rus</value>
-            <value>swe</value>
+            <vocabulary>Languages</vocabulary>
         </metadata>
 
         <metadata xpath="(./ead:archdesc/ead:did/ead:langmaterial[@label='font'] | ./ead:did/ead:langmaterial[@label='font'])[1]" xpathType="element" name="font" level="4" repeatable="false"
