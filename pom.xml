@@ -14,6 +14,7 @@
     <module>module-gui</module>
     <module>module-lib</module>
     <module>module-job</module>
+    <module>module-converter</module>
   </modules>
   <repositories>
     <repository>

@@ -153,9 +153,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     private Namespace nameSpaceRead;
     @Getter
+    @Setter
     private Namespace nameSpaceWrite;
     private static XPathFactory xFactory = XPathFactory.instance();
 
+    @Getter
+    @Setter
     private XMLConfiguration xmlConfig;
     @Getter
     private transient List<IMetadataField> configuredFields;
@@ -443,7 +446,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     /*
      * get root node from ead document
      */
-    private void parseEadFile(Document document) {
+    public void parseEadFile(Document document) {
         Element eadElement = null;
         Element collection = document.getRootElement();
         if ("collection".equals(collection.getName())) {
@@ -702,7 +705,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * read in all parameters from the configuration file
      * 
      */
-    private void readConfiguration() {
+    public void readConfiguration() {
         log.debug("reading configuration");
         configuredFields = new ArrayList<>();
         configuredNodes = new ArrayList<>();
@@ -1108,11 +1111,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         return uploadedFileName;
     }
 
-    private void addMetadata(Element currentElement, IEadEntry node, Element xmlRootElement) {
+    public void addMetadata(Element currentElement, IEadEntry node, Element xmlRootElement, boolean updateHistory) {
         boolean isMainElement = false;
         if ("ead".equals(currentElement.getName())) {
             isMainElement = true;
-            updateChangeHistory(node);
+            if (updateHistory) {
+                updateChangeHistory(node);
+            }
         }
 
         for (IMetadataField emf : node.getIdentityStatementAreaList()) {
@@ -1184,7 +1189,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 c.addContent(altformavail);
             }
 
-            addMetadata(c, subNode, xmlRootElement);
+            addMetadata(c, subNode, xmlRootElement, updateHistory);
         }
     }
 
@@ -2152,7 +2157,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         Element eadRoot = new Element("ead", nameSpaceWrite);
         document.setRootElement(eadRoot);
-        addMetadata(eadRoot, rootElement, eadRoot);
+        addMetadata(eadRoot, rootElement, eadRoot, true);
 
         return document;
     }
