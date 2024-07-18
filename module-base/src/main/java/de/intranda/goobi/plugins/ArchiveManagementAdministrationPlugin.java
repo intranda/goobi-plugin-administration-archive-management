@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.faces.component.UIComponent;
@@ -51,9 +52,6 @@ import org.goobi.model.ExtendendValue;
 import org.goobi.model.GroupValue;
 import org.goobi.production.cli.helper.StringPair;
 import org.goobi.production.enums.PluginType;
-import org.goobi.vocabulary.Field;
-import org.goobi.vocabulary.VocabRecord;
-import org.goobi.vocabulary.Vocabulary;
 import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -86,9 +84,14 @@ import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.persistence.managers.MetadataManager;
 import de.sub.goobi.persistence.managers.ProcessManager;
-import de.sub.goobi.persistence.managers.VocabularyManager;
 import de.sub.goobi.validator.ExtendedDateTimeFormatLexer;
 import de.sub.goobi.validator.ExtendedDateTimeFormatParser;
+import io.goobi.vocabulary.exchange.FieldDefinition;
+import io.goobi.vocabulary.exchange.Vocabulary;
+import io.goobi.vocabulary.exchange.VocabularySchema;
+import io.goobi.workflow.api.vocabulary.APIException;
+import io.goobi.workflow.api.vocabulary.VocabularyAPIManager;
+import io.goobi.workflow.api.vocabulary.jsfwrapper.JSFVocabularyRecord;
 import io.goobi.workflow.locking.LockingBean;
 import io.goobi.workflow.xslt.XsltToPdf;
 import lombok.Getter;
@@ -286,6 +289,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     @Getter
     private String exportFolder;
+
+    private transient VocabularyAPIManager vocabularyAPI = VocabularyAPIManager.getInstance();
 
     /**
      * Constructor
@@ -867,45 +872,52 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         String vocabularyName = fieldConfig.getString("/vocabulary");
         List<String> searchParameter = Arrays.asList(fieldConfig.getStringArray("/searchParameter"));
         List<String> iFieldValueList = new ArrayList<>();
-        if (searchParameter == null) {
-            Vocabulary currentVocabulary = VocabularyManager.getVocabularyByTitle(vocabularyName);
-            if (currentVocabulary != null) {
-                VocabularyManager.getAllRecords(currentVocabulary);
-                if (currentVocabulary.getId() != null) {
-                    for (VocabRecord vr : currentVocabulary.getRecords()) {
-                        for (Field f : vr.getFields()) {
-                            if (f.getDefinition().isMainEntry()) {
-                                iFieldValueList.add(f.getValue());
-                                break;
-                            }
-                        }
-                    }
+
+        try {
+            Vocabulary vocabulary = vocabularyAPI.vocabularies().findByName(vocabularyName);
+            if (searchParameter.isEmpty()) {
+                List<JSFVocabularyRecord> records = vocabularyAPI.vocabularyRecords().all(vocabulary.getId());
+                for (JSFVocabularyRecord rec : records) {
+                    iFieldValueList.add(rec.getMainValue());
+                }
+            } else {
+                if (searchParameter.size() > 1) {
+                    Helper.setFehlerMeldung("vocabularyList with multiple fields is not supported right now");
+                    return;
+                }
+
+                String[] parts = searchParameter.get(0).trim().split("=");
+                if (parts.length != 2) {
+                    Helper.setFehlerMeldung("Wrong field format");
+                    return;
+                }
+
+                String searchFieldName = parts[0];
+                String searchFieldValue = parts[1];
+
+                VocabularySchema schema = vocabularyAPI.vocabularySchemas().get(vocabulary.getSchemaId());
+                Optional<FieldDefinition> searchField = schema.getDefinitions()
+                        .stream()
+                        .filter(d -> d.getName().equals(searchFieldName))
+                        .findFirst();
+
+                if (searchField.isEmpty()) {
+                    Helper.setFehlerMeldung("Field " + searchFieldName + " not found in vocabulary " + vocabulary.getName());
+                    return;
+                }
+
+                List<JSFVocabularyRecord> records = vocabularyAPI.vocabularyRecords()
+                        .search(vocabulary.getId(), searchField.get().getId() + ":" + searchFieldValue)
+                        .getContent();
+                for (JSFVocabularyRecord rec : records) {
+                    iFieldValueList.add(rec.getMainValue());
                 }
             }
-        } else {
-            List<StringPair> vocabularySearchFields = new ArrayList<>();
-            for (String fieldname : searchParameter) {
-                String[] parts = fieldname.trim().split("=");
-                if (parts.length > 1) {
-                    String fieldName = parts[0];
-                    String value = parts[1];
-                    StringPair sp = new StringPair(fieldName, value);
-                    vocabularySearchFields.add(sp);
-                }
-            }
-            List<VocabRecord> records = VocabularyManager.findRecords(vocabularyName, vocabularySearchFields);
-            if (records != null && !records.isEmpty()) {
-                for (VocabRecord vr : records) {
-                    for (Field f : vr.getFields()) {
-                        if (f.getDefinition().isMainEntry()) {
-                            iFieldValueList.add(f.getValue());
-                            break;
-                        }
-                    }
-                }
-            }
+        } catch (APIException e) {
+            log.error(e);
         }
         field.setSelectItemList(iFieldValueList);
+
     }
 
     public void resetFlatList() {
@@ -1084,7 +1096,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         List<IEadEntry> nodes = rootElement.getAllNodes();
         ArchiveManagementManager.saveNodes(recordGroup.getId(), nodes);
         databaseName = recordGroup.getTitle();
-        loadSelectedDatabase();
         displayMode = "";
         // update existing process ids if the uploaded EAD file has an older version
         if (fileToUploadExists) {

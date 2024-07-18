@@ -36,7 +36,6 @@ import org.goobi.interfaces.INodeType;
 import org.goobi.interfaces.IRecordGroup;
 import org.goobi.interfaces.IValue;
 import org.goobi.model.ExtendendValue;
-import org.goobi.vocabulary.VocabRecord;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -60,11 +59,16 @@ import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.FacesContextHelper;
 import de.sub.goobi.helper.Helper;
 import de.sub.goobi.persistence.managers.ProcessManager;
-import de.sub.goobi.persistence.managers.VocabularyManager;
+import io.goobi.vocabulary.exchange.Vocabulary;
+import io.goobi.workflow.api.vocabulary.VocabularyAPI;
+import io.goobi.workflow.api.vocabulary.VocabularyAPIManager;
+import io.goobi.workflow.api.vocabulary.VocabularyRecordAPI;
+import io.goobi.workflow.api.vocabulary.jsfwrapper.JSFVocabularyRecord;
 import io.goobi.workflow.locking.LockingBean;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ ConfigurationHelper.class, ArchiveManagementManager.class, VocabularyManager.class, ProcessManager.class, Helper.class,
+@PrepareForTest({ ConfigurationHelper.class, ArchiveManagementManager.class, VocabularyAPIManager.class, VocabularyAPI.class, ProcessManager.class,
+        Helper.class,
         IEadEntry.class, INodeType.class })
 @PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*",
         "org.w3c.*" })
@@ -112,6 +116,7 @@ public class ArchiveManagementAdministrationPluginTest {
         ArchiveManagementManager.saveNodes(EasyMock.anyInt(), EasyMock.anyObject());
         ArchiveManagementManager.saveRecordGroup(EasyMock.anyObject());
         ArchiveManagementManager.setConfiguredNodes(EasyMock.anyObject());
+
         ArchiveManagementManager.deleteNodes(EasyMock.anyObject());
         EasyMock.expect(ArchiveManagementManager.loadMetadataForNode(EasyMock.anyInt())).andReturn(new HashMap<>()).anyTimes();
         EasyMock.expect(ArchiveManagementManager.loadRecordGroup(EasyMock.anyInt())).andReturn(getSampleData()).anyTimes();
@@ -158,19 +163,38 @@ public class ArchiveManagementAdministrationPluginTest {
         EasyMock.expect(ConfigurationHelper.getInstance()).andReturn(configurationHelper).anyTimes();
         EasyMock.expect(configurationHelper.getConfigurationFolder()).andReturn(resourcesFolder).anyTimes();
         EasyMock.expect(configurationHelper.useS3()).andReturn(false).anyTimes();
-        PowerMock.mockStatic(VocabularyManager.class);
+        EasyMock.expect(configurationHelper.getVocabularyServerHost()).andReturn("").anyTimes();
+        EasyMock.expect(configurationHelper.getVocabularyServerPort()).andReturn(0).anyTimes();
 
-        List<VocabRecord> recordList = new ArrayList<>();
-        VocabRecord rec = new VocabRecord();
-        recordList.add(rec);
-        EasyMock.expect(VocabularyManager.findRecords(EasyMock.anyString(), EasyMock.anyObject())).andReturn(recordList);
+        // TODO
+        PowerMock.mockStatic(VocabularyAPIManager.class);
+        VocabularyAPIManager vocabularyAPIManager = EasyMock.createMock(VocabularyAPIManager.class);
+        EasyMock.expect(VocabularyAPIManager.getInstance()).andReturn(vocabularyAPIManager).anyTimes();
+
+        VocabularyAPI vocabularyAPI = EasyMock.createMock(VocabularyAPI.class);
+        Vocabulary vocabulary = EasyMock.createMock(Vocabulary.class);
+        EasyMock.expect(vocabulary.getId()).andReturn(1l).anyTimes();
+
+        EasyMock.expect(vocabularyAPIManager.vocabularies()).andReturn(vocabularyAPI).anyTimes();
+        EasyMock.expect(vocabularyAPI.findByName(EasyMock.anyString())).andReturn(vocabulary).anyTimes();
+
+        VocabularyRecordAPI vocabularyRecordAPI = EasyMock.createMock(VocabularyRecordAPI.class);
+        EasyMock.expect(vocabularyAPIManager.vocabularyRecords()).andReturn(vocabularyRecordAPI).anyTimes();
+
+        JSFVocabularyRecord rec = EasyMock.createMock(JSFVocabularyRecord.class);
+        EasyMock.expect(rec.getMainValue()).andReturn("val").anyTimes();
+
+        EasyMock.expect(vocabularyRecordAPI.all(EasyMock.anyLong())).andReturn(Collections.singletonList(rec)).anyTimes();
+
+        EasyMock.replay(vocabularyAPI, vocabularyRecordAPI, vocabulary, rec);
 
         PowerMock.mockStatic(ProcessManager.class);
         ProcessManager.saveProcess(EasyMock.anyObject());
         PowerMock.replay(ProcessManager.class);
 
-        EasyMock.replay(configurationHelper);
+        EasyMock.replay(configurationHelper, vocabularyAPIManager);
         PowerMock.replay(ConfigurationHelper.class);
+        PowerMock.replay(VocabularyAPIManager.class);
 
         selectedEntry = PowerMock.createMock(IEadEntry.class);
         parentNode = PowerMock.createMock(IEadEntry.class);
