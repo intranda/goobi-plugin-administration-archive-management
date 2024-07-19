@@ -48,6 +48,7 @@ import org.goobi.interfaces.INodeType;
 import org.goobi.interfaces.IParameter;
 import org.goobi.interfaces.IRecordGroup;
 import org.goobi.interfaces.IValue;
+import org.goobi.managedbeans.VocabularyRecordsBean;
 import org.goobi.model.ExtendendValue;
 import org.goobi.model.GroupValue;
 import org.goobi.production.cli.helper.StringPair;
@@ -91,6 +92,7 @@ import io.goobi.vocabulary.exchange.Vocabulary;
 import io.goobi.vocabulary.exchange.VocabularySchema;
 import io.goobi.workflow.api.vocabulary.APIException;
 import io.goobi.workflow.api.vocabulary.VocabularyAPIManager;
+import io.goobi.workflow.api.vocabulary.jsfwrapper.JSFVocabulary;
 import io.goobi.workflow.api.vocabulary.jsfwrapper.JSFVocabularyRecord;
 import io.goobi.workflow.locking.LockingBean;
 import io.goobi.workflow.xslt.XsltToPdf;
@@ -257,6 +259,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     @Getter
     @Setter
+    private boolean displayVocabularyModal = false;
+
+    @Getter
+    @Setter
     private transient IFieldValue fieldToLink;
 
     @Getter
@@ -284,6 +290,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Getter
     private boolean allowCreation = false;
 
+    @Getter
+    private boolean allowVocabularyEdition = false;
+
     private boolean allowAllInventories;
     private List<String> inventoryList = new ArrayList<>();
 
@@ -291,6 +300,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private String exportFolder;
 
     private transient VocabularyAPIManager vocabularyAPI = VocabularyAPIManager.getInstance();
+
+    @Getter
+    @Setter
+    private transient IMetadataField vocabularyField;
 
     /**
      * Constructor
@@ -311,6 +324,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 // role for write access: Plugin_Administration_Archive_Management_Write
                 // role for file upload access: Plugin_Administration_Archive_Management_Upload
                 // role for creation access: Plugin_Administration_Archive_Management_New
+                // role to edit vocabularies: Plugin_Administration_Archive_Management_Vocabulary
                 // role to access all: Plugin_Administration_Archive_Management_All_Inventories
                 // role to access the inventory 'XYZ':  Plugin_Administration_Archive_Management_Inventory_XYZ
 
@@ -324,6 +338,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
                 if (user.isSuperAdmin() || (user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_New"))) {
                     allowCreation = true;
+                }
+                if (user.isSuperAdmin() || (user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Vocabulary"))) {
+                    allowVocabularyEdition = true;
                 }
 
                 if (user.isSuperAdmin() || (user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_All_Inventories"))) {
@@ -349,7 +366,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     /**
-     * Get the database names and file names from the basex databases
+     * fieldType Get the database names and file names from the basex databases
      * 
      * @return
      */
@@ -661,10 +678,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         IMetadataField toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable(),
                 emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild(), emf.getValidationType(),
-                emf.getRegularExpression(), emf.isSearchable(), emf.getViafSearchFields(), emf.getViafDisplayFields(), emf.isGroup());
+                emf.getRegularExpression(), emf.isSearchable(), emf.getViafSearchFields(), emf.getViafDisplayFields(), emf.isGroup(),
+                emf.getVocabularyName());
         toAdd.setValidationError(emf.getValidationError());
         toAdd.setSelectItemList(emf.getSelectItemList());
-        toAdd.setVocabularyName(emf.getVocabularyName());
+        toAdd.setSearchParameter(emf.getSearchParameter());
         if (entry != null) {
             if (StringUtils.isBlank(entry.getLabel()) && emf.getXpath().contains("unittitle") && values != null && !values.isEmpty()) {
                 IValue value = values.get(0);
@@ -822,7 +840,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     fieldConfig.getString("@regularExpression"),
                     fieldConfig.getBoolean("@searchable", false), fieldConfig.getString("@searchFields", null),
                     fieldConfig.getString("@displayFields", null),
-                    fieldConfig.getBoolean("@group", false));
+                    fieldConfig.getBoolean("@group", false),
+                    fieldConfig.getString("/vocabulary"));
             configureField(fieldConfig, field);
             configuredFields.add(field);
             // groups
@@ -838,7 +857,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                             subfieldConfig.getString("@regularExpression"),
                             subfieldConfig.getBoolean("@searchable", false), subfieldConfig.getString("@searchFields", null),
                             subfieldConfig.getString("@displayFields", null),
-                            false);
+                            false, subfieldConfig.getString("/vocabulary"));
                     configureField(subfieldConfig, subfield);
                     field.addSubfield(subfield);
                 }
@@ -857,37 +876,37 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
 
         field.setValidationError(fieldConfig.getString("/validationError"));
+        field.setSearchParameter(Arrays.asList(fieldConfig.getStringArray("/searchParameter")));
+
         if ("dropdown".equals(field.getFieldType()) || "multiselect".equals(field.getFieldType())) {
             List<String> valueList = Arrays.asList(fieldConfig.getStringArray("/value"));
             if (valueList == null || valueList.isEmpty()) {
-                loadVocabulary(fieldConfig, field);
+                loadVocabulary(field);
             } else {
                 field.setSelectItemList(valueList);
             }
         } else if ("vocabulary".equals(field.getFieldType())) {
-            loadVocabulary(fieldConfig, field);
+            loadVocabulary(field);
         }
     }
 
-    private void loadVocabulary(HierarchicalConfiguration fieldConfig, IMetadataField field) {
-        String vocabularyName = fieldConfig.getString("/vocabulary");
-        List<String> searchParameter = Arrays.asList(fieldConfig.getStringArray("/searchParameter"));
+    private void loadVocabulary(IMetadataField field) {
         List<String> iFieldValueList = new ArrayList<>();
 
         try {
-            Vocabulary vocabulary = vocabularyAPI.vocabularies().findByName(vocabularyName);
-            if (searchParameter.isEmpty()) {
+            Vocabulary vocabulary = vocabularyAPI.vocabularies().findByName(field.getVocabularyName());
+            if (field.getSearchParameter().isEmpty()) {
                 List<JSFVocabularyRecord> records = vocabularyAPI.vocabularyRecords().all(vocabulary.getId());
                 for (JSFVocabularyRecord rec : records) {
                     iFieldValueList.add(rec.getMainValue());
                 }
             } else {
-                if (searchParameter.size() > 1) {
+                if (field.getSearchParameter().size() > 1) {
                     Helper.setFehlerMeldung("vocabularyList with multiple fields is not supported right now");
                     return;
                 }
 
-                String[] parts = searchParameter.get(0).trim().split("=");
+                String[] parts = field.getSearchParameter().get(0).trim().split("=");
                 if (parts.length != 2) {
                     Helper.setFehlerMeldung("Wrong field format");
                     return;
@@ -917,8 +936,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         } catch (APIException e) {
             log.error(e);
         }
+        Collections.sort(iFieldValueList);
         field.setSelectItemList(iFieldValueList);
-        field.setVocabularyName(vocabularyName);
     }
 
     public void resetFlatList() {
@@ -2775,10 +2794,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 template.isVisible(), template.isShowField(), template.getFieldType(), template.getMetadataName(), template.isImportMetadataInChild(),
                 template.getValidationType(),
                 template.getRegularExpression(), template.isSearchable(), template.getViafSearchFields(), template.getViafDisplayFields(),
-                template.isGroup());
+                template.isGroup(), template.getVocabularyName());
         instance.setValidationError(template.getValidationError());
         instance.setSelectItemList(template.getSelectItemList());
-        instance.setVocabularyName(template.getVocabularyName());
+        instance.setSearchParameter(template.getSearchParameter());
         instance.setEadEntry(entry);
 
         // sub fields
@@ -3021,6 +3040,50 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         } catch (IOException e) {
             log.error(e);
         }
+    }
 
+    public void initializeRecord() {
+
+        VocabularyRecordsBean recordsBean = Helper.getBeanByClass(VocabularyRecordsBean.class);
+
+        JSFVocabulary vocabulary = null;
+        try {
+            List<JSFVocabulary> records = vocabularyAPI.vocabularies().all();
+            for (JSFVocabulary rec : records) {
+                if (rec.getName().equals(vocabularyField.getVocabularyName())) {
+                    vocabulary = rec;
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            displayVocabularyModal = false;
+
+        }
+        // configured vocabulary does not exist or vocabulary server is down
+        if (vocabulary == null) {
+            displayVocabularyModal = false;
+            return;
+
+        }
+        recordsBean.load(vocabulary);
+        recordsBean.createEmpty(null);
+
+    }
+
+    public void addEntry() {
+        // save new record
+        VocabularyRecordsBean recordsBean = Helper.getBeanByClass(VocabularyRecordsBean.class);
+        recordsBean.saveRecord(recordsBean.getCurrentRecord());
+
+        // populate new item list
+        loadVocabulary(vocabularyField);
+
+        // update template field
+        for (IMetadataField template : configuredFields) {
+            if (template.getName().equals(vocabularyField.getName())) {
+                template.setSelectItemList(vocabularyField.getSelectItemList());
+            }
+
+        }
     }
 }

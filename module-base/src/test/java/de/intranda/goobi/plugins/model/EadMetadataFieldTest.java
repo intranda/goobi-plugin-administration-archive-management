@@ -36,7 +36,7 @@ public class EadMetadataFieldTest {
     public void setUp() {
         eadMetadataField = new EadMetadataField("name", 1, "xpath", "text", false, true, true,
                 "input", "metadataName", false, "required",
-                "regex", true, "viafSearchFields", "viafDisplayFields", false);
+                "regex", true, "viafSearchFields", "viafDisplayFields", false, null);
         fieldValueMock = createMock(IFieldValue.class);
     }
 
@@ -111,16 +111,16 @@ public class EadMetadataFieldTest {
         // another object with the same values
         assertEquals(eadMetadataField, new EadMetadataField("name", 1, "xpath", "text", false, true, true,
                 "input", "metadataName", false, "required",
-                "regex", true, "viafSearchFields", "viafDisplayFields", false));
+                "regex", true, "viafSearchFields", "viafDisplayFields", false, null));
 
         // another object with different values
         assertNotEquals(eadMetadataField, new EadMetadataField("other", 1, "xpath", "text", false, true, true,
                 "input", "metadataName", false, "required",
-                "regex", true, "viafSearchFields", "viafDisplayFields", false));
+                "regex", true, "viafSearchFields", "viafDisplayFields", false, null));
 
         assertNotEquals(eadMetadataField, new EadMetadataField("name", 1, "xpath", "text", false, true, true,
                 "input", "metadataName", false, "required",
-                "regex", true, "viafSearchFields", "viafDisplayFields", true));
+                "regex", true, "viafSearchFields", "viafDisplayFields", true, null));
     }
 
     @Test

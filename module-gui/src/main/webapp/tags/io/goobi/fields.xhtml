@@ -25,6 +25,8 @@
         </ui:fragment>
         <ui:fragment rendered="#{subfield.fieldType=='dropdown' or subfield.fieldType=='vocabulary'}">
             <goobiio:dropdown
+                fieldtype="#{subfield}"
+                vocabularyname="#{subfield.vocabularyName}"
                 fieldid="#{subfield.name}dropdown"
                 fieldname="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}"
                 fieldvalue="#{field.value}"
@@ -32,6 +34,8 @@
         </ui:fragment>
         <ui:fragment rendered="#{subfield.fieldType=='multiselect'}">
             <goobiio:multiselect
+                fieldtype="#{subfield}"
+                vocabularyname="#{subfield.vocabularyName}"
                 fieldid="#{subfield.name}multiselect"
                 fieldname="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}"
                 fieldvalue="#{field.multiselectValue}"

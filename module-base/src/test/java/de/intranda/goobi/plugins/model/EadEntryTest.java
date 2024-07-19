@@ -208,7 +208,7 @@ public class EadEntryTest {
         EadEntry entry = new EadEntry(0, 0);
         EadMetadataField title =
                 new EadMetadataField("input", 1, "unittitle", "element", false, true, true, "input", null, false, null, null, false, null, null,
-                        false);
+                        false, null);
         title.setEadEntry(entry);
         assertFalse(title.isFilled());
         title.addValue();
@@ -238,7 +238,7 @@ public class EadEntryTest {
 
         EadMetadataField repeatable =
                 new EadMetadataField("input", 1, "something", "element", true, true, true, "input", null, false, null, null, false, null, null,
-                        false);
+                        false, null);
         repeatable.setEadEntry(entry);
         assertFalse(repeatable.isFilled());
         repeatable.addValue();
@@ -252,7 +252,7 @@ public class EadEntryTest {
         IEadEntry entry = new EadEntry(0, 0);
         EadMetadataField title =
                 new EadMetadataField("input", 1, "something", "element", false, true, true, "input", null, false, null, null, false, null, null,
-                        false);
+                        false, null);
         title.setEadEntry(entry);
         assertFalse(title.isFilled());
         title.addFieldValue(new FieldValue(title));
@@ -264,7 +264,7 @@ public class EadEntryTest {
 
         EadMetadataField repeatable =
                 new EadMetadataField("dropdown", 1, "something", "element", true, true, true, "dropdown", null, false, null, null, false, null, null,
-                        false);
+                        false, null);
         repeatable.setEadEntry(entry);
         assertFalse(repeatable.isFilled());
         repeatable.addFieldValue(new FieldValue(repeatable));
@@ -371,7 +371,7 @@ public class EadEntryTest {
         assertFalse(entry.isDescriptionControlAreaVisible());
 
         IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required",
-                "regex", true, "viafSearchFields", "viafDisplayFields", false);
+                "regex", true, "viafSearchFields", "viafDisplayFields", false, null);
         field.addValue();
         List<IMetadataField> list = new ArrayList<>();
         list.add(field);
@@ -397,7 +397,7 @@ public class EadEntryTest {
     public void testDeepCopy() {
         EadEntry entry = new EadEntry(4, 4);
         IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required",
-                "regex", true, "viafSearchFields", "viafDisplayFields", false);
+                "regex", true, "viafSearchFields", "viafDisplayFields", false, null);
         field.addValue();
         List<IMetadataField> list = new ArrayList<>();
         list.add(field);
@@ -445,7 +445,7 @@ public class EadEntryTest {
     public void testDataAsXml() {
         EadEntry entry = new EadEntry(4, 4);
         IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required",
-                "regex", true, "viafSearchFields", "viafDisplayFields", false);
+                "regex", true, "viafSearchFields", "viafDisplayFields", false, null);
         field.addValue();
         field.getValues().get(0).setValue("value");
         List<IMetadataField> list = new ArrayList<>();
@@ -459,7 +459,7 @@ public class EadEntryTest {
         EadEntry entry = new EadEntry(4, 4);
 
         IMetadataField grp = new EadMetadataField("group", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required",
-                "regex", true, "viafSearchFields", "viafDisplayFields", true);
+                "regex", true, "viafSearchFields", "viafDisplayFields", true, null);
 
         IMetadataGroup group = grp.createGroup();
 
@@ -469,7 +469,7 @@ public class EadEntryTest {
 
         IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true,
                 "input", "metadataName", false, "required",
-                "regex", true, "viafSearchFields", "viafDisplayFields", false);
+                "regex", true, "viafSearchFields", "viafDisplayFields", false, null);
         field.addValue();
         field.getValues().get(0).setValue("value");
         group.getFields().add(field);
@@ -481,12 +481,12 @@ public class EadEntryTest {
     public void testFingerprint() {
         EadEntry entry = new EadEntry(4, 4);
         IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required",
-                "regex", true, "viafSearchFields", "viafDisplayFields", false);
+                "regex", true, "viafSearchFields", "viafDisplayFields", false, null);
         field.addValue();
         field.getValues().get(0).setValue("value");
 
         IMetadataField grp = new EadMetadataField("group", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required", "regex",
-                true, "viafSearchFields", "viafDisplayFields", true);
+                true, "viafSearchFields", "viafDisplayFields", true, null);
 
         IMetadataGroup group = grp.createGroup();
         group.getFields().add(field);
@@ -505,7 +505,7 @@ public class EadEntryTest {
         EadEntry entry = new EadEntry(4, 4);
 
         IMetadataField grp = new EadMetadataField("group", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required", "regex",
-                true, "viafSearchFields", "viafDisplayFields", true);
+                true, "viafSearchFields", "viafDisplayFields", true, null);
         List<IMetadataField> list = new ArrayList<>();
         list.add(grp);
         entry.setIdentityStatementAreaList(list);
@@ -513,7 +513,7 @@ public class EadEntryTest {
 
         IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true,
                 "input", "metadataName", false, "required",
-                "regex", true, "viafSearchFields", "viafDisplayFields", false);
+                "regex", true, "viafSearchFields", "viafDisplayFields", false, null);
         field.addValue();
         field.getValues().get(0).setValue("value");
         group.getFields().add(field);

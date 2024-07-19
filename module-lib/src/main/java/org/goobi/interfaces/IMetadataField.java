@@ -115,4 +115,8 @@ public interface IMetadataField {
 
     public String getVocabularyName();
 
+    public void setSearchParameter(List<String> parameter);
+
+    public List<String> getSearchParameter();
+
 }

@@ -54,6 +54,7 @@ public class EadMetadataField implements IMetadataField {
     private List<String> selectItemList;
 
     private String vocabularyName;
+    private List<String> searchParameter;
 
     /** defines the type of the input field. Posible values are input (default), textarea, dropdown, multiselect */
     private String fieldType;
@@ -93,7 +94,7 @@ public class EadMetadataField implements IMetadataField {
 
     public EadMetadataField(String name, Integer level, String xpath, String xpathType, boolean repeatable, boolean visible, boolean showField, //NOSONAR
             String fieldType, String metadataName, boolean importMetadataInChild, String validationType, String regularExpression,
-            boolean searchable, String viafSearchFields, String viafDisplayFields, boolean group) {
+            boolean searchable, String viafSearchFields, String viafDisplayFields, boolean group, String vocabularyName) {
         this.name = name;
         this.level = level;
         this.xpath = xpath;
@@ -110,6 +111,7 @@ public class EadMetadataField implements IMetadataField {
         this.viafSearchFields = viafSearchFields;
         this.viafDisplayFields = viafDisplayFields;
         this.group = group;
+        this.vocabularyName = vocabularyName;
     }
 
     @Override
@@ -180,9 +182,9 @@ public class EadMetadataField implements IMetadataField {
     public IMetadataField copy(String prefix, String suffix) {
         IMetadataField field = new EadMetadataField(name, level, xpath, xpathType, repeatable, visible, showField,
                 fieldType, metadataName, importMetadataInChild, validationType, regularExpression, searchable, viafSearchFields, viafDisplayFields,
-                group);
+                group, vocabularyName);
         field.setSelectItemList(selectItemList);
-        field.setVocabularyName(vocabularyName);
+        field.setSearchParameter(searchParameter);
         if (isGroup()) {
             for (IMetadataGroup grp : groups) {
                 IMetadataGroup newGroup = new EadMetadataGroup(this);
@@ -227,9 +229,10 @@ public class EadMetadataField implements IMetadataField {
 
             IMetadataField field = new EadMetadataField(f.getName(), f.getLevel(), f.getXpath(), f.getXpathType(), f.isRepeatable(),
                     f.isVisible(), f.isShowField(), f.getFieldType(), f.getMetadataName(), f.isImportMetadataInChild(), f.getValidationType(),
-                    f.getRegularExpression(), f.isSearchable(), f.getViafSearchFields(), f.getViafDisplayFields(), f.isGroup());
+                    f.getRegularExpression(), f.isSearchable(), f.getViafSearchFields(), f.getViafDisplayFields(), f.isGroup(),
+                    f.getVocabularyName());
             field.setSelectItemList(f.getSelectItemList());
-            field.setVocabularyName(f.getVocabularyName());
+            field.setSearchParameter(f.getSearchParameter());
             field.addValue();
 
             newGroup.getFields().add(field);
