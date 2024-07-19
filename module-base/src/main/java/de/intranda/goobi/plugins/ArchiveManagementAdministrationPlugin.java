@@ -664,6 +664,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 emf.getRegularExpression(), emf.isSearchable(), emf.getViafSearchFields(), emf.getViafDisplayFields(), emf.isGroup());
         toAdd.setValidationError(emf.getValidationError());
         toAdd.setSelectItemList(emf.getSelectItemList());
+        toAdd.setVocabularyName(emf.getVocabularyName());
         if (entry != null) {
             if (StringUtils.isBlank(entry.getLabel()) && emf.getXpath().contains("unittitle") && values != null && !values.isEmpty()) {
                 IValue value = values.get(0);
@@ -917,7 +918,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             log.error(e);
         }
         field.setSelectItemList(iFieldValueList);
-
+        field.setVocabularyName(vocabularyName);
     }
 
     public void resetFlatList() {
@@ -2777,6 +2778,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 template.isGroup());
         instance.setValidationError(template.getValidationError());
         instance.setSelectItemList(template.getSelectItemList());
+        instance.setVocabularyName(template.getVocabularyName());
         instance.setEadEntry(entry);
 
         // sub fields

@@ -100,7 +100,7 @@ public interface IMetadataField {
     public void setSubfields(List<IMetadataField> fields);
 
     public void addSubfield(IMetadataField field);
-    
+
     public List<IMetadataGroup> getGroups();
 
     public void setGroups(List<IMetadataGroup> groups);
@@ -110,5 +110,9 @@ public interface IMetadataField {
     public void addGroup(IMetadataGroup group);
 
     public void deleteGroup(IMetadataGroup group);
+
+    public void setVocabularyName(String name);
+
+    public String getVocabularyName();
 
 }

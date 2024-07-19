@@ -53,6 +53,8 @@ public class EadMetadataField implements IMetadataField {
     /** contains the list of possible values for dropdown or multiselect */
     private List<String> selectItemList;
 
+    private String vocabularyName;
+
     /** defines the type of the input field. Posible values are input (default), textarea, dropdown, multiselect */
     private String fieldType;
 
@@ -180,6 +182,7 @@ public class EadMetadataField implements IMetadataField {
                 fieldType, metadataName, importMetadataInChild, validationType, regularExpression, searchable, viafSearchFields, viafDisplayFields,
                 group);
         field.setSelectItemList(selectItemList);
+        field.setVocabularyName(vocabularyName);
         if (isGroup()) {
             for (IMetadataGroup grp : groups) {
                 IMetadataGroup newGroup = new EadMetadataGroup(this);
@@ -225,7 +228,10 @@ public class EadMetadataField implements IMetadataField {
             IMetadataField field = new EadMetadataField(f.getName(), f.getLevel(), f.getXpath(), f.getXpathType(), f.isRepeatable(),
                     f.isVisible(), f.isShowField(), f.getFieldType(), f.getMetadataName(), f.isImportMetadataInChild(), f.getValidationType(),
                     f.getRegularExpression(), f.isSearchable(), f.getViafSearchFields(), f.getViafDisplayFields(), f.isGroup());
+            field.setSelectItemList(f.getSelectItemList());
+            field.setVocabularyName(f.getVocabularyName());
             field.addValue();
+
             newGroup.getFields().add(field);
 
         }
