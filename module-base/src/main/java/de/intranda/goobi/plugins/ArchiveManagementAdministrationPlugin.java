@@ -935,6 +935,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
         } catch (APIException e) {
             log.error(e);
+            field.setVocabularyName(null);
         }
         Collections.sort(iFieldValueList);
         field.setSelectItemList(iFieldValueList);
