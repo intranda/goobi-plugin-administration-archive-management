@@ -14,7 +14,7 @@
     <ui:composition>
     <x:dataList var="group" value="#{item.groups}">
 
-        <fieldset>
+        <fieldset class="field-set">
             <legend
                 class="fieldSet-legend d-flex justify-content-between">
                 <h:outputText value="#{fieldname}" />
@@ -30,7 +30,7 @@
             <div class="form-rows">
                 <x:dataList
                     var="subfield"
-                    value="#{group.fields}">                    
+                    value="#{group.fields}">
                     <x:dataList
                         var="field"
                         value="#{subfield.values}">

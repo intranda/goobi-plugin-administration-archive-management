@@ -26,7 +26,7 @@
                         styleClass="modal-content"
                         layout="block"
                         id="vocabularyModalContent">
-                        <div class="modal-header bg-primary text-white d-flex justify-content-between">
+                        <div class="modal-header bg-action text-white d-flex justify-content-between">
                             <h3 class="modal-title h-4">#{msgs.plugin_administration_archive_addEntry}</h3>
                             <button
                                 type="button"
@@ -42,18 +42,19 @@
                         <h:form
                             onkeypress="submitOnEnter(event, 'advancedSearch');"
                             prependId="false">
-                            <div class="modal-body">
+                            <div class="modal-body p-0">
 
                                 <intranda:vocabularyRecordEditor
                                     record="#{vocabularyRecordsBean.currentRecord}"
-                                    showID="false" />
+                                    showID="false"
+                                    boxStyle="false" />
 
                             </div>
                             <div class="modal-footer">
 
                                 <h:commandLink
                                     id="addEntryBtn"
-                                    styleClass="btn btn-primary"
+                                    styleClass="btn btn-action"
                                     action="#{AdministrationForm.administrationPlugin.addEntry}"
                                     title="#{msgs.plugin_administration_archive_addEntry}">
                                     <h:outputText value="#{msgs.plugin_administration_archive_addEntry}" />
