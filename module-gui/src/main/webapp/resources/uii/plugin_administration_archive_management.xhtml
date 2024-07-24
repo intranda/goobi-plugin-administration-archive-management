@@ -360,14 +360,15 @@
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                         </h:commandLink>
                                         <div
-                                            class="d-inline"
+                                            class="d-inline dropdown"
                                             title="#{msgs.plugin_administration_archive_createProcesses}"
                                             data-bs-toggle="tooltip">
                                             <button
                                                 aria-haspopup="true"
                                                 aria-expanded="false"
                                                 class="btn btn-primary dropdown-toggle"
-                                                data-bs-toggle="dropdown">
+                                                data-bs-toggle="dropdown"
+                                                type="button">
                                                 <span class="fa fa-files-o"></span>
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end">
@@ -1057,15 +1058,14 @@
             <ui:include src="vocabularyModal.xhtml" />
         </h:panelGroup>
         <script>
-									function submitSearch(e) {
-										if (e.key != 'Enter')
-											return
+            function submitSearch(e) {
+                if (e.key != 'Enter')
+                return
 
-										e.preventDefault()
-										var submit = document
-												.querySelector('[id$="SearchFilter"]');
-										submit.click()
-									}
+                let submit = document.querySelector('[id$="SearchFilter"]');
+                submit.click()
+                e.preventDefault();
+            }
 									// use this script to enable live search. Its disabled for now for performance reasons
 									//	function submitSearch(e) {
 									//	if (e.currentTarget.value.length > 2 || e.key == 'Enter') {
