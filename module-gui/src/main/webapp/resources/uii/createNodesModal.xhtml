@@ -28,7 +28,7 @@
                         id="createNodesModalContent">
                         <div class="modal-header bg-action text-white d-flex justify-content-between">
                             <h3
-                                class="modal-title h-4"
+                                class="modal-title h6"
                                 id="createNodesModalTitle">
                                 #{msgs.plugin_administration_archive_createNodesModal}
                             </h3>
@@ -49,7 +49,7 @@
                         </div>
                         <h:form>
                             <div class="modal-body p-0">
-                                <p class="border-bottom m-0 p-3">
+                                <p class="border-bottom m-0 p-2">
                                     <h:outputText value="#{msgs.plugin_administration_createNodesModalDesciption}" />
                                 </p>
                                     <!-- number of nodes to add
@@ -95,19 +95,32 @@
                                             value="msgs.helpnumberOfNodes" />
                                     </div>
                                 </div>
-                                <intranda:formInputDropDownAjax
-                                    name="selectNodeType"
-                                    label="#{msgs.plugin_administration_nodeType}"
-                                    field="#{AdministrationForm.administrationPlugin.nodeType}"
-                                    help="#{msgs.help_plugin_administration_nodeType}"
-                                    selectItems="#{AdministrationForm.administrationPlugin.configuredNodes}"
-                                    fieldStyle="form-select"
-                                    required="true"
-                                    var="var"
-                                    itemValue="#{var.nodeName}"
-                                    itemLabel="#{msgs['plugin_administration_archive_nodeType_'.concat(var.nodeName)]}"
-                                    ajaxEvent="change"
-                                    render="@this" />
+                                <div class="form-row">
+                                    <div class="form-label">
+                                        <intranda:formLabel
+                                            labelFor="selectNodeType"
+                                            label="#{msgs.plugin_administration_nodeType}"
+                                            labelRequired="true" />
+                                    </div>
+                                    <div class="form-input">
+                                        <h:selectOneMenu
+                                            id="selectNodeType"
+                                            styleClass="form-select"
+                                            value="#{AdministrationForm.administrationPlugin.nodeType}">
+                                            <f:selectItem
+                                                itemValue=""
+                                                itemLabel="#{msgs.bitteAuswaehlen}" />
+                                            <f:selectItems
+                                                value="#{AdministrationForm.administrationPlugin.configuredNodes}"
+                                                var="var"
+                                                itemValue="#{var.nodeName}"
+                                                itemLabel="#{msgs['plugin_administration_archive_nodeType_'.concat(var.nodeName)]}" />
+                                            <f:ajax
+                                                event="change"
+                                                render="@this" />
+                                        </h:selectOneMenu>
+                                    </div>
+                                </div>
                                 <!-- metadata: for each field radio button for empty/generated/counter/text -->
                                 <ui:repeat
                                     value="#{AdministrationForm.administrationPlugin.metadataToAdd}"
