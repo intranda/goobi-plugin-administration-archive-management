@@ -2964,7 +2964,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public void addNodes() {
         if (selectedEntry != null) {
-
             INodeType selectedNodeType = null;
             for (INodeType node : configuredNodes) {
                 if (node.getNodeName().equals(nodeType)) {
@@ -3020,7 +3019,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 // save new node
                 ArchiveManagementManager.saveNode(recordGroup.getId(), entry);
             }
+
+            selectedEntry.setDisplayChildren(true);
+            resetFlatList();
         }
+
     }
 
     public boolean isReadOnlyModus() {

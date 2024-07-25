@@ -324,8 +324,8 @@
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
                                             <f:ajax
-                                                execute="hierarchy"
-                                                render="hierarchy"
+                                                execute="@this"
+                                                render="hierarchy:hierarchy"
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                         </h:commandLink>
                                         <h:commandLink
@@ -342,8 +342,8 @@
                                                 property="#{AdministrationForm.administrationPlugin.displayCreateNodesModal}"
                                                 value="true" />
                                             <f:ajax
-                                                execute="hierarchy"
-                                                render="hierarchy createNodesModalContent"
+                                                execute="@this"
+                                                render="hierarchy:hierarchy createNodesModalContent"
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                         </h:commandLink>
                                         <h:commandLink
@@ -355,8 +355,8 @@
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
                                             <f:ajax
-                                                execute="hierarchy"
-                                                render="hierarchy"
+                                                execute="@this"
+                                                render="hierarchy:hierarchy"
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                         </h:commandLink>
                                         <div
@@ -399,8 +399,8 @@
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
                                             <f:ajax
-                                                execute="hierarchy"
-                                                render="hierarchy ead-details"
+                                                execute="@this"
+                                                render="hierarchy:hierarchy ead-details"
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                         </h:commandLink>
                                         <h:commandLink
@@ -422,8 +422,8 @@
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
                                             <f:ajax
-                                                execute="hierarchy"
-                                                render="hierarchy globalMessage"
+                                                execute="@this"
+                                                render="hierarchy:hierarchy globalMessage"
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                         </h:commandLink>
                                         <h:commandLink
@@ -435,8 +435,8 @@
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
                                             <f:ajax
-                                                execute="hierarchy"
-                                                render="hierarchy globalMessage"
+                                                execute="@this"
+                                                render="hierarchy:hierarchy globalMessage"
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                         </h:commandLink>
                                         <h:commandLink
@@ -448,8 +448,8 @@
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
                                             <f:ajax
-                                                execute="hierarchy"
-                                                render="hierarchy globalMessage"
+                                                execute="@this"
+                                                render="hierarchy:hierarchy globalMessage"
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                         </h:commandLink>
                                         <h:commandLink
@@ -461,8 +461,8 @@
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
                                             <f:ajax
-                                                execute="hierarchy"
-                                                render="hierarchy globalMessage"
+                                                execute="@this"
+                                                render="hierarchy:hierarchy globalMessage"
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                         </h:commandLink>
                                         <!-- move node to another position in separate view -->
@@ -488,8 +488,8 @@
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
                                             <f:ajax
-                                                execute="hierarchy"
-                                                render="hierarchy globalMessage"
+                                                execute="@this"
+                                                render="hierarchy:hierarchy globalMessage"
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                         </h:commandLink>
                                     </fieldSet>
@@ -713,7 +713,7 @@
                                                                     value="#{nodeType}"
                                                                     target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
                                                                 <f:ajax
-                                                                    render="node-type :hierarchy:hierarchy"
+                                                                    render="node-type hierarchy:hierarchy"
                                                                     onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                                                 <f:passThroughAttribute
                                                                     name="data-bs-toggle"
