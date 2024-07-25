@@ -2699,6 +2699,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 updateChangeHistory(selectedEntry);
             }
             ArchiveManagementManager.saveNode(recordGroup.getId(), copy);
+            resetFlatList();
         }
     }
 

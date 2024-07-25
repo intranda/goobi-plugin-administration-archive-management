@@ -117,7 +117,7 @@ public class FieldValue implements IFieldValue {
     @Override
     public void setValue(String value) {
         this.value = value;
-        if (field.getXpath() != null && field.getXpath().contains("unittitle")) {
+        if (field.getXpath() != null && field.getXpath().contains("unittitle") && field.getEadEntry() != null) {
             field.getEadEntry().setLabel(value);
         }
     }
