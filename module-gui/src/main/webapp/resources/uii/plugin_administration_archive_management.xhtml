@@ -204,19 +204,19 @@
                                             value="#{AdministrationForm.administrationPlugin.searchValue}"
                                             onkeyup="submitSearch(event)">
                                         </h:inputText>
-                                        <x:commandLink
+                                        <button
+                                            data-bs-toggle="tooltip"
                                             id="SearchFilter"
-                                            forceId="true"
-                                            styleClass="btn d-flex align-items-center btn--title-action"
-                                            action="#{AdministrationForm.administrationPlugin.search}"
+                                            class="btn d-flex align-items-center btn--title-action"
+                                            jsf:action="#{AdministrationForm.administrationPlugin.search}"
                                             title="#{msgs.search}">
                                             <span
                                                 class="fa fa-search"
                                                 aria-hidden="true"></span>
-                                            <f:passThroughAttribute
+                                            <!-- <f:passThroughAttribute
                                                 name="data-bs-toggle"
-                                                value="tooltip" />
-                                        </x:commandLink>
+                                                value="tooltip" /> -->
+                                        </button>
                                         <x:commandLink
                                             id="FilterAlle2"
                                             forceId="true"
@@ -1060,12 +1060,19 @@
         </h:panelGroup>
         <script>
             function submitSearch(e) {
-                if (e.key != 'Enter')
-                return
-
-                let submit = document.querySelector('[id$="SearchFilter"]');
-                submit.click()
+                e.stopPropagation();
                 e.preventDefault();
+                if (e.key != 'Enter' || e.target.value === '') {
+                    return;
+                }
+
+                let submit = document.querySelector('#SearchFilter');
+                let clickEvent = new MouseEvent('click', {
+                    view: window,
+                    bubbles: true,
+                    cancelable: true,
+                });
+                submit.dispatchEvent(clickEvent);
             }
 									// use this script to enable live search. Its disabled for now for performance reasons
 									//	function submitSearch(e) {
