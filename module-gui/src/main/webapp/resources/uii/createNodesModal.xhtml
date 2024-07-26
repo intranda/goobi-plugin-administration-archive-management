@@ -30,7 +30,7 @@
                             <h3
                                 class="modal-title h6"
                                 id="createNodesModalTitle">
-                                #{msgs.plugin_administration_archive_createNodesModal}
+                                #{msgs.plugin_administration_archive_addMultipleNodes}
                             </h3>
                             <button
                                 jsf:id="closeBtnCreateNodes"
@@ -49,28 +49,14 @@
                         </div>
                         <h:form>
                             <div class="modal-body p-0">
-                                <p class="border-bottom m-0 p-2">
-                                    <h:outputText value="#{msgs.plugin_administration_createNodesModalDesciption}" />
+                                <p class="border-bottom m-2 p-2">
+                                    <h:outputText value="#{msgs.plugin_administration_archive_createNodesModalDesciption}" />
                                 </p>
-                                    <!-- number of nodes to add
-
-                                <intranda:formInputText
-                                    field="#{AdministrationForm.administrationPlugin.numberOfNodes}"
-                                    forceId="false"
-                                    help="#{msgs.helpnumberOfNodes}"
-                                    label="#{msgs.plugin_administration_numberOfNodes}"
-                                    name="numberOfNodes"
-                                    readonly="false"
-                                    required="true"
-                                    displayAsRequired="true" >
-                                    <f:validator validatorId="numberOfNodesValidator" for="customValidator" />
-                                </intranda:formInputText>
-                                -->
                                 <div class="form-row">
                                     <div class="form-label">
                                         <intranda:formLabel
                                             labelFor="numberOfNodes"
-                                            label="#{msgs.plugin_administration_numberOfNodes}"
+                                            label="#{msgs.plugin_administration_archive_numberOfNodes}"
                                             labelRequired="true" />
                                     </div>
                                     <div class="form-input">
@@ -82,7 +68,6 @@
                                             readonly="false"
                                             required="false">
                                             <!-- validation: value must be be a number greater than zero -->
-                                            <!-- TODO don't close modal, when validation fails -->
                                             <f:validator validatorId="numberOfNodesValidator" />
                                         </x:inputText>
                                         <h:message
@@ -99,7 +84,7 @@
                                     <div class="form-label">
                                         <intranda:formLabel
                                             labelFor="selectNodeType"
-                                            label="#{msgs.plugin_administration_nodeType}"
+                                            label="#{msgs.plugin_administration_archive_nodeType}"
                                             labelRequired="true" />
                                     </div>
                                     <div class="form-input">
