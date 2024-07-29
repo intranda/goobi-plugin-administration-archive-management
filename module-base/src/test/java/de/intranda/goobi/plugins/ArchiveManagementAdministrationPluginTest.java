@@ -1,32 +1,19 @@
 package de.intranda.goobi.plugins;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
-
+import de.intranda.goobi.plugins.model.EadEntry;
+import de.intranda.goobi.plugins.model.RecordGroup;
+import de.intranda.goobi.plugins.persistence.ArchiveManagementManager;
+import de.sub.goobi.config.ConfigurationHelper;
+import de.sub.goobi.helper.FacesContextHelper;
+import de.sub.goobi.helper.Helper;
+import de.sub.goobi.persistence.managers.ProcessManager;
+import io.goobi.workflow.api.vocabulary.VocabularyAPI;
+import io.goobi.workflow.api.vocabulary.VocabularyAPIManager;
+import io.goobi.workflow.api.vocabulary.VocabularyRecordAPI;
+import io.goobi.workflow.api.vocabulary.hateoas.VocabularyRecordPageResult;
+import io.goobi.workflow.api.vocabulary.helper.ExtendedVocabulary;
+import io.goobi.workflow.api.vocabulary.helper.ExtendedVocabularyRecord;
+import io.goobi.workflow.locking.LockingBean;
 import org.easymock.EasyMock;
 import org.goobi.beans.User;
 import org.goobi.interfaces.IEadEntry;
@@ -52,19 +39,31 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import de.intranda.goobi.plugins.model.EadEntry;
-import de.intranda.goobi.plugins.model.RecordGroup;
-import de.intranda.goobi.plugins.persistence.ArchiveManagementManager;
-import de.sub.goobi.config.ConfigurationHelper;
-import de.sub.goobi.helper.FacesContextHelper;
-import de.sub.goobi.helper.Helper;
-import de.sub.goobi.persistence.managers.ProcessManager;
-import io.goobi.vocabulary.exchange.Vocabulary;
-import io.goobi.workflow.api.vocabulary.VocabularyAPI;
-import io.goobi.workflow.api.vocabulary.VocabularyAPIManager;
-import io.goobi.workflow.api.vocabulary.VocabularyRecordAPI;
-import io.goobi.workflow.api.vocabulary.jsfwrapper.JSFVocabularyRecord;
-import io.goobi.workflow.locking.LockingBean;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ ConfigurationHelper.class, ArchiveManagementManager.class, VocabularyAPIManager.class, VocabularyAPI.class, ProcessManager.class,
@@ -172,7 +171,7 @@ public class ArchiveManagementAdministrationPluginTest {
         EasyMock.expect(VocabularyAPIManager.getInstance()).andReturn(vocabularyAPIManager).anyTimes();
 
         VocabularyAPI vocabularyAPI = EasyMock.createMock(VocabularyAPI.class);
-        Vocabulary vocabulary = EasyMock.createMock(Vocabulary.class);
+        ExtendedVocabulary vocabulary = EasyMock.createMock(ExtendedVocabulary.class);
         EasyMock.expect(vocabulary.getId()).andReturn(1l).anyTimes();
 
         EasyMock.expect(vocabularyAPIManager.vocabularies()).andReturn(vocabularyAPI).anyTimes();
@@ -181,10 +180,16 @@ public class ArchiveManagementAdministrationPluginTest {
         VocabularyRecordAPI vocabularyRecordAPI = EasyMock.createMock(VocabularyRecordAPI.class);
         EasyMock.expect(vocabularyAPIManager.vocabularyRecords()).andReturn(vocabularyRecordAPI).anyTimes();
 
-        JSFVocabularyRecord rec = EasyMock.createMock(JSFVocabularyRecord.class);
+        ExtendedVocabularyRecord rec = EasyMock.createMock(ExtendedVocabularyRecord.class);
         EasyMock.expect(rec.getMainValue()).andReturn("val").anyTimes();
 
-        EasyMock.expect(vocabularyRecordAPI.all(EasyMock.anyLong())).andReturn(Collections.singletonList(rec)).anyTimes();
+        VocabularyRecordPageResult recordPageResult = EasyMock.createMock(VocabularyRecordPageResult.class);
+        EasyMock.expect(recordPageResult.getContent()).andReturn(Collections.singletonList(rec)).anyTimes();
+
+        VocabularyRecordAPI.VocabularyRecordQueryBuilder queryBuilder = EasyMock.createMock(VocabularyRecordAPI.VocabularyRecordQueryBuilder.class);
+        EasyMock.expect(queryBuilder.request()).andReturn(recordPageResult).anyTimes();
+
+        EasyMock.expect(vocabularyRecordAPI.list(EasyMock.anyLong())).andReturn(queryBuilder).anyTimes();
 
         EasyMock.replay(vocabularyAPI, vocabularyRecordAPI, vocabulary, rec);
 

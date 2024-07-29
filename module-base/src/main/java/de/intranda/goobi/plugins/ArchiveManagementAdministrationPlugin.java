@@ -1,69 +1,5 @@
 package de.intranda.goobi.plugins;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
-
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
-import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
-import org.apache.commons.lang3.StringUtils;
-import org.goobi.beans.Batch;
-import org.goobi.beans.Process;
-import org.goobi.beans.Step;
-import org.goobi.beans.User;
-import org.goobi.interfaces.IArchiveManagementAdministrationPlugin;
-import org.goobi.interfaces.IConfiguration;
-import org.goobi.interfaces.IEadEntry;
-import org.goobi.interfaces.IFieldValue;
-import org.goobi.interfaces.IMetadataField;
-import org.goobi.interfaces.IMetadataGroup;
-import org.goobi.interfaces.INodeType;
-import org.goobi.interfaces.IParameter;
-import org.goobi.interfaces.IRecordGroup;
-import org.goobi.interfaces.IValue;
-import org.goobi.managedbeans.VocabularyRecordsBean;
-import org.goobi.model.ExtendendValue;
-import org.goobi.model.GroupValue;
-import org.goobi.production.cli.helper.StringPair;
-import org.goobi.production.enums.PluginType;
-import org.jdom2.Attribute;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.Namespace;
-import org.jdom2.Text;
-import org.jdom2.filter.Filters;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
-import org.jdom2.xpath.XPathExpression;
-import org.jdom2.xpath.XPathFactory;
-
 import de.intranda.goobi.plugins.model.DuplicationConfiguration;
 import de.intranda.goobi.plugins.model.DuplicationParameter;
 import de.intranda.goobi.plugins.model.EadEntry;
@@ -88,18 +24,54 @@ import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.validator.ExtendedDateTimeFormatLexer;
 import de.sub.goobi.validator.ExtendedDateTimeFormatParser;
 import io.goobi.vocabulary.exchange.FieldDefinition;
-import io.goobi.vocabulary.exchange.Vocabulary;
 import io.goobi.vocabulary.exchange.VocabularySchema;
 import io.goobi.workflow.api.vocabulary.APIException;
 import io.goobi.workflow.api.vocabulary.VocabularyAPIManager;
-import io.goobi.workflow.api.vocabulary.jsfwrapper.JSFVocabulary;
-import io.goobi.workflow.api.vocabulary.jsfwrapper.JSFVocabularyRecord;
+import io.goobi.workflow.api.vocabulary.helper.ExtendedVocabulary;
+import io.goobi.workflow.api.vocabulary.helper.ExtendedVocabularyRecord;
 import io.goobi.workflow.locking.LockingBean;
 import io.goobi.workflow.xslt.XsltToPdf;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
+import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
+import org.apache.commons.lang3.StringUtils;
+import org.goobi.beans.Batch;
+import org.goobi.beans.Process;
+import org.goobi.beans.Step;
+import org.goobi.beans.User;
+import org.goobi.interfaces.IArchiveManagementAdministrationPlugin;
+import org.goobi.interfaces.IConfiguration;
+import org.goobi.interfaces.IEadEntry;
+import org.goobi.interfaces.IFieldValue;
+import org.goobi.interfaces.IMetadataField;
+import org.goobi.interfaces.IMetadataGroup;
+import org.goobi.interfaces.INodeType;
+import org.goobi.interfaces.IParameter;
+import org.goobi.interfaces.IRecordGroup;
+import org.goobi.interfaces.IValue;
+import org.goobi.model.ExtendendValue;
+import org.goobi.model.GroupValue;
+import org.goobi.production.cli.helper.StringPair;
+import org.goobi.production.enums.PluginType;
+import org.jdom2.Attribute;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
+import org.jdom2.Text;
+import org.jdom2.filter.Filters;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
+import org.jdom2.xpath.XPathExpression;
+import org.jdom2.xpath.XPathFactory;
 import ugh.dl.DigitalDocument;
 import ugh.dl.DocStruct;
 import ugh.dl.Fileformat;
@@ -110,6 +82,30 @@ import ugh.dl.Prefs;
 import ugh.exceptions.DocStructHasNoTypeException;
 import ugh.exceptions.UGHException;
 import ugh.fileformats.mets.MetsMods;
+
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 @PluginImplementation
 @Log4j2
@@ -300,6 +296,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private String exportFolder;
 
     private transient VocabularyAPIManager vocabularyAPI = VocabularyAPIManager.getInstance();
+
+    @Getter
+    private ExtendedVocabularyRecord newRecord;
 
     @Getter
     @Setter
@@ -894,10 +893,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         List<String> iFieldValueList = new ArrayList<>();
 
         try {
-            Vocabulary vocabulary = vocabularyAPI.vocabularies().findByName(field.getVocabularyName());
+            ExtendedVocabulary vocabulary = vocabularyAPI.vocabularies().findByName(field.getVocabularyName());
             if (field.getSearchParameter().isEmpty()) {
-                List<JSFVocabularyRecord> records = vocabularyAPI.vocabularyRecords().all(vocabulary.getId());
-                for (JSFVocabularyRecord rec : records) {
+                List<ExtendedVocabularyRecord> records = vocabularyAPI.vocabularyRecords().list(vocabulary.getId())
+                        .all()
+                        .request()
+                        .getContent();
+                for (ExtendedVocabularyRecord rec : records) {
                     iFieldValueList.add(rec.getMainValue());
                 }
             } else {
@@ -926,10 +928,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     return;
                 }
 
-                List<JSFVocabularyRecord> records = vocabularyAPI.vocabularyRecords()
-                        .search(vocabulary.getId(), searchField.get().getId() + ":" + searchFieldValue)
+                List<ExtendedVocabularyRecord> records = vocabularyAPI.vocabularyRecords()
+                        .list(vocabulary.getId())
+                        .search(searchField.get().getId() + ":" + searchFieldValue)
+                        .request()
                         .getContent();
-                for (JSFVocabularyRecord rec : records) {
+                for (ExtendedVocabularyRecord rec : records) {
                     iFieldValueList.add(rec.getMainValue());
                 }
             }
@@ -3048,37 +3052,19 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     public void initializeRecord() {
-
-        VocabularyRecordsBean recordsBean = Helper.getBeanByClass(VocabularyRecordsBean.class);
-
-        JSFVocabulary vocabulary = null;
         try {
-            List<JSFVocabulary> records = vocabularyAPI.vocabularies().all();
-            for (JSFVocabulary rec : records) {
-                if (rec.getName().equals(vocabularyField.getVocabularyName())) {
-                    vocabulary = rec;
-                    break;
-                }
-            }
+            ExtendedVocabulary vocabulary = vocabularyAPI.vocabularies().findByName(vocabularyField.getVocabularyName());
+            newRecord = vocabularyAPI.vocabularyRecords().createEmptyRecord(vocabulary.getId(), null, false);
         } catch (Exception e) {
+            // configured vocabulary does not exist or vocabulary server is down
+            newRecord = null;
             displayVocabularyModal = false;
-
         }
-        // configured vocabulary does not exist or vocabulary server is down
-        if (vocabulary == null) {
-            displayVocabularyModal = false;
-            return;
-
-        }
-        recordsBean.load(vocabulary);
-        recordsBean.createEmpty(null);
-
     }
 
     public void addEntry() {
         // save new record
-        VocabularyRecordsBean recordsBean = Helper.getBeanByClass(VocabularyRecordsBean.class);
-        recordsBean.saveRecord(recordsBean.getCurrentRecord());
+        vocabularyAPI.vocabularyRecords().save(newRecord);
 
         // populate new item list
         loadVocabulary(vocabularyField);
