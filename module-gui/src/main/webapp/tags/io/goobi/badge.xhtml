@@ -9,7 +9,8 @@
     xmlns:x="http://myfaces.apache.org/tomahawk">
     <h:body>
         <ui:composition>
-            <span class="badge #{styleclassname} #{item.valid ? '' : 'invalid'}">
+        <!--#{styleclassname} -->
+            <span class="badge  #{item.valid ? styleclassname : 'badge-inverse-light-red'}">
                 <h:commandLink
                     action="#{item.addValue}"
                     rendered="#{item.repeatable and item.showField and not item.group}"
