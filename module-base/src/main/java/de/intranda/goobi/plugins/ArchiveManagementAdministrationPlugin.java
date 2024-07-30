@@ -892,19 +892,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     private void loadVocabulary(IMetadataField field) {
-        List<String> iFieldValueList = new ArrayList<>();
+        List<String> iFieldValueList = Collections.emptyList();
 
         try {
             ExtendedVocabulary vocabulary = vocabularyAPI.vocabularies().findByName(field.getVocabularyName());
             if (field.getSearchParameter().isEmpty()) {
-                List<ExtendedVocabularyRecord> records = vocabularyAPI.vocabularyRecords()
-                        .list(vocabulary.getId())
-                        .all()
-                        .request()
-                        .getContent();
-                for (ExtendedVocabularyRecord rec : records) {
-                    iFieldValueList.add(rec.getMainValue());
-                }
+                iFieldValueList = vocabularyAPI.vocabularyRecords()
+                        .getRecordMainValues(vocabulary.getId());
             } else {
                 if (field.getSearchParameter().size() > 1) {
                     Helper.setFehlerMeldung("vocabularyList with multiple fields is not supported right now");
@@ -931,20 +925,15 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     return;
                 }
 
-                List<ExtendedVocabularyRecord> records = vocabularyAPI.vocabularyRecords()
-                        .list(vocabulary.getId())
-                        .search(searchField.get().getId() + ":" + searchFieldValue)
-                        .request()
-                        .getContent();
-                for (ExtendedVocabularyRecord rec : records) {
-                    iFieldValueList.add(rec.getMainValue());
-                }
+                iFieldValueList = vocabularyAPI.vocabularyRecords()
+                        .getRecordMainValues(vocabularyAPI.vocabularyRecords()
+                                .list(vocabulary.getId())
+                                .search(searchField.get().getId() + ":" + searchFieldValue));
             }
         } catch (APIException e) {
             log.error(e);
             field.setVocabularyName(null);
         }
-        Collections.sort(iFieldValueList);
         field.setSelectItemList(iFieldValueList);
     }
 
