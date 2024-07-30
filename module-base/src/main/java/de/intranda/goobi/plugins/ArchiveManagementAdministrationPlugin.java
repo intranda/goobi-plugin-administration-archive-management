@@ -1,40 +1,30 @@
 package de.intranda.goobi.plugins;
 
-import de.intranda.goobi.plugins.model.DuplicationConfiguration;
-import de.intranda.goobi.plugins.model.DuplicationParameter;
-import de.intranda.goobi.plugins.model.EadEntry;
-import de.intranda.goobi.plugins.model.EadMetadataField;
-import de.intranda.goobi.plugins.model.FieldValue;
-import de.intranda.goobi.plugins.model.NodeType;
-import de.intranda.goobi.plugins.model.RecordGroup;
-import de.intranda.goobi.plugins.model.TitleComponent;
-import de.intranda.goobi.plugins.persistence.ArchiveManagementManager;
-import de.sub.goobi.config.ConfigurationHelper;
-import de.sub.goobi.helper.BeanHelper;
-import de.sub.goobi.helper.FacesContextHelper;
-import de.sub.goobi.helper.Helper;
-import de.sub.goobi.helper.ProcessTitleGenerator;
-import de.sub.goobi.helper.ScriptThreadWithoutHibernate;
-import de.sub.goobi.helper.XmlTools;
-import de.sub.goobi.helper.enums.ManipulationType;
-import de.sub.goobi.helper.enums.StepStatus;
-import de.sub.goobi.helper.exceptions.DAOException;
-import de.sub.goobi.persistence.managers.MetadataManager;
-import de.sub.goobi.persistence.managers.ProcessManager;
-import de.sub.goobi.validator.ExtendedDateTimeFormatLexer;
-import de.sub.goobi.validator.ExtendedDateTimeFormatParser;
-import io.goobi.vocabulary.exchange.FieldDefinition;
-import io.goobi.vocabulary.exchange.VocabularySchema;
-import io.goobi.workflow.api.vocabulary.APIException;
-import io.goobi.workflow.api.vocabulary.VocabularyAPIManager;
-import io.goobi.workflow.api.vocabulary.helper.ExtendedVocabulary;
-import io.goobi.workflow.api.vocabulary.helper.ExtendedVocabularyRecord;
-import io.goobi.workflow.locking.LockingBean;
-import io.goobi.workflow.xslt.XsltToPdf;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
-import net.xeoh.plugins.base.annotations.PluginImplementation;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
+
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -72,6 +62,42 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
+
+import de.intranda.goobi.plugins.model.DuplicationConfiguration;
+import de.intranda.goobi.plugins.model.DuplicationParameter;
+import de.intranda.goobi.plugins.model.EadEntry;
+import de.intranda.goobi.plugins.model.EadMetadataField;
+import de.intranda.goobi.plugins.model.FieldValue;
+import de.intranda.goobi.plugins.model.NodeType;
+import de.intranda.goobi.plugins.model.RecordGroup;
+import de.intranda.goobi.plugins.model.TitleComponent;
+import de.intranda.goobi.plugins.persistence.ArchiveManagementManager;
+import de.sub.goobi.config.ConfigurationHelper;
+import de.sub.goobi.helper.BeanHelper;
+import de.sub.goobi.helper.FacesContextHelper;
+import de.sub.goobi.helper.Helper;
+import de.sub.goobi.helper.ProcessTitleGenerator;
+import de.sub.goobi.helper.ScriptThreadWithoutHibernate;
+import de.sub.goobi.helper.XmlTools;
+import de.sub.goobi.helper.enums.ManipulationType;
+import de.sub.goobi.helper.enums.StepStatus;
+import de.sub.goobi.helper.exceptions.DAOException;
+import de.sub.goobi.persistence.managers.MetadataManager;
+import de.sub.goobi.persistence.managers.ProcessManager;
+import de.sub.goobi.validator.ExtendedDateTimeFormatLexer;
+import de.sub.goobi.validator.ExtendedDateTimeFormatParser;
+import io.goobi.vocabulary.exchange.FieldDefinition;
+import io.goobi.vocabulary.exchange.VocabularySchema;
+import io.goobi.workflow.api.vocabulary.APIException;
+import io.goobi.workflow.api.vocabulary.VocabularyAPIManager;
+import io.goobi.workflow.api.vocabulary.helper.ExtendedVocabulary;
+import io.goobi.workflow.api.vocabulary.helper.ExtendedVocabularyRecord;
+import io.goobi.workflow.locking.LockingBean;
+import io.goobi.workflow.xslt.XsltToPdf;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+import net.xeoh.plugins.base.annotations.PluginImplementation;
 import ugh.dl.DigitalDocument;
 import ugh.dl.DocStruct;
 import ugh.dl.Fileformat;
@@ -82,30 +108,6 @@ import ugh.dl.Prefs;
 import ugh.exceptions.DocStructHasNoTypeException;
 import ugh.exceptions.UGHException;
 import ugh.fileformats.mets.MetsMods;
-
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 
 @PluginImplementation
 @Log4j2
@@ -298,7 +300,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private transient VocabularyAPIManager vocabularyAPI = VocabularyAPIManager.getInstance();
 
     @Getter
-    private ExtendedVocabularyRecord newRecord;
+    private transient ExtendedVocabularyRecord newRecord;
 
     @Getter
     @Setter
@@ -895,7 +897,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         try {
             ExtendedVocabulary vocabulary = vocabularyAPI.vocabularies().findByName(field.getVocabularyName());
             if (field.getSearchParameter().isEmpty()) {
-                List<ExtendedVocabularyRecord> records = vocabularyAPI.vocabularyRecords().list(vocabulary.getId())
+                List<ExtendedVocabularyRecord> records = vocabularyAPI.vocabularyRecords()
+                        .list(vocabulary.getId())
                         .all()
                         .request()
                         .getContent();

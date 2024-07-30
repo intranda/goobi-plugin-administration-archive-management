@@ -215,7 +215,6 @@
 
         <metadata xpath="(./ead:archdesc/ead:userestrict/ead:p | ./ead:userestrict/ead:p)[1]" xpathType="element" name="userestrict" level="4" repeatable="false" fieldType="dropdown"
             importMetadataInChild="true" rulesetName="UseRestriction">
-            <!-- TODO use vocabulary -->
             <value>CC0 1.0</value>
             <value>CC BY 4.0</value>
             <value>CC BY-SA 4.0</value>
@@ -237,9 +236,6 @@
             <value>handwritten</value>
             <value>mixed</value>
             <value>no text</value>
-            <!--
-        <vocabulary>Schrift</vocabulary>
-        -->
         </metadata>
 
         <metadata xpath="(./ead:archdesc/ead:phystech/ead:p | ./ead:phystech/ead:p)" xpathType="element" name="phystech" level="4" repeatable="false" fieldType="textarea" rulesetName="PhysTech" />
