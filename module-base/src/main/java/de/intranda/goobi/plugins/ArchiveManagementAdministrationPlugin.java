@@ -297,7 +297,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Getter
     private String exportFolder;
 
-    private transient VocabularyAPIManager vocabularyAPI = VocabularyAPIManager.getInstance();
+    private transient VocabularyAPIManager vocabularyAPI = null;
 
     @Getter
     private transient ExtendedVocabularyRecord newRecord;
@@ -310,6 +310,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * Constructor
      */
     public ArchiveManagementAdministrationPlugin() {
+        try {
+            vocabularyAPI = VocabularyAPIManager.getInstance();
+        } catch (APIException e) {
+            // api is not running
+        }
+
         try {
             xmlConfig = new XMLConfiguration(
                     ConfigurationHelper.getInstance().getConfigurationFolder() + "plugin_intranda_administration_archive_management.xml");
@@ -893,45 +899,48 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     private void loadVocabulary(IMetadataField field) {
         List<String> iFieldValueList = Collections.emptyList();
+        if (vocabularyAPI != null) {
+            try {
+                ExtendedVocabulary vocabulary = vocabularyAPI.vocabularies().findByName(field.getVocabularyName());
+                if (field.getSearchParameter().isEmpty()) {
+                    iFieldValueList = vocabularyAPI.vocabularyRecords()
+                            .getRecordMainValues(vocabulary.getId());
+                } else {
+                    if (field.getSearchParameter().size() > 1) {
+                        Helper.setFehlerMeldung("vocabularyList with multiple fields is not supported right now");
+                        return;
+                    }
 
-        try {
-            ExtendedVocabulary vocabulary = vocabularyAPI.vocabularies().findByName(field.getVocabularyName());
-            if (field.getSearchParameter().isEmpty()) {
-                iFieldValueList = vocabularyAPI.vocabularyRecords()
-                        .getRecordMainValues(vocabulary.getId());
-            } else {
-                if (field.getSearchParameter().size() > 1) {
-                    Helper.setFehlerMeldung("vocabularyList with multiple fields is not supported right now");
-                    return;
+                    String[] parts = field.getSearchParameter().get(0).trim().split("=");
+                    if (parts.length != 2) {
+                        Helper.setFehlerMeldung("Wrong field format");
+                        return;
+                    }
+
+                    String searchFieldName = parts[0];
+                    String searchFieldValue = parts[1];
+
+                    VocabularySchema schema = vocabularyAPI.vocabularySchemas().get(vocabulary.getSchemaId());
+                    Optional<FieldDefinition> searchField = schema.getDefinitions()
+                            .stream()
+                            .filter(d -> d.getName().equals(searchFieldName))
+                            .findFirst();
+
+                    if (searchField.isEmpty()) {
+                        Helper.setFehlerMeldung("Field " + searchFieldName + " not found in vocabulary " + vocabulary.getName());
+                        return;
+                    }
+
+                    iFieldValueList = vocabularyAPI.vocabularyRecords()
+                            .getRecordMainValues(vocabularyAPI.vocabularyRecords()
+                                    .list(vocabulary.getId())
+                                    .search(searchField.get().getId() + ":" + searchFieldValue));
                 }
-
-                String[] parts = field.getSearchParameter().get(0).trim().split("=");
-                if (parts.length != 2) {
-                    Helper.setFehlerMeldung("Wrong field format");
-                    return;
-                }
-
-                String searchFieldName = parts[0];
-                String searchFieldValue = parts[1];
-
-                VocabularySchema schema = vocabularyAPI.vocabularySchemas().get(vocabulary.getSchemaId());
-                Optional<FieldDefinition> searchField = schema.getDefinitions()
-                        .stream()
-                        .filter(d -> d.getName().equals(searchFieldName))
-                        .findFirst();
-
-                if (searchField.isEmpty()) {
-                    Helper.setFehlerMeldung("Field " + searchFieldName + " not found in vocabulary " + vocabulary.getName());
-                    return;
-                }
-
-                iFieldValueList = vocabularyAPI.vocabularyRecords()
-                        .getRecordMainValues(vocabularyAPI.vocabularyRecords()
-                                .list(vocabulary.getId())
-                                .search(searchField.get().getId() + ":" + searchFieldValue));
+            } catch (APIException e) {
+                log.error(e);
+                field.setVocabularyName(null);
             }
-        } catch (APIException e) {
-            log.error(e);
+        } else {
             field.setVocabularyName(null);
         }
         field.setSelectItemList(iFieldValueList);
