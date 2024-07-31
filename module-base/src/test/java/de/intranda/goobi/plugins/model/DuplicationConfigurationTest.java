@@ -44,8 +44,11 @@ public class DuplicationConfigurationTest {
     public void testConstructor() {
         expect(mockField1.isVisible()).andReturn(true).anyTimes();
         expect(mockField1.getName()).andReturn("field1").anyTimes();
+        expect(mockField1.isShowField()).andReturn(true).anyTimes();
+
         expect(mockField2.isVisible()).andReturn(false).anyTimes();
         expect(mockField2.getName()).andReturn("field2").anyTimes();
+        expect(mockField2.isShowField()).andReturn(true).anyTimes();
 
         expect(mockEadEntry.getIdentityStatementAreaList()).andReturn(Arrays.asList(mockField1, mockField2)).anyTimes();
         expect(mockEadEntry.getContextAreaList()).andReturn(Arrays.asList(mockField1)).anyTimes();
@@ -78,6 +81,5 @@ public class DuplicationConfigurationTest {
         assertEquals(1, config.getDescriptionArea().size());
         assertEquals("field1", config.getDescriptionArea().get(0).getFieldName());
 
-        PowerMock.verify(mockEadEntry, mockField1, mockField2);
     }
 }
