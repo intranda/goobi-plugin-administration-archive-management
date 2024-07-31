@@ -164,8 +164,6 @@ public class ArchiveManagementAdministrationPluginTest {
         EasyMock.expect(ConfigurationHelper.getInstance()).andReturn(configurationHelper).anyTimes();
         EasyMock.expect(configurationHelper.getConfigurationFolder()).andReturn(resourcesFolder).anyTimes();
         EasyMock.expect(configurationHelper.useS3()).andReturn(false).anyTimes();
-        EasyMock.expect(configurationHelper.getVocabularyServerHost()).andReturn("").anyTimes();
-        EasyMock.expect(configurationHelper.getVocabularyServerPort()).andReturn(0).anyTimes();
 
         PowerMock.mockStatic(VocabularyAPIManager.class);
         VocabularyAPIManager vocabularyAPIManager = EasyMock.createMock(VocabularyAPIManager.class);
