@@ -192,6 +192,7 @@ public class ArchiveManagementAdministrationPluginTest {
 
         EasyMock.expect(vocabularyRecordAPI.list(EasyMock.anyLong())).andReturn(queryBuilder).anyTimes();
 
+        EasyMock.expect(vocabularyRecordAPI.getRecordMainValues(EasyMock.anyLong())).andReturn(Collections.singletonList("val")).anyTimes();
         EasyMock.replay(vocabularyAPI, vocabularyRecordAPI, vocabulary, rec);
 
         PowerMock.mockStatic(ProcessManager.class);
