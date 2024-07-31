@@ -153,6 +153,7 @@ Es können auch mehrere Validierungsregeln kombiniert werden, zum Beispiel `uniq
 ```
 
 ![Verknüpfung](screen16_de.png)
+
 ![Auswahl des Knotens](screen17_de.png)
 
 
@@ -193,6 +194,6 @@ In der Standardeinstellung sind die einzelnen Bereiche 1. `Identifikation`, 2. `
 
 Die beiden Elemente `<eadNamespaceRead>` und `<eadNamespaceWrite>` legen fest, welche XML Namespaces zum lesen und schreiben von EAD Dokumenten verwendet werden sollen. Üblicherweise enthalten beide den gleichen Wert. Es können jedoch auch EAD2 Dokumente gelesen und als EAD3 Dokumente exportiert werden. Dann müssen die entsprechenden Namespaces definiert werden und bei den xpath Ausdrücken der einzelnen Metadaten darauf geachtet werden, dass beide Varianten angeggeben sind. Daher ist es einfacher, den beigelegten Konverter zu nutzen und die Konvertierung von EAD2 nach EAD3 vor dem einspielen der Dokumente zu machen.
 
-* Namespace für ead2 (deprecated): urn:isbn:1-931666-22-9
-* Namespace für ead3 (aktuell): http://ead3.archivists.org/schema/
-* Namespace für ead4 (im draft Status): https://archivists.org/ns/ead/v4
+- Namespace für ead2 (deprecated): urn:isbn:1-931666-22-9
+- Namespace für ead3 (aktuell): http://ead3.archivists.org/schema/
+- Namespace für ead4 (im draft Status): https://archivists.org/ns/ead/v4

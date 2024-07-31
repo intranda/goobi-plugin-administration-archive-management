@@ -14,7 +14,7 @@ Die vorliegende Dokumentation beschreibt die Installation, die Konfiguration und
 Das Plugin besteht insgesamt aus den folgenden zu installierenden Dateien
 
 ```bash
-administration/plugin-administration-archive-management-base.jar
+plugin-administration-archive-management-base.jar
 plugin-administration-archive-management-gui.jar
 plugin-administration-archive-management-job.jar
 plugin-administration-archive-management-lib.jar
@@ -92,19 +92,19 @@ Im linken Bereich der Bearbeitungsmaske lässt sich die Struktur des Archivbesta
 | `In der Hierarchie nach unten bewegen` | Mit dieserm Button ist es möglich, den ausgewählten Knoten auf eine tiefere Hierarchiestufe zu verschieben. |
 | `In der Hierarchie nach oben bewegen` | Mit dieserm Button ist es möglich, den ausgewählten Knoten auf eine höhere Hierarchiestufe zu verschieben. |
 | `Knoten an andere Stelle bewegen` | Mit dieser Funktion öffnet sich eine andere Bearbeitungsmaske, die es ermöglicht, den aktuell ausgewählten Knoten an einer ganz andere Stelle des Hierarchiebaums zu verschieben. Hierbei wird die komplette Hierarchie angezeigt, so dass derjenige Knoten ausgewählt werden kann, innerhalb dem der ausgewählte Knoten als Unterknoten eingefügt werden soll. |
-| `Knoten duplizieren` | Öffnet ein Popup, in dem bei ausgewählten Metadaten (Attribute visible und ) ein Präfix oder Suffix festgelegt werden kann. Dupliziert den ausgewählten Knoten und alle Kindelemente und fügt den neuen Metadaten die angegebenen Präfixe und Suffixe hinzu.|
+| `Knoten duplizieren` | Öffnet ein Popup, in dem bei ausgewählten Metadaten (Attribute visible und showField) ein Präfix oder Suffix festgelegt werden kann. Dupliziert den ausgewählten Knoten und alle Kindelemente und fügt den neuen Metadaten die angegebenen Präfixe und Suffixe hinzu.|
 
 ![Mehrere Knoten einfügen](screen11_de.png)
 
-Um mehrere Unterknoten auf einmal zu generieren, muss die Anzahl der zu erstellenden Knoten und der Typ festgelegt werden. Anschließend können verschiedene Metadaten definiert werden, die in alle neuen Knoten eingetragen werden. Dabei kann entweder ein gleichartiger Text in allen Feldern genutzt werden, ein Identifier generiert werden oder ein Text mit anschließendem Zähler generiert werden. Hierbei lässt sich das Zählerformat und der Startwert festlegen.
+Um mehrere Unterknoten auf einmal zu generieren, muss die Anzahl der zu erstellenden Knoten und der Typ festgelegt werden. Anschließend können verschiedene Metadaten definiert werden, die in alle neuen Knoten eingetragen werden. Dabei kann entweder der gleiche Text in allen Feldern genutzt werden, ein Identifier generiert werden oder ein Text mit anschließendem Zähler generiert werden. Hierbei lässt sich das Zählerformat und der Startwert festlegen.
  
 ![Suche innerhalb des Bestandes](screen07_de.png)
 
-Im oberen Bereich der Hierarchieanzeige kann darüber hinaus auch eine Suche innerhalb der Metadaten der Knoten erfolgen. Dabei werden die gefundenen Knoten samt Hierarchie angezeigt und farbig hervorgehoben. Um die Suche wieder zurückzusetzen genügt es, den Inhalt des Suchbegriffs wieder zu leeren und entsprechen eine leere Suche auszuführen. 
+Im oberen Bereich der Hierarchieanzeige kann darüber hinaus auch eine Suche innerhalb der Metadaten der Knoten erfolgen. Dabei werden die gefundenen Knoten samt Hierarchie angezeigt und farbig hervorgehoben. Um die Suche wieder zurückzusetzen genügt es, den Inhalt des Suchbegriffs wieder zu leeren und entsprechen eine leere Suche auszuführen. Alternativ kann der Button auf der linken Seite des Suchfelds genutzt werden.
 
 ![Erweiterte Suche](screen10_de.png)
 
-Alternativ kann der Button auf der linken Seite des Suchfelds genutzt werden. Rechts neben dem Feld kann die erweiterte Suche genutzt werden. Hier kann geziehlt in einzelnen Feldern gesucht werden. Welche Felder zur Verfügung stehen, kann über die Konfigurationsdatei gesteuert werden (Attribut `searchable="true"` innerhalb von `<metadata>`).
+Rechts neben dem Feld kann die erweiterte Suche genutzt werden. Hier kann geziehlt in einzelnen Feldern gesucht werden. Welche Felder zur Verfügung stehen, kann über die Konfigurationsdatei gesteuert werden (Attribut `searchable="true"` innerhalb von `<metadata>`).
 
 
 ### Bearbeitung eines ausgewählten Knotens
@@ -146,7 +146,7 @@ Sofern die Bearbeitung nicht nur im read only Modus erfolgt, werden Daten immer 
 
 ### Kopie, Export und Download
 
-Sofern man über die Berechtigung zur Erstellung neuer Bestände verfügt, kann man eine Kopie des aktuellen Bestandes erstellen. Dabei wird ein neuer Bestand erstellt und alle Knoten mit all ihren Metadaten kopiert. Einzige Ausnahme ist die ID der Knoten, diese werden automatisch neue erstellt. 
+Sofern man über die Berechtigung zur Erstellung neuer Bestände verfügt, kann man eine Kopie des aktuellen Bestandes erstellen. Dabei wird ein neuer Bestand erstellt und alle Knoten mit all ihren Metadaten kopiert. Einzige Ausnahme ist die ID der Knoten, es werden automatisch neue erstellt. 
 
 Die beiden Buttons zum `Download als EAD Datei` und `Viewer export` erzeugen eine neue EAD auf Basis des aktuellen Zustandes der Knoten. Dabei wird mit Ausnahme des obersten Knoten jeder Knoten als eigentständiges `<c>`-Element dargestellt. Die Daten des obersten Knoten werden innerhalb von `<archdesc>` unterhalb des `<ead>` Elements geschrieben. Beim Viewer export wird die erzeugte Datei in den hotfolder geschrieben, beim Download kann sie lokal gespeichert werden. Die Datei enthält dabei alle Metadaten in der Form, in der sie in der Konfigurationsdatei angegeben wurden. Dabei wird der Inhalt des `xpath` Attributs der Metadaten genutzt. Wenn für ein Feld keine Angabe existiert, handelt es sich um ein intenes Metadatum, das nicht als EAD exportiert wird.
 

@@ -6,7 +6,7 @@ published: true
 ---
 
 ## Introduction
-This documentation describes the installation, configuration and use of the Administration Plugin for managing archive records from within Goobi workflow. In doing so, the data of several records is stored within standardized EAD files, allowing even small archives to manage their data in a standardised way without the need to start using third-party software for which a fee is charged.
+This documentation describes the installation, configuration and use of the Administration Plugin for managing archive records from within Goobi workflow. In doing so, the data of several inventories is stored within standardized files, allowing even small archives to manage their data in a standardised way without the need to start using third-party software for which a fee is charged. Export as standardised EAD files is possible at any time and can also be carried out automatically at regular intervals.
 
 
 ## Installation
@@ -15,15 +15,20 @@ This documentation describes the installation, configuration and use of the Admi
 The plugin consists in total of the following files to be installed
 
 ```bash
-plugin_intranda_administration_archive_management.jar
-plugin_intranda_administration_archive_management-GUI.jar
+plugin-administration-archive-management-base.jar
+plugin-administration-archive-management-gui.jar
+plugin-administration-archive-management-job.jar
+plugin-administration-archive-management-lib.jar
+plugin_intranda_administration_archive_management.xml
 ```
 
 These files must be installed in the correct directories so that they are available in the following paths after installation:
 
 ```bash
-/opt/digiverso/goobi/plugins/administration/plugin_intranda_administration_archive_management.jar
-/opt/digiverso/goobi/plugins/GUI/plugin_intranda_administration_archive_management-GUI.jar
+/opt/digiverso/goobi/plugins/administration/plugin-administration-archive-management-base.jar
+/opt/digiverso/goobi/plugins/GUI/plugin-administration-archive-management-gui.jar
+/opt/digiverso/goobi/plugins/GUI/plugin-administration-archive-management-job.jar
+/opt/digiverso/goobi/plugins/GUI/plugin-administration-archive-management-lib.jar
 ```
 
 Furthermore, the plugin needs an additional configuration file, which must be located at the following location:
@@ -31,14 +36,6 @@ Furthermore, the plugin needs an additional configuration file, which must be lo
 ```bash
 /opt/digiverso/goobi/config/plugin_intranda_administration_archive_management.xml
 ```
-
-### Installing the BaseX database
-The plugin reads and writes standardised EAD files. The XML database BaseX is used for this purpose, within which the EAD files are stored and indexed, so that this processing of the data can take place with high performance. The prerequisite for the installation of BaseX is Java 1.8. The commissioning of this database is carried out somewhat differently depending on the intended use, depending on whether the plugin is to be installed for productive operation or for further development.
-
-[Installation for productive operation](page_01_en.md)
-
-[Installation for developers](page_02_en.md)
-
 
 ## Overview and functionality
 The plugin for editing archive records can be found below the menu item 'Administration'.
@@ -56,6 +53,10 @@ The corresponding rights must therefore first be assigned to the respective user
 
 After the required rights have been assigned and, if necessary, a new login has been made, the plugin can be used.
 
+The user initially only has read access. In order to be able to change data, the `Plugin_Administration_Archive_Management_Write` right must be assigned. With the right `Plugin_Administration_Archive_Management_Upload` the upload of EAD files is possible, `Plugin_Administration_Archive_Management_New` allows the creation of new inventories and with `Plugin_Administration_Archive_Management_Vocabulary` the option to expand lists is enabled if these are filled using a vocabulary.
+
+To allow a user group access to individual inventories, the permission `Plugin_Administration_Archive_Management_Inventory_NAME` can be assigned, whereby the suffix NAME must be replaced by the name of the inventory. If access to all inventories is to be permitted instead, the permission `Plugin_Administration_Archive_Management_All_Inventories` can be used.
+
 ### Selection of existing EAD file
 After the plugin has been opened, a list of the available archive records is displayed first. Here, the user can select an archive file and start editing it.
 
@@ -64,6 +65,10 @@ After the plugin has been opened, a list of the available archive records is dis
 Alternatively, a new archive file can also be created. In this case, the desired XML database within which the new archive file is to be created must first be selected. A name must also be assigned here.
 
 ![Creating a new archive file](screen04_en.png)
+
+The third option is to import an existing file. An EAD file can be selected and uploaded here. If no inventory with the name of the file exists yet, the file is imported as a new inventory and opened directly. If the name is already in use, the existing inventory can be overwritten with the content of the EAD-XML file after a query.
+
+![Import an EAD file](screen08_en.png)
 
 After selecting the archive file to be edited, you will be forwarded to the editing screen. Here, the structure tree can be edited in the left-hand area. In the right-hand area, the details of the selected node can be edited..
 
@@ -77,6 +82,9 @@ In the left-hand area of the editing screen, the structure of the archive file c
 | Function | Explanation |
 | :--- | :--- |
 | `Insert new node` | With this button, a new node can be added as a sub-node to the end of the already existing sub-nodes. |
+| `Insert multiple subnodes at this position` | Opens a pop-up in which a number of nodes can be created.|
+| `Update references to processes` | Checks whether processes exist for the nodes in the inventory. Updates the references if necessary. |
+| `Create missing processes for all lowest level subnodes` |Generates processes for the selected node and all children if none exist. |
 | `Delete node` | With this function the selected node including all sub-nodes can be deleted. This function cannot be used at the level of the main node. |
 | `Execute validation` | With this function, a validation of the selected node can be carried out. Violations of the configured validation specifications are listed accordingly. |
 | `Move up` | This button allows moving the selected node up within the same hierarchy level. |
@@ -84,10 +92,19 @@ In the left-hand area of the editing screen, the structure of the archive file c
 | `Move down the hierarchy` | With this button it is possible to move the selected node to a lower hierarchy level. |
 | `Move up the hierarchy` | With this button it is possible to move the selected node to a higher hierarchy level. |
 | `Mode node to another location` | This function opens another editing screen that makes it possible to move the currently selected node to a completely different position in the hierarchy tree. The complete hierarchy is displayed so that the node can be selected within which the selected node is to be inserted as a sub-node. |
+| `Duplicate node` | This opens a pop-up in which a prefix or suffix can be specified for selected metadata (attributes visible and showField). Duplicates the selected node and all child elements and adds the specified prefixes and suffixes to the new metadata.|
+
+![Add multiple nodes](screen11_en.png)
+
+To generate several sub-nodes at once, the number of nodes to be created and the type must be defined. Various metadata can then be defined and entered in all new nodes. Either the same text can be used in all fields, an identifier can be generated or a text with a subsequent counter can be generated. The counter format and the start value can be defined here.
 
 ![Search within the inventory](screen07_en.png)
 
-In the upper area of the hierarchy display, a search can also be made within the titles of the nodes. The nodes found, including the hierarchy, are displayed and highlighted in colour. To reset the search, it is sufficient to empty the content of the search term again and perform an empty search accordingly.
+In the upper area of the hierarchy display, a search can also be made within the metadata of the nodes. The nodes found, including the hierarchy, are displayed and highlighted in colour. To reset the search, it is sufficient to empty the content of the search term again and perform an empty search accordingly. Alternatively, you can use the button on the left-hand side of the search field.
+
+![Advanced search](screen10_en.png)
+
+The advanced search can be used to the right of the field. Individual fields can be searched for here. Which fields are available can be controlled via the configuration file (attribute `searchable=‘true’` within `<metadata>`).
 
 ### Editing a selected node
 If a node has been selected in the left-hand area, the details of the selected node are displayed in the right-hand area.
@@ -122,11 +139,15 @@ Both the button 'Download as EAD file' and the button 'Execute validation' ensur
 
 A failed validation does not prevent the archive file from being saved or Goobi processes from being created.
 
-### Download the EAD file and save the data
-The two buttons for `Download as EAD file` and `Save and exit archive group` create a new EAD based on the current state of the nodes. With the exception of the top node, each node is represented as an independent `<c>` element. The top node data is written within `<archdesc>` below the `<ead>` element.
+### Saving the data
 
-In addition to the captured metadata, a new `create` or `modified event` including date and user information is created and added to the list of events. When the archive is saved, the current state is also automatically exported to the XML database.
+Unless editing is carried out in read-only mode, data is always saved automatically when you insert or delete nodes, switch to another node, export the database, create a copy of it or create links or end editing by saving and exiting.
 
+### Copy, Export and Download
+
+If you have authorisation to create new inventories, you can create a copy of the current inventory. This involves creating a new inventory and copying all nodes with all their metadata. The only exception is the ID of the nodes; new ones are created automatically. 
+
+The two buttons for `Download as EAD file` and `Viewer export` generate a new EAD based on the current status of the nodes. With the exception of the top node, each node is displayed as an independent `<c>` element. The data of the top node is written within `<archdesc>` below the `<ead>` element. During viewer export, the generated file is written to the hotfolder; during download, it can be saved locally. The file contains all metadata in the form in which it was specified in the configuration file. The content of the `xpath` attribute of the metadata is used. If there is no entry for a field, it is an intensive metadata that is not exported as an EAD.
 
 ## Configuration
 After the installation has been completed, the configuration of the plugin and the corresponding interface can take place. This is described in detail on the following page:
