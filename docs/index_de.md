@@ -6,7 +6,7 @@ published: true
 ---
 
 ## Einführung
-Die vorliegende Dokumentation beschreibt die Installation, die Konfiguration und den Einsatz des Administration Plugins für die Verwaltung von Archivbeständen aus Goobi workflow heraus. Dabei werden die Daten mehrerer Bestände verwaltet und erlauben auch kleinen Archiven eine standardisierte Datenerfassung ohne Inbetriebnahme einer kostenpflichtigen Drittsoftware. Der Exort als standardisierten EAD-Dateien ist jederzeit möglich und kann auch automatisch in regelmäßigen Abständen durchgeführt werden.
+Die vorliegende Dokumentation beschreibt die Installation, die Konfiguration und den Einsatz des Administration Plugins für die Verwaltung von Archivbeständen aus Goobi workflow heraus. Dabei werden die Daten mehrerer Bestände verwaltet und erlauben auch kleinen Archiven eine standardisierte Datenerfassung ohne Inbetriebnahme einer kostenpflichtigen Drittsoftware. Der Export als standardisierte EAD-Dateien ist jederzeit möglich und kann auch automatisch in regelmäßigen Abständen durchgeführt werden.
 
 ## Installation
 
