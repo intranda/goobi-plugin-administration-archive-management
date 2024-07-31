@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:x="http://myfaces.apache.org/tomahawk"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:goobiio="http://goobi.io/facelets"
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
+<h:body>
+    <ui:composition>
+        <ui:fragment rendered="#{subfield.fieldType=='input' or subfield.fieldType=='date'}">
+            <goobiio:input
+                fieldid="#{subfield.name}input"
+                fieldname="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}"
+                fieldvalue="#{field.value}" />
+        </ui:fragment>
+        <ui:fragment rendered="#{subfield.fieldType=='textarea'}">
+            <goobiio:textarea
+                fieldid="#{subfield.name}textarea"
+                fieldname="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}"
+                fieldvalue="#{field.value}" />
+        </ui:fragment>
+        <ui:fragment rendered="#{subfield.fieldType=='dropdown' or subfield.fieldType=='vocabulary'}">
+            <goobiio:dropdown
+                fieldtype="#{subfield}"
+                vocabularyname="#{subfield.vocabularyName}"
+                fieldid="#{subfield.name}dropdown"
+                fieldname="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}"
+                fieldvalue="#{field.value}"
+                selectItems="#{field.selectItemList}" />
+        </ui:fragment>
+        <ui:fragment rendered="#{subfield.fieldType=='multiselect'}">
+            <goobiio:multiselect
+                fieldtype="#{subfield}"
+                vocabularyname="#{subfield.vocabularyName}"
+                fieldid="#{subfield.name}multiselect"
+                fieldname="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}"
+                fieldvalue="#{field.multiselectValue}"
+                selectItems="#{field.possibleValues}"
+                selectedItems="#{field.multiselectSelectedValues}" />
+        </ui:fragment>
+        <ui:fragment rendered="#{subfield.fieldType=='readonly'}">
+            <goobiio:readonly
+                fieldid="#{subfield.name}readonly"
+                fieldname="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}"
+                fieldvalue="#{field.value}" />
+        </ui:fragment>
+        <ui:fragment rendered="#{subfield.fieldType=='nodelink'}">
+            <goobiio:nodelink
+                fieldid="#{subfield.name}nodelink"
+                fieldname="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}"
+                fieldvalue="#{field.value}" />
+        </ui:fragment>
+        <ui:fragment rendered="#{subfield.fieldType=='gnd'}">
+            <intranda:formInputGndAjax
+                id="gnd"
+                name="gnd"
+                render="@form"
+                field="#{field}"
+                help=""
+                fieldStyle=""
+                displayAsRequired="false"
+                required="false"
+                label="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}"
+                displayLabel="false">
+                <h:commandLink
+                    styleClass="btn ms-auto"
+                    action="#{subfield.deleteValue(field)}">
+                    <span class="fa fa-minus-circle" />
+                    <f:ajax
+                        execute="@this"
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                </h:commandLink>
+            </intranda:formInputGndAjax>
+        </ui:fragment>
+        <ui:fragment rendered="#{subfield.fieldType=='geonames'}">
+            <intranda:formInputGeonamesAjax
+                id="geonames"
+                name="geonames"
+                field="#{field}"
+                help="#{msgs.help}"
+                render="@form"
+                fieldStyle="form-control"
+                displayAsRequired="false"
+                required="false"
+                submitDataAction="#{field.importGeonamesData()}"
+                label="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}"
+                displayLabel="false">
+                <h:commandLink
+                    styleClass="btn ms-auto"
+                    action="#{subfield.deleteValue(field)}">
+                    <span class="fa fa-minus-circle" />
+                    <f:ajax
+                        execute="@this"
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                </h:commandLink>
+            </intranda:formInputGeonamesAjax>
+        </ui:fragment>
+        <ui:fragment rendered="#{subfield.fieldType=='viaf'}">
+            <intranda:formInputViafAjax
+                id="viaf"
+                name="viaf"
+                field="#{field}"
+                help="#{msgs.help}"
+                render="@form"
+                fieldStyle="form-control"
+                displayAsRequired="false"
+                required="false"
+                label=""
+                displayLabel="false">
+                <h:commandLink
+                    styleClass="btn ms-auto"
+                    action="#{subfield.deleteValue(field)}">
+                    <span class="fa fa-minus-circle" />
+                    <f:ajax
+                        execute="@this"
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                </h:commandLink>
+            </intranda:formInputViafAjax>
+        </ui:fragment>
+    </ui:composition>
+</h:body>
+</html>

@@ -7,61 +7,66 @@
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:x="http://myfaces.apache.org/tomahawk">
-<h:body>
-    <ui:composition>
-        <span class="badge #{styleclassname} #{item.valid ? '' : 'validation-error'}">
-            
-            <h:commandLink
-                action="#{item.addValue}"
-                rendered="#{item.repeatable and item.showField}">
-                <i class="fa fa-plus-circle margin-right-5"/>
-                <h:outputText value="#{fieldname}" />
-                <x:updateActionListener
-                    property="#{item.showField}"
-                    value="true" />
-                <f:actionListener binding="#{AdministrationForm.administrationPlugin.updateAreaDisplay(item.level)}" />
-                <f:ajax
-                    execute="@this"
-                    render=":#{ajaxid} :hierarchy" />
-            </h:commandLink>
-            
-            <h:commandLink
-                rendered="#{!item.repeatable or (item.repeatable and !item.showField)}">
-                <ui:fragment rendered="#{item.repeatable}">
-                    <i class="fa fa-plus-circle margin-right-5"/>
-                </ui:fragment>
-                <h:outputText value="#{fieldname}" />
-                <ui:fragment rendered="#{!item.valid}">
-                    <i class="fa fa-exclamation-triangle margin-left-5"/>
-                </ui:fragment>
-                <f:actionListener binding="#{AdministrationForm.administrationPlugin.updateAreaDisplay(item.level)}" />
-                <x:updateActionListener
-                    property="#{item.showField}"
-                    value="true" />
-                <f:ajax
-                    execute="@this"
-                    render=":#{ajaxid} :hierarchy" />
-            </h:commandLink>
-
-<!-- 
-            <h:commandLink>
-                <h:outputText value="alt (#{AdministrationForm.administrationPlugin.displayIdentityStatementArea})" />
-                <x:updateActionListener
-                    property="#{AdministrationForm.administrationPlugin.displayIdentityStatementArea}"
-                    value="true" />
-            </h:commandLink>
-            
-            <h:commandLink>
-                <h:outputText value="neu (#{showDetails})" />
-                <x:updateActionListener
-                    property="#{showDetails}"
-                    value="#{not showDetails}" />
-            </h:commandLink>
--->
-
-
-        </span>
-
-    </ui:composition>
-</h:body>
+    <h:body>
+        <ui:composition>
+        <!--#{styleclassname} -->
+            <span class="badge  #{item.valid ? styleclassname : 'badge-inverse-light-red'}">
+                <h:commandLink
+                    action="#{item.addValue}"
+                    rendered="#{item.repeatable and item.showField and not item.group}"
+                    styleClass="#{item.filled ? 'text-white' : 'text-neutral-600'}">
+                    <span class="fa fa-plus-circle" />
+                    <span>
+                        <h:outputText value="#{fieldname}" />
+                    </span>
+                    <x:updateActionListener
+                        property="#{item.showField}"
+                        value="true" />
+                    <f:actionListener binding="#{AdministrationForm.administrationPlugin.updateAreaDisplay(item.level)}" />
+                    <f:ajax
+                        execute="@this"
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                </h:commandLink>
+                <h:commandLink
+                    action="#{AdministrationForm.administrationPlugin.addGroup}"
+                    rendered="#{item.repeatable and item.showField and item.group}"
+                    styleClass="#{item.filled ? 'text-white' : 'text-neutral-600'}">
+                    <span class="fa fa-plus-circle" />
+                    <span>
+                        <h:outputText value="#{fieldname}" />
+                    </span>
+                    <x:updateActionListener
+                        property="#{item.showField}"
+                        value="true" />
+                    <x:updateActionListener
+                        property="#{AdministrationForm.administrationPlugin.selectedGroup}"
+                        value="#{item}" />
+                    <f:actionListener binding="#{AdministrationForm.administrationPlugin.updateAreaDisplay(item.level)}" />
+                    <f:ajax
+                        execute="@this"
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                </h:commandLink>
+                <h:commandLink
+                    rendered="#{!item.repeatable or (item.repeatable and !item.showField)}"
+                    styleClass="#{item.filled ? 'text-white' : 'text-neutral-600'}">
+                    <ui:fragment rendered="#{item.repeatable}">
+                        <span class="fa fa-plus-circle" />
+                    </ui:fragment>
+                    <span>
+                        <h:outputText value="#{fieldname}" />
+                    </span>
+                    <ui:fragment rendered="#{!item.valid}">
+                        <span class="fa fa-exclamation-triangle" />
+                    </ui:fragment>
+                    <f:actionListener binding="#{AdministrationForm.administrationPlugin.updateAreaDisplay(item.level)}" />
+                    <x:updateActionListener
+                        property="#{item.showField}"
+                        value="true" />
+                    <f:ajax
+                        execute="@this"
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                </h:commandLink>
+            </span>
+        </ui:composition>
+    </h:body>
 </html>

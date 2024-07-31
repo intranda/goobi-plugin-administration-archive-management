@@ -1,0 +1,104 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:composite="http://xmlns.jcp.org/jsf/composite"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:x="http://myfaces.apache.org/tomahawk"
+    xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
+    <composite:interface>
+    </composite:interface>
+    <composite:implementation>
+        <h:panelGroup
+            styleClass="modal fade"
+            layout="block"
+            id="advancedSearchBox"
+            tabindex="-1"
+            role="dialog"
+            aria-labelledby="advancedSearchBoxTitle">
+            <div class="modal-content-wrapper">
+                <div
+                    class="modal-dialog modal-lg"
+                    role="document">
+                    <h:panelGroup
+                        styleClass="modal-content"
+                        layout="block"
+                        id="advancedSearchBoxContent">
+                        <div class="modal-header bg-primary text-white d-flex justify-content-between">
+                            <h3
+                                class="modal-title h6"
+                                id="advancedSearchBoxTitle">
+                                #{msgs.plugin_administration_archive_advancedSearch}
+                            </h3>
+                            <button
+                                type="button"
+                                class="btn text-white"
+                                data-dismiss="modal"
+                                aria-label="Close"
+                                data-bs-dismiss="modal">
+                                <span
+                                    aria-hidden="true"
+                                    class="fa fa-times" />
+                            </button>
+                        </div>
+                        <h:form
+                            onkeypress="submitOnEnter(event, 'advancedSearch');"
+                            prependId="false">
+                            <div class="modal-body">
+                                <ui:repeat
+                                    value="#{AdministrationForm.administrationPlugin.advancedSearch}"
+                                    var="entry">
+                                    <div class="row pb-2">
+                                        <div class="col-sm-4">
+                                            <h:selectOneMenu
+                                                value="#{entry.one}"
+                                                styleClass="form-select"
+                                                pt:aria-label="#{msgs.fieldname}"
+                                                id="fieldname">
+                                                <f:selectItem
+                                                    itemValue=""
+                                                    itemLabel="#{msgs.bitteAuswaehlen}" />
+                                                <f:selectItems
+                                                    var="fieldname"
+                                                    value="#{AdministrationForm.administrationPlugin.advancedSearchFields}"
+                                                    itemValue="#{fieldname}"
+                                                    itemLabel="#{msgs['plugin_administration_archive_'.concat(fieldname)]}" />
+                                            </h:selectOneMenu>
+                                        </div>
+                                        <h:panelGroup styleClass="col-sm-8">
+                                            <h:inputText
+                                                value="#{entry.two}"
+                                                styleClass="form-control"
+                                                pt:aria-label="#{msgs.fieldname}"
+                                                id="processid">
+                                            </h:inputText>
+                                        </h:panelGroup>
+                                    </div>
+                                </ui:repeat>
+                            </div>
+                            <div class="modal-footer">
+                                <h:commandLink
+                                    id="clear"
+                                    styleClass="btn btn-blank"
+                                    title="#{msgs.plugin_administration_archive_clear}"
+                                    type="reset">
+                                    <h:outputText value="#{msgs.plugin_administration_archive_clear}" />
+                                    <f:ajax render="@form" />
+                                </h:commandLink>
+                                <h:commandLink
+                                    id="advancedSearch"
+                                    styleClass="btn btn-primary"
+                                    action="#{AdministrationForm.administrationPlugin.searchAdvanced}"
+                                    title="#{msgs.plugin_administration_archive_advancedSearch}">
+                                    <h:outputText value="#{msgs.plugin_administration_archive_advancedSearch}" />
+                                </h:commandLink>
+                            </div>
+                        </h:form>
+                    </h:panelGroup>
+                </div>
+            </div>
+        </h:panelGroup>
+    </composite:implementation>
+</ui:composition>

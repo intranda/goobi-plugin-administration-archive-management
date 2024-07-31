@@ -1,0 +1,142 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:composite="http://xmlns.jcp.org/jsf/composite"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:x="http://myfaces.apache.org/tomahawk"
+    xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
+    <composite:interface>
+    </composite:interface>
+    <composite:implementation>
+        <h:panelGroup
+            styleClass="modal fade"
+            layout="block"
+            id="createNodesModal"
+            tabindex="-1"
+            role="dialog"
+            aria-labelledby="createNodesModalTitle">
+            <div class="modal-content-wrapper">
+                <div
+                    class="modal-dialog modal-lg"
+                    role="document">
+                    <h:panelGroup
+                        styleClass="modal-content"
+                        layout="block"
+                        id="createNodesModalContent">
+                        <div class="modal-header bg-action text-white d-flex justify-content-between">
+                            <h3
+                                class="modal-title h6"
+                                id="createNodesModalTitle">
+                                #{msgs.plugin_administration_archive_addMultipleNodes}
+                            </h3>
+                            <button
+                                jsf:id="closeBtnCreateNodes"
+                                type="button"
+                                class="btn text-white"
+                                data-dismiss="modal"
+                                aria-label="Close"
+                                data-bs-dismiss="modal">
+                                <span
+                                    aria-hidden="true"
+                                    class="fa fa-times" />
+                                <x:updateActionListener
+                                    property="#{AdministrationForm.administrationPlugin.displayCreateNodesModal}"
+                                    value="false" />
+                            </button>
+                        </div>
+                        <h:form>
+                            <div class="modal-body p-0">
+                                <p class="border-bottom m-2 p-2">
+                                    <h:outputText value="#{msgs.plugin_administration_archive_createNodesModalDesciption}" />
+                                </p>
+                                <div class="form-row">
+                                    <div class="form-label">
+                                        <intranda:formLabel
+                                            labelFor="numberOfNodes"
+                                            label="#{msgs.plugin_administration_archive_numberOfNodes}"
+                                            labelRequired="true" />
+                                    </div>
+                                    <div class="form-input">
+                                        <x:inputText
+                                            id="numberOfNodes"
+                                            forceId="true"
+                                            styleClass="form-control"
+                                            value="#{AdministrationForm.administrationPlugin.numberOfNodes}"
+                                            readonly="false"
+                                            required="false">
+                                            <!-- validation: value must be be a number greater than zero -->
+                                            <f:validator validatorId="numberOfNodesValidator" />
+                                        </x:inputText>
+                                        <h:message
+                                            for="numberOfNodes"
+                                            showDetail="true"
+                                            styleClass="help-inline color-F" />
+                                        <h:outputText
+                                            styleClass="help-block font-light"
+                                            rendered="#{NavigationForm.showHelp}"
+                                            value="msgs.helpnumberOfNodes" />
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-label">
+                                        <intranda:formLabel
+                                            labelFor="selectNodeType"
+                                            label="#{msgs.plugin_administration_archive_nodeType}"
+                                            labelRequired="true" />
+                                    </div>
+                                    <div class="form-input">
+                                        <h:selectOneMenu
+                                            id="selectNodeType"
+                                            styleClass="form-select"
+                                            value="#{AdministrationForm.administrationPlugin.nodeType}">
+                                            <f:selectItem
+                                                itemValue=""
+                                                itemLabel="#{msgs.bitteAuswaehlen}" />
+                                            <f:selectItems
+                                                value="#{AdministrationForm.administrationPlugin.configuredNodes}"
+                                                var="var"
+                                                itemValue="#{var.nodeName}"
+                                                itemLabel="#{msgs['plugin_administration_archive_nodeType_'.concat(var.nodeName)]}" />
+                                            <f:ajax
+                                                event="change"
+                                                render="@this" />
+                                        </h:selectOneMenu>
+                                    </div>
+                                </div>
+                                <!-- metadata: for each field radio button for empty/generated/counter/text -->
+                                <ui:repeat
+                                    value="#{AdministrationForm.administrationPlugin.metadataToAdd}"
+                                    var="entry">
+                                    <ui:include src="nodeMetadata.xhtml" />
+                                </ui:repeat>
+                            </div>
+                            <div class="modal-footer">
+                                <h:commandLink
+                                    styleClass="btn btn-blank">
+                                    <x:updateActionListener
+                                        property="#{AdministrationForm.administrationPlugin.displayMode}"
+                                        value="" />
+                                    <x:updateActionListener
+                                        property="#{AdministrationForm.administrationPlugin.displayCreateNodesModal}"
+                                        value="false" />
+                                    <h:outputText value="#{msgs.abbrechen}" />
+                                </h:commandLink>
+                                <h:commandLink
+                                    id="addNodes"
+                                    styleClass="btn btn-action"
+                                    action="#{AdministrationForm.administrationPlugin.addNodes}"
+                                    title="#{msgs.plugin_administration_archive_addNodes}"
+                                    type="submit">
+                                    <h:outputText value="#{msgs.plugin_administration_archive_addNodes}" />
+                                </h:commandLink>
+                            </div>
+                        </h:form>
+                    </h:panelGroup>
+                </div>
+            </div>
+        </h:panelGroup>
+    </composite:implementation>
+</ui:composition>

@@ -9,41 +9,38 @@
     xmlns:x="http://myfaces.apache.org/tomahawk">
 <h:body>
     <ui:composition>
-		<div class="control-label metadata-row-area-content">
-		    <h:outputLabel
-		        for="#{fieldid}"
-		        value="#{fieldname}" />
-		</div>
-       
-        <h:commandLink styleClass="close-field pull-right metadata-row-area-content" action="#{item.deleteValue(field)}">
-            <i class="fa fa-minus-circle"></i>
-            <f:ajax
-                execute="#{fieldid}"
-                render=":#{ajaxid} :hierarchy" />
-        </h:commandLink>
-
-        <div class="metadata-row-area-content metadata-row-area-content-white">
-            <h:inputTextarea
-                id="#{fieldid}"
-                forceId="true"
-                styleClass="form-control #{item.valid ? '' : 'validation-error'}"
-                value="#{fieldvalue}"
-                required="false"
-                readonly="false">
-                <f:ajax
-                    execute="@this"
-                    render=":#{ajaxid} :hierarchy"
-                    event="blur" />
-            </h:inputTextarea>
-            
-            <h:message
-                for="#{fieldid}"
-                showDetail="true"
-                styleClass="help-inline font-danger" />
-            
-            <h:outputText styleClass="help-inline font-danger" rendered="#{!item.valid}" value="#{msgs[item.validationError]}"/>
+        <div class="form-row">
+            <div class="form-label d-flex justify-content-between">
+                <h:outputLabel
+                    for="#{fieldid}"
+                    value="#{fieldname}" />
+                <h:commandLink styleClass="btn" action="#{item.deleteValue(field)}">
+                    <span class="fa fa-minus-circle" />
+                    <f:ajax
+                        execute="#{fieldid}"
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                </h:commandLink>
+            </div>
+            <div class="form-input">
+                <h:inputTextarea
+                    id="#{fieldid}"
+                    forceId="true"
+                    styleClass="form-control #{item.valid ? '' : 'invalid'}"
+                    value="#{fieldvalue}"
+                    required="false"
+                    readonly="false">
+                    <f:ajax
+                        execute="@this"
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                        event="blur" />
+                </h:inputTextarea>
+                <h:message
+                    for="#{fieldid}"
+                    showDetail="true"
+                    styleClass="help-inline color-F" />
+                <h:outputText styleClass="help-inline color-F" rendered="#{!item.valid}" value="#{msgs[item.validationError]}"/>
+            </div>
         </div>
-
     </ui:composition>
 </h:body>
 </html>

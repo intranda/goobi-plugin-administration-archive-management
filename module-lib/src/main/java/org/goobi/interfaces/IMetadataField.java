@@ -85,4 +85,38 @@ public interface IMetadataField {
     public IMetadataField copy(String prefix, String suffix);
 
     public IFieldValue createFieldValue();
+
+    public String getViafSearchFields();
+
+    public String getViafDisplayFields();
+
+    // metadata groups / composite fields
+    public boolean isGroup();
+
+    public void setGroup(boolean group);
+
+    public List<IMetadataField> getSubfields();
+
+    public void setSubfields(List<IMetadataField> fields);
+
+    public void addSubfield(IMetadataField field);
+
+    public List<IMetadataGroup> getGroups();
+
+    public void setGroups(List<IMetadataGroup> groups);
+
+    public IMetadataGroup createGroup();
+
+    public void addGroup(IMetadataGroup group);
+
+    public void deleteGroup(IMetadataGroup group);
+
+    public void setVocabularyName(String name);
+
+    public String getVocabularyName();
+
+    public void setSearchParameter(List<String> parameter);
+
+    public List<String> getSearchParameter();
+
 }

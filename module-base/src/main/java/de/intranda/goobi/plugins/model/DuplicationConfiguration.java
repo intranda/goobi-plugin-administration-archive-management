@@ -35,43 +35,43 @@ public class DuplicationConfiguration implements IConfiguration {
     public DuplicationConfiguration(IEadEntry entry) {
 
         for (IMetadataField field : entry.getIdentityStatementAreaList()) {
-            if (field.isVisible()) {
+            if (field.isVisible() && field.isShowField()) {
                 IParameter dp = new DuplicationParameter(field.getName());
                 identityStatementArea.add(dp);
             }
         }
         for (IMetadataField field : entry.getContextAreaList()) {
-            if (field.isVisible()) {
+            if (field.isVisible() && field.isShowField()) {
                 DuplicationParameter dp = new DuplicationParameter(field.getName());
                 contextArea.add(dp);
             }
         }
         for (IMetadataField field : entry.getContentAndStructureAreaAreaList()) {
-            if (field.isVisible()) {
+            if (field.isVisible() && field.isShowField()) {
                 DuplicationParameter dp = new DuplicationParameter(field.getName());
                 contentArea.add(dp);
             }
         }
         for (IMetadataField field : entry.getAccessAndUseAreaList()) {
-            if (field.isVisible()) {
+            if (field.isVisible() && field.isShowField()) {
                 DuplicationParameter dp = new DuplicationParameter(field.getName());
                 accessArea.add(dp);
             }
         }
         for (IMetadataField field : entry.getAlliedMaterialsAreaList()) {
-            if (field.isVisible()) {
+            if (field.isVisible() && field.isShowField()) {
                 DuplicationParameter dp = new DuplicationParameter(field.getName());
                 alliedMaterialsArea.add(dp);
             }
         }
         for (IMetadataField field : entry.getNotesAreaList()) {
-            if (field.isVisible()) {
+            if (field.isVisible() && field.isShowField()) {
                 DuplicationParameter dp = new DuplicationParameter(field.getName());
                 notesArea.add(dp);
             }
         }
         for (IMetadataField field : entry.getDescriptionControlAreaList()) {
-            if (field.isVisible()) {
+            if (field.isVisible() && field.isShowField()) {
                 DuplicationParameter dp = new DuplicationParameter(field.getName());
                 descriptionArea.add(dp);
             }
