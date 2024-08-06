@@ -501,9 +501,6 @@
                                         type="submit"
                                         action="#{AdministrationForm.administrationPlugin.eadExport}"
                                         disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}">
-                                        <f:passThroughAttribute
-                                            name="data-bs-toggle"
-                                            value="tooltip" />
                                         <span class="fa fa-globe" />
                                         <span>
                                             <h:outputText value="#{msgs.plugin_administration_archive_eadExport}" />
@@ -513,11 +510,7 @@
                                     <h:commandLink
                                         styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowCreation ? '' : 'disabled'}"
                                         action="#{AdministrationForm.administrationPlugin.duplicateEadFile}"
-                                        title="#{msgs.plugin_administration_archive_duplicateEadFile}"
                                         disabled="#{!AdministrationForm.administrationPlugin.allowCreation}">
-                                        <f:passThroughAttribute
-                                            name="data-bs-toggle"
-                                            value="tooltip" />
                                         <span class="fa fa-files-o" />
                                         <span>
                                             <h:outputText value="#{msgs.plugin_administration_archive_duplicateEadFile}" />
@@ -528,9 +521,6 @@
                                         type="submit"
                                         action="#{AdministrationForm.administrationPlugin.downloadArchive}"
                                         disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}">
-                                        <f:passThroughAttribute
-                                            name="data-bs-toggle"
-                                            value="tooltip" />
                                         <span class="fa fa-download" />
                                         <span>
                                             <h:outputText value="#{msgs.plugin_administration_archive_download}" />
