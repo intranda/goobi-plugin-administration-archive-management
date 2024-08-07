@@ -311,6 +311,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      */
     public ArchiveManagementAdministrationPlugin() {
         try {
+            ArchiveManagementManager.createTables();
             vocabularyAPI = VocabularyAPIManager.getInstance();
         } catch (APIException e) {
             // api is not running
