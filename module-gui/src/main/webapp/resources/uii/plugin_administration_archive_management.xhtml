@@ -56,8 +56,13 @@
                             name="selectDB"
                             label="#{msgs.plugin_administration_archive_selectionText}"
                             field="#{AdministrationForm.administrationPlugin.databaseName}"
-                            selectItems="#{AdministrationForm.administrationPlugin.possibleDatabases}" />
+                            selectItems="#{AdministrationForm.administrationPlugin.possibleDatabases}"
+                            rendered="#{AdministrationForm.administrationPlugin.possibleDatabases.size() gt 0}" />
                         <div class="box__actions">
+                            <h:outputText
+                                rendered="#{AdministrationForm.administrationPlugin.possibleDatabases.size() eq 0}"
+                                styleClass="me-auto"
+                                value="#{msgs.plugin_administration_archive_noArchivesAvailable}" />
                             <h:commandLink
                                 styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowCreation ? '' : 'disabled'}"
                                 disabled="#{!AdministrationForm.administrationPlugin.allowCreation}">
@@ -83,7 +88,8 @@
                             <h:commandLink
                                 styleClass="btn btn-primary"
                                 id="absenden"
-                                action="#{AdministrationForm.administrationPlugin.loadSelectedDatabase}">
+                                action="#{AdministrationForm.administrationPlugin.loadSelectedDatabase}"
+                                rendered="#{AdministrationForm.administrationPlugin.possibleDatabases.size() gt 0}">
                                 <h:outputText value="#{msgs.plugin_administration_archive_loadDatabase}" />
                             </h:commandLink>
                         </div>
