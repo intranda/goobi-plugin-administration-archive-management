@@ -36,7 +36,7 @@
             <intranda:box
                 boxForm="true"
                 boxPadding="false"
-                boxType="#{AdministrationForm.administrationPlugin.displayMode == '' ? 'primary' : 'action'}"
+                boxType="primary"
                 icon="fa fa-archive"
                 id="selectionBox"
                 title="#{AdministrationForm.administrationPlugin.displayMode == 'createArchive'
@@ -125,9 +125,12 @@
                                 <h:outputText value="#{msgs.abbrechen}" />
                             </h:commandLink>
                             <h:commandLink
-                                styleClass="btn btn-action"
+                                styleClass="btn btn-primary"
                                 action="#{AdministrationForm.administrationPlugin.createNewDatabase}">
-                                <h:outputText value="#{msgs.plugin_administration_archive_createNewArchive}" />
+                                <span class="fa fa-save" />
+                                <span>
+                                    <h:outputText value="#{msgs.save}" />
+                                </span>
                             </h:commandLink>
                         </div>
                     </h:panelGroup>
@@ -173,14 +176,14 @@
                                 id="uploadFileButtonGroup">
                                 <!-- UPLOAD BUTTON FOR THE CASE WHERE NO SUCH FILE EXISTS YET -->
                                 <h:commandLink
-                                    styleClass="btn btn-action"
+                                    styleClass="btn btn-primary"
                                     action="#{AdministrationForm.administrationPlugin.upload}"
                                     rendered="#{AdministrationForm.administrationPlugin.uploadFile ne null &amp;&amp; not AdministrationForm.administrationPlugin.fileToUploadExists}">
                                     <h:outputText value="#{msgs.plugin_administration_archive_uploadDatabase}" />
                                 </h:commandLink>
                                 <!-- UPLOAD BUTTON FOR THE CASE WHERE AN OLD VERSION OF THE FILE ALREADY EXISTS -->
                                 <h:commandLink
-                                    styleClass="btn btn-action"
+                                    styleClass="btn btn-primary"
                                     action="#{AdministrationForm.administrationPlugin.upload}"
                                     rendered="#{AdministrationForm.administrationPlugin.uploadFile ne null &amp;&amp; AdministrationForm.administrationPlugin.fileToUploadExists}"
                                     onclick="if (!confirm('#{msgs.plugin_administration_archive_confirmReplacement}')) return false;">
@@ -513,7 +516,7 @@
                                             styleClass="btn btn-neutral-600"
                                             onclick="$('#duplicationBox').modal('show');"
                                             title="#{msgs.plugin_administration_archive_duplicateNode}">
-                                            <span class="fa fa-files-o" />
+                                            <span class="fa fa-clipboard" />
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
@@ -525,25 +528,29 @@
                                     </fieldSet>
                                 </div>
                                 <div class="box__actions pe-2">
-
                                     <h:commandLink
-                                        styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.readOnlyModus ? 'disabled' : ''}"
+                                        rendered="#{AdministrationForm.administrationPlugin.readOnlyModus}"
+                                        styleClass="btn btn-blank"
                                         type="submit"
-                                        action="#{AdministrationForm.administrationPlugin.eadExport}"
-                                        disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}">
-                                        <span class="fa fa-globe" />
-                                        <span>
-                                            <h:outputText value="#{msgs.plugin_administration_archive_eadExport}" />
-                                        </span>
+                                        action="#{AdministrationForm.administrationPlugin.cancelEdition}">
+                                        <f:passThroughAttribute
+                                        name="data-bs-toggle"
+                                        value="tooltip" />
+                                        <h:outputText value="#{msgs.abbrechen}" />
                                     </h:commandLink>
-
                                     <h:commandLink
                                         styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowCreation ? '' : 'disabled'}"
                                         action="#{AdministrationForm.administrationPlugin.duplicateEadFile}"
                                         disabled="#{!AdministrationForm.administrationPlugin.allowCreation}">
-                                        <span class="fa fa-files-o" />
+                                        <f:passThroughAttribute
+                                            name="data-bs-toggle"
+                                            value="tooltip" />
+                                        <f:passThroughAttribute
+                                            name="data-bs-title"
+                                            value="#{msgs.plugin_administration_archive_duplicateEadFile}" />
+                                        <span class="fa fa-clipboard" />
                                         <span>
-                                            <h:outputText value="#{msgs.plugin_administration_archive_duplicateEadFile}" />
+                                            <h:outputText value="#{msgs.duplicate}" />
                                         </span>
                                     </h:commandLink>
                                     <h:commandLink
@@ -551,20 +558,32 @@
                                         type="submit"
                                         action="#{AdministrationForm.administrationPlugin.downloadArchive}"
                                         disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}">
-                                        <span class="fa fa-download" />
-                                        <span>
-                                            <h:outputText value="#{msgs.plugin_administration_archive_download}" />
-                                        </span>
-                                    </h:commandLink>
-                                    <h:commandLink
-                                        rendered="#{AdministrationForm.administrationPlugin.readOnlyModus}"
-                                        styleClass="btn btn-blank"
-                                        type="submit"
-                                        action="#{AdministrationForm.administrationPlugin.cancelEdition}">
                                         <f:passThroughAttribute
                                             name="data-bs-toggle"
                                             value="tooltip" />
-                                        <h:outputText value="#{msgs.abbrechen}" />
+                                        <f:passThroughAttribute
+                                            name="title"
+                                            value="#{msgs.plugin_administration_archive_download_s}" />
+                                        <span class="fa fa-download" />
+                                        <span>
+                                            <h:outputText value="#{msgs.plugin_administration_archive_download_l}" />
+                                        </span>
+                                    </h:commandLink>
+                                    <h:commandLink
+                                        styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.readOnlyModus ? 'disabled' : ''}"
+                                        type="submit"
+                                        action="#{AdministrationForm.administrationPlugin.eadExport}"
+                                        disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}">
+                                        <f:passThroughAttribute
+                                            name="data-bs-toggle"
+                                            value="tooltip" />
+                                        <f:passThroughAttribute
+                                            name="data-bs-title"
+                                            value="#{msgs.plugin_administration_archive_eadExport}" />
+                                        <span class="fa fa-globe" />
+                                        <span>
+                                            <h:outputText value="#{msgs.export_verb}" />
+                                        </span>
                                     </h:commandLink>
                                 </div>
                             </intranda:box>
@@ -605,7 +624,8 @@
                                             class="btn d-flex align-items-center btn--title-action"
                                             jsf:id="saveAndExit"
                                             jsf:action="#{AdministrationForm.administrationPlugin.saveArchiveAndLeave}"
-                                            jsf:disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}">
+                                            jsf:disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}"
+                                            jsf:rendered="#{AdministrationForm.administrationPlugin.selectedEntry != null}">
                                             <span class="fa fa-save" />
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
@@ -622,10 +642,13 @@
                                         value="true" />
                                     <div>
                                         <!-- no node selected -->
-                                        <h:outputText
+                                        <h:panelGroup
+                                            layout="block"
                                             rendered="#{AdministrationForm.administrationPlugin.selectedEntry == null}"
-                                            styleClass="color-box bg-primary text-white d-flex flex-row p-3"
-                                            value="#{msgs.plugin_administration_archive_noElementSelectedText}" />
+                                            styleClass="p-3">
+                                            <h:outputText
+                                                value="#{msgs.plugin_administration_archive_noElementSelectedText}" />
+                                        </h:panelGroup>
                                         <!-- // no node selected -->
                                         <!-- a node was selected -->
                                         <h:panelGroup
@@ -970,24 +993,24 @@
                                                     dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.descriptionControlAreaVisible}" />
                                             </h:panelGroup>
                                             <!-- // Group: Verzeichnungskontrolle / Description Control Area -->
+                                            <!-- Button Area on the bottom -->
+                                            <div class="box__actions">
+                                                <h:commandLink
+                                                    styleClass="btn btn-success"
+                                                    id="saveAndExit"
+                                                    action="#{AdministrationForm.administrationPlugin.saveArchiveAndLeave}">
+                                                    <span class="fa fa-save" />
+                                                    <span>
+                                                        <h:outputText value="#{msgs.plugin_administration_archive_saveAndExit}" />
+                                                    </span>
+                                                    <f:passThroughAttribute
+                                                        name="data-bs-toggle"
+                                                        value="tooltip" />
+                                                </h:commandLink>
+                                            </div>
+                                            <!-- // Button Area on the bottom -->
                                         </h:panelGroup>
                                     </div>
-                                    <!-- Button Area on the bottom -->
-                                    <div class="box__actions">
-                                        <h:commandLink
-                                            styleClass="btn btn-success"
-                                            id="saveAndExit"
-                                            action="#{AdministrationForm.administrationPlugin.saveArchiveAndLeave}">
-                                            <span class="fa fa-save" />
-                                            <span>
-                                                <h:outputText value="#{msgs.plugin_administration_archive_saveAndExit}" />
-                                            </span>
-                                            <f:passThroughAttribute
-                                                name="data-bs-toggle"
-                                                value="tooltip" />
-                                        </h:commandLink>
-                                    </div>
-                                    <!-- // Button Area on the bottom -->
 
                                 </fieldSet>
 
