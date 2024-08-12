@@ -57,6 +57,8 @@ The user initially only has read access. In order to be able to change data, the
 
 To allow a user group access to individual inventories, the permission `Plugin_Administration_Archive_Management_Inventory_NAME` can be assigned, whereby the suffix NAME must be replaced by the name of the inventory. If access to all inventories is to be permitted instead, the permission `Plugin_Administration_Archive_Management_All_Inventories` can be used.
 
+The permission `Plugin_Administration_Archive_Management_Delete` allows you to delete the selected inventory.
+
 ### Selection of existing EAD file
 After the plugin has been opened, a list of the available archive records is displayed first. Here, the user can select an archive file and start editing it.
 

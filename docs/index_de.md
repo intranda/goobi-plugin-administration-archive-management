@@ -57,6 +57,8 @@ Dabei hat der Nutzer erst einmal nur lesenden Zugriff. Um auch Daten ändern zu 
 
 Um einer Nutzergruppe Zugriff auf einzelne Bestände zu ermöglichen, kann das Recht `Plugin_Administration_Archive_Management_Inventory_NAME` vergeben werden, wobei der Suffix NAME durch den Namen des Bestands zu ersetzen ist. Wenn stattdessen der Zugriff auf alle Bestände erlaubt sein soll, kann das Recht `Plugin_Administration_Archive_Management_All_Inventories` genutzt werden.
 
+Die Berechtigung `Plugin_Administration_Archive_Management_Delete` erlaubt das Löschen des ausgewählten Bestandes.
+
 ### Auswahl vorhandenen Beständen
 Nachdem das Plugin geöffnet wurde, wird zunächst eine Liste der zur Verfügung stehenden Archivbestände angezeigt. Hier kann der Nutzer einen Archivbestand auswählen und mit der Bearbeitung beginnen.
 
