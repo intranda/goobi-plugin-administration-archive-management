@@ -501,4 +501,18 @@ public class ArchiveManagementManager implements Serializable {
             log.error(e1);
         }
     }
+
+    public static void deleteRecordGroup(String recordGroupName) {
+
+        try (Connection connection = MySQLHelper.getInstance().getConnection()) {
+            QueryRunner run = new QueryRunner();
+            run.execute(connection,
+                    "delete from archive_record_node where archive_record_group_id in (select id from archive_record_group where title = ? )",
+                    recordGroupName);
+            run.execute(connection, "delete from archive_record_group where title = ?", recordGroupName);
+        } catch (SQLException e1) {
+            log.error(e1);
+        }
+
+    }
 }

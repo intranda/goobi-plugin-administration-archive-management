@@ -63,6 +63,19 @@
                                 rendered="#{AdministrationForm.administrationPlugin.possibleDatabases.size() eq 0}"
                                 styleClass="me-auto"
                                 value="#{msgs.plugin_administration_archive_noArchivesAvailable}" />
+                                
+                              <h:commandLink
+                                styleClass="btn btn-danger #{AdministrationForm.administrationPlugin.allowDeletion ? '' : 'disabled'}"
+                                disabled="#{!AdministrationForm.administrationPlugin.allowDeletion}"
+                                action="#{AdministrationForm.administrationPlugin.deleteSelectedDatabase}"
+                            onclick="if (!confirm('#{msgs.sollDieserEintragWirklichGeloeschtWerden}')) return false"
+                                >
+                                <h:outputText value="#{msgs.plugin_administration_archive_deleteSelectedArchive}" />
+                             
+                       
+
+                            </h:commandLink>
+                                
                             <h:commandLink
                                 styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowCreation ? '' : 'disabled'}"
                                 disabled="#{!AdministrationForm.administrationPlugin.allowCreation}">

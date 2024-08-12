@@ -291,6 +291,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Getter
     private boolean allowVocabularyEdition = false;
 
+    @Getter
+    private boolean allowDeletion = false;
+
     private boolean allowAllInventories;
     private List<String> inventoryList = new ArrayList<>();
 
@@ -336,6 +339,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 // role to access all: Plugin_Administration_Archive_Management_All_Inventories
                 // role to access the inventory 'XYZ':  Plugin_Administration_Archive_Management_Inventory_XYZ
 
+                // role to delete inventory: Plugin_Administration_Archive_Management_Delete
+
                 if ((user.isSuperAdmin() || user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Write"))) {
                     readOnlyMode = false;
                 }
@@ -349,6 +354,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 }
                 if (user.isSuperAdmin() || (user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Vocabulary"))) {
                     allowVocabularyEdition = true;
+                }
+
+                if (user.isSuperAdmin() || (user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Delete"))) {
+                    allowDeletion = true;
                 }
 
                 if (user.isSuperAdmin() || (user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_All_Inventories"))) {
@@ -3079,4 +3088,20 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         }
     }
+
+    public void deleteSelectedDatabase() {
+        if (allowDeletion) {
+            if (StringUtils.isBlank(databaseName) || "null".equals(databaseName)) {
+                // show error text
+                databaseName = null;
+                Helper.setFehlerMeldung("plugin_administration_archive_noArchiveSelected");
+                return;
+            }
+            // delete selected data
+            ArchiveManagementManager.deleteRecordGroup(databaseName);
+            // clean current selection
+            databaseName = null;
+        }
+    }
+
 }
