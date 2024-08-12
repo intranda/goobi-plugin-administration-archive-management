@@ -121,7 +121,14 @@
                     <h:panelGroup
                         layout="block"
                         rendered="#{AdministrationForm.administrationPlugin.displayMode == 'uploadFile'}">
-                        <div class="p-3 upload-file-name" />
+                        <div class="form-row">
+                            <div class="form-label">
+                                <h:outputText value="#{msgs.filename}" />
+                            </div>
+                            <div class="form-input">
+                                <div class="upload-file-name" />
+                            </div>
+                        </div>
                         <div
                             class="box__actions">
                             <!-- CANCEL BUTTON -->
