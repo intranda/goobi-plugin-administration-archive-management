@@ -67,11 +67,11 @@
                                                 sortable="false" />
                                         </tr>
                                         <ui:repeat
-                                            var="item"
+                                            var="db"
                                             value="#{AdministrationForm.administrationPlugin.possibleDatabases}">
                                             <tr role="row">
                                                 <td>
-                                                    <h:outputText value="#{item}" />
+                                                    <h:outputText value="#{db}" />
                                                 </td>
                                                 <td>
                                                     <div class="gw-table__actions__container">
@@ -86,6 +86,8 @@
                                                                 name="title"
                                                                 value="#{msgs.plugin_administration_archive_loadDatabase}" />
                                                             <span class="fa fa-pencil" />
+                                                            <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
+                                                            
                                                         </h:commandLink>
                                                         <h:commandLink
                                                             styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowDeletion ? '' : 'disabled'}"
@@ -100,6 +102,7 @@
                                                                 name="title"
                                                                 value="#{msgs.plugin_administration_archive_deleteSelectedArchive}" />
                                                             <span class="fa fa-trash" />
+                                                            <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />                                                            
                                                         </h:commandLink>
                                                     </div>
                                                 </td>
@@ -109,26 +112,12 @@
                                 </table>
                             </div>
                         </div>
-                        <intranda:formInputDropDown
-                            name="selectDB"
-                            label="#{msgs.plugin_administration_archive_selectionText}"
-                            field="#{AdministrationForm.administrationPlugin.databaseName}"
-                            selectItems="#{AdministrationForm.administrationPlugin.possibleDatabases}"
-                            rendered="#{AdministrationForm.administrationPlugin.possibleDatabases.size() gt 0}" />
+                      
                         <div class="box__actions">
                             <h:outputText
                                 rendered="#{AdministrationForm.administrationPlugin.possibleDatabases.size() eq 0}"
                                 styleClass="me-auto"
                                 value="#{msgs.plugin_administration_archive_noArchivesAvailable}" />
-
-                            <!-- <h:commandLink
-                                styleClass="btn btn-danger #{AdministrationForm.administrationPlugin.allowDeletion ? '' : 'disabled'} me-auto"
-                                disabled="#{!AdministrationForm.administrationPlugin.allowDeletion}"
-                                action="#{AdministrationForm.administrationPlugin.deleteSelectedDatabase}"
-                                onclick="if (!confirm('#{msgs.sollDieserEintragWirklichGeloeschtWerden}')) return false"
-                                >
-                                <h:outputText value="#{msgs.plugin_administration_archive_deleteSelectedArchive}" />
-                            </h:commandLink> -->
 
                             <h:commandLink
                                 styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowFileUpload ? '' : 'disabled'}"
@@ -152,13 +141,7 @@
                                     render="@form selectionBox:selectionBox"
                                     onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                             </h:commandLink>
-                            <!-- <h:commandLink
-                                styleClass="btn btn-primary"
-                                id="absenden"
-                                action="#{AdministrationForm.administrationPlugin.loadSelectedDatabase}"
-                                rendered="#{AdministrationForm.administrationPlugin.possibleDatabases.size() gt 0}">
-                                <h:outputText value="#{msgs.plugin_administration_archive_loadDatabase}" />
-                            </h:commandLink> -->
+
                         </div>
                     </h:panelGroup>
                     <h:panelGroup
@@ -583,6 +566,7 @@
                                 </div>
                                 <div class="box__actions pe-2">
                                     <h:commandLink
+                                        rendered="#{AdministrationForm.administrationPlugin.readOnlyModus}"
                                         styleClass="btn btn-blank"
                                         type="submit"
                                         action="#{AdministrationForm.administrationPlugin.cancelEdition}">
@@ -623,6 +607,7 @@
                                         </span>
                                     </h:commandLink>
                                     <h:commandLink
+                                    rendered="#{AdministrationForm.administrationPlugin.readOnlyModus}"
                                         styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.readOnlyModus ? 'disabled' : ''}"
                                         type="submit"
                                         action="#{AdministrationForm.administrationPlugin.eadExport}"
@@ -1047,6 +1032,7 @@
                                             </h:panelGroup>
                                             <!-- // Group: Verzeichnungskontrolle / Description Control Area -->
                                             <!-- Button Area on the bottom -->
+                                        </h:panelGroup>
                                             <div class="box__actions">
                                                 <h:commandLink
                                                     styleClass="btn btn-success"
@@ -1062,7 +1048,6 @@
                                                 </h:commandLink>
                                             </div>
                                             <!-- // Button Area on the bottom -->
-                                        </h:panelGroup>
                                     </div>
 
                                 </fieldSet>
