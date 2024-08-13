@@ -35,12 +35,12 @@
             <!-- Selection area for a record group to load -->
             <intranda:box
                 boxForm="true"
-                boxPadding="false"
+                boxPadding="#{AdministrationForm.administrationPlugin.displayMode == '' ? 'true' : 'false'}"
                 boxType="primary"
                 icon="fa fa-archive"
                 id="selectionBox"
                 title="#{AdministrationForm.administrationPlugin.displayMode == 'createArchive'
-                    ? msgs.plugin_administration_archive_creationHeading
+                    ? msgs.plugin_administration_archive_createNewArchive
                     : AdministrationForm.administrationPlugin.displayMode == 'uploadFile'
                     ? msgs.plugin_administration_archive_uploadHeading
                     : msgs.plugin_administration_archive_selectionHeading} "
@@ -52,6 +52,63 @@
                     <h:panelGroup
                         layout="block"
                         rendered="#{AdministrationForm.administrationPlugin.displayMode == ''}">
+                        <div class="gw-table">
+                            <div class="gw-table__wrapper">
+                                <table
+                                    role="grid"
+                                    class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr role="row">
+                                            <intranda:columnheader
+                                                value="#{msgs.name}"
+                                                sortable="false" />
+                                            <intranda:columnheader
+                                                value="#{msgs.auswahl}"
+                                                sortable="false" />
+                                        </tr>
+                                        <ui:repeat
+                                            var="item"
+                                            value="#{AdministrationForm.administrationPlugin.possibleDatabases}">
+                                            <tr role="row">
+                                                <td>
+                                                    <h:outputText value="#{item}" />
+                                                </td>
+                                                <td>
+                                                    <div class="gw-table__actions__container">
+                                                        <h:commandLink
+                                                            styleClass="btn btn-blank"
+                                                            id="absenden"
+                                                            action="#{AdministrationForm.administrationPlugin.loadSelectedDatabase}">
+                                                            <f:passThroughAttribute
+                                                                name="data-bs-toggle"
+                                                                value="tooltip" />
+                                                            <f:passThroughAttribute
+                                                                name="title"
+                                                                value="#{msgs.plugin_administration_archive_loadDatabase}" />
+                                                            <span class="fa fa-pencil" />
+                                                        </h:commandLink>
+                                                        <h:commandLink
+                                                            styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowDeletion ? '' : 'disabled'}"
+                                                            disabled="#{!AdministrationForm.administrationPlugin.allowDeletion}"
+                                                            action="#{AdministrationForm.administrationPlugin.deleteSelectedDatabase}"
+                                                            onclick="if (!confirm('#{msgs.sollDieserEintragWirklichGeloeschtWerden}')) return false"
+                                                        >
+                                                            <f:passThroughAttribute
+                                                                name="data-bs-toggle"
+                                                                value="tooltip" />
+                                                            <f:passThroughAttribute
+                                                                name="title"
+                                                                value="#{msgs.plugin_administration_archive_deleteSelectedArchive}" />
+                                                            <span class="fa fa-trash" />
+                                                        </h:commandLink>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
                         <intranda:formInputDropDown
                             name="selectDB"
                             label="#{msgs.plugin_administration_archive_selectionText}"
@@ -63,30 +120,16 @@
                                 rendered="#{AdministrationForm.administrationPlugin.possibleDatabases.size() eq 0}"
                                 styleClass="me-auto"
                                 value="#{msgs.plugin_administration_archive_noArchivesAvailable}" />
-                                
-                              <h:commandLink
-                                styleClass="btn btn-danger #{AdministrationForm.administrationPlugin.allowDeletion ? '' : 'disabled'}"
+
+                            <!-- <h:commandLink
+                                styleClass="btn btn-danger #{AdministrationForm.administrationPlugin.allowDeletion ? '' : 'disabled'} me-auto"
                                 disabled="#{!AdministrationForm.administrationPlugin.allowDeletion}"
                                 action="#{AdministrationForm.administrationPlugin.deleteSelectedDatabase}"
-                            onclick="if (!confirm('#{msgs.sollDieserEintragWirklichGeloeschtWerden}')) return false"
+                                onclick="if (!confirm('#{msgs.sollDieserEintragWirklichGeloeschtWerden}')) return false"
                                 >
                                 <h:outputText value="#{msgs.plugin_administration_archive_deleteSelectedArchive}" />
-                             
-                       
+                            </h:commandLink> -->
 
-                            </h:commandLink>
-                                
-                            <h:commandLink
-                                styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowCreation ? '' : 'disabled'}"
-                                disabled="#{!AdministrationForm.administrationPlugin.allowCreation}">
-                                <h:outputText value="#{msgs.plugin_administration_archive_createNewArchive}" />
-                                <f:setPropertyActionListener
-                                    value="createArchive"
-                                    target="#{AdministrationForm.administrationPlugin.displayMode}" />
-                                <f:ajax
-                                    render="@form selectionBox:selectionBox"
-                                    onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
-                            </h:commandLink>
                             <h:commandLink
                                 styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowFileUpload ? '' : 'disabled'}"
                                 disabled="#{!AdministrationForm.administrationPlugin.allowFileUpload}">
@@ -99,12 +142,23 @@
                                     onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                             </h:commandLink>
                             <h:commandLink
+                                styleClass="btn btn-primary #{AdministrationForm.administrationPlugin.allowCreation ? '' : 'disabled'}"
+                                disabled="#{!AdministrationForm.administrationPlugin.allowCreation}">
+                                <h:outputText value="#{msgs.plugin_administration_archive_createNewArchive}" />
+                                <f:setPropertyActionListener
+                                    value="createArchive"
+                                    target="#{AdministrationForm.administrationPlugin.displayMode}" />
+                                <f:ajax
+                                    render="@form selectionBox:selectionBox"
+                                    onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                            </h:commandLink>
+                            <!-- <h:commandLink
                                 styleClass="btn btn-primary"
                                 id="absenden"
                                 action="#{AdministrationForm.administrationPlugin.loadSelectedDatabase}"
                                 rendered="#{AdministrationForm.administrationPlugin.possibleDatabases.size() gt 0}">
                                 <h:outputText value="#{msgs.plugin_administration_archive_loadDatabase}" />
-                            </h:commandLink>
+                            </h:commandLink> -->
                         </div>
                     </h:panelGroup>
                     <h:panelGroup
@@ -125,7 +179,7 @@
                                 <h:outputText value="#{msgs.abbrechen}" />
                             </h:commandLink>
                             <h:commandLink
-                                styleClass="btn btn-primary"
+                                styleClass="btn btn-success"
                                 action="#{AdministrationForm.administrationPlugin.createNewDatabase}">
                                 <span class="fa fa-save" />
                                 <span>
@@ -529,7 +583,6 @@
                                 </div>
                                 <div class="box__actions pe-2">
                                     <h:commandLink
-                                        rendered="#{AdministrationForm.administrationPlugin.readOnlyModus}"
                                         styleClass="btn btn-blank"
                                         type="submit"
                                         action="#{AdministrationForm.administrationPlugin.cancelEdition}">
@@ -1030,23 +1083,12 @@
                     boxType="action"
                     boxForm="true"
                     boxPadding="false"
-                    boxTitle="false">
-                    <intranda:boxTitle
-                        icon="fa fa-arrows"
-                        title="#{msgs.plugin_administration_archive_moveNode}">
-                        <div class="actions d-flex">
-                            <h:form>
-                                <h:commandLink
-                                    styleClass="btn d-flex align-items-center btn--title-action"
-                                    type="submit">
-                                    <x:updateActionListener
-                                        property="#{AdministrationForm.administrationPlugin.displayMode}"
-                                        value="" />
-                                    <h:outputText value="#{msgs.abbrechen}" />
-                                </h:commandLink>
-                            </h:form>
-                        </div>
-                    </intranda:boxTitle>
+                    icon="fa fa-arrows"
+                    title="#{msgs.plugin_administration_archive_moveNode}">
+                    <div class="p-2">
+                        <h:outputText
+                            value="#{msgs.plugin_administration_archive_moveNodeText}" />
+                    </div>
                     <h:form class="p-2">
                         <ui:repeat
                             var="entry"
@@ -1060,11 +1102,11 @@
                                     <h:commandLink
                                         id="link2"
                                         immediate="true"
-                                        styleClass="ps-1 #{entry.selected ? 'fw-700' : 'text-black'}"
+                                        styleClass="ps-1 #{entry.selected ? 'highlight' : 'text-black'}"
                                         action="#{AdministrationForm.administrationPlugin.moveNode}"
                                         disabled="#{entry.selected}">
                                         <span
-                                            class="fa fa-file-o"
+                                            class="#{entry.nodeType.icon}"
                                             aria-hidden="true" />
                                         <span>
                                             <h:outputText
@@ -1077,6 +1119,12 @@
                                         <x:updateActionListener
                                             property="#{AdministrationForm.administrationPlugin.destinationEntry}"
                                             value="#{entry}" />
+                                        <f:passThroughAttribute
+                                            name="data-bs-toggle"
+                                            value="tooltip" />
+                                        <f:passThroughAttribute
+                                            name="title"
+                                            value="#{entry.selected ? msgs.plugin_administration_archive_moveNodeThis : msgs.plugin_administration_archive_moveNodeHere}" />
                                     </h:commandLink>
                                 </div>
                             </div>
