@@ -567,6 +567,21 @@
                                 </div>
                                 <div class="box__actions pe-2">
                                     <h:commandLink
+                                        styleClass="btn btn-hot"
+                                        id="delete"
+                                        action="#{AdministrationForm.administrationPlugin.deleteSelectedDatabase}"
+                                        onclick="if (!confirm('#{msgs.sollDieserEintragWirklichGeloeschtWerden}')) return false"
+                                        rendered="#{!AdministrationForm.administrationPlugin.allowDeletion}"
+                                        >
+                                        <span class="fa fa-trash" />
+                                        <span>
+                                            <h:outputText value="#{msgs.loeschen}" />
+                                        </span>
+                                        <f:passThroughAttribute
+                                            name="data-bs-toggle"
+                                            value="tooltip" />
+                                    </h:commandLink>
+                                    <h:commandLink
                                         styleClass="btn btn-blank"
                                         id="saveAndExit"
                                         action="#{AdministrationForm.administrationPlugin.saveArchiveAndLeave}">
