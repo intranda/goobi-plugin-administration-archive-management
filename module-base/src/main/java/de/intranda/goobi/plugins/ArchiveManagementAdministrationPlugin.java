@@ -2747,6 +2747,16 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         ArchiveManagementManager.saveNodes(clonedRecordGroup.getId(), newRootElement.getAllNodes());
     }
 
+    public void duplicateEadFileFromOverview() {
+        // load selected file
+        loadSelectedDatabase();
+        // duplicate
+        duplicateEadFile();
+
+        // stay in overview
+        databaseName = null;
+    }
+
     public IConfiguration getDuplicationConfiguration() {
         if (duplicationConfiguration == null && rootElement != null) {
             duplicationConfiguration = new DuplicationConfiguration(rootElement);
@@ -3060,6 +3070,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         } catch (IOException e) {
             log.error(e);
         }
+    }
+
+    public void eadExportFrommOverview() {
+        eadExport();
+        databaseName = null;
     }
 
     public void initializeRecord() {

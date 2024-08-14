@@ -90,7 +90,7 @@
                                                             <!-- TODO: add correct action -->
                                                             <h:commandLink
                                                                 styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowCreation ? '' : 'disabled'}"
-                                                                action="#{AdministrationForm.administrationPlugin.duplicateEadFile}"
+                                                                action="#{AdministrationForm.administrationPlugin.duplicateEadFileFromOverview}"
                                                                 disabled="#{!AdministrationForm.administrationPlugin.allowCreation}">
                                                                 <f:passThroughAttribute
                                                                     name="data-bs-toggle"
@@ -101,12 +101,11 @@
                                                                 <span class="fa fa-clipboard" />
                                                                 <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
                                                             </h:commandLink>
-                                                            <!-- TODO: remain in overview after action -->
                                                             <h:commandLink
                                                                 rendered="#{!AdministrationForm.administrationPlugin.readOnlyModus}"
                                                                 styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.readOnlyModus ? 'disabled' : ''}"
                                                                 type="submit"
-                                                                action="#{AdministrationForm.administrationPlugin.eadExport}"
+                                                                action="#{AdministrationForm.administrationPlugin.eadExportFrommOverview}"
                                                                 disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}">
                                                                 <f:passThroughAttribute
                                                                     name="data-bs-toggle"
