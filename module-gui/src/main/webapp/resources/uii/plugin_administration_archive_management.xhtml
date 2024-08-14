@@ -428,12 +428,14 @@
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                         </h:commandLink>
                                         <h:commandLink
-                                            styleClass="btn btn-neutral-600 d-flex flex-nowrap py-2"
+                                            styleClass="btn btn-neutral-600"
                                             onclick="$('#createNodesModal').modal('show');"
                                             disabled="#{AdministrationForm.administrationPlugin.selectedEntry == null}"
                                             title="#{msgs.plugin_administration_archive_addMultipleNodes}">
-                                            <span class="fa fa-plus" />
-                                            <span class="fa fa-plus" />
+                                            <span class="fa-stack" style="font-size: 10px;">
+                                                <span class="fa fa-plus fa-stack-1x" style="margin-inline-start: .25em; margin-block-start: .25em;" />
+                                                <span class="fa fa-clone fa-stack-2x m-0" />
+                                            </span>
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
