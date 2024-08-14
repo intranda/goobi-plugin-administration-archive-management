@@ -202,6 +202,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Setter
     private boolean displayControlArea;
 
+    @Getter
+    public boolean showNodeIdInTree;
+
     @Setter
     private Process processTemplate;
     private BeanHelper bhelp = new BeanHelper();
@@ -789,6 +792,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         nameSpaceRead = Namespace.getNamespace("ead", config.getString("/eadNamespaceRead", "urn:isbn:1-931666-22-9"));
         nameSpaceWrite = Namespace.getNamespace("ead", config.getString("/eadNamespaceWrite", "urn:isbn:1-931666-22-9"));
+
+        showNodeIdInTree = config.getBoolean("/treeView/showNodeId", false);
 
         for (String level : config.getStringArray("/showGroup/@level")) {
             switch (level) {

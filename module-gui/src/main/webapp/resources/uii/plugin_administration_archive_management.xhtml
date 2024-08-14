@@ -87,7 +87,6 @@
                                                                 <span class="fa fa-pencil" />
                                                                 <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
                                                             </h:commandLink>
-                                                            <!-- TODO: add correct action -->
                                                             <h:commandLink
                                                                 styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowCreation ? '' : 'disabled'}"
                                                                 action="#{AdministrationForm.administrationPlugin.duplicateEadFileFromOverview}"
@@ -316,9 +315,6 @@
                                             <span
                                                 class="fa fa-search"
                                                 aria-hidden="true"></span>
-                                            <!-- <f:passThroughAttribute
-                                                name="data-bs-toggle"
-                                                value="tooltip" /> -->
                                         </button>
                                         <x:commandLink
                                             id="FilterAlle2"
@@ -374,14 +370,14 @@
                                                                 aria-hidden="true" />
                                                             <span>
                                                                 <h:outputText
-                                                                    value="#{entry.label}"
+                                                                    value="#{entry.label} #{AdministrationForm.administrationPlugin.showNodeIdInTree}"
                                                                     rendered="#{entry.label != null}" />
                                                                 <h:outputText
                                                                     value=" - "
                                                                     rendered="#{entry.label == null}" />
-                                                                <span class="text-secondary">
+                                                                <h:panelGroup styleClass="text-secondary" rendered="#{AdministrationForm.administrationPlugin.showNodeIdInTree}">
                                                                     <h:outputText value=" (#{entry.id})" />
-                                                                </span>
+                                                                </h:panelGroup>
                                                             </span>
                                                             <ui:fragment rendered="#{entry.goobiProcessTitle != null}">
                                                                 <span
