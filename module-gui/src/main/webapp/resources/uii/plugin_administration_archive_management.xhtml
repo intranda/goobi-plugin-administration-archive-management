@@ -418,7 +418,10 @@
                                             styleClass="btn btn-neutral-600"
                                             action="#{AdministrationForm.administrationPlugin.addNode}"
                                             title="#{msgs.plugin_administration_archive_newNode}">
-                                            <span class="fa fa-plus" />
+                                            <span class="fa-stack" style="font-size: 10px;">
+                                                <span class="fa fa-plus fa-stack-1x" />
+                                                <span class="fa fa-square-o fa-stack-2x m-0" />
+                                            </span>
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
