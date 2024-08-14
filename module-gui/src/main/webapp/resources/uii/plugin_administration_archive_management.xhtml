@@ -52,71 +52,75 @@
                     <h:panelGroup
                         layout="block"
                         rendered="#{AdministrationForm.administrationPlugin.displayMode == ''}">
-                        <div class="gw-table">
-                            <div class="gw-table__wrapper">
-                                <table
-                                    role="grid"
-                                    class="table table-bordered table-hover">
-                                    <thead>
-                                        <tr role="row">
-                                            <intranda:columnheader
-                                                value="#{msgs.name}"
-                                                sortable="false" />
-                                            <intranda:columnheader
-                                                value="#{msgs.auswahl}"
-                                                sortable="false" />
-                                        </tr>
-                                        <ui:repeat
-                                            var="db"
-                                            value="#{AdministrationForm.administrationPlugin.possibleDatabases}">
+                        <ui:fragment rendered="#{AdministrationForm.administrationPlugin.possibleDatabases.size() gt 0}">
+                            <div class="gw-table">
+                                <div class="gw-table__wrapper">
+                                    <table
+                                        role="grid"
+                                        class="table table-bordered table-hover">
+                                        <thead>
                                             <tr role="row">
-                                                <td class="align-top"><h:outputText value="#{db}" /></td>
-                                                <td>
-                                                    <div class="gw-table__actions__container">
-                                                        <h:commandLink
-                                                            styleClass="btn btn-blank"
-                                                            id="absenden"
-                                                            action="#{AdministrationForm.administrationPlugin.loadSelectedDatabase}">
-                                                            <f:passThroughAttribute
-                                                                name="data-bs-toggle"
-                                                                value="tooltip" />
-                                                            <f:passThroughAttribute
-                                                                name="title"
-                                                                value="#{msgs.plugin_administration_archive_loadDatabase}" />
-                                                            <span class="fa fa-pencil" />
-                                                            <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
-
-                                                        </h:commandLink>
-                                                        <h:commandLink
-                                                            styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowDeletion ? '' : 'disabled'}"
-                                                            disabled="#{!AdministrationForm.administrationPlugin.allowDeletion}"
-                                                            action="#{AdministrationForm.administrationPlugin.deleteSelectedDatabase}"
-                                                            onclick="if (!confirm('#{msgs.sollDieserEintragWirklichGeloeschtWerden}')) return false"
-                                                        >
-                                                            <f:passThroughAttribute
-                                                                name="data-bs-toggle"
-                                                                value="tooltip" />
-                                                            <f:passThroughAttribute
-                                                                name="title"
-                                                                value="#{msgs.loeschen}" />
-                                                            <span class="fa fa-trash" />
-                                                            <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
-                                                        </h:commandLink>
-                                                    </div>
-                                                </td>
+                                                <intranda:columnheader
+                                                    value="#{msgs.name}"
+                                                    sortable="false" />
+                                                <intranda:columnheader
+                                                    value="#{msgs.auswahl}"
+                                                    sortable="false" />
                                             </tr>
-                                        </ui:repeat>
-                                    </thead>
-                                </table>
+                                            <ui:repeat
+                                                var="db"
+                                                value="#{AdministrationForm.administrationPlugin.possibleDatabases}">
+                                                <tr role="row">
+                                                    <td class="align-top"><h:outputText value="#{db}" /></td>
+                                                    <td>
+                                                        <div class="gw-table__actions__container">
+                                                            <h:commandLink
+                                                                styleClass="btn btn-blank"
+                                                                id="absenden"
+                                                                action="#{AdministrationForm.administrationPlugin.loadSelectedDatabase}">
+                                                                <f:passThroughAttribute
+                                                                    name="data-bs-toggle"
+                                                                    value="tooltip" />
+                                                                <f:passThroughAttribute
+                                                                    name="title"
+                                                                    value="#{msgs.plugin_administration_archive_loadDatabase}" />
+                                                                <span class="fa fa-pencil" />
+                                                                <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
+
+                                                            </h:commandLink>
+                                                            <h:commandLink
+                                                                styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowDeletion ? '' : 'disabled'}"
+                                                                disabled="#{!AdministrationForm.administrationPlugin.allowDeletion}"
+                                                                action="#{AdministrationForm.administrationPlugin.deleteSelectedDatabase}"
+                                                                onclick="if (!confirm('#{msgs.sollDieserEintragWirklichGeloeschtWerden}')) return false"
+                                                            >
+                                                                <f:passThroughAttribute
+                                                                    name="data-bs-toggle"
+                                                                    value="tooltip" />
+                                                                <f:passThroughAttribute
+                                                                    name="title"
+                                                                    value="#{msgs.loeschen}" />
+                                                                <span class="fa fa-trash" />
+                                                                <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
+                                                            </h:commandLink>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </ui:repeat>
+                                        </thead>
+                                    </table>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="box__actions">
+                        </ui:fragment>
+                        <h:panelGroup
+                            layout="block"
+                            rendered="#{AdministrationForm.administrationPlugin.possibleDatabases.size() eq 0}"
+                            styleClass="me-auto"
+                            >
                             <h:outputText
-                                rendered="#{AdministrationForm.administrationPlugin.possibleDatabases.size() eq 0}"
-                                styleClass="me-auto"
                                 value="#{msgs.plugin_administration_archive_noArchivesAvailable}" />
-
+                        </h:panelGroup>
+                        <div class="box__actions">
                             <h:commandLink
                                 styleClass="btn btn-primary #{AdministrationForm.administrationPlugin.allowCreation ? '' : 'disabled'}"
                                 disabled="#{!AdministrationForm.administrationPlugin.allowCreation}">
