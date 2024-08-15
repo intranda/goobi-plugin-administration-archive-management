@@ -823,7 +823,7 @@
                                                                     value="#{nodeType}"
                                                                     target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
                                                                 <f:ajax
-                                                                    render="node-type hierarchy:hierarchy"
+                                                                    render="nodeBox:node-type hierarchy:hierarchy"
                                                                     onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                                                 <f:passThroughAttribute
                                                                     name="data-bs-toggle"
