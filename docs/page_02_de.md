@@ -4,36 +4,35 @@ identifier: intranda_administration_archive_management
 published: true
 ---
 
-Nach der Durchführung der Installation des Plugins und der zugehörigen Datenbank muss ebenfalls noch eine Konfiguration des Plugins erfolgen. Diese findet innerhalb der Konfigurationsdatei `plugin_intranda_administration_archive_management.xml` statt. und ist beispielhaft wie folgt aufgebaut:
+Nach der Durchführung der Installation des Plugins und der zugehörigen Datenbank muss ebenfalls noch eine Konfiguration des Plugins erfolgen. Diese findet innerhalb der Konfigurationsdatei `plugin_intranda_administration_archive_management.xml` statt und ist beispielhaft wie folgt aufgebaut:
 
 {{CONFIG_CONTENT}}
 
+
 ## Allgemeine Konfiguration
+Im Bereich `<export>` wird die Anbindung an den Goobi viewer konfiguriert. Hier wird der Ort festgelegt, an den ein Export als EAD-XML erfolgt und welche Bestände exportiert werden sollen. Der Export erfolgt automatisch in regelmäßigen Abständen oder kann manuell aus der Nutzeroberfläche gestartet werden.
 
-Im Bereich `<export>` wird die Anbindung an den viewer konfiguriert. Hier wird der Ort festgelegt, an den ein Export als EAD-XML erfolgt und welche Bestände exportiert werden sollen. Der Export erfolgt automatisch in regelmäßigen Abständen oder kann manuell aus der Nutzeroberfläche gestartet werden.
+Im zweiten Bereich `<backup>` kann ein automatisches Backup der einzelnen Bestände konfiguriert werden. Dabei wird für jeden Bestand eine eigene Datei erzeugt. Es kann definiert werden, wie viele Backups vorgehalten werden sollen und welches Tool zum Erzeugen der Backups genutzt werden soll. Falls ein Passwort für den Datenbank-Zugriff benötigt wird, kann dies hier ebenfalls konfiguriert werden.
 
-Im zweiten Bereich `<backup>` kann ein automatisches Backup der einzelnen Bestände konfiguriert werden. Dabei wird für jeden Bestand eine eigene Datei erzeugt. Es kann definiert werden, wie viele Backups vorgehalten werden sollen und welches Tool zum erzeugen der Backups genutzt werden soll. Falls ein Passwort für den Datenbank Zugriff benötigt wird, kann dies hier ebenfalls konfiguriert werden.
+Anschließend folgt ein wiederholbarer `<config>` Block. Über das wiederholbare Element `<archive>` kann festgelegt werden, für welche Dateien der `<config>`-Block gelten soll. Soll es einen Default-Block geben, der für alle Dokumente gelten soll, kann `*` genutzt werden.
 
-Anschließend folgt ein wiederholbarer `<config>` Block. Über das wiederholbare Element `<archive>` kann festgelegt werden, für welche Dateien der `<config>` Block gelten soll. Soll es einen Default-Block geben, der für alle Dokumente gelten soll, kann `*` genutzt werden.
-
-Mittels `<processTemplateId>` wird festgelegt, auf Basis welcher Produktionsvorlage die erstellten Goobi-Vorgänge erstellt werden sollen.
+Mittels `<processTemplateId>` wird festgelegt, auf Basis welcher Produktionsvorlage die Goobi-Vorgänge erstellt werden sollen.
 
 
 ## Konfiguration der Generierung von Vorgangstiteln
 Die Parameter `<lengthLimit>` `<separator>` `<useIdFromParent>` und `<title>` werden verwendet, um die Benennung des zu erzeugenden Vorgangs zu konfigurieren:
 
-* Der Wert `<lengthLimit>` setzt ein Längenlimit für alle Tokens außer dem manuell gesetzten Präfix und Suffix. Die Voreinstellung ist `0`, begrenzt die Länge also nicht.
-* Der Parameter `<separator>` definiert das Trennzeichen, das verwendet werden soll, um alle separaten Tokens zu kombinieren. Die Voreinstellung ist `_`.
+- Der Wert `<lengthLimit>` setzt ein Längenlimit für alle Tokens außer dem manuell gesetzten Präfix und Suffix. Die Voreinstellung ist `0`, begrenzt die Länge also nicht.
+- Der Parameter `<separator>` definiert das Trennzeichen, das verwendet werden soll, um alle separaten Tokens zu kombinieren. Die Voreinstellung ist `_`.
 - Der Parameter `<useIdFromParent>` konfiguriert, wessen ID für die Erstellung des Vorgangstitels verwendet werden soll. Wenn er auf `true` gesetzt ist, wird die ID des übergeordneten Knotens verwendet. Andernfalls wird die ID des aktuellen Knotens verwendet.
 - Der Parameter `<title>` konfiguriert, welche Metadaten für die Titelgenerierung genutzt werden sollen. Dabei kann das Attribut `value` einen statischen Text oder das Attribut `name` den Namen eines Metadatenfeldes beinhalten. Mittels `type` wird gesteuert, was mit dem Wert geschehen soll `NORMAL` fügt das Feld unverändert ein, `CAMEL_CASE` ersetzt Leerzeichen und lässt jedes Wort mit einem Großbuchstaben starten, `AFTER_LAST_SEPARATOR` fügt das Feld immer am Ende an, `BEFORE_FIRST_SEPARATOR` fügt es immer am Anfang an. Wenn kein title konfiguriert wurde, wird der Vorgangstitel auf Basis der node ID gebildet.
 
 
-## Konfiguratioan der Metadatenfelder
-
+## Konfiguration der Metadatenfelder
 Anschließend folgt eine Liste von `<metadata>` Elementen. Darüber wird gesteuert, welche Felder angezeigt werden, importiert werden können, wie sie sich verhalten sollen und ob es Validierungsregeln gibt.
 
-### Pflichtangaben
 
+### Pflichtangaben
 Jedes Metadatenfeld besteht aus mindestens den folgenden Pflichtangaben:
 
 | Wert | Beschreibung |
@@ -41,8 +40,8 @@ Jedes Metadatenfeld besteht aus mindestens den folgenden Pflichtangaben:
 | `name` | Mit diesem Wert wird das Feld identifiziert. Es muss daher eine eindeutige Bezeichnung enthalten. Sofern der Wert nicht noch extra in den messages Dateien konfiguriert wurde, wird er auch als Label des Feldes genutzt. |
 | `level` | Hiermit wird definiert, in welchem Bereich das Metadatum eingefügt wird. Dabei sind die Zahlen 1-7 erlaubt: `1. Identifikation`, `2. Kontext`, `3. Inhalt und innere Ordnung`, `4. Zugangs- und Benutzungsbedingungen`, `5. Sachverwandte Unterlagen`, `6. Anmerkungen`, `7. Verzeichnungskontrolle` |
 
-### Optionale Angaben
 
+### Optionale Angaben
 Des weiteren gibt es noch eine Reihe weiterer optionaler Angaben:
 
 | Wert | Beschreibung |
@@ -64,10 +63,10 @@ Es können auch mehrere Validierungsregeln kombiniert werden, zum Beispiel `uniq
 | `validationError` | Dieses Unterfeld enthält einen Text, der angezeigt wird, wenn der Feldinhalt gegen die Validierungsregeln verstößt. |
 | `@searchable` | Hierüber kann gesteuert werden, ob das Metadatum in der erweiterten Suche als Feld angeboten werden soll. Das Feld darf die beiden Werte `true` und `false` \(default\) enthalten. |
 
+
 ## Beispiele für verschiedene Feld-Konfigurationen
 
 ### Einfaches Eingabefeld
-
 ```xml
 <metadata xpath="./ead:control/ead:maintenanceagency/ead:agencycode" xpathType="element" name="agencycode" level="1" repeatable="false" fieldType="input"/>
 ```
@@ -76,8 +75,7 @@ Es können auch mehrere Validierungsregeln kombiniert werden, zum Beispiel `uniq
 
 
 ### Textfeld
-
-```markup
+```xml
 <metadata xpath="(./ead:archdesc/ead:did/ead:unittitle | ./ead:did/ead:unittitle)[1]" xpathType="element" name="unittitle" level="1" repeatable="false" fieldType="textarea" rulesetName="TitleDocMain" importMetadataInChild="false" />
 ```
 
@@ -85,7 +83,6 @@ Es können auch mehrere Validierungsregeln kombiniert werden, zum Beispiel `uniq
 
 
 ### Auswahlliste
-
 ```xml
 <metadata xpath="(./ead:archdesc/@level | ./@level)[1]" xpathType="attribute" name="descriptionLevel" level="1" repeatable="false" fieldType="dropdown">
     <value>collection</value>
@@ -106,7 +103,6 @@ Es können auch mehrere Validierungsregeln kombiniert werden, zum Beispiel `uniq
 
 
 ### Mehrfachauswahl
-
 ```xml
         <metadata xpath="(./ead:archdesc/ead:did/ead:langmaterial[@label='font'] | ./ead:did/ead:langmaterial[@label='font'])[1]" xpathType="element" name="font" level="4" repeatable="false"
             fieldType="multiselect" rulesetName="FontType" importMetadataInChild="false">
@@ -122,22 +118,22 @@ Es können auch mehrere Validierungsregeln kombiniert werden, zum Beispiel `uniq
 
 
 ### Validierung von Datumsangaben im ISO 8601 Format
-
 ```xml
 <metadata xpath="(./ead:archdesc/ead:did/ead:unitdate | ./ead:did/ead:unitdate)[1]" xpathType="element" name="unitdate" level="1" repeatable="false" rulesetName="PublicationYear" importMetadataInChild="false" regularExpression="^([0-9]{4}\\-[0-9]{2}\\-[0-9]{2}|[0-9]{4})(\\s?\\-\s?([0-9]{4}\\-[0-9]{2}\\-[0-9]{2}|[0-9]{4}))?$" validationType="regex">
   <validationError>Der Wert ist keine Datumsangabe. Erlaubte Werte sind entweder Jahreszahlen (YYYY), exakte Datumsangaben (YYYY-MM-DD) oder Zeiträume (YYYY - YYYY, YYYY-MM-DD-YYYY-MM-DD)</validationError>
 </metadata>
 ```
-### Validierung von Datumsangaben im EDTF Format
 
+
+### Validierung von Datumsangaben im EDTF Format
 ```xml
 <metadata xpath="(./ead:archdesc/ead:did/ead:unitdate | ./ead:did/ead:unitdate)[1]" xpathType="element" name="unitdate" level="1" repeatable="false" rulesetName="PublicationYear" importMetadataInChild="false" validationType="date">
   <validationError>Der Wert ist keine Datumsangabe</validationError>
 </metadata>
 ```
 
-### Anbindung eines kontrollierten Vokabulars
 
+### Anbindung eines kontrollierten Vokabulars
 ```xml
 <metadata xpath="(./ead:archdesc/ead:dsc/ead:acqinfo | ./ead:dsc/ead:acqinfo)[1]" xpathType="element" name="acqinfo" level="2" repeatable="false" fieldType="vocabulary" rulesetName="AquisitionInformation" >
   <vocabulary>Aquisition</vocabulary>
@@ -146,8 +142,8 @@ Es können auch mehrere Validierungsregeln kombiniert werden, zum Beispiel `uniq
 </metadata>
 ```
 
-### Verknüpfung auf einen anderen Knoten innerhalb des Bestandes
 
+### Verknüpfung auf einen anderen Knoten innerhalb des Bestandes
 ```xml
         <metadata xpath="(./ead:archdesc/ead:relatedmaterial/ead:ref | ./ead:relatedmaterial/ead:ref)" xpathType="element" name="nodelink" fieldType="nodelink" level="5" repeatable="false" />
 ```
@@ -158,7 +154,6 @@ Es können auch mehrere Validierungsregeln kombiniert werden, zum Beispiel `uniq
 
 
 ### Suche in der GND
-
 ```xml
             <metadata xpath="./ead:archdesc/ead:index/ead:indexentry/ead:persname/ead:part" xpathType="element" name="Person" level="7" repeatable="true" fieldType="gnd" visible="true" />
 ```
@@ -166,7 +161,6 @@ Es können auch mehrere Validierungsregeln kombiniert werden, zum Beispiel `uniq
 
 
 ## Suche in Geonames
-
 ```xml
             <metadata xpath="./ead:archdesc/ead:index/ead:indexentry/ead:geogname/ead:part[@localtype='place']" xpathType="element" name="Place" level="7" repeatable="true" fieldType="geonames" visible="true" />
 ```
@@ -174,9 +168,7 @@ Es können auch mehrere Validierungsregeln kombiniert werden, zum Beispiel `uniq
 ![Geonames Feld](screen19_de.png)
 
 
-
 ## Suche in VIAF
-
 ```xml
             <metadata xpath="./ead:archdesc/ead:index/ead:indexentry/ead:corpname/ead:part" xpathType="element" name="Corporate" level="7" repeatable="true"
                 searchable="true" showField="true" fieldType="viaf" searchFields="210__a; 111__a; 100__a; 110__a; 150__a; 151__a;"
@@ -187,11 +179,10 @@ Es können auch mehrere Validierungsregeln kombiniert werden, zum Beispiel `uniq
 
 
 ## Konfiguration der Anzeige der Bereiche
-
 In der Standardeinstellung sind die einzelnen Bereiche 1. `Identifikation`, 2. `Kontext`, 3. `Inhalt und innere Ordnung`, 4. `Zugangs- und Benutzungsbedingungen`, 5. `Sachverwandte Unterlagen`, 6. `Anmerkungen` und 7. `Verzeichnungskontrolle` aus Platzgründen eingeklappt und werden nicht angezeigt. Damit sie bereits beim auswählen eines Knotens ausgeklappt und angezeigt werdden, kann das Element `<showGroup level="1" />` verwendet werden. Über die Ordnungsnummer im Attribut level wird gesteuert, welcher Bereich ausgeklappt wird. Um auch unausgefüllte Metadaten gleich anzuzeigen, ohne sie mittels Badge hinzuzufügen, kann innerhalb der `<metadata>` Definition das Attribut `showField="true"` genutzt werden.
 
-## Konfiguration des XML Namensraums
 
+## Konfiguration des XML Namensraums
 Die beiden Elemente `<eadNamespaceRead>` und `<eadNamespaceWrite>` legen fest, welche XML Namespaces zum lesen und schreiben von EAD Dokumenten verwendet werden sollen. Üblicherweise enthalten beide den gleichen Wert. Es können jedoch auch EAD2 Dokumente gelesen und als EAD3 Dokumente exportiert werden. Dann müssen die entsprechenden Namespaces definiert werden und bei den xpath Ausdrücken der einzelnen Metadaten darauf geachtet werden, dass beide Varianten angeggeben sind. Daher ist es einfacher, den beigelegten Konverter zu nutzen und die Konvertierung von EAD2 nach EAD3 vor dem einspielen der Dokumente zu machen.
 
 - Namespace für ead2 (deprecated): urn:isbn:1-931666-22-9
