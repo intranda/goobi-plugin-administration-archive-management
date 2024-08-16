@@ -63,9 +63,12 @@
                                                 <intranda:columnheader
                                                     value="#{msgs.name}"
                                                     sortable="false" />
-                                                <intranda:columnheader
-                                                    value="#{msgs.auswahl}"
-                                                    sortable="false" />
+                                                <th
+                                                    scope="col"
+                                                    role="columnheader"
+                                                    class="header__buttons header__col-xxl">
+                                                   #{msgs.auswahl}
+                                                </th>
                                             </tr>
                                             <ui:repeat
                                                 var="db"
