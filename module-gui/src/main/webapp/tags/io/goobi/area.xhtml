@@ -38,13 +38,15 @@
                                 <goobiio:input
                                     fieldid="#{item.name}input"
                                     fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
-                                    fieldvalue="#{field.value}" />
+                                    fieldvalue="#{field.value}"
+                                    deletable="true" />
                             </ui:fragment>
                             <ui:fragment rendered="#{item.fieldType=='textarea'}">
                                 <goobiio:textarea
                                     fieldid="#{item.name}textarea"
                                     fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
-                                    fieldvalue="#{field.value}" />
+                                    fieldvalue="#{field.value}"
+                                    deletable="true" />
                             </ui:fragment>
                             <ui:fragment rendered="#{item.fieldType=='dropdown' or item.fieldType=='vocabulary'}">
                                 <goobiio:dropdown
@@ -53,7 +55,8 @@
                                     fieldid="#{item.name}dropdown"
                                     fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
                                     fieldvalue="#{field.value}"
-                                    selectItems="#{field.selectItemList}" />
+                                    selectItems="#{field.selectItemList}"
+                                    deletable="true" />
                             </ui:fragment>
                             <ui:fragment rendered="#{item.fieldType=='multiselect'}">
                                 <goobiio:multiselect
@@ -63,7 +66,8 @@
                                     fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
                                     fieldvalue="#{field.multiselectValue}"
                                     selectItems="#{field.possibleValues}"
-                                    selectedItems="#{field.multiselectSelectedValues}" />
+                                    selectedItems="#{field.multiselectSelectedValues}"
+                                    deletable="true" />
                             </ui:fragment>
                             <ui:fragment rendered="#{item.fieldType=='readonly'}">
                                 <goobiio:readonly

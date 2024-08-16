@@ -15,13 +15,15 @@
             <goobiio:input
                 fieldid="#{subfield.name}input"
                 fieldname="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}"
-                fieldvalue="#{field.value}" />
+                fieldvalue="#{field.value}"
+                deletable="false" />
         </ui:fragment>
         <ui:fragment rendered="#{subfield.fieldType=='textarea'}">
             <goobiio:textarea
                 fieldid="#{subfield.name}textarea"
                 fieldname="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}"
-                fieldvalue="#{field.value}" />
+                fieldvalue="#{field.value}"
+                deletable="false" />
         </ui:fragment>
         <ui:fragment rendered="#{subfield.fieldType=='dropdown' or subfield.fieldType=='vocabulary'}">
             <goobiio:dropdown
@@ -30,7 +32,8 @@
                 fieldid="#{subfield.name}dropdown"
                 fieldname="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}"
                 fieldvalue="#{field.value}"
-                selectItems="#{field.selectItemList}" />
+                selectItems="#{field.selectItemList}"
+                deletable="false" />
         </ui:fragment>
         <ui:fragment rendered="#{subfield.fieldType=='multiselect'}">
             <goobiio:multiselect
@@ -40,13 +43,15 @@
                 fieldname="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}"
                 fieldvalue="#{field.multiselectValue}"
                 selectItems="#{field.possibleValues}"
-                selectedItems="#{field.multiselectSelectedValues}" />
+                selectedItems="#{field.multiselectSelectedValues}"
+                deletable="false" />
         </ui:fragment>
         <ui:fragment rendered="#{subfield.fieldType=='readonly'}">
             <goobiio:readonly
                 fieldid="#{subfield.name}readonly"
                 fieldname="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}"
-                fieldvalue="#{field.value}" />
+                fieldvalue="#{field.value}"
+                deletable="false" />
         </ui:fragment>
         <ui:fragment rendered="#{subfield.fieldType=='nodelink'}">
             <goobiio:nodelink

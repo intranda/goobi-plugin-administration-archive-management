@@ -37,8 +37,8 @@
                 </h:commandLink>
                 <h:commandLink
                     action="#{item.deleteValue(field)}"
-                    styleClass="btn">
-                    <span class="fa fa-minus-circle" />
+                    styleClass="btn"
+                    rendered="#{deletable}">
                     <f:ajax
                         execute="@this"
                         render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />

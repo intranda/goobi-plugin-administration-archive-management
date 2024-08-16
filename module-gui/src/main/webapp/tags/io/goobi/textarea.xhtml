@@ -14,8 +14,10 @@
                 <h:outputLabel
                     for="#{fieldid}"
                     value="#{fieldname}" />
-                <h:commandLink styleClass="btn" action="#{item.deleteValue(field)}">
-                    <span class="fa fa-minus-circle" />
+                <h:commandLink
+                    styleClass="btn"
+                    action="#{item.deleteValue(field)}"
+                    rendered="#{deletable}">
                     <f:ajax
                         execute="#{fieldid}"
                         render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />

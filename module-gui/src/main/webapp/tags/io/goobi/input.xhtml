@@ -15,8 +15,10 @@
                 <intranda:formLabel
                     labelFor="#{fieldid}"
                     label="#{fieldname}" />
-                <h:commandLink styleClass="btn" action="#{item.deleteValue(field)}">
-                    <span class="fa fa-minus-circle" />
+                <h:commandLink
+                    styleClass="btn"
+                    action="#{item.deleteValue(field)}"
+                    rendered="#{deletable}">
                     <f:ajax
                         execute="@this"
                         render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
