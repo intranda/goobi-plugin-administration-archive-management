@@ -18,6 +18,7 @@
                     styleClass="btn"
                     action="#{item.deleteValue(field)}"
                     rendered="#{deletable}">
+                    <span class="fa fa-trash" />
                     <f:ajax
                         execute="#{fieldid}"
                         render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />

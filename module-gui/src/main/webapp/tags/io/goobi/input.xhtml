@@ -19,6 +19,7 @@
                     styleClass="btn"
                     action="#{item.deleteValue(field)}"
                     rendered="#{deletable}">
+                    <span class="fa fa-trash" />
                     <f:ajax
                         execute="@this"
                         render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
