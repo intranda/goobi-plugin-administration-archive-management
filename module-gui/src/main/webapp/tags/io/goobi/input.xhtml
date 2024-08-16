@@ -15,15 +15,6 @@
                 <intranda:formLabel
                     labelFor="#{fieldid}"
                     label="#{fieldname}" />
-                <h:commandLink
-                    styleClass="btn"
-                    action="#{item.deleteValue(field)}"
-                    rendered="#{deletable}">
-                    <span class="fa fa-trash" />
-                    <f:ajax
-                        execute="@this"
-                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
-                </h:commandLink>
             </div>
             <div class="form-input">
                 <h:inputText
@@ -40,6 +31,15 @@
                 </h:inputText>
                 <h:outputText styleClass="help-inline color-F" rendered="#{!item.valid}" value="#{msgs[item.validationError]}"/>
             </div>
+            <h:commandLink
+                styleClass="btn btn-blank font-light fs-500"
+                action="#{item.deleteValue(field)}"
+                rendered="#{deletable}">
+                <span class="fa fa-trash" />
+                <f:ajax
+                    execute="@this"
+                    render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+            </h:commandLink>
         </div>
     </ui:composition>
 </h:body>

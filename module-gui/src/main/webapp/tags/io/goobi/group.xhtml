@@ -18,14 +18,6 @@
             <legend
                 class="field-set-legend d-flex justify-content-between">
                 <h:outputText value="#{fieldname}" />
-                <h:commandLink
-                    action="#{AdministrationForm.administrationPlugin.selectedEntry.deleteGroup(group)}"
-                    styleClass="btn ms-auto">
-                    <span class="fa fa-trash" />
-                    <f:ajax
-                        execute="@this"
-                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
-                </h:commandLink>
             </legend>
             <div class="field-set-content">
                 <x:dataList
@@ -37,6 +29,14 @@
                         <goobiio:fields />
                     </x:dataList>
                 </x:dataList>
+                <h:commandLink
+                    action="#{AdministrationForm.administrationPlugin.selectedEntry.deleteGroup(group)}"
+                    styleClass="btn btn-blank font-light fs-500">
+                    <span class="fa fa-trash" />
+                    <f:ajax
+                        execute="@this"
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                </h:commandLink>
             </div>
         </fieldset>
         </x:dataList>

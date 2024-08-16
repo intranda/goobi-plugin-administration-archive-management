@@ -35,15 +35,6 @@
                         execute="@this"
                         render="vocabularyModalContent" />
                 </h:commandLink>
-                <h:commandLink
-                    action="#{item.deleteValue(field)}"
-                    styleClass="btn"
-                    rendered="#{deletable}">
-                    <span class="fa fa-trash" />
-                    <f:ajax
-                        execute="@this"
-                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
-                </h:commandLink>
             </div>
             <div class="form-input">
                 <h:selectOneMenu
@@ -71,6 +62,15 @@
                     rendered="#{!item.valid}"
                     value="#{msgs[item.validationError]}" />
             </div>
+            <h:commandLink
+                action="#{item.deleteValue(field)}"
+                styleClass="btn btn-blank font-light fs-500"
+                rendered="#{deletable}">
+                <span class="fa fa-trash" />
+                <f:ajax
+                    execute="@this"
+                    render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+            </h:commandLink>
         </div>
     </ui:composition>
 </h:body>

@@ -15,14 +15,6 @@
                 <h:outputLabel
                     for="#{fieldid}"
                     value="#{fieldname}" />
-                <h:commandLink
-                    styleClass="btn"
-                    action="#{item.deleteValue(field)}">
-                    <span class="fa fa-trash" />
-                    <f:ajax
-                        execute="@this"
-                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
-                </h:commandLink>
             </div>
             <div class="form-input d-flex gap-2 flex-nowrap">
                 <!-- input field for the node id, read only? -->
@@ -65,6 +57,14 @@
                     rendered="#{!item.valid}"
                     value="#{msgs[item.validationError]}" />
             </div>
+            <h:commandLink
+                styleClass="btn btn-blank font-light fs-500"
+                action="#{item.deleteValue(field)}">
+                <span class="fa fa-trash" />
+                <f:ajax
+                    execute="@this"
+                    render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+            </h:commandLink>
         </div>
     </ui:composition>
 </h:body>

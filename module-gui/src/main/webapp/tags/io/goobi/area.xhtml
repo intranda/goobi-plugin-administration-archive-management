@@ -82,68 +82,74 @@
                                     fieldvalue="#{field.value}" />
                             </ui:fragment>
                             <ui:fragment rendered="#{item.fieldType=='gnd'}">
-                                <intranda:formInputGndAjax
-                                    id="gnd"
-                                    name="gnd"
-                                    render="@form"
-                                    field="#{field}"
-                                    help=""
-                                    fieldStyle=""
-                                    displayAsRequired="false"
-                                    required="false"
-                                    label="#{msgs['plugin_administration_archive_'.concat(item.name)]}">
+                                <div class="form-legacy-wrapper">
+                                    <intranda:formInputGndAjax
+                                        id="gnd"
+                                        name="gnd"
+                                        render="@form"
+                                        field="#{field}"
+                                        help=""
+                                        fieldStyle=""
+                                        displayAsRequired="false"
+                                        required="false"
+                                        label="#{msgs['plugin_administration_archive_'.concat(item.name)]}">
+                                    </intranda:formInputGndAjax>
                                     <h:commandLink
                                         action="#{item.deleteValue(field)}"
-                                        styleClass="btn ms-auto">
+                                        styleClass="btn btn-blank font-light fs-500">
                                         <span class="fa fa-trash" />
                                         <f:ajax
                                             execute="@this"
                                             render="nodeBox::nodeBox:#{ajaxid} :hierarchy:hierarchy" />
                                     </h:commandLink>
-                                </intranda:formInputGndAjax>
+                                </div>
                             </ui:fragment>
                             <ui:fragment rendered="#{item.fieldType=='geonames'}">
-                                <intranda:formInputGeonamesAjax
-                                    id="geonames"
-                                    name="geonames"
-                                    field="#{field}"
-                                    help="#{msgs.help}"
-                                    render="@form"
-                                    fieldStyle="form-control"
-                                    displayAsRequired="false"
-                                    required="false"
-                                    submitDataAction="#{field.importGeonamesData()}"
-                                    label="#{msgs['plugin_administration_archive_'.concat(item.name)]}">
+                                <div class="form-legacy-wrapper">
+                                    <intranda:formInputGeonamesAjax
+                                        id="geonames"
+                                        name="geonames"
+                                        field="#{field}"
+                                        help="#{msgs.help}"
+                                        render="@form"
+                                        fieldStyle="form-control"
+                                        displayAsRequired="false"
+                                        required="false"
+                                        submitDataAction="#{field.importGeonamesData()}"
+                                        label="#{msgs['plugin_administration_archive_'.concat(item.name)]}">
+                                    </intranda:formInputGeonamesAjax>
                                     <h:commandLink
                                         action="#{item.deleteValue(field)}"
-                                        styleClass="btn ms-auto">
+                                        styleClass="btn btn-blank font-light fs-500">
                                         <span class="fa fa-trash" />
                                         <f:ajax
                                             execute="@this"
                                             render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
                                     </h:commandLink>
-                                </intranda:formInputGeonamesAjax>
+                                </div>
                             </ui:fragment>
                             <ui:fragment rendered="#{item.fieldType=='viaf'}">
-                                <intranda:formInputViafAjax
-                                    id="viaf"
-                                    name="viaf"
-                                    field="#{field}"
-                                    help="#{msgs.help}"
-                                    render="@form"
-                                    fieldStyle="form-control"
-                                    displayAsRequired="false"
-                                    required="false"
-                                    label="#{msgs['plugin_administration_archive_'.concat(item.name)]}">
+                                <div class="form-legacy-wrapper">
+                                    <intranda:formInputViafAjax
+                                        id="viaf"
+                                        name="viaf"
+                                        field="#{field}"
+                                        help="#{msgs.help}"
+                                        render="@form"
+                                        fieldStyle="form-control"
+                                        displayAsRequired="false"
+                                        required="false"
+                                        label="#{msgs['plugin_administration_archive_'.concat(item.name)]}">
+                                    </intranda:formInputViafAjax>
                                     <h:commandLink
                                         action="#{item.deleteValue(field)}"
-                                        styleClass="btn ms-auto">
+                                        styleClass="btn btn-blank font-light fs-500">
                                         <span class="fa fa-trash" />
                                         <f:ajax
                                             execute="@this"
                                             render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
                                     </h:commandLink>
-                                </intranda:formInputViafAjax>
+                                </div>
                             </ui:fragment>
                         </x:dataList>
                         <ui:fragment rendered="#{item.fieldType=='group'}">
