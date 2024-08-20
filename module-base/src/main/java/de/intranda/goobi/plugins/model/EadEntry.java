@@ -1,20 +1,30 @@
 package de.intranda.goobi.plugins.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.goobi.interfaces.IConfiguration;
 import org.goobi.interfaces.IEadEntry;
+import org.goobi.interfaces.IFieldValue;
 import org.goobi.interfaces.IMetadataField;
+import org.goobi.interfaces.IMetadataGroup;
 import org.goobi.interfaces.INodeType;
 import org.goobi.interfaces.IParameter;
 
-import lombok.Data;
+import de.sub.goobi.persistence.managers.MySQLHelper;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class EadEntry implements IEadEntry {
+
+    // table auto increment key
+    private Integer databaseId;
 
     // parent node
     private IEadEntry parentNode;
@@ -100,6 +110,10 @@ public class EadEntry implements IEadEntry {
 
     // true if the validation of all metadata fields was successful
     private boolean valid = true;
+    private String data;
+
+    @Getter
+    private String fingerprint;
 
     public EadEntry(Integer order, Integer hierarchy) {
         this.orderNumber = order;
@@ -127,14 +141,17 @@ public class EadEntry implements IEadEntry {
     }
 
     @Override
+    public void sortElements() {
+        Collections.sort(subEntryList);
+    }
+
+    @Override
     public List<IEadEntry> getAsFlatList() {
         List<IEadEntry> list = new LinkedList<>();
         list.add(this);
-        if (displayChildren) {
-            if (subEntryList != null) {
-                for (IEadEntry ds : subEntryList) {
-                    list.addAll(ds.getAsFlatList());
-                }
+        if (displayChildren && subEntryList != null) {
+            for (IEadEntry ds : subEntryList) {
+                list.addAll(ds.getAsFlatList());
             }
         }
         return list;
@@ -209,12 +226,13 @@ public class EadEntry implements IEadEntry {
         if (parentNode != null && other.parentNode == null) {
             return false;
         }
-
-        if (!parentNode.getOrderNumber().equals(other.parentNode.getOrderNumber())) {
-            return false;
-        }
-        if (!parentNode.getHierarchy().equals(other.parentNode.getHierarchy())) {
-            return false;
+        if (parentNode != null && other.parentNode != null) {
+            if (!parentNode.getOrderNumber().equals(other.parentNode.getOrderNumber())) {
+                return false;
+            }
+            if (!parentNode.getHierarchy().equals(other.parentNode.getHierarchy())) {
+                return false;
+            }
         }
 
         return true;
@@ -365,7 +383,7 @@ public class EadEntry implements IEadEntry {
         other.setOrderNumber(orderNumber);
 
         // create new id
-        other.setId(String.valueOf(UUID.randomUUID()));
+        other.setId("id_" + UUID.randomUUID());
 
         // copy all metadata
         for (IMetadataField field : identityStatementAreaList) {
@@ -527,4 +545,198 @@ public class EadEntry implements IEadEntry {
         otherField.setEadEntry(other);
         return otherField;
     }
+
+    // overwrite compare method to sort child list by its order number
+
+    @Override
+    public int compareTo(IEadEntry o) {
+        return orderNumber.compareTo(o.getOrderNumber());
+    }
+
+    @Override
+    public String getSequence() {
+        String sequence;
+        if (getParentNode() == null) {
+            // root node,
+            sequence = "";
+        } else {
+            String prefix = getParentNode().getSequence();
+            if (StringUtils.isNotBlank(prefix)) {
+                sequence = prefix + "." + (getParentNode().getOrderNumber());
+            } else {
+                sequence = String.valueOf(getParentNode().getOrderNumber());
+            }
+        }
+        return sequence;
+    }
+
+    @Override
+    public void setSequence(String sequenceNumber) {
+        // do nothing
+    }
+
+    @Override
+    public String getDataAsXml() {
+        StringBuilder xml = new StringBuilder();
+        xml.append("<xml>");
+        for (IMetadataField field : identityStatementAreaList) {
+            createXmlField(xml, field);
+        }
+        for (IMetadataField field : contextAreaList) {
+            createXmlField(xml, field);
+        }
+
+        for (IMetadataField field : contentAndStructureAreaAreaList) {
+            createXmlField(xml, field);
+        }
+
+        for (IMetadataField field : accessAndUseAreaList) {
+            createXmlField(xml, field);
+        }
+
+        for (IMetadataField field : alliedMaterialsAreaList) {
+            createXmlField(xml, field);
+        }
+
+        for (IMetadataField field : notesAreaList) {
+            createXmlField(xml, field);
+        }
+
+        for (IMetadataField field : descriptionControlAreaList) {
+            createXmlField(xml, field);
+        }
+        xml.append("</xml>");
+        return xml.toString();
+    }
+
+    private void createXmlField(StringBuilder xml, IMetadataField field) {
+        if (field.isGroup()) {
+            for (IMetadataGroup group : field.getGroups()) {
+                xml.append("<group name='").append(field.getName()).append("'>");
+                for (IMetadataField subfield : group.getFields()) {
+                    if (subfield.getValues() != null) {
+                        for (IFieldValue val : subfield.getValues()) {
+                            if (StringUtils.isNotBlank(val.getValue())) {
+                                xml.append("<field name='").append(subfield.getName()).append("'");
+                                if (StringUtils.isNotBlank(val.getAuthorityValue()) && StringUtils.isNotBlank(val.getAuthorityType())) {
+                                    xml.append(" source='")
+                                            .append(val.getAuthorityType())
+                                            .append("\" value='")
+                                            .append(val.getAuthorityValue())
+                                            .append("'");
+                                }
+                                xml.append(">");
+                                if (StringUtils.isNotBlank(val.getValue())) {
+                                    // mask ending backslash
+                                    String actualValue = val.getValue();
+                                    if (actualValue.endsWith("\\")) {
+                                        actualValue = val.getValue() + "\\";
+                                    }
+                                    xml.append(
+                                            MySQLHelper
+                                                    .escapeSql(
+                                                            actualValue.replaceAll("&(?!amp;|gt;|lt;)", "&amp;")
+                                                                    .replace("<", "&lt;")
+                                                                    .replace("\"", "\\\"")
+                                                                    .replace(">", "&gt;")));
+                                }
+                                xml.append("</field>");
+                            }
+                        }
+                    }
+                }
+                xml.append("</group>");
+            }
+        } else {
+            for (IFieldValue val : field.getValues()) {
+                if (StringUtils.isNotBlank(val.getValue())) {
+                    xml.append("<").append(field.getName());
+                    // save authority data
+                    if (StringUtils.isNotBlank(val.getAuthorityValue()) && StringUtils.isNotBlank(val.getAuthorityType())) {
+                        xml.append(" source='").append(val.getAuthorityType()).append("' value='").append(val.getAuthorityValue()).append("'");
+                    }
+                    xml.append(">");
+                    // mask ending backslash
+                    String actualValue = val.getValue();
+                    if (actualValue.endsWith("\\")) {
+                        actualValue = val.getValue() + "\\";
+                    }
+                    xml.append(
+                            MySQLHelper.escapeSql(actualValue.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "\\\"")));
+                    xml.append("</").append(field.getName()).append(">");
+                }
+            }
+        }
+    }
+
+    public void deleteGroup(IMetadataGroup group) {
+        group.getField().deleteGroup(group);
+    }
+
+    @Override
+    public void calculateFingerprint() {
+        StringBuilder fingerprintBuilder = new StringBuilder();
+        for (IMetadataField mf : identityStatementAreaList) {
+            addFingerprint(fingerprintBuilder, mf);
+        }
+        for (IMetadataField mf : contextAreaList) {
+            addFingerprint(fingerprintBuilder, mf);
+        }
+        for (IMetadataField mf : contentAndStructureAreaAreaList) {
+            addFingerprint(fingerprintBuilder, mf);
+        }
+        for (IMetadataField mf : accessAndUseAreaList) {
+            addFingerprint(fingerprintBuilder, mf);
+        }
+        for (IMetadataField mf : alliedMaterialsAreaList) {
+            addFingerprint(fingerprintBuilder, mf);
+        }
+        for (IMetadataField mf : notesAreaList) {
+            addFingerprint(fingerprintBuilder, mf);
+        }
+        for (IMetadataField mf : descriptionControlAreaList) {
+            addFingerprint(fingerprintBuilder, mf);
+        }
+        fingerprint = fingerprintBuilder.toString();
+    }
+
+    private void addFingerprint(StringBuilder fingerprintBuilder, IMetadataField mf) {
+        if (mf.isGroup()) {
+            for (IMetadataGroup group : mf.getGroups()) {
+                for (IMetadataField subfield : group.getFields()) {
+                    fingerprintBuilder.append(subfield.getName());
+                    if (subfield.getValues() != null) {
+                        for (IFieldValue val : subfield.getValues()) {
+                            fingerprintBuilder.append(val.getValue());
+                        }
+                    }
+                }
+            }
+        } else {
+            fingerprintBuilder.append(mf.getName());
+            for (IFieldValue val : mf.getValues()) {
+                fingerprintBuilder.append(val.getValue());
+            }
+        }
+    }
+
+    @Override
+    public boolean isChildrenHaveProcesses() {
+        if (goobiProcessTitle != null) {
+            return false;
+        }
+        for (IEadEntry sub : subEntryList) {
+            if (sub.getGoobiProcessTitle() != null) {
+                return true;
+            }
+        }
+        for (IEadEntry sub : subEntryList) {
+            if (sub.isChildrenHaveProcesses()) {
+                return true;
+            }
+        }
+        return false;
+
+    }
+
 }

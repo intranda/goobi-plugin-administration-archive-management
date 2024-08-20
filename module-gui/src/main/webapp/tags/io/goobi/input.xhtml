@@ -5,41 +5,41 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:x="http://myfaces.apache.org/tomahawk"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:x="http://myfaces.apache.org/tomahawk">
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
 <h:body>
     <ui:composition>
-        
-	    <div class="control-label metadata-row-area-content">
-	        <h:outputLabel
-	            for="#{fieldid}"
-	            value="#{fieldname}" />
-		</div>
-     
-        <h:commandLink styleClass="metadata-row-area-content close-field pull-right" action="#{item.deleteValue(field)}">
-            <i class="fa fa-minus-circle"></i>
-            <f:ajax
-                execute="@this"
-                render=":#{ajaxid} :hierarchy" />
-        </h:commandLink>
-  
-        <div class="metadata-row-area-content metadata-row-area-content-white">
-            
-            <h:inputText
-                id="#{fieldid}"
-                forceId="true"
-                styleClass="form-control #{item.valid ? '' : 'validation-error'}"
-                value="#{fieldvalue}"
-                required="false"
-                readonly="false">
+        <div class="form-row">
+            <div class="form-label d-flex justify-content-between">
+                <intranda:formLabel
+                    labelFor="#{fieldid}"
+                    label="#{fieldname}" />
+            </div>
+            <div class="form-input">
+                <h:inputText
+                    id="#{fieldid}"
+                    forceId="true"
+                    styleClass="form-control #{item.valid ? '' : 'invalid'}"
+                    value="#{fieldvalue}"
+                    required="false"
+                    readonly="false">
+                    <f:ajax
+                        execute="@this"
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                        event="blur" />
+                </h:inputText>
+                <h:outputText styleClass="help-inline color-F" rendered="#{!item.valid}" value="#{msgs[item.validationError]}"/>
+            </div>
+            <h:commandLink
+                styleClass="btn btn-blank font-light fs-500"
+                action="#{item.deleteValue(field)}"
+                rendered="#{deletable}">
+                <span class="fa fa-trash" />
                 <f:ajax
                     execute="@this"
-                    render=":#{ajaxid} :hierarchy"
-                    event="blur" />
-            </h:inputText>
-            
-            <h:outputText styleClass="help-inline font-danger" rendered="#{!item.valid}" value="#{msgs[item.validationError]}"/>
-            
+                    render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+            </h:commandLink>
         </div>
     </ui:composition>
 </h:body>

@@ -2,7 +2,7 @@ package org.goobi.interfaces;
 
 import java.util.List;
 
-public interface IEadEntry {
+public interface IEadEntry extends Comparable<IEadEntry> {
 
     public IEadEntry getParentNode();
 
@@ -94,6 +94,8 @@ public interface IEadEntry {
 
     public void reOrderElements();
 
+    public void sortElements();
+
     public List<IEadEntry> getAsFlatList();
 
     public boolean isHasChildren();
@@ -125,5 +127,25 @@ public interface IEadEntry {
     public IEadEntry deepCopy(IConfiguration configuration);
 
     public List<IEadEntry> getAllNodes();
+
+    public String getSequence();
+
+    public void setSequence(String sequenceNumber);
+
+    public Integer getDatabaseId();
+
+    public void setDatabaseId(Integer id);
+
+    public String getDataAsXml();
+
+    public String getData();
+
+    public void setData(String data);
+
+    public String getFingerprint();
+
+    public void calculateFingerprint();
+
+    public boolean isChildrenHaveProcesses();
 
 }

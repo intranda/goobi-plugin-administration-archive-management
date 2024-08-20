@@ -11,4 +11,25 @@ public interface IParameter {
     public String getSuffix();
 
     public void setSuffix(String suffix);
+
+    public boolean isCounter();
+
+    public void setCounter(boolean counter);
+
+    public boolean isGenerated();
+
+    public void setGenerated(boolean counter);
+
+    public String getCounterFormat();
+
+    public void setCounterFormat(String counterFormat);
+
+    public int getCounterStartValue();
+
+    public void setCounterStartValue(int counterStartValue);
+
+    public String getFieldType();
+
+    public void setFieldType(String fieldType);
+
 }

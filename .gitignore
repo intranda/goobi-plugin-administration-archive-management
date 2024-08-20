@@ -8,6 +8,10 @@ target/
 bin/
 build/
 node_modules/
+module-lib/target/
+module-gui/target/
+module-base/target/
+
 
 # Eclipse
 .project

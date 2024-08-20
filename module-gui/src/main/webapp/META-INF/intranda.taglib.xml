@@ -13,23 +13,51 @@
     <tag>
         <tag-name>input</tag-name>
         <source>tags/io/goobi/input.xhtml</source>
+        <attribute>
+            <description>Indicates whether a delete button should be displayed.</description>
+            <name>deletable</name>
+            <default>true</default>
+            <required>false</required>
+            <type>java.lang.Boolean</type>
+        </attribute>
     </tag>
     <tag>
         <tag-name>textarea</tag-name>
         <source>tags/io/goobi/textarea.xhtml</source>
+        <attribute>
+            <description>Indicates whether a delete button should be displayed.</description>
+            <name>deletable</name>
+            <default>true</default>
+            <required>false</required>
+            <type>java.lang.Boolean</type>
+        </attribute>
     </tag>
     <tag>
         <tag-name>dropdown</tag-name>
         <source>tags/io/goobi/dropdown.xhtml</source>
+        <attribute>
+            <description>Indicates whether a delete button should be displayed.</description>
+            <name>deletable</name>
+            <default>true</default>
+            <required>false</required>
+            <type>java.lang.Boolean</type>
+        </attribute>
     </tag>
     <tag>
         <tag-name>multiselect</tag-name>
         <source>tags/io/goobi/multiselect.xhtml</source>
+        <attribute>
+            <description>Indicates whether a delete button should be displayed.</description>
+            <name>deletable</name>
+            <default>true</default>
+            <required>false</required>
+            <type>java.lang.Boolean</type>
+        </attribute>
     </tag>
     <tag>
         <tag-name>readonly</tag-name>
         <source>tags/io/goobi/readonly.xhtml</source>
-    </tag>    
+    </tag>
     <tag>
         <tag-name>badge</tag-name>
         <source>tags/io/goobi/badge.xhtml</source>

@@ -7,6 +7,7 @@ import org.apache.commons.lang.StringUtils;
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.IFieldValue;
 import org.goobi.interfaces.IMetadataField;
+import org.goobi.interfaces.IMetadataGroup;
 
 import lombok.Data;
 import lombok.ToString;
@@ -52,6 +53,9 @@ public class EadMetadataField implements IMetadataField {
     /** contains the list of possible values for dropdown or multiselect */
     private List<String> selectItemList;
 
+    private String vocabularyName;
+    private List<String> searchParameter;
+
     /** defines the type of the input field. Posible values are input (default), textarea, dropdown, multiselect */
     private String fieldType;
 
@@ -79,9 +83,18 @@ public class EadMetadataField implements IMetadataField {
 
     private boolean searchable;
 
-    public EadMetadataField(String name, Integer level, String xpath, String xpathType, boolean repeatable, boolean visible, boolean showField,
+    private String viafSearchFields;
+    private String viafDisplayFields;
+
+    // metadata groups
+    private List<IMetadataField> subfields = new ArrayList<>();
+
+    private boolean group;
+    private List<IMetadataGroup> groups = new ArrayList<>();
+
+    public EadMetadataField(String name, Integer level, String xpath, String xpathType, boolean repeatable, boolean visible, boolean showField, //NOSONAR
             String fieldType, String metadataName, boolean importMetadataInChild, String validationType, String regularExpression,
-            boolean searchable) {
+            boolean searchable, String viafSearchFields, String viafDisplayFields, boolean group, String vocabularyName) {
         this.name = name;
         this.level = level;
         this.xpath = xpath;
@@ -95,10 +108,23 @@ public class EadMetadataField implements IMetadataField {
         this.validationType = validationType;
         this.regularExpression = regularExpression;
         this.searchable = searchable;
+        this.viafSearchFields = viafSearchFields;
+        this.viafDisplayFields = viafDisplayFields;
+        this.group = group;
+        this.vocabularyName = vocabularyName;
     }
 
     @Override
     public boolean isFilled() {
+        if (isGroup()) {
+            for (IMetadataGroup grp : groups) {
+                for (IMetadataField f : grp.getFields()) {
+                    if (f.isFilled()) {
+                        return true;
+                    }
+                }
+            }
+        }
         if (values == null || values.isEmpty()) {
             return false;
         }
@@ -134,10 +160,7 @@ public class EadMetadataField implements IMetadataField {
     public void deleteValue(IFieldValue value) {
         IFieldValue valueToDelete = null;
         for (IFieldValue fv : values) {
-            if (fv.getValue() == null && value.getValue() == null) {
-                valueToDelete = fv;
-                break;
-            } else if (fv.getValue() != null && fv.getValue().equals(value.getValue())) {
+            if ((fv.getValue() == null && value.getValue() == null) || (fv.getValue() != null && fv.getValue().equals(value.getValue()))) {
                 valueToDelete = fv;
                 break;
             }
@@ -147,6 +170,8 @@ public class EadMetadataField implements IMetadataField {
                 values.remove(valueToDelete);
             } else {
                 valueToDelete.setValue("");
+                valueToDelete.setAuthorityValue("");
+                valueToDelete.setAuthorityType("");
                 showField = false;
             }
         }
@@ -156,12 +181,28 @@ public class EadMetadataField implements IMetadataField {
     @Override
     public IMetadataField copy(String prefix, String suffix) {
         IMetadataField field = new EadMetadataField(name, level, xpath, xpathType, repeatable, visible, showField,
-                fieldType, metadataName, importMetadataInChild, validationType, regularExpression, searchable);
+                fieldType, metadataName, importMetadataInChild, validationType, regularExpression, searchable, viafSearchFields, viafDisplayFields,
+                group, vocabularyName);
         field.setSelectItemList(selectItemList);
-        for (IFieldValue val : values) {
-            IFieldValue newValue = new FieldValue(field);
-            newValue.setValue(prefix + val.getValue() + suffix);
-            field.addFieldValue(newValue);
+        field.setSearchParameter(searchParameter);
+        if (isGroup()) {
+            for (IMetadataGroup grp : groups) {
+                IMetadataGroup newGroup = new EadMetadataGroup(this);
+                field.getGroups().add(newGroup);
+                for (IMetadataField f : grp.getFields()) {
+                    IMetadataField newSubfield = f.copy(prefix, suffix);
+                    newGroup.getFields().add(newSubfield);
+                }
+            }
+
+        } else {
+            for (IFieldValue val : values) {
+                IFieldValue newValue = new FieldValue(field);
+                newValue.setValue(prefix + val.getValue() + suffix);
+                newValue.setAuthorityType(val.getAuthorityType());
+                newValue.setAuthorityValue(val.getAuthorityValue());
+                field.addFieldValue(newValue);
+            }
         }
         return field;
     }
@@ -169,5 +210,60 @@ public class EadMetadataField implements IMetadataField {
     @Override
     public IFieldValue createFieldValue() {
         return new FieldValue(this);
+    }
+
+    @Override
+    public void addSubfield(IMetadataField field) {
+        subfields.add(field);
+    }
+
+    @Override
+    public IMetadataGroup createGroup() {
+        if (!groups.isEmpty() && !isFilled()) {
+            return groups.get(0);
+        }
+
+        IMetadataGroup newGroup = new EadMetadataGroup(this);
+
+        for (IMetadataField f : subfields) {
+
+            IMetadataField field = new EadMetadataField(f.getName(), f.getLevel(), f.getXpath(), f.getXpathType(), f.isRepeatable(),
+                    f.isVisible(), f.isShowField(), f.getFieldType(), f.getMetadataName(), f.isImportMetadataInChild(), f.getValidationType(),
+                    f.getRegularExpression(), f.isSearchable(), f.getViafSearchFields(), f.getViafDisplayFields(), f.isGroup(),
+                    f.getVocabularyName());
+            field.setSelectItemList(f.getSelectItemList());
+            field.setSearchParameter(f.getSearchParameter());
+            field.addValue();
+
+            newGroup.getFields().add(field);
+
+        }
+        groups.add(newGroup);
+        return newGroup;
+
+    }
+
+    @Override
+    public void addGroup(IMetadataGroup group) {
+        groups.add(group);
+    }
+
+    @Override
+    public void deleteGroup(IMetadataGroup group) {
+        // if more than one group exists, remove it
+        if (groups.size() > 1) {
+            groups.remove(group);
+        } else {
+            // otherwise clear all fields
+            for (IMetadataField f : group.getFields()) {
+                if (f.getValues() != null) {
+                    for (IFieldValue val : f.getValues()) {
+                        f.deleteValue(val);
+                    }
+                }
+            }
+            showField = false;
+        }
+
     }
 }

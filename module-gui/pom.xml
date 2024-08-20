@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.goobi.workflow.plugin</groupId>
         <artifactId>plugin-administration-archive-management</artifactId>
-        <version>24.06</version>
+        <version>24.07</version>
     </parent>
     <artifactId>plugin-administration-archive-management-gui</artifactId>
     <packaging>jar</packaging>
@@ -23,10 +23,6 @@
                 <targetPath>META-INF</targetPath>
                 <directory>src/main/resources</directory>
             </resource>
-            <resource>
-                <targetPath>org</targetPath>
-                <directory>../module-base/target/classes/org</directory>
-            </resource>            
         </resources>
     </build>
 </project>

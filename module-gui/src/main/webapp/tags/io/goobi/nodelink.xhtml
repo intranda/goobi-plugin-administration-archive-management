@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:x="http://myfaces.apache.org/tomahawk"
+    xmlns:jsf="http://xmlns.jcp.org/jsf">
+<h:body>
+    <ui:composition>
+        <div class="form-row">
+            <div class="form-label d-flex justify-content-between">
+                <h:outputLabel
+                    for="#{fieldid}"
+                    value="#{fieldname}" />
+            </div>
+            <div class="form-input d-flex gap-2 flex-nowrap">
+                <!-- input field for the node id, read only? -->
+                <h:inputText
+                    id="#{fieldid}"
+                    forceId="true"
+                    styleClass="form-control #{item.valid ? '' : 'invalid'}"
+                    value="#{fieldvalue}"
+                    required="false"
+                    readonly="false">
+                    <f:ajax
+                        execute="@this"
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                        event="blur" />
+                </h:inputText>
+                <!-- search button, opens modal -->
+                <button
+                    jsf:id="searchButton"
+                    class="btn btn-blank"
+                    title="#{msgs.search}"
+                    aria-label="#{msgs.search}"
+                    jsf:onclick="$('#linkNodeModal').modal('show');"
+                    onfocus="#{cc.attrs.onfocus}"
+                    type="button"
+                    data-toggle="tooltip">
+                    <span class="fa fa-search" />
+                    <f:ajax
+                        execute="@this"
+                        render="linkNodeModalContent" />
+                    <f:setPropertyActionListener
+                        value="#{field}"
+                        target="#{AdministrationForm.administrationPlugin.fieldToLink}" />
+                    <f:setPropertyActionListener
+                        value="true"
+                        target="#{AdministrationForm.administrationPlugin.displayLinkedModal}" />
+                </button>
+                <!-- validation error -->
+                <h:outputText
+                    styleClass="help-inline color-F flex-grow-1"
+                    rendered="#{!item.valid}"
+                    value="#{msgs[item.validationError]}" />
+            </div>
+            <h:commandLink
+                styleClass="btn btn-blank font-light fs-500"
+                action="#{item.deleteValue(field)}">
+                <span class="fa fa-trash" />
+                <f:ajax
+                    execute="@this"
+                    render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+            </h:commandLink>
+        </div>
+    </ui:composition>
+</h:body>
+</html>

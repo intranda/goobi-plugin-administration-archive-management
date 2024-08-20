@@ -7,6 +7,10 @@
         <archive>*</archive>
         <!-- default title for a new node -->
         <nodeDefaultTitle>Document</nodeDefaultTitle>
+        
+        <title name="shelfmarksource" type="NORMAL" />
+        <title name="TitleDocMain" type="CAMEL_CASE" />
+        
         <!-- define metadata fields. All fields are displayed on the UI based on the level and the order within this file.
                 - @name: contains the internal name of the field. The value can be used to translate the field in the messages files. The field must start with a letter and can not contain any white spaces.
                 - @level: metadata level, allowed values are 1-7:
@@ -36,13 +40,27 @@
         
         <!-- =============================== Internal fields, not visible on the UI ============================== -->
         <metadata xpath="./ead:eadheader[@countryencoding='iso3166-1'][@dateencoding='iso8601'][@langencoding='iso639-2b'][@repositoryencoding='iso15511'][@scriptencoding='iso15924']/ead:eadid/@mainagencycode" xpathType="attribute" name="mainagencycode" level="1" repeatable="false" visible="false"/>
+        <metadata xpath="./ead:eadheader/ead:filedesc/ead:titlestmt/ead:titleproper" xpathType="element" name="titlestmt" level="1" repeatable="false" visible="false"/>
         <metadata xpath="./ead:eadheader/ead:profiledesc/ead:creation/@normal" xpathType="attribute" name="normalcreationdate" level="1" repeatable="false" visible="false"/>
         <metadata xpath="./ead:eadheader/ead:profiledesc/ead:creation" xpathType="element" name="creationdate" level="1" repeatable="false" visible="false"/>
-        <metadata xpath="./ead:eadheader/ead:filedesc/ead:titlestmt/ead:titleproper" xpathType="element" name="titlestmt" level="1" repeatable="false" visible="false"/>
-
+        <metadata xpath="./ead:control/ead:maintenancestatus/@value" xpathType="attribute" name="maintenancestatus" level="1" repeatable="false" visible="false"/>
+        <metadata xpath="./ead:control/ead:maintenancehistory/ead:maintenanceevent" group="true" name="maintenancehistory" level="1" repeatable="true" visible="false" fieldType="group">
+            <metadata xpath="ead:eventtype" xpathType="element" name="eventtype" level="1" repeatable="false" visible="false" />
+            <metadata xpath="ead:agent" xpathType="element" name="agent" level="1" repeatable="false" visible="false"  />
+            <metadata xpath="ead:eventdescription" xpathType="element" name="eventdescription" level="1" repeatable="false" visible="false" />
+            <metadata xpath="ead:eventdatetime" xpathType="element" name="eventdatetime" level="1" repeatable="false" visible="false" />
+        </metadata>
 
         <!-- =============================== Identity Statement Area ============================== -->
-        
+                <!-- repository data group -->
+        <metadata xpath="./ead:archdesc/ead:did/ead:repository" group="true" name="repository" level="1" repeatable="false" visible="true">
+            <metadata xpath="@label" xpathType="attribute" name="repositoryLabel" level="1" repeatable="false" visible="false" />
+            <metadata xpath="ead:corpname[@role='ROLE']" xpathType="element" name="repositorycreator" level="1" repeatable="false" visible="false" />
+            <metadata xpath="ead:corpname[@id='Archon Code']" xpathType="element" name="repositorycreatorcode" level="1" repeatable="false" visible="false" />
+            <metadata xpath="ead:address/ead:addressline" xpathType="element" name="repositorycreatorcode" level="1" repeatable="true" visible="false" />
+            <metadata xpath="ead:extref/@href" xpathType="attribute" name="extrefhref" level="1" repeatable="true" visible="false" />
+            <metadata xpath="ead:extref" xpathType="element" name="extref" level="1" repeatable="true" visible="false" />
+        </metadata>
         <!-- Agency code / Agency code -->
         <metadata xpath="./ead:control/ead:maintenanceagency/ead:agencycode" xpathType="element" name="agencycode" level="1" repeatable="false" fieldType="input"/>
         
@@ -213,13 +231,23 @@
         <!-- ============================= Description Control Area ================================ -->
 
         <!-- Verzeichnungsgrundsätze / Rules or Conventions -->
-        <metadata xpath="./ead:control/ead:conventiondeclaration" xpathType="element" name="conventiondeclaration" level="7" repeatable="false" fieldType="multiselect" rulesetName="ConventionDeclaration">
+        <metadata xpath="./ead:control/ead:conventiondeclaration" xpathType="text" name="conventiondeclaration" level="7" repeatable="true" fieldType="multiselect" rulesetName="ConventionDeclaration">
             <value>val 1</value>
             <value>val 2</value>
             <value>val 3</value>
             <value>val 4</value>
         </metadata>
+        
+        <metadata xpath="./ead:archdesc/ead:processinfo/ead:list/ead:item" xpathType="element" name="editorName" level="7" repeatable="true" fieldType="textarea" visible="false" />
 
+
+        <!-- ============================= extend configured areas ============================= -->
+        <showGroup level="1" />
+        <showGroup level="3" />
+
+        <!-- namespaces to read and write ead files -->
+        <eadNamespaceRead>urn:isbn:1-931666-22-9</eadNamespaceRead>
+        <eadNamespaceWrite>http://ead3.archivists.org/schema/</eadNamespaceWrite>
 
         <!-- ============================= Structure types and Icons ================================ -->
 

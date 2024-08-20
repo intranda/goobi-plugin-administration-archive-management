@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:x="http://myfaces.apache.org/tomahawk"
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
+    xmlns:goobiio="http://goobi.io/facelets"
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
+<h:body>
+    <ui:composition>
+    <x:dataList var="group" value="#{item.groups}">
+
+        <fieldset class="field-set">
+            <legend
+                class="field-set-legend d-flex justify-content-between">
+                <h:outputText value="#{fieldname}" />
+            </legend>
+            <div class="field-set-content">
+                <x:dataList
+                    var="subfield"
+                    value="#{group.fields}">
+                    <x:dataList
+                        var="field"
+                        value="#{subfield.values}">
+                        <goobiio:fields />
+                    </x:dataList>
+                </x:dataList>
+                <h:commandLink
+                    action="#{AdministrationForm.administrationPlugin.selectedEntry.deleteGroup(group)}"
+                    styleClass="btn btn-blank font-light fs-500">
+                    <span class="fa fa-trash" />
+                    <f:ajax
+                        execute="@this"
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                </h:commandLink>
+            </div>
+        </fieldset>
+        </x:dataList>
+    </ui:composition>
+</h:body>
+</html>

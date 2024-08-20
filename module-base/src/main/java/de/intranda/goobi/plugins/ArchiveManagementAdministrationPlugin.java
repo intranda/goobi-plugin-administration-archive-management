@@ -3,11 +3,9 @@ package de.intranda.goobi.plugins;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,25 +15,26 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
-import javax.faces.event.AjaxBehaviorEvent;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.goobi.beans.Batch;
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
 import org.goobi.beans.User;
@@ -44,50 +43,57 @@ import org.goobi.interfaces.IConfiguration;
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.IFieldValue;
 import org.goobi.interfaces.IMetadataField;
+import org.goobi.interfaces.IMetadataGroup;
 import org.goobi.interfaces.INodeType;
+import org.goobi.interfaces.IParameter;
+import org.goobi.interfaces.IRecordGroup;
+import org.goobi.interfaces.IValue;
+import org.goobi.model.ExtendendValue;
+import org.goobi.model.GroupValue;
 import org.goobi.production.cli.helper.StringPair;
 import org.goobi.production.enums.PluginType;
-import org.goobi.vocabulary.Field;
-import org.goobi.vocabulary.VocabRecord;
-import org.goobi.vocabulary.Vocabulary;
 import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
 import org.jdom2.Text;
 import org.jdom2.filter.Filters;
-import org.jdom2.input.SAXBuilder;
-import org.jdom2.input.sax.XMLReaders;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
 import de.intranda.goobi.plugins.model.DuplicationConfiguration;
+import de.intranda.goobi.plugins.model.DuplicationParameter;
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.EadMetadataField;
 import de.intranda.goobi.plugins.model.FieldValue;
 import de.intranda.goobi.plugins.model.NodeType;
+import de.intranda.goobi.plugins.model.RecordGroup;
 import de.intranda.goobi.plugins.model.TitleComponent;
-import de.schlichtherle.io.FileOutputStream;
+import de.intranda.goobi.plugins.persistence.ArchiveManagementManager;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.BeanHelper;
 import de.sub.goobi.helper.FacesContextHelper;
 import de.sub.goobi.helper.Helper;
 import de.sub.goobi.helper.ProcessTitleGenerator;
 import de.sub.goobi.helper.ScriptThreadWithoutHibernate;
-import de.sub.goobi.helper.StorageProvider;
-import de.sub.goobi.helper.StorageProviderInterface;
+import de.sub.goobi.helper.XmlTools;
 import de.sub.goobi.helper.enums.ManipulationType;
 import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.helper.exceptions.DAOException;
-import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.MetadataManager;
 import de.sub.goobi.persistence.managers.ProcessManager;
-import de.sub.goobi.persistence.managers.VocabularyManager;
-import io.goobi.workflow.api.connection.HttpUtils;
+import de.sub.goobi.validator.ExtendedDateTimeFormatLexer;
+import de.sub.goobi.validator.ExtendedDateTimeFormatParser;
+import io.goobi.vocabulary.exchange.FieldDefinition;
+import io.goobi.vocabulary.exchange.VocabularySchema;
+import io.goobi.workflow.api.vocabulary.APIException;
+import io.goobi.workflow.api.vocabulary.VocabularyAPIManager;
+import io.goobi.workflow.api.vocabulary.helper.ExtendedVocabulary;
+import io.goobi.workflow.api.vocabulary.helper.ExtendedVocabularyRecord;
 import io.goobi.workflow.locking.LockingBean;
+import io.goobi.workflow.xslt.XsltToPdf;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -96,8 +102,10 @@ import ugh.dl.DigitalDocument;
 import ugh.dl.DocStruct;
 import ugh.dl.Fileformat;
 import ugh.dl.Metadata;
+import ugh.dl.MetadataGroup;
 import ugh.dl.MetadataType;
 import ugh.dl.Prefs;
+import ugh.exceptions.DocStructHasNoTypeException;
 import ugh.exceptions.UGHException;
 import ugh.fileformats.mets.MetsMods;
 
@@ -106,6 +114,9 @@ import ugh.fileformats.mets.MetsMods;
 public class ArchiveManagementAdministrationPlugin implements IArchiveManagementAdministrationPlugin {
 
     private static final long serialVersionUID = -6745728159636602782L;
+
+    @Setter
+    private boolean testMode;
 
     @Getter
     @Setter
@@ -122,26 +133,15 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     @Getter
     @Setter
-    private String datastoreUrl = "http://localhost:8984/";
-
-    @Setter
-    private String exportFolder = "/tmp/";
-
-    @Getter
-    @Setter
-    private String selectedDatabase;
-
-    @Getter
-    @Setter
     private String databaseName;
 
     @Getter
     @Setter
-    private String fileName;
+    private transient IEadEntry rootElement = null;
 
     @Getter
     @Setter
-    private transient IEadEntry rootElement = null;
+    private transient RecordGroup recordGroup;
 
     private transient List<IEadEntry> flatEntryList;
 
@@ -155,13 +155,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Setter
     private transient IEadEntry destinationEntry;
 
-    public static final Namespace ns = Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9");
+    private Namespace nameSpaceRead;
+    @Getter
+    @Setter
+    private Namespace nameSpaceWrite;
     private static XPathFactory xFactory = XPathFactory.instance();
 
-    private static final StorageProviderInterface storageProvider = StorageProvider.getInstance();
-    // DateFormat for representing a timestamp
-    private SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd-HHmmssSSS");
-
+    @Getter
+    @Setter
     private XMLConfiguration xmlConfig;
     @Getter
     private transient List<IMetadataField> configuredFields;
@@ -201,20 +202,18 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Setter
     private boolean displayControlArea;
 
+    @Getter
+    public boolean showNodeIdInTree;
+
     @Setter
     private Process processTemplate;
     private BeanHelper bhelp = new BeanHelper();
 
     private String nodeDefaultTitle;
 
-    private List<StringPair> eventList = new ArrayList<>();
-    private List<String> editorList = new ArrayList<>();
     private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    private String username;
-
-    @Getter
-    private boolean dbOK;
+    private String username = "";
 
     @Getter
     @Setter
@@ -251,10 +250,79 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Setter
     private List<StringPair> advancedSearch = new ArrayList<>();
 
+    @Getter
+    @Setter
+    private boolean displayLinkedModal = false;
+
+    @Getter
+    @Setter
+    private boolean displayCreateNodesModal = false;
+
+    @Getter
+    @Setter
+    private boolean displayVocabularyModal = false;
+
+    @Getter
+    @Setter
+    private transient IFieldValue fieldToLink;
+
+    @Getter
+    @Setter
+    private transient IMetadataField selectedGroup;
+
+    private transient List<IEadEntry> linkNodeList;
+
+    @Getter
+    @Setter
+    private String numberOfNodes;
+    @Getter
+    @Setter
+    private String nodeType;
+
+    private transient List<IParameter> metadataToAdd;
+    @Getter
+    private List<String> metadataFieldNames = new ArrayList<>();
+
+    private boolean readOnlyMode = true;
+
+    @Getter
+    private boolean allowFileUpload = false;
+
+    @Getter
+    private boolean allowCreation = false;
+
+    @Getter
+    private boolean allowVocabularyEdition = false;
+
+    @Getter
+    private boolean allowDeletion = false;
+
+    private boolean allowAllInventories;
+    private List<String> inventoryList = new ArrayList<>();
+
+    @Getter
+    private String exportFolder;
+
+    private transient VocabularyAPIManager vocabularyAPI = null;
+
+    @Getter
+    private transient ExtendedVocabularyRecord newRecord;
+
+    @Getter
+    @Setter
+    private transient IMetadataField vocabularyField;
+
     /**
      * Constructor
      */
     public ArchiveManagementAdministrationPlugin() {
+        try {
+            ArchiveManagementManager.createTables();
+            vocabularyAPI = VocabularyAPIManager.getInstance();
+        } catch (APIException e) {
+            // api is not running
+        }
+
         try {
             xmlConfig = new XMLConfiguration(
                     ConfigurationHelper.getInstance().getConfigurationFolder() + "plugin_intranda_administration_archive_management.xml");
@@ -262,14 +330,50 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             xmlConfig.setReloadingStrategy(new FileChangedReloadingStrategy());
             xmlConfig.setExpressionEngine(new XPathExpressionEngine());
 
-            datastoreUrl = xmlConfig.getString("/basexUrl", "http://localhost:8984/");
-            exportFolder = xmlConfig.getString("/eadExportFolder", "/tmp");
             User user = Helper.getCurrentUser();
             if (user != null) {
                 username = user.getNachVorname();
-            }
 
-            dbOK = true;
+                // role for read access: Plugin_Administration_Archive_Management
+                // role for write access: Plugin_Administration_Archive_Management_Write
+                // role for file upload access: Plugin_Administration_Archive_Management_Upload
+                // role for creation access: Plugin_Administration_Archive_Management_New
+                // role to edit vocabularies: Plugin_Administration_Archive_Management_Vocabulary
+                // role to access all: Plugin_Administration_Archive_Management_All_Inventories
+                // role to access the inventory 'XYZ':  Plugin_Administration_Archive_Management_Inventory_XYZ
+
+                // role to delete inventory: Plugin_Administration_Archive_Management_Delete
+
+                if ((user.isSuperAdmin() || user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Write"))) {
+                    readOnlyMode = false;
+                }
+
+                if (user.isSuperAdmin() || (user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Upload"))) {
+                    allowFileUpload = true;
+                }
+
+                if (user.isSuperAdmin() || (user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_New"))) {
+                    allowCreation = true;
+                }
+                if (user.isSuperAdmin() || (user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Vocabulary"))) {
+                    allowVocabularyEdition = true;
+                }
+
+                if (user.isSuperAdmin() || (user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Delete"))) {
+                    allowDeletion = true;
+                }
+
+                if (user.isSuperAdmin() || (user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_All_Inventories"))) {
+                    allowAllInventories = true;
+                } else {
+                    for (String role : user.getAllUserRoles()) {
+                        if (role.startsWith("Plugin_Administration_Archive_Management_Inventory_")) {
+                            inventoryList.add(role.replace("Plugin_Administration_Archive_Management_Inventory_", ""));
+                        }
+                    }
+                }
+
+            }
 
         } catch (ConfigurationException e2) {
             log.error(e2);
@@ -282,38 +386,28 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     /**
-     * Get the database names and file names from the basex databases
+     * fieldType Get the database names and file names from the basex databases
      * 
      * @return
      */
 
     @Override
     public List<String> getPossibleDatabases() {
+        List<IRecordGroup> allRecordGroups = getRecordGroups();
+
         List<String> databases = new ArrayList<>();
-        String response = HttpUtils.getStringFromUrl(datastoreUrl + "databases");
-        if (StringUtils.isNotBlank(response)) {
-
-            Document document = openDocument(response);
-            if (document != null) {
-                Element root = document.getRootElement();
-                List<Element> databaseList = root.getChildren("database");
-                for (Element db : databaseList) {
-                    String dbName = db.getChildText("name");
-                    Element details = db.getChild("details");
-                    for (Element resource : details.getChildren()) {
-                        databases.add(dbName + " - " + resource.getText());
-                    }
-                }
+        for (IRecordGroup rec : allRecordGroups) {
+            // allow access if username is null (api request), access is granted to all or to the specific record
+            if (username == null || allowAllInventories || inventoryList.contains(rec.getTitle())) {
+                databases.add(rec.getTitle());
             }
-            dbOK = true;
-        } else {
-            Helper.setFehlerMeldung("plugin_administration_archive_noConnectionToDatabase");
-            log.error("No connection to baseX database");
-            dbOK = false;
         }
-
-        //otherwise
         return databases;
+    }
+
+    @Override
+    public List<IRecordGroup> getRecordGroups() {
+        return ArchiveManagementManager.getAllRecordGroups();
     }
 
     /**
@@ -324,51 +418,17 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public List<String> getPossibleDatabaseNames() {
         List<String> databases = new ArrayList<>();
-        String response = HttpUtils.getStringFromUrl(datastoreUrl + "databases");
-        if (StringUtils.isNotBlank(response)) {
+        List<IRecordGroup> allRecordGroups = getRecordGroups();
 
-            Document document = openDocument(response);
-            if (document != null) {
-                Element root = document.getRootElement();
-                List<Element> databaseList = root.getChildren("database");
-                for (Element db : databaseList) {
-                    String dbName = db.getChildText("name");
-                    databases.add(dbName);
-                }
-            }
+        for (IRecordGroup rec : allRecordGroups) {
+            databases.add(rec.getTitle());
         }
 
-        if (databases.isEmpty() && checkDB()) {
+        if (databases.isEmpty()) {
             Helper.setFehlerMeldung("plugin_administration_archive_databaseMustBeCreated");
         }
 
         return databases;
-    }
-
-    /**
-     * Check if there is a connection to the DB, return true if there is
-     */
-    private boolean checkDB() {
-
-        String url = datastoreUrl + "databases";
-        HttpGet method = new HttpGet(url);
-        CloseableHttpClient client = HttpClientBuilder.create().build();
-        try {
-            client.execute(method, HttpUtils.stringResponseHandler);
-        } catch (IOException e) {
-            Helper.setFehlerMeldung("plugin_administration_archive_databaseCannotBeLoaded");
-            return false;
-        } finally {
-            method.releaseConnection();
-            try {
-                client.close();
-            } catch (IOException e) {
-                log.error(e);
-            }
-        }
-
-        //otherwise
-        return true;
     }
 
     /**
@@ -378,30 +438,15 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Override
     public void loadSelectedDatabase() {
 
-        User user = Helper.getCurrentUser();
-        String userName = user != null ? user.getNachVorname() : "-";
-
         try {
             // open selected database
-            if (StringUtils.isNotBlank(selectedDatabase)) {
-                if (!LockingBean.lockObject(selectedDatabase, userName)) {
-                    Helper.setFehlerMeldung("plugin_administration_archive_databaseLocked");
-                    selectedDatabase = null;
-                    return;
-                }
-
-                String[] parts = selectedDatabase.split(" - ");
-
-                String response = HttpUtils.getStringFromUrl(datastoreUrl + "db/" + parts[0] + "/" + parts[1]);
-                // get xml root element
-                Document document = openDocument(response);
-                if (document != null) {
-                    // get field definitions from config file
-                    readConfiguration();
-
-                    // parse ead file
-                    parseEadFile(document);
-                }
+            if (StringUtils.isNotBlank(databaseName)) {
+                recordGroup = ArchiveManagementManager.getRecordGroupByTitle(databaseName);
+                // get field definitions from config file
+                readConfiguration();
+                rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
+                loadMetadataForNode(rootElement);
+                rootElement.setDisplayChildren(true);
             } else {
                 Helper.setFehlerMeldung("plugin_administration_archive_creation_noRecordGroupSelected");
 
@@ -413,57 +458,45 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                         Helper.setFehlerMeldung("plugin_administration_archive_databaseFileMustBeCreated");
                     }
                 }
-                selectedDatabase = null;
+                databaseName = null;
             }
         } catch (Exception e) {
             log.error(e);
             Helper.setFehlerMeldung("plugin_administration_archive_databaseCannotBeLoaded");
-            selectedDatabase = null;
+            databaseName = null;
         }
-    }
-
-    public List<String> getDistinctDatabaseNames() {
-        List<String> answer = new ArrayList<>();
-        List<String> completeList = getPossibleDatabases();
-        for (String s : completeList) {
-            String[] parts = s.split(" - ");
-            String dbName = parts[0];
-            if (!answer.contains(dbName)) {
-                answer.add(dbName);
-            }
-        }
-
-        if (answer.isEmpty()) {
-            answer = getPossibleDatabaseNames();
-        }
-
-        return answer;
     }
 
     @Override
     public void createNewDatabase() {
+        if (StringUtils.isNotBlank(databaseName)) {
 
-        if (StringUtils.isNotBlank(databaseName) && StringUtils.isNotBlank(fileName)) {
-            // filename must end with xml
-            if (!fileName.endsWith(".xml")) {
-                fileName = fileName + ".xml";
-            }
-            // remove whitespaces from filename
-            fileName = fileName.replace(" ", "_");
-            selectedDatabase = databaseName + " - " + fileName;
             readConfiguration();
+            if (ArchiveManagementManager.getRecordGroupByTitle(databaseName) != null) {
+                Helper.setFehlerMeldung("plugin_administration_archive_recordGroupExists");
+                databaseName = null;
+                displayMode = "createArchive";
+                return;
+            }
 
-            Document document = new Document();
-            Element eadElement = new Element("ead", ns);
-            document.setRootElement(eadElement);
-            rootElement = parseElement(1, 0, eadElement);
+            recordGroup = new RecordGroup();
+            recordGroup.setTitle(databaseName);
+            ArchiveManagementManager.saveRecordGroup(recordGroup);
+
+            rootElement = new EadEntry(0, 0);
+            rootElement.setId("id_" + UUID.randomUUID());
+
             rootElement.setDisplayChildren(true);
             INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
             rootElement.setNodeType(rootType);
+
+            ArchiveManagementManager.saveNode(recordGroup.getId(), rootElement);
+            loadMetadataForNode(rootElement);
+
             selectedEntry = rootElement;
+
             displayMode = "";
             getDuplicationConfiguration();
-            LockingBean.lockObject(selectedDatabase, username);
         } else {
             //this may write an error message if necessary
             List<String> databases = getPossibleDatabaseNames();
@@ -471,56 +504,26 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             if (!databases.isEmpty() && StringUtils.isBlank(databaseName)) {
                 Helper.setFehlerMeldung("plugin_administration_archive_creation_selectDatabase");
             }
-            if (StringUtils.isBlank(fileName)) {
-                Helper.setFehlerMeldung("plugin_administration_archive_creation_filename");
-            }
         }
     }
 
     /*
-     * get ead root element from document
+     * get root node from ead document
      */
-    private void parseEadFile(Document document) {
-        eventList = new ArrayList<>();
-        editorList = new ArrayList<>();
-
+    public void parseEadFile(Document document) {
+        Element eadElement = null;
         Element collection = document.getRootElement();
-        Element eadElement = collection.getChild("ead", ns);
-        rootElement = parseElement(1, 0, eadElement);
+        if ("collection".equals(collection.getName())) {
+            eadElement = collection.getChild("ead", nameSpaceRead);
+        } else {
+            eadElement = collection;
+        }
+
+        rootElement = parseElement(0, 0, eadElement);
         INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
         rootElement.setNodeType(rootType);
         rootElement.setDisplayChildren(true);
-        selectedEntry = rootElement;
-        Element archdesc = eadElement.getChild("archdesc", ns);
-        if (archdesc != null) {
-            Element processinfoElement = archdesc.getChild("processinfo", ns);
-            if (processinfoElement != null) {
-                Element list = processinfoElement.getChild("list", ns);
-                List<Element> entries = list.getChildren("item", ns);
-                IMetadataField editor =
-                        new EadMetadataField("editorName", 7, null, null, false, true, true, "readonly", null, false, null, null, false);
 
-                for (Element item : entries) {
-                    editorList.add(item.getText());
-                    IFieldValue fv = new FieldValue(editor);
-                    fv.setValue(item.getText());
-                    editor.addFieldValue(fv);
-                }
-                selectedEntry.getDescriptionControlAreaList().add(editor);
-            }
-        }
-        Element control = eadElement.getChild("control", ns);
-        if (control != null) {
-            Element maintenancehistory = control.getChild("maintenancehistory", ns);
-            if (maintenancehistory != null) {
-                List<Element> events = maintenancehistory.getChildren("maintenanceevent", ns);
-                for (Element event : events) {
-                    String eventtype = event.getChildText("eventtype", ns);
-                    String eventdatetime = event.getChildText("eventdatetime", ns);
-                    eventList.add(new StringPair(eventtype, eventdatetime));
-                }
-            }
-        }
         getDuplicationConfiguration();
     }
 
@@ -528,66 +531,44 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * read the metadata for the current xml node. - create an {@link EadEntry} - execute the configured xpaths on the current node - add the metadata
      * to one of the 7 levels - check if the node has sub nodes - call the method recursively for all sub nodes
      */
-    private EadEntry parseElement(int order, int hierarchy, Element element) {
-        EadEntry entry = new EadEntry(order, hierarchy);
+    private IEadEntry parseElement(int order, int hierarchy, Element element) {
+        IEadEntry entry = new EadEntry(order, hierarchy);
 
         for (IMetadataField emf : configuredFields) {
-
-            List<String> stringValues = new ArrayList<>();
-            if ("text".equalsIgnoreCase(emf.getXpathType())) {
-                XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, ns);
-                List<Text> values = engine.evaluate(element);
-                if (emf.isRepeatable()) {
-                    for (Text value : values) {
-                        String stringValue = value.getValue();
-                        stringValues.add(stringValue);
-                    }
-                } else if (!values.isEmpty()) {
-                    Text value = values.get(0);
-                    String stringValue = value.getValue();
-                    stringValues.add(stringValue);
-                }
-            } else if ("attribute".equalsIgnoreCase(emf.getXpathType())) {
-                XPathExpression<Attribute> engine = xFactory.compile(emf.getXpath(), Filters.attribute(), null, ns);
-                List<Attribute> values = engine.evaluate(element);
-
-                if (emf.isRepeatable()) {
-                    for (Attribute value : values) {
-                        String stringValue = value.getValue();
-                        stringValues.add(stringValue);
-                    }
-                } else if (!values.isEmpty()) {
-                    Attribute value = values.get(0);
-                    String stringValue = value.getValue();
-                    stringValues.add(stringValue);
-                }
-            } else {
-                XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, ns);
+            if (emf.isGroup()) {
+                // find group root element
+                XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, nameSpaceRead);
+                List<IValue> groups = new ArrayList<>();
                 List<Element> values = engine.evaluate(element);
-                if (emf.isRepeatable()) {
-                    for (Element value : values) {
-                        String stringValue = value.getValue();
-                        stringValues.add(stringValue);
+                for (Element groupElement : values) {
+
+                    GroupValue gv = new GroupValue();
+                    groups.add(gv);
+                    gv.setGroupName(emf.getName());
+                    // for each sub element
+                    for (IMetadataField sub : emf.getSubfields()) {
+                        List<IValue> valueList = getValuesFromXml(groupElement, sub);
+                        gv.getSubfields().put(sub.getName(), valueList);
                     }
-                } else if (!values.isEmpty()) {
-                    Element value = values.get(0);
-                    String stringValue = value.getValue();
-                    stringValues.add(stringValue);
                 }
+                loadGroupMetadata(entry, emf, groups);
+            } else {
+                List<IValue> valueList = getValuesFromXml(element, emf);
+                IMetadataField toAdd = addFieldToEntry(entry, emf, valueList);
+                addFieldToNode(entry, toAdd);
             }
-            addFieldToEntry(entry, emf, stringValues);
         }
 
-        Element eadheader = element.getChild("eadheader", ns);
+        Element eadheader = element.getChild("eadheader", nameSpaceRead);
 
         entry.setId(element.getAttributeValue("id"));
         if (eadheader != null) {
             try {
-                Element filedesc = eadheader.getChild("filedesc", ns);
+                Element filedesc = eadheader.getChild("filedesc", nameSpaceRead);
                 if (filedesc != null) {
-                    Element titlestmt = filedesc.getChild("titlestmt", ns);
+                    Element titlestmt = filedesc.getChild("titlestmt", nameSpaceRead);
                     if (titlestmt != null) {
-                        String titleproper = titlestmt.getChildText("titleproper", ns);
+                        String titleproper = titlestmt.getChildText("titleproper", nameSpaceRead);
                         entry.setLabel(titleproper);
                     }
                 }
@@ -599,7 +580,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         // nodeType
         // get child elements
         List<Element> clist = null;
-        Element archdesc = element.getChild("archdesc", ns);
+        Element archdesc = element.getChild("archdesc", nameSpaceRead);
         if (archdesc != null) {
             String nodeTypeName = archdesc.getAttributeValue("localtype");
             for (INodeType nt : configuredNodes) {
@@ -607,16 +588,16 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     entry.setNodeType(nt);
                 }
             }
-            Element dsc = archdesc.getChild("dsc", ns);
+            Element dsc = archdesc.getChild("dsc", nameSpaceRead);
             if (dsc != null) {
                 // read process title
-                List<Element> altformavailList = dsc.getChildren("altformavail", ns);
+                List<Element> altformavailList = dsc.getChildren("altformavail", nameSpaceRead);
                 for (Element altformavail : altformavailList) {
                     if ("goobi_process".equals(altformavail.getAttributeValue("localtype"))) {
                         entry.setGoobiProcessTitle(altformavail.getText());
                     }
                 }
-                clist = dsc.getChildren("c", ns);
+                clist = dsc.getChildren("c", nameSpaceRead);
             }
 
         } else {
@@ -626,7 +607,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     entry.setNodeType(nt);
                 }
             }
-            List<Element> altformavailList = element.getChildren("altformavail", ns);
+            List<Element> altformavailList = element.getChildren("altformavail", nameSpaceRead);
             for (Element altformavail : altformavailList) {
                 if ("goobi_process".equals(altformavail.getAttributeValue("localtype"))) {
                     entry.setGoobiProcessTitle(altformavail.getText());
@@ -637,14 +618,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             entry.setNodeType(configuredNodes.get(0));
         }
         if (clist == null) {
-            clist = element.getChildren("c", ns);
+            clist = element.getChildren("c", nameSpaceRead);
         }
         if (clist != null) {
             int subOrder = 0;
             int subHierarchy = hierarchy + 1;
             for (Element c : clist) {
 
-                EadEntry child = parseElement(subOrder, subHierarchy, c);
+                IEadEntry child = parseElement(subOrder, subHierarchy, c);
                 entry.addSubEntry(child);
                 child.setParentNode(entry);
                 subOrder++;
@@ -653,42 +634,98 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         // generate new id, if id is null
         if (entry.getId() == null) {
-            entry.setId(String.valueOf(UUID.randomUUID()));
+            entry.setId("id_" + UUID.randomUUID());
         }
-
+        entry.calculateFingerprint();
         return entry;
     }
 
+    private List<IValue> getValuesFromXml(Element element, IMetadataField emf) {
+        List<IValue> valueList = new ArrayList<>();
+        if ("text".equalsIgnoreCase(emf.getXpathType())) {
+            XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, nameSpaceRead);
+            List<Text> values = engine.evaluate(element);
+            if (emf.isRepeatable()) {
+                for (Text value : values) {
+                    String stringValue = value.getValue();
+                    valueList.add(new ExtendendValue(emf.getName(), stringValue, null, null));
+                }
+            } else if (!values.isEmpty()) {
+                Text value = values.get(0);
+                String stringValue = value.getValue();
+                valueList.add(new ExtendendValue(emf.getName(), stringValue, null, null));
+            }
+        } else if ("attribute".equalsIgnoreCase(emf.getXpathType())) {
+            XPathExpression<Attribute> engine = xFactory.compile(emf.getXpath(), Filters.attribute(), null, nameSpaceRead);
+            List<Attribute> values = engine.evaluate(element);
+
+            if (emf.isRepeatable()) {
+                for (Attribute value : values) {
+                    String stringValue = value.getValue();
+                    valueList.add(new ExtendendValue(emf.getName(), stringValue, null, null));
+                }
+            } else if (!values.isEmpty()) {
+                Attribute value = values.get(0);
+                String stringValue = value.getValue();
+                valueList.add(new ExtendendValue(emf.getName(), stringValue, null, null));
+            }
+        } else {
+            XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, nameSpaceRead);
+            List<Element> values = engine.evaluate(element);
+            if (emf.isRepeatable()) {
+                for (Element value : values) {
+                    String authorityType = value.getAttributeValue("SOURCE");
+                    String authorityValue = value.getAttributeValue("AUTHFILENUMBER");
+                    String stringValue = value.getValue();
+                    valueList.add(new ExtendendValue(emf.getName(), stringValue, authorityType, authorityValue));
+                }
+            } else if (!values.isEmpty()) {
+                Element value = values.get(0);
+                String authorityType = value.getAttributeValue("SOURCE");
+                String authorityValue = value.getAttributeValue("AUTHFILENUMBER");
+                String stringValue = value.getValue();
+                valueList.add(new ExtendendValue(emf.getName(), stringValue, authorityType, authorityValue));
+            }
+        }
+        return valueList;
+    }
+
     /**
-     * Add the metaata to the configured level
-     * 
-     * @param entry
-     * @param emf
-     * @param stringValue
+     * Add the metadata to the configured level
      */
 
-    private void addFieldToEntry(EadEntry entry, IMetadataField emf, List<String> stringValues) {
-        if (StringUtils.isBlank(entry.getLabel()) && emf.getXpath().contains("unittitle") && stringValues != null && !stringValues.isEmpty()) {
-            entry.setLabel(stringValues.get(0));
-        }
+    private IMetadataField addFieldToEntry(IEadEntry entry, IMetadataField emf, List<IValue> values) {
+
         IMetadataField toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable(),
                 emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild(), emf.getValidationType(),
-                emf.getRegularExpression(), emf.isSearchable());
+                emf.getRegularExpression(), emf.isSearchable(), emf.getViafSearchFields(), emf.getViafDisplayFields(), emf.isGroup(),
+                emf.getVocabularyName());
         toAdd.setValidationError(emf.getValidationError());
         toAdd.setSelectItemList(emf.getSelectItemList());
-        toAdd.setEadEntry(entry);
+        toAdd.setSearchParameter(emf.getSearchParameter());
+        if (entry != null) {
+            if (StringUtils.isBlank(entry.getLabel()) && emf.getXpath().contains("unittitle") && values != null && !values.isEmpty()) {
+                IValue value = values.get(0);
+                entry.setLabel(((ExtendendValue) value).getValue());
+            }
+            toAdd.setEadEntry(entry);
+        }
 
-        if (stringValues != null && !stringValues.isEmpty()) {
+        if (values != null && !values.isEmpty()) {
             toAdd.setShowField(true);
 
             // split single value into multiple fields
-            for (String stringValue : stringValues) {
+            for (IValue value : values) {
+                ExtendendValue val = (ExtendendValue) value;
                 IFieldValue fv = new FieldValue(toAdd);
+                String stringValue = val.getValue();
+                fv.setAuthorityType(val.getAuthorityType());
+                fv.setAuthorityValue(val.getAuthorityValue());
 
                 if ("multiselect".equals(toAdd.getFieldType()) && StringUtils.isNotBlank(stringValue)) {
                     String[] splittedValues = stringValue.split("; ");
-                    for (String val : splittedValues) {
-                        fv.setMultiselectValue(val);
+                    for (String s : splittedValues) {
+                        fv.setMultiselectValue(s);
                     }
                 } else {
                     fv.setValue(stringValue);
@@ -699,7 +736,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             IFieldValue fv = new FieldValue(toAdd);
             toAdd.addFieldValue(fv);
         }
+        return toAdd;
 
+    }
+
+    private void addFieldToNode(IEadEntry entry, IMetadataField toAdd) {
         switch (toAdd.getLevel()) {
             case 1:
                 entry.getIdentityStatementAreaList().add(toAdd);
@@ -724,36 +765,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 break;
             default:
         }
-
-    }
-
-    /**
-     * Parse the string response from the basex database into a xml document
-     * 
-     * @param response
-     * @return
-     */
-    private Document openDocument(String response) {
-        // read response
-        SAXBuilder builder = new SAXBuilder(XMLReaders.NONVALIDATING); // NOSONAR
-        builder.setFeature("http://xml.org/sax/features/validation", false);
-        builder.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
-        builder.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-
-        try {
-            return builder.build(new StringReader(response), "utf-8");
-
-        } catch (JDOMException | IOException e) {
-            log.error(e);
-        }
-        return null;
     }
 
     /**
      * read in all parameters from the configuration file
      * 
      */
-    private void readConfiguration() {
+    public void readConfiguration() {
         log.debug("reading configuration");
         configuredFields = new ArrayList<>();
         configuredNodes = new ArrayList<>();
@@ -761,7 +779,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         HierarchicalConfiguration config = null;
 
         try {
-            config = xmlConfig.configurationAt("//config[./archive = '" + selectedDatabase + "']");
+            config = xmlConfig.configurationAt("//config[./archive = '" + databaseName + "']");
         } catch (IllegalArgumentException e) {
             try {
                 config = xmlConfig.configurationAt("//config[./archive = '*']");
@@ -770,6 +788,40 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
         }
 
+        exportFolder = xmlConfig.getString("/export/folder");
+
+        nameSpaceRead = Namespace.getNamespace("ead", config.getString("/eadNamespaceRead", "urn:isbn:1-931666-22-9"));
+        nameSpaceWrite = Namespace.getNamespace("ead", config.getString("/eadNamespaceWrite", "urn:isbn:1-931666-22-9"));
+
+        showNodeIdInTree = config.getBoolean("/treeView/showNodeId", false);
+
+        for (String level : config.getStringArray("/showGroup/@level")) {
+            switch (level) {
+                case "1":
+                    displayIdentityStatementArea = true;
+                    break;
+                case "2":
+                    displayContextArea = true;
+                    break;
+                case "3":
+                    displayContentArea = true;
+                    break;
+                case "4":
+                    displayAccessArea = true;
+                    break;
+                case "5":
+                    displayMaterialsArea = true;
+                    break;
+                case "6":
+                    displayNotesArea = true;
+                    break;
+                case "7":
+                    displayControlArea = true;
+                    break;
+                default:
+                    break;
+            }
+        }
         identifierMetadataName = config.getString("/processIdentifierField", "NodeId");
         identifierNodeName = config.getString("/nodeIdentifierField", "id");
 
@@ -800,67 +852,113 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         advancedSearch.add(new StringPair());
 
         // configurations for metadata
-        for (HierarchicalConfiguration hc : config.configurationsAt("/metadata")) {
-            IMetadataField field = new EadMetadataField(hc.getString("@name"), hc.getInt("@level"), hc.getString("@xpath"),
-                    hc.getString("@xpathType", "element"), hc.getBoolean("@repeatable", false), hc.getBoolean("@visible", true),
-                    hc.getBoolean("@showField", false), hc.getString("@fieldType", "input"), hc.getString("@rulesetName", null),
-                    hc.getBoolean("@importMetadataInChild", false), hc.getString("@validationType", null), hc.getString("@regularExpression"),
-                    hc.getBoolean("@searchable", false));
+        for (HierarchicalConfiguration fieldConfig : config.configurationsAt("/metadata")) {
+            IMetadataField field = new EadMetadataField(fieldConfig.getString("@name"), fieldConfig.getInt("@level"), fieldConfig.getString("@xpath"),
+                    fieldConfig.getString("@xpathType", "element"), fieldConfig.getBoolean("@repeatable", false),
+                    fieldConfig.getBoolean("@visible", true),
+                    fieldConfig.getBoolean("@showField", false), fieldConfig.getString("@fieldType", "input"),
+                    fieldConfig.getString("@rulesetName", null),
+                    fieldConfig.getBoolean("@importMetadataInChild", false), fieldConfig.getString("@validationType", null),
+                    fieldConfig.getString("@regularExpression"),
+                    fieldConfig.getBoolean("@searchable", false), fieldConfig.getString("@searchFields", null),
+                    fieldConfig.getString("@displayFields", null),
+                    fieldConfig.getBoolean("@group", false),
+                    fieldConfig.getString("/vocabulary"));
+            configureField(fieldConfig, field);
             configuredFields.add(field);
-            if (field.isSearchable()) {
-                advancedSearchFields.add(field.getName());
-            }
-
-            field.setValidationError(hc.getString("/validationError"));
-            if ("dropdown".equals(field.getFieldType()) || "multiselect".equals(field.getFieldType())) {
-                List<String> valueList = Arrays.asList(hc.getStringArray("/value"));
-                field.setSelectItemList(valueList);
-            } else if ("vocabulary".equals(field.getFieldType())) {
-                String vocabularyName = hc.getString("/vocabulary");
-                List<String> searchParameter = Arrays.asList(hc.getStringArray("/searchParameter"));
-                List<String> iFieldValueList = new ArrayList<>();
-                if (searchParameter == null) {
-                    Vocabulary currentVocabulary = VocabularyManager.getVocabularyByTitle(vocabularyName);
-                    if (currentVocabulary != null) {
-                        VocabularyManager.getAllRecords(currentVocabulary);
-                        if (currentVocabulary != null && currentVocabulary.getId() != null) {
-                            for (VocabRecord vr : currentVocabulary.getRecords()) {
-                                for (Field f : vr.getFields()) {
-                                    if (f.getDefinition().isMainEntry()) {
-                                        iFieldValueList.add(f.getValue());
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    List<StringPair> vocabularySearchFields = new ArrayList<>();
-                    for (String fieldname : searchParameter) {
-                        String[] parts = fieldname.trim().split("=");
-                        if (parts.length > 1) {
-                            String fieldName = parts[0];
-                            String value = parts[1];
-                            StringPair sp = new StringPair(fieldName, value);
-                            vocabularySearchFields.add(sp);
-                        }
-                    }
-                    List<VocabRecord> records = VocabularyManager.findRecords(vocabularyName, vocabularySearchFields);
-                    if (records != null && !records.isEmpty()) {
-                        for (VocabRecord vr : records) {
-                            for (Field f : vr.getFields()) {
-                                if (f.getDefinition().isMainEntry()) {
-                                    iFieldValueList.add(f.getValue());
-                                    break;
-                                }
-                            }
-                        }
-                    }
+            // groups
+            if (field.isGroup()) {
+                for (HierarchicalConfiguration subfieldConfig : fieldConfig.configurationsAt("/metadata")) {
+                    IMetadataField subfield = new EadMetadataField(subfieldConfig.getString("@name"), subfieldConfig.getInt("@level"),
+                            subfieldConfig.getString("@xpath"),
+                            subfieldConfig.getString("@xpathType", "element"), subfieldConfig.getBoolean("@repeatable", false),
+                            subfieldConfig.getBoolean("@visible", true),
+                            subfieldConfig.getBoolean("@showField", false), subfieldConfig.getString("@fieldType", "input"),
+                            subfieldConfig.getString("@rulesetName", null),
+                            subfieldConfig.getBoolean("@importMetadataInChild", false), subfieldConfig.getString("@validationType", null),
+                            subfieldConfig.getString("@regularExpression"),
+                            subfieldConfig.getBoolean("@searchable", false), subfieldConfig.getString("@searchFields", null),
+                            subfieldConfig.getString("@displayFields", null),
+                            false, subfieldConfig.getString("/vocabulary"));
+                    configureField(subfieldConfig, subfield);
+                    field.addSubfield(subfield);
                 }
-                field.setSelectItemList(iFieldValueList);
+            }
+            if (field.isVisible()) {
+                metadataFieldNames.add(field.getName());
             }
 
         }
+        ArchiveManagementManager.setConfiguredNodes(configuredNodes);
+    }
+
+    private void configureField(HierarchicalConfiguration fieldConfig, IMetadataField field) {
+        if (field.isSearchable()) {
+            advancedSearchFields.add(field.getName());
+        }
+
+        field.setValidationError(fieldConfig.getString("/validationError"));
+        field.setSearchParameter(Arrays.asList(fieldConfig.getStringArray("/searchParameter")));
+
+        if ("dropdown".equals(field.getFieldType()) || "multiselect".equals(field.getFieldType())) {
+            List<String> valueList = Arrays.asList(fieldConfig.getStringArray("/value"));
+            if (valueList == null || valueList.isEmpty()) {
+                loadVocabulary(field);
+            } else {
+                field.setSelectItemList(valueList);
+            }
+        } else if ("vocabulary".equals(field.getFieldType())) {
+            loadVocabulary(field);
+        }
+    }
+
+    private void loadVocabulary(IMetadataField field) {
+        List<String> iFieldValueList = Collections.emptyList();
+        if (vocabularyAPI != null) {
+            try {
+                ExtendedVocabulary vocabulary = vocabularyAPI.vocabularies().findByName(field.getVocabularyName());
+                if (field.getSearchParameter().isEmpty()) {
+                    iFieldValueList = vocabularyAPI.vocabularyRecords()
+                            .getRecordMainValues(vocabulary.getId());
+                } else {
+                    if (field.getSearchParameter().size() > 1) {
+                        Helper.setFehlerMeldung("vocabularyList with multiple fields is not supported right now");
+                        return;
+                    }
+
+                    String[] parts = field.getSearchParameter().get(0).trim().split("=");
+                    if (parts.length != 2) {
+                        Helper.setFehlerMeldung("Wrong field format");
+                        return;
+                    }
+
+                    String searchFieldName = parts[0];
+                    String searchFieldValue = parts[1];
+
+                    VocabularySchema schema = vocabularyAPI.vocabularySchemas().get(vocabulary.getSchemaId());
+                    Optional<FieldDefinition> searchField = schema.getDefinitions()
+                            .stream()
+                            .filter(d -> d.getName().equals(searchFieldName))
+                            .findFirst();
+
+                    if (searchField.isEmpty()) {
+                        Helper.setFehlerMeldung("Field " + searchFieldName + " not found in vocabulary " + vocabulary.getName());
+                        return;
+                    }
+
+                    iFieldValueList = vocabularyAPI.vocabularyRecords()
+                            .getRecordMainValues(vocabularyAPI.vocabularyRecords()
+                                    .list(vocabulary.getId())
+                                    .search(searchField.get().getId() + ":" + searchFieldValue));
+                }
+            } catch (APIException e) {
+                log.error(e);
+                field.setVocabularyName(null);
+            }
+        } else {
+            field.setVocabularyName(null);
+        }
+        field.setSelectItemList(iFieldValueList);
     }
 
     public void resetFlatList() {
@@ -884,15 +982,51 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Override
     public void setSelectedEntry(IEadEntry entry) {
 
-        if (flatEntryList == null) {
-            getFlatEntryList();
+        if (selectedEntry != null) {
+            // auto save current node - if not, remove this line
+            updateSingleNode();
+            selectedEntry.setSelected(false);
+            // unlock last entry and its children
+            List<IEadEntry> entriesToUnlock = selectedEntry.getAllNodes();
+            for (IEadEntry e : entriesToUnlock) {
+                LockingBean.freeObject(e.getId());
+            }
+        }
+        // deselect the old entry
+        selectedEntry = null;
+
+        // replace the node with the latest version from basex
+        IEadEntry updatedEntry = updateNode(entry);
+        if (updatedEntry == null) {
+            return;
+        }
+        entry = updatedEntry;
+        entry.setSelected(true);
+
+        // check if entry or any of its children is locked by another person
+        List<IEadEntry> entriesToLock = entry.getAllNodes();
+        for (IEadEntry e : entriesToLock) {
+            if (LockingBean.isLockedByAnotherUser(e.getId(), username)) {
+                Helper.setFehlerMeldung("Someone is working on this node or its children");
+                return;
+            }
         }
 
-        for (IEadEntry other : flatEntryList) {
-            other.setSelected(false);
+        // lock new node, if no-one is working on it or its children
+        for (IEadEntry e : entriesToLock) {
+            if (!LockingBean.lockObject(e.getId(), username)) {
+                // this error cannot not occur
+            }
         }
-        entry.setSelected(true);
+
         this.selectedEntry = entry;
+    }
+
+    private IEadEntry updateNode(IEadEntry entry) {
+        if (!testMode) {
+            loadMetadataForNode(entry);
+        }
+        return entry;
     }
 
     @Override
@@ -900,21 +1034,23 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         if (selectedEntry != null) {
             EadEntry entry =
                     new EadEntry(selectedEntry.isHasChildren() ? selectedEntry.getSubEntryList().size() : 0, selectedEntry.getHierarchy() + 1);
-            entry.setId(String.valueOf(UUID.randomUUID()));
+            entry.setId("id_" + UUID.randomUUID());
             // initial metadata values
-            List<String> titleData = new ArrayList<>();
+            List<IValue> titleData = new ArrayList<>();
             if (StringUtils.isNotBlank(nodeDefaultTitle)) {
-                titleData.add(nodeDefaultTitle);
+                titleData.add(new ExtendendValue(null, nodeDefaultTitle, null, null));
                 entry.setLabel(nodeDefaultTitle);
             }
             for (IMetadataField emf : configuredFields) {
-                if (emf.getXpath().contains("unittitle")) {
-                    addFieldToEntry(entry, emf, titleData);
+                if (emf.isGroup()) {
+                    loadGroupMetadata(entry, emf, null);
+                } else if (emf.getXpath().contains("unittitle")) {
+                    IMetadataField toAdd = addFieldToEntry(entry, emf, titleData);
+                    addFieldToNode(entry, toAdd);
                 } else {
                     addFieldToEntry(entry, emf, null);
                 }
             }
-
             entry.setNodeType(selectedEntry.getNodeType());
             selectedEntry.addSubEntry(entry);
             selectedEntry.setDisplayChildren(true);
@@ -922,106 +1058,86 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             selectedEntry = entry;
             selectedEntry.setSelected(true);
             flatEntryList = null;
+            selectedEntry.calculateFingerprint();
+            ArchiveManagementManager.saveNode(recordGroup.getId(), entry);
         }
-        LockingBean.updateLocking(selectedDatabase);
     }
 
     public void deleteNode() {
         if (selectedEntry != null) {
-            // find parent node
             IEadEntry parentNode = selectedEntry.getParentNode();
             if (parentNode == null) {
-                // we found the root node, this node cant be deleted
+                // abort, root node cannot be deleted
                 return;
             }
-            // remove current element from parent node
-            parentNode.removeSubEntry(selectedEntry);
-            // set selectedEntry to parent node
+
+            // remove the current node from parent
+            parentNode.getSubEntryList().remove(selectedEntry);
+            parentNode.reOrderElements();
+
+            // get the current node and all of its children
+            List<IEadEntry> nodesToDelete = selectedEntry.getAllNodes();
+
+            // delete elements in the database
+            ArchiveManagementManager.deleteNodes(nodesToDelete);
+            selectedEntry = null;
+            // select the parent node
             setSelectedEntry(parentNode);
             flatEntryList = null;
-        }
-        LockingBean.updateLocking(selectedDatabase);
-    }
 
-    /**
-     * Create a new ead xml document and store it in the configured folder The document is stored in the configured folder and the basex import
-     * routine is called
-     * 
-     */
-
-    @Override
-    public void createEadDocument() {
-
-        if (!storageProvider.isFileExists(Paths.get(exportFolder))) {
-            try {
-                storageProvider.createDirectories(Paths.get(exportFolder));
-            } catch (IOException e) {
-                log.error(e);
-            }
         }
 
-        Document document = new Document();
-
-        Element eadRoot = new Element("ead", ns);
-        document.setRootElement(eadRoot);
-
-        addMetadata(eadRoot, rootElement);
-        createEventFields(eadRoot);
-        String[] nameParts = selectedDatabase.split(" - ");
-        XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
-        try {
-            out.output(document, new FileOutputStream(exportFolder + "/" + nameParts[1]));
-        } catch (IOException e) {
-            log.error(e);
-        }
-
-        // call function to import created ead file
-        String importUrl = datastoreUrl + "import/" + nameParts[0] + "/" + nameParts[1];
-
-        HttpUtils.getStringFromUrl(importUrl);
-
-        LockingBean.updateLocking(selectedDatabase);
     }
 
     /**
      * upload the selected file
      */
     public void upload() {
-        if (uploadFile == null || StringUtils.isBlank(databaseName)) {
+        if (uploadFile == null) {
             Helper.setFehlerMeldung("plugin_administration_archive_missing_Data");
             return;
         }
+        readConfiguration();
 
         String uploadedFileName = processUploadedFileName(uploadFile);
-
-        Path savedFile = Paths.get(exportFolder, uploadedFileName);
-
-        // make a backup if an older version of the uploaded file exists
-        if (fileToUploadExists) {
-            backupFile(savedFile);
-        }
-
-        // save the uploaded file
+        // open document, parse it
         try (InputStream input = uploadFile.getInputStream()) {
-            Files.copy(input, savedFile);
+            Document document = XmlTools.readDocumentFromStream(input);
+            if (document != null) {
+
+                Element mainElement = document.getRootElement();
+                if ("collection".equals(mainElement.getName())) {
+                    mainElement = mainElement.getChildren().get(0);
+                }
+
+                if (!"ead".equals(mainElement.getName())) {
+                    // file is not an ead file
+                    String message = "plugin_administration_archive_notEadFile";
+                    throw new FileNotFoundException(message);
+                }
+
+                parseEadFile(document);
+
+            }
         } catch (IOException e) {
             log.error(e);
         }
-
-        // validate uploaded file
-        if (!validateUploadedFile(savedFile)) {
-            log.error("the uploaded file is invalid, aborting...");
-            return;
+        // check, if uploaded file was used before
+        recordGroup = ArchiveManagementManager.getRecordGroupByTitle(uploadedFileName);
+        if (recordGroup == null) {
+            recordGroup = new RecordGroup();
+            recordGroup.setTitle(uploadedFileName);
+        } else {
+            // replace existing records
+            ArchiveManagementManager.deleteAllNodes(recordGroup.getId());
         }
 
-        // load database
-        String importUrl = datastoreUrl + "import/" + databaseName + "/" + uploadedFileName;
-        HttpUtils.getStringFromUrl(importUrl);
-
-        selectedDatabase = databaseName + " - " + uploadedFileName;
+        // save nodes
+        ArchiveManagementManager.saveRecordGroup(recordGroup);
+        List<IEadEntry> nodes = rootElement.getAllNodes();
+        ArchiveManagementManager.saveNodes(recordGroup.getId(), nodes);
+        databaseName = recordGroup.getTitle();
         displayMode = "";
-        loadSelectedDatabase();
-
         // update existing process ids if the uploaded EAD file has an older version
         if (fileToUploadExists) {
             log.debug("updating existing processes' ids");
@@ -1042,10 +1158,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         String uploadedFileName = processUploadedFileName(file);
 
-        Path fileToSave = Paths.get(exportFolder, uploadedFileName);
+        IRecordGroup rg = ArchiveManagementManager.getRecordGroupByTitle(uploadedFileName);
 
-        log.debug("fileToSave = " + fileToSave);
-        fileToUploadExists = storageProvider.isFileExists(fileToSave);
+        fileToUploadExists = rg != null;
     }
 
     /**
@@ -1056,6 +1171,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * @return the corrected file name as a string
      */
     private String processUploadedFileName(Part file) {
+        if (file == null) {
+            return "";
+        }
+
         String uploadedFileName = Paths.get(file.getSubmittedFileName()).getFileName().toString(); // MSIE fix.
 
         // filename must end with xml
@@ -1068,181 +1187,353 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         return uploadedFileName;
     }
 
-    /**
-     * make a backup of the input file
-     * 
-     * @param filePath absolute path of the input file
-     */
-    private void backupFile(Path filePath) {
-        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        String strTimestamp = timestampFormat.format(timestamp);
-        Path backupPath = Path.of(filePath.toString().concat(".").concat(strTimestamp));
-        log.debug("creating new backup: " + backupPath);
-        try {
-            storageProvider.move(filePath, backupPath);
-        } catch (IOException e) {
-            log.error("failed to save the backup: " + backupPath);
-        }
-        Helper.setMeldung("Backup file created: " + backupPath);
-    }
-
-    /**
-     * check if the uploaded file is a valid ead file, and delete it if it is invalid
-     * 
-     * @param filePath absolute path of the uploaded file
-     * @return true if the uploaded file is valid, false otherwise
-     */
-    private boolean validateUploadedFile(Path filePath) {
-        SAXBuilder builder = new SAXBuilder(XMLReaders.NONVALIDATING);
-        builder.setFeature("http://xml.org/sax/features/validation", false);
-        builder.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
-        builder.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-
-        try {
-            // file is valid xml
-            Document document = builder.build(filePath.toFile());
-            Element mainElement = document.getRootElement();
-            if (!"ead".equals(mainElement.getName())) {
-                // file is not an ead file
-                String message = "plugin_administration_archive_notEadFile";
-                throw new FileNotFoundException(message);
-            }
-            // the uploaded file is valid
-            return true;
-
-        } catch (Exception e) {
-            log.error(e);
-            // show error message
-            Helper.setFehlerMeldung(e.getMessage());
-            // delete the invalid file
-            try {
-                log.debug("deleting the invalid file from: " + filePath);
-                storageProvider.deleteFile(filePath);
-            } catch (IOException e1) {
-                log.error("IOException occurred while trying to delete the invalid file from: " + filePath);
-            }
-            // the uploaded file is invalid
-            return false;
-        }
-    }
-
-    private void addMetadata(Element xmlElement, IEadEntry node) {
+    public void addMetadata(Element currentElement, IEadEntry node, Element xmlRootElement, boolean updateHistory) {
         boolean isMainElement = false;
-        if ("ead".equals(xmlElement.getName())) {
+        if ("ead".equals(currentElement.getName())) {
             isMainElement = true;
+            if (updateHistory) {
+                updateChangeHistory(node);
+            }
         }
 
         for (IMetadataField emf : node.getIdentityStatementAreaList()) {
-            for (IFieldValue fv : emf.getValues()) {
-                if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
-
-                }
-            }
+            createEadElement(currentElement, isMainElement, emf, xmlRootElement);
         }
         for (IMetadataField emf : node.getContextAreaList()) {
-            for (IFieldValue fv : emf.getValues()) {
-                if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
-
-                }
-            }
+            createEadElement(currentElement, isMainElement, emf, xmlRootElement);
         }
         for (IMetadataField emf : node.getContentAndStructureAreaAreaList()) {
-            for (IFieldValue fv : emf.getValues()) {
-                if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
-
-                }
-            }
+            createEadElement(currentElement, isMainElement, emf, xmlRootElement);
         }
         for (IMetadataField emf : node.getAccessAndUseAreaList()) {
-            for (IFieldValue fv : emf.getValues()) {
-                if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
-
-                }
-            }
+            createEadElement(currentElement, isMainElement, emf, xmlRootElement);
         }
         for (IMetadataField emf : node.getAlliedMaterialsAreaList()) {
-            for (IFieldValue fv : emf.getValues()) {
-                if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
-
-                }
-            }
+            createEadElement(currentElement, isMainElement, emf, xmlRootElement);
         }
         for (IMetadataField emf : node.getNotesAreaList()) {
-            for (IFieldValue fv : emf.getValues()) {
-                if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
-
-                }
-            }
+            createEadElement(currentElement, isMainElement, emf, xmlRootElement);
         }
         for (IMetadataField emf : node.getDescriptionControlAreaList()) {
-            for (IFieldValue fv : emf.getValues()) {
-                if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
-                    createEadXmlField(xmlElement, isMainElement, emf, fv.getValuesForXmlExport());
-
-                }
-            }
+            createEadElement(currentElement, isMainElement, emf, xmlRootElement);
         }
         Element dsc = null;
         if (isMainElement) {
-            Element archdesc = xmlElement.getChild("archdesc", ns);
-            if (archdesc == null) {
-                archdesc = new Element("archdesc", ns);
-                xmlElement.addContent(archdesc);
-            }
-            dsc = archdesc.getChild("dsc", ns);
-            if (dsc == null) {
-                dsc = new Element("dsc", ns);
-                archdesc.addContent(dsc);
-            }
             if (StringUtils.isNotBlank(node.getId())) {
-                archdesc.setAttribute("id", node.getId());
+                currentElement.setAttribute("id", node.getId());
+            }
+            Element archdesc = currentElement.getChild("archdesc", nameSpaceWrite);
+            if (archdesc == null) {
+                archdesc = new Element("archdesc", nameSpaceWrite);
+                currentElement.addContent(archdesc);
+            }
+            dsc = archdesc.getChild("dsc", nameSpaceWrite);
+            if (dsc == null) {
+                dsc = new Element("dsc", nameSpaceWrite);
+                archdesc.addContent(dsc);
             }
 
             if (StringUtils.isNotBlank(node.getGoobiProcessTitle())) {
-                Element altformavail = new Element("altformavail", ns);
+                Element altformavail = new Element("altformavail", nameSpaceWrite);
                 altformavail.setAttribute("localtype", "goobi_process");
                 altformavail.setText(node.getGoobiProcessTitle());
                 dsc.addContent(altformavail);
             }
 
         } else {
-            dsc = xmlElement;
+            dsc = currentElement;
             if (StringUtils.isNotBlank(node.getId())) {
-                xmlElement.setAttribute("id", node.getId());
+                currentElement.setAttribute("id", node.getId());
             }
             if (node.getNodeType() != null) {
-                xmlElement.setAttribute("otherlevel", node.getNodeType().getNodeName());
+                currentElement.setAttribute("otherlevel", node.getNodeType().getNodeName());
             }
         }
 
         for (IEadEntry subNode : node.getSubEntryList()) {
             if (dsc == null) {
-                dsc = new Element("dsc", ns);
-                xmlElement.addContent(dsc);
+                dsc = new Element("dsc", nameSpaceWrite);
+                currentElement.addContent(dsc);
             }
 
-            Element c = new Element("c", ns);
+            Element c = new Element("c", nameSpaceWrite);
             dsc.addContent(c);
             if (StringUtils.isNotBlank(subNode.getGoobiProcessTitle())) {
-                Element altformavail = new Element("altformavail", ns);
+                Element altformavail = new Element("altformavail", nameSpaceWrite);
                 altformavail.setAttribute("localtype", "goobi_process");
                 altformavail.setText(subNode.getGoobiProcessTitle());
                 c.addContent(altformavail);
             }
 
-            addMetadata(c, subNode);
+            addMetadata(c, subNode, xmlRootElement, updateHistory);
         }
-
     }
 
-    private void createEadXmlField(Element xmlElement, boolean isMainElement, IMetadataField emf, String metadataValue) {
+    private void createEadElement(Element xmlElement, boolean isMainElement, IMetadataField emf, Element xmlRootElement) {
+        if (emf.isGroup()) {
+            createEadGroupField(xmlElement, emf, isMainElement, xmlRootElement);
+        } else {
+            for (IFieldValue fv : emf.getValues()) {
+                if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
+                    createEadXmlField(xmlElement, isMainElement, emf, fv, xmlRootElement);
+
+                }
+            }
+        }
+    }
+
+    private void updateChangeHistory(IEadEntry node) {
+        // set maintenancestatus
+        for (IMetadataField field : node.getIdentityStatementAreaList()) {
+            if ("maintenancestatus".equals(field.getName())) {
+                IFieldValue value = field.getValues().get(0);
+                if (StringUtils.isBlank(value.getValue())) {
+                    value.setValue("revised");
+                }
+            }
+        }
+        for (IMetadataField field : node.getIdentityStatementAreaList()) {
+            // maintenancehistory
+            if ("maintenancehistory".equals(field.getName())) {
+                GroupValue newHistoryEvent = new GroupValue();
+                newHistoryEvent.setGroupName(field.getName());
+
+                List<IValue> val = new ArrayList<>();
+                val.add(new ExtendendValue("eventtype", "revised", null, null));
+                newHistoryEvent.getSubfields().put("eventtype", val);
+
+                String date = formatter.format(new Date());
+                val = new ArrayList<>();
+                val.add(new ExtendendValue("eventdatetime", date, null, null));
+                newHistoryEvent.getSubfields().put("eventdatetime", val);
+
+                val = new ArrayList<>();
+                val.add(new ExtendendValue("agent", username, null, null));
+                newHistoryEvent.getSubfields().put("agent", val);
+                List<IValue> grps = new ArrayList<>();
+                grps.add(newHistoryEvent);
+                addGroupData(field, grps);
+                break;
+            }
+        }
+
+        // add current user to editor list
+        for (IMetadataField field : node.getDescriptionControlAreaList()) {
+            if ("editorName".equals(field.getName())) {
+                boolean match = false;
+                for (IFieldValue value : field.getValues()) {
+                    if (username.equals(value.getValue())) {
+                        match = true;
+                    }
+                }
+                if (!match) {
+                    IFieldValue val = new FieldValue(field);
+                    val.setValue(username);
+                    field.addFieldValue(val);
+                }
+            }
+        }
+        // save updated node
+        ArchiveManagementManager.saveNode(recordGroup.getId(), node);
+    }
+
+    private void createEadGroupField(Element xmlElement, IMetadataField groupField, boolean isMainElement, Element xmlRootElement) {
+
+        if (!groupField.isFilled()) {
+            return;
+        }
+
+        for (IMetadataGroup group : groupField.getGroups()) {
+
+            String xpath = getXpath(isMainElement, groupField);
+            if (StringUtils.isBlank(xpath)) {
+                // dont export internal fields
+                return;
+            }
+
+            String strRegex = "/(?=[^\\]]*(?:\\[|$))";
+            String[] fields = xpath.split(strRegex);
+
+            Element groupElement = xmlElement;
+            if (xpath.contains("ead:control")) {
+                groupElement = xmlRootElement;
+            }
+
+            String lastElement = fields[fields.length - 1];
+
+            String[] prevElements = Arrays.copyOf(fields, fields.length - 1);
+
+            for (int i = 0; i < prevElements.length; i++) {
+                String field = fields[i];
+                if (!".".equals(field)) {
+                    // reuse elements until the last element
+                    groupElement = findElement(field, groupElement);
+                }
+            }
+
+            // always create a new entry for the last element
+            String conditions = null;
+            if (lastElement.contains("[")) {
+                conditions = lastElement.substring(lastElement.indexOf("["));
+                lastElement = lastElement.substring(0, lastElement.indexOf("["));
+            }
+            lastElement = lastElement.replace("ead:", "");
+            groupElement = createXmlElement(groupElement, lastElement, conditions);
+
+            for (IMetadataField subfield : group.getFields()) {
+                for (IFieldValue fv : subfield.getValues()) {
+                    if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
+                        createEadXmlField(groupElement, isMainElement, subfield, fv, xmlRootElement);
+                    }
+                }
+            }
+        }
+    }
+
+    private void createEadXmlField(Element xmlElement, boolean isMainElement, IMetadataField emf, IFieldValue metadataValue, Element xmlRootElement) {
+        if (StringUtils.isBlank(emf.getXpath())) {
+            // don't export internal fields
+            return;
+        }
+
         Element currentElement = xmlElement;
+        String xpath = getXpath(isMainElement, emf);
+
+        if (xpath.contains("ead:control")) {
+            currentElement = xmlRootElement;
+        }
+
+        // split xpath on URL_SEPARATOR, unless within square brackets
+        String strRegex = "/(?=[^\\]]*(?:\\[|$))";
+        String[] fields = xpath.split(strRegex);
+        boolean written = false;
+        for (String field : fields) {
+            field = field.trim();
+
+            // ignore .
+            if (".".equals(field)) {
+                // do nothing
+            }
+            // check if its an element or attribute
+            else if (field.startsWith("@")) {
+                field = field.substring(1);
+                // create attribute on current element
+                // duplicate current element if attribute is not empty
+                if (currentElement.getAttribute(field) != null) {
+                    Element duplicate = new Element(currentElement.getName(), nameSpaceWrite);
+                    for (Attribute attr : currentElement.getAttributes()) {
+                        if (!attr.getName().equals(field)) {
+                            duplicate.setAttribute(attr.getName(), attr.getValue());
+                        }
+                    }
+                    currentElement.getParent().addContent(duplicate);
+                    currentElement = duplicate;
+                }
+
+                currentElement.setAttribute(field, metadataValue.getValuesForXmlExport());
+                written = true;
+            } else {
+                currentElement = findElement(field, currentElement);
+            }
+        }
+        if (!written) {
+            // duplicate current element if not empty
+            if (StringUtils.isNotBlank(currentElement.getText()) || !currentElement.getChildren().isEmpty()) {
+                Element duplicate = new Element(currentElement.getName(), nameSpaceWrite);
+                for (Attribute attr : currentElement.getAttributes()) {
+                    duplicate.setAttribute(attr.getName(), attr.getValue());
+                }
+
+                if (!currentElement.getChildren().isEmpty()) {
+                    for (Element child : currentElement.getChildren()) {
+                        Element duplicateChild = new Element(child.getName(), nameSpaceWrite);
+                        duplicateChild.setText(child.getText());
+                        duplicate.addContent(duplicateChild);
+                    }
+                }
+
+                currentElement.getParent().addContent(duplicate);
+                currentElement = duplicate;
+            }
+
+            currentElement.setText(metadataValue.getValuesForXmlExport());
+
+            if (StringUtils.isNotBlank(metadataValue.getAuthorityType()) && StringUtils.isNotBlank(metadataValue.getAuthorityValue())) {
+                currentElement.setAttribute("SOURCE", metadataValue.getAuthorityType());
+                currentElement.setAttribute("AUTHFILENUMBER", metadataValue.getAuthorityValue());
+            }
+        }
+    }
+
+    private Element findElement(String field, Element currentElement) {
+        // remove namespace
+
+        field = field.replace("ead:", "");
+
+        String conditions = null;
+        if (field.contains("[")) {
+            conditions = field.substring(field.indexOf("["));
+            field = field.substring(0, field.indexOf("["));
+        }
+
+        // check if element exists, re-use if possible
+        Element element = currentElement.getChild(field, nameSpaceWrite);
+        if (element == null) {
+            element = createXmlElement(currentElement, field, conditions);
+        } else if (conditions != null) {
+            // check if conditions are fulfilled
+            String[] conditionArray = conditions.split("\\[");
+            // add each condition
+            boolean conditionsMatch = true;
+            for (String condition : conditionArray) {
+                if (StringUtils.isBlank(condition)) {
+                    // do nothing, no condition is given
+                } else if (condition.trim().startsWith("not")) {
+                    int start = condition.indexOf("(");
+                    int end = condition.indexOf(")");
+                    condition = condition.substring(start + 2, end);
+                    if (condition.contains("=")) {
+                        // [not(@type='abc')]
+                        String value = element.getAttributeValue(condition.substring(0, condition.indexOf("=")));
+                        if (StringUtils.isNotBlank(value) && value.equals(condition.substring(condition.indexOf("=") + 1).replace("'", ""))) {
+                            conditionsMatch = false;
+                        }
+                    } else {
+                        // [not(@type)]
+                        String value = element.getAttributeValue(condition);
+                        if (StringUtils.isNotBlank(value)) {
+                            conditionsMatch = false;
+                        }
+                    }
+                    continue;
+                } else if (condition.contains("]")) {
+                    condition = condition.substring(1, condition.lastIndexOf("]"));
+                } else {
+                    condition = condition.substring(1);
+                }
+                condition = condition.trim();
+                if (condition.contains("=")) {
+                    String value = element.getAttributeValue(condition.substring(0, condition.indexOf("=")));
+                    if (StringUtils.isBlank(value) || !value.equals(condition.substring(condition.indexOf("=") + 1).replace("'", ""))) {
+                        conditionsMatch = false;
+                    }
+                } else {
+                    String value = element.getAttributeValue(condition);
+                    if (StringUtils.isBlank(value)) {
+                        conditionsMatch = false;
+                    }
+                }
+            }
+            // if not create new element
+            if (!conditionsMatch) {
+                element = createXmlElement(currentElement, field, conditions);
+            }
+        }
+        currentElement = element;
+        return currentElement;
+    }
+
+    private String getXpath(boolean isMainElement, IMetadataField emf) {
         String xpath = emf.getXpath();
         if (xpath.endsWith("[1]")) {
             xpath = xpath.replace("[1]", "");
@@ -1260,129 +1551,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 }
             }
         }
-        // split xpath on "/", unless within square brackets
-        String strRegex = "/(?=[^\\]]*(?:\\[|$))";
-        String[] fields = xpath.split(strRegex);
-        boolean written = false;
-        for (String field : fields) {
-            field = field.trim();
-
-            // ignore .
-            if (".".equals(field)) {
-                // do nothing
-            }
-            // check if its an element or attribute
-            else if (field.startsWith("@")) {
-                field = field.substring(1);
-                // create attribute on current element
-                // duplicate current element if attribute is not empty
-                if (currentElement.getAttribute(field) != null) {
-                    Element duplicate = new Element(currentElement.getName(), ns);
-                    for (Attribute attr : currentElement.getAttributes()) {
-                        if (!attr.getName().equals(field)) {
-                            duplicate.setAttribute(attr.getName(), attr.getValue());
-                        }
-                    }
-                    currentElement.getParent().addContent(duplicate);
-                    currentElement = duplicate;
-                }
-
-                currentElement.setAttribute(field, metadataValue);
-                written = true;
-            } else {
-                // remove namespace
-                field = field.replace("ead:", "");
-
-                String conditions = null;
-                if (field.contains("[")) {
-                    conditions = field.substring(field.indexOf("["));
-                    field = field.substring(0, field.indexOf("["));
-                }
-
-                // check if element exists, re-use if possible
-                Element element = currentElement.getChild(field, ns);
-                if (element == null) {
-                    element = createXmlElement(currentElement, field, conditions);
-                } else if (conditions != null) {
-                    // check if conditions are fulfilled
-                    String[] conditionArray = conditions.split("\\[");
-                    // add each condition
-                    boolean conditionsMatch = true;
-                    for (String condition : conditionArray) {
-                        if (StringUtils.isBlank(condition)) {
-                            // do nothing, no condition is given
-                        } else if (condition.trim().startsWith("not")) {
-                            int start = condition.indexOf("(");
-                            int end = condition.indexOf(")");
-                            condition = condition.substring(start + 2, end);
-                            if (condition.contains("=")) {
-                                // [not(@type='abc')]
-                                String value = element.getAttributeValue(condition.substring(0, condition.indexOf("=")));
-                                if (StringUtils.isNotBlank(value) && value.equals(condition.substring(condition.indexOf("=") + 1).replace("'", ""))) {
-                                    conditionsMatch = false;
-                                }
-                            } else {
-                                // [not(@type)]
-                                String value = element.getAttributeValue(condition);
-                                if (StringUtils.isNotBlank(value)) {
-                                    conditionsMatch = false;
-                                }
-                            }
-                            continue;
-                        } else if (condition.contains("]")) {
-                            condition = condition.substring(1, condition.lastIndexOf("]"));
-                        } else {
-                            condition = condition.substring(1);
-                        }
-                        condition = condition.trim();
-                        if (condition.contains("=")) {
-                            String value = element.getAttributeValue(condition.substring(0, condition.indexOf("=")));
-                            if (StringUtils.isBlank(value) || !value.equals(condition.substring(condition.indexOf("=") + 1).replace("'", ""))) {
-                                conditionsMatch = false;
-                            }
-                        } else {
-                            String value = element.getAttributeValue(condition);
-                            if (StringUtils.isBlank(value)) {
-                                conditionsMatch = false;
-                            }
-                        }
-                    }
-                    // if not create new element
-                    if (!conditionsMatch) {
-                        element = createXmlElement(currentElement, field, conditions);
-                    }
-                }
-                currentElement = element;
-
-            }
-        }
-        if (!written) {
-            // duplicate current element if not empty
-            if (StringUtils.isNotBlank(currentElement.getText()) || !currentElement.getChildren().isEmpty()) {
-                Element duplicate = new Element(currentElement.getName(), ns);
-                for (Attribute attr : currentElement.getAttributes()) {
-                    duplicate.setAttribute(attr.getName(), attr.getValue());
-                }
-
-                if (!currentElement.getChildren().isEmpty()) {
-                    for (Element child : currentElement.getChildren()) {
-                        Element duplicateChild = new Element(child.getName(), ns);
-                        duplicateChild.setText(child.getText());
-                        duplicate.addContent(duplicateChild);
-                    }
-                }
-
-                currentElement.getParent().addContent(duplicate);
-                currentElement = duplicate;
-            }
-
-            currentElement.setText(metadataValue);
-        }
+        return xpath;
     }
 
     private Element createXmlElement(Element currentElement, String field, String conditions) {
-        Element element;
-        element = new Element(field, ns);
+        Element element = new Element(field, nameSpaceWrite);
         currentElement.addContent(element);
         if (conditions != null) {
             String[] conditionArray = conditions.split("\\[");
@@ -1418,7 +1591,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     String[] attr = condition.split("=");
                     if (attr.length > 1) {
                         String strName = attr[1].replace("'", "");
-                        Element eltChild = new Element(attr[0], ns);
+                        Element eltChild = new Element(attr[0], nameSpaceWrite);
                         eltChild.setText(strName);
                         element.addContent(eltChild);
                     }
@@ -1457,20 +1630,24 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public void moveNode() {
 
-        // remove element from parent node
-        IEadEntry parentNode = selectedEntry.getParentNode();
-        parentNode.removeSubEntry(selectedEntry);
+        // abort if new parent is locked
 
-        // add it to new parent
-        destinationEntry.addSubEntry(selectedEntry);
+        if (LockingBean.isLockedByAnotherUser(destinationEntry.getId(), username)) {
+            Helper.setFehlerMeldung("plugin_administration_archive_destinationLocked");
+            return;
+        }
+
+        // remove element from old parent list
+        selectedEntry.getParentNode().getSubEntryList().remove(selectedEntry);
+
         selectedEntry.setParentNode(destinationEntry);
-
-        // set new hierarchy level to element and all children
+        destinationEntry.addSubEntry(selectedEntry);
+        destinationEntry.reOrderElements();
         selectedEntry.updateHierarchy();
-        flatEntryList = null;
-
+        ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
+        setSelectedEntry(selectedEntry);
         displayMode = "";
-        LockingBean.updateLocking(selectedDatabase);
+        flatEntryList = null;
     }
 
     public void moveNodeUp() {
@@ -1493,10 +1670,20 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             return;
         }
 
-        Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), selectedEntry.getOrderNumber() - 1);
-        selectedEntry.getParentNode().reOrderElements();
+        // swap node order
+        IEadEntry previousNode = selectedEntry.getParentNode().getSubEntryList().get(selectedEntry.getOrderNumber() - 1);
+        int otherOrderNumber = previousNode.getOrderNumber();
+        int currentOrderNumber = selectedEntry.getOrderNumber();
+        selectedEntry.setOrderNumber(otherOrderNumber);
+        previousNode.setOrderNumber(currentOrderNumber);
+
+        // save nodes
+        ArchiveManagementManager.saveNode(recordGroup.getId(), previousNode);
+        ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
+        selectedEntry.getParentNode().sortElements();
+
         flatEntryList = null;
-        LockingBean.updateLocking(selectedDatabase);
+
     }
 
     public void moveNodeDown() {
@@ -1519,10 +1706,19 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             return;
         }
 
-        Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), selectedEntry.getOrderNumber() + 1);
-        selectedEntry.getParentNode().reOrderElements();
+        IEadEntry followingNode = selectedEntry.getParentNode().getSubEntryList().get(selectedEntry.getOrderNumber() + 1);
+        int currentOrderNumber = selectedEntry.getOrderNumber();
+        int otherOrderNumber = followingNode.getOrderNumber();
+        selectedEntry.setOrderNumber(otherOrderNumber);
+        followingNode.setOrderNumber(currentOrderNumber);
+
+        // save nodes
+        ArchiveManagementManager.saveNode(recordGroup.getId(), followingNode);
+        ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
+        selectedEntry.getParentNode().sortElements();
+
         flatEntryList = null;
-        LockingBean.updateLocking(selectedDatabase);
+
     }
 
     public void moveHierarchyDown() {
@@ -1544,9 +1740,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         IEadEntry previousNode = selectedEntry.getParentNode().getSubEntryList().get(selectedEntry.getOrderNumber().intValue() - 1);
         // move node to prev.
         destinationEntry = previousNode;
-        moveNode();
         destinationEntry.setDisplayChildren(true);
-        LockingBean.updateLocking(selectedDatabase);
+        moveNode();
     }
 
     public void moveHierarchyUp() {
@@ -1570,43 +1765,31 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         // move current node to parents parent
         destinationEntry = newParent;
         moveNode();
-        newParent.reOrderElements();
         // move node to one position after current parent
         if (selectedEntry.getOrderNumber().intValue() != oldParent.getOrderNumber().intValue() + 1) {
             Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), oldParent.getOrderNumber() + 1);
             selectedEntry.getParentNode().reOrderElements();
         }
-        LockingBean.updateLocking(selectedDatabase);
     }
 
     public void searchAdvanced() {
-        // get a list of all existing nodes
         resetSearch();
-        List<IEadEntry> allNodes = rootElement.getAllNodes();
-
+        List<Integer> searchResults = new ArrayList<>();
         for (StringPair p : advancedSearch) {
             if (StringUtils.isNotBlank(p.getOne()) && StringUtils.isNotBlank(p.getTwo())) {
                 // filter the node list, return only fields containing the data
-                allNodes = filterNodeList(allNodes, p.getOne(), p.getTwo());
+                searchResults = ArchiveManagementManager.advancedSearch(recordGroup.getId(), p.getOne(), p.getTwo(), searchResults);
             }
         }
 
         // finally mark all found nodes
-        for (IEadEntry node : allNodes) {
-            node.markAsFound();
+        for (IEadEntry entry : rootElement.getAllNodes()) {
+            if (searchResults.contains(entry.getDatabaseId())) {
+                entry.markAsFound();
+            }
         }
 
         flatEntryList = rootElement.getSearchList();
-    }
-
-    private List<IEadEntry> filterNodeList(List<IEadEntry> nodes, String searchField, String searchValues) {
-        List<IEadEntry> filteredEntries = new ArrayList<>();
-        for (IEadEntry node : nodes) {
-            if (containsSearchString(node, searchField, searchValues)) {
-                filteredEntries.add(node);
-            }
-        }
-        return filteredEntries;
     }
 
     public void search() {
@@ -1615,105 +1798,20 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             rootElement.resetFoundList();
             // search in all/some metadata fields of all elements?
 
-            // for now: search only labels
-            searchInNode(rootElement);
+            List<Integer> searchResults = ArchiveManagementManager.simpleSearch(recordGroup.getId(), null, searchValue);
+
+            for (IEadEntry entry : rootElement.getAllNodes()) {
+                if (searchResults.contains(entry.getDatabaseId())) {
+                    entry.markAsFound();
+                }
+            }
 
             // fill flatList with displayable fields
             flatEntryList = rootElement.getSearchList();
         } else {
             resetSearch();
         }
-        LockingBean.updateLocking(selectedDatabase);
-    }
 
-    private void searchInNode(IEadEntry node) {
-
-        if (containsSearchString(node, null, searchValue.toLowerCase())) {
-            // mark element + all parents as displayable
-            node.markAsFound();
-        }
-        if (node.getSubEntryList() != null) {
-            for (IEadEntry child : node.getSubEntryList()) {
-                searchInNode(child);
-            }
-        }
-        LockingBean.updateLocking(selectedDatabase);
-    }
-
-    private boolean containsSearchString(IEadEntry node, String fieldname, String searchString) {
-
-        // search in all/configured fields
-        for (IMetadataField field : node.getIdentityStatementAreaList()) {
-            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
-                for (IFieldValue value : field.getValues()) {
-                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        for (IMetadataField field : node.getContextAreaList()) {
-            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
-                for (IFieldValue value : field.getValues()) {
-                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        for (IMetadataField field : node.getContentAndStructureAreaAreaList()) {
-            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
-                for (IFieldValue value : field.getValues()) {
-                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        for (IMetadataField field : node.getAccessAndUseAreaList()) {
-            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
-                for (IFieldValue value : field.getValues()) {
-                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        for (IMetadataField field : node.getAlliedMaterialsAreaList()) {
-            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
-                for (IFieldValue value : field.getValues()) {
-                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        for (IMetadataField field : node.getNotesAreaList()) {
-            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
-                for (IFieldValue value : field.getValues()) {
-                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        for (IMetadataField field : node.getDescriptionControlAreaList()) {
-            if (field.isSearchable() && (StringUtils.isBlank(fieldname) || field.getName().equals(fieldname))) {
-                for (IFieldValue value : field.getValues()) {
-                    if (value.getValue() != null && value.getValue().toLowerCase().contains(searchString)) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    public void searchListener(AjaxBehaviorEvent event) { //NOSONAR method signature must include the parameter, even if it is not needed
-        search();
     }
 
     public void resetSearch() {
@@ -1741,13 +1839,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         return processTemplates;
     }
 
-    public void createProcess() {
+    public Process createProcess() {
         // abort if no node is selected
         if (selectedEntry == null) {
-            return;
+            return null;
         }
         if (selectedEntry.getNodeType() == null) {
-            return;
+            return null;
         }
         Integer processTemplateId = null;
         if (StringUtils.isBlank(selectedTemplate)) {
@@ -1759,7 +1857,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         // load process template
         processTemplate = ProcessManager.getProcessById(processTemplateId);
         if (processTemplate == null) {
-            return;
+            return null;
         }
 
         Prefs prefs = processTemplate.getRegelsatz().getPreferences();
@@ -1863,50 +1961,26 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 String message2 = "Uniqueness of the generated process name is not guaranteed, aborting.";
                 log.error(message2);
                 Helper.setFehlerMeldung(message2);
-                return;
+                return null;
             }
         }
         log.debug("processTitle = " + processTitle);
 
-        // create process based on configured process template
-        Process process = new Process();
-        process.setTitel(processTitle);
-        selectedEntry.setGoobiProcessTitle(processTitle);
-        process.setIstTemplate(false);
-        process.setInAuswahllisteAnzeigen(false);
-        process.setProjekt(processTemplate.getProjekt());
-        process.setRegelsatz(processTemplate.getRegelsatz());
-        process.setDocket(processTemplate.getDocket());
-
-        bhelp.SchritteKopieren(processTemplate, process);
-        bhelp.ScanvorlagenKopieren(processTemplate, process);
-        bhelp.WerkstueckeKopieren(processTemplate, process);
-        bhelp.EigenschaftenKopieren(processTemplate, process);
-
-        bhelp.EigenschaftHinzufuegen(process, "Template", processTemplate.getTitel());
-        bhelp.EigenschaftHinzufuegen(process, "TemplateID", selectedTemplate);
-
-        // save process
-        try {
-            ProcessManager.saveProcess(process);
-        } catch (DAOException e1) {
-            log.error(e1);
-        }
         try {
             DocStruct physical = digDoc.createDocStruct(prefs.getDocStrctTypeByName("BoundBook"));
             digDoc.setPhysicalDocStruct(physical);
             Metadata imageFiles = new Metadata(prefs.getMetadataTypeByName("pathimagefiles"));
-            imageFiles.setValue(process.getImagesTifDirectory(false));
+            imageFiles.setValue(processTitle + "_media");
             physical.addMetadata(imageFiles);
-            // save fileformat
-            process.writeMetadataFile(fileformat);
-        } catch (UGHException | IOException | SwapException e) {
+        } catch (DocStructHasNoTypeException | UGHException e) {
             log.error(e);
-
         }
 
-        // save ead file
-        createEadDocument();
+        // create process based on configured process template
+        Process process = bhelp.createAndSaveNewProcess(processTemplate, processTitle, fileformat);
+
+        // save current node
+        ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
 
         // start any open automatic tasks
         for (Step s : process.getSchritteList()) {
@@ -1915,7 +1989,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 myThread.startOrPutToQueue();
             }
         }
-        LockingBean.updateLocking(selectedDatabase);
+        return process;
     }
 
     private void addNoteId(Prefs prefs, DocStruct logical) {
@@ -2008,31 +2082,65 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     //  create metadata, add it to logical element
     private void createModsMetadata(Prefs prefs, IMetadataField emf, DocStruct logical) {
+        //  groups
         if (StringUtils.isNotBlank(emf.getMetadataName())) {
-            for (IFieldValue fv : emf.getValues()) {
-                if (!fv.getMultiselectSelectedValues().isEmpty()) {
-                    for (String value : fv.getMultiselectSelectedValues()) {
+            if (emf.isGroup()) {
+
+                for (IMetadataGroup group : emf.getGroups()) {
+                    try {
+                        MetadataGroup mg = new MetadataGroup(prefs.getMetadataGroupTypeByName(emf.getMetadataName()));
+
+                        for (IMetadataField subfield : group.getFields()) {
+
+                            for (IFieldValue fv : subfield.getValues()) {
+                                Metadata metadata = null;
+                                for (Metadata md : mg.getMetadataList()) {
+                                    if (md.getType().getName().equals(subfield.getMetadataName())) {
+                                        metadata = md;
+                                    }
+                                }
+                                if (metadata == null || (StringUtils.isNotBlank(metadata.getValue()))) {
+                                    metadata = new Metadata(prefs.getMetadataTypeByName(subfield.getMetadataName()));
+                                    mg.addMetadata(metadata);
+                                }
+                                metadata.setValue(fv.getValue());
+                            }
+                        }
+
+                        logical.addMetadataGroup(mg);
+                    } catch (UGHException e) {
+                        log.error(e);
+                    }
+                }
+            } else {
+                // regular metadata
+                for (IFieldValue fv : emf.getValues()) {
+                    if (!fv.getMultiselectSelectedValues().isEmpty()) {
+                        for (String value : fv.getMultiselectSelectedValues()) {
+                            try {
+                                Metadata md = new Metadata(prefs.getMetadataTypeByName(emf.getMetadataName()));
+                                md.setValue(value);
+                                logical.addMetadata(md);
+                            } catch (UGHException e) {
+                                log.error(e);
+                            }
+                        }
+                    } else if (StringUtils.isNotBlank(fv.getValue())) {
                         try {
+
                             Metadata md = new Metadata(prefs.getMetadataTypeByName(emf.getMetadataName()));
-                            md.setValue(value);
+                            md.setValue(fv.getValue());
+                            if (StringUtils.isNotBlank(fv.getAuthorityValue())) {
+                                md.setAuthorityFile(fv.getAuthorityType(), "", fv.getAuthorityValue());
+                            }
                             logical.addMetadata(md);
                         } catch (UGHException e) {
                             log.error(e);
                         }
                     }
-                } else if (StringUtils.isNotBlank(fv.getValue())) {
-                    try {
-
-                        Metadata md = new Metadata(prefs.getMetadataTypeByName(emf.getMetadataName()));
-                        md.setValue(fv.getValue());
-                        logical.addMetadata(md);
-                    } catch (UGHException e) {
-                        log.error(e);
-                    }
                 }
             }
         }
-
     }
 
     public void downloadDocket() {
@@ -2043,24 +2151,53 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             return;
         }
         Process process = ProcessManager.getProcessByExactTitle(selectedEntry.getGoobiProcessTitle());
-        process.downloadDocket();
-        LockingBean.updateLocking(selectedDatabase);
+
+        if (process.getBatch() == null) {
+            process.downloadDocket();
+        } else {
+            // load all processes of the batch
+
+            List<Process> docket = ProcessManager.getProcesses(null, " istTemplate = false AND batchID = " + process.getBatch().getBatchId(), 0,
+                    Integer.MAX_VALUE, null);
+            if (docket.size() == 1) {
+                process.downloadDocket();
+            } else {
+                FacesContext facesContext = FacesContextHelper.getCurrentFacesContext();
+                Path xsltfile = Paths.get(ConfigurationHelper.getInstance().getXsltFolder(), "docket_multipage.xsl");
+                HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+                String fileName = "batch_docket" + ".pdf";
+                ServletContext servletContext = (ServletContext) facesContext.getExternalContext().getContext();
+                String contentType = servletContext.getMimeType(fileName);
+                response.setContentType(contentType);
+                response.setHeader("Content-Disposition", "attachment;filename=\"" + fileName + "\"");
+
+                try {
+                    ServletOutputStream out = response.getOutputStream();
+                    XsltToPdf ern = new XsltToPdf();
+                    ern.startExport(docket, out, xsltfile.toString());
+                    out.flush();
+                } catch (IOException e) {
+                    log.error("IOException while exporting run note", e);
+                }
+
+                facesContext.responseComplete();
+            }
+
+        }
+
     }
 
     public void downloadArchive() {
         // validate
         validateArchive();
+        if (selectedEntry != null) {
+            // save current element
+            ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
+        }
+        Document document = createEadFile();
 
-        // create ead document
-        Document document = new Document();
-
-        Element eadRoot = new Element("ead", ns);
-        document.setRootElement(eadRoot);
-
-        addMetadata(eadRoot, rootElement);
-        createEventFields(eadRoot);
         //  write document to servlet output stream
-        String downloadFileName = selectedDatabase.replace(" ", "_");
+        String downloadFileName = recordGroup.getTitle().replace(" ", "_");
         if (!downloadFileName.endsWith(".xml")) {
             downloadFileName = downloadFileName + ".xml";
         }
@@ -2084,70 +2221,37 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
             facesContext.responseComplete();
         }
-        LockingBean.updateLocking(selectedDatabase);
     }
 
-    private void createEventFields(Element eadElement) {
+    @Override
+    public Document createEadFile() {
+        // reload all nodes from db to get every change
+        rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
+        loadMetadataForAllNodes();
 
-        Element archdesc = eadElement.getChild("archdesc", ns);
-        if (archdesc == null) {
-            archdesc = new Element("archdesc", ns);
-            eadElement.addContent(archdesc);
-        }
-        Element processinfoElement = archdesc.getChild("processinfo", ns);
-        if (processinfoElement == null) {
-            processinfoElement = new Element("processinfo", ns);
-            archdesc.addContent(processinfoElement);
-        }
-        Element list = processinfoElement.getChild("list", ns);
-        if (list == null) {
-            list = new Element("list", ns);
-            processinfoElement.addContent(list);
-        }
-        if (!editorList.contains(username)) {
-            editorList.add(username);
-        }
-        for (String editor : editorList) {
-            Element item = new Element("item", ns);
-            item.setText(editor);
-            list.addContent(item);
-        }
-        String eventType;
-        if (eventList.isEmpty()) {
-            eventType = "Created";
-        } else {
-            eventType = "Modified";
-        }
-        String date = formatter.format(new Date());
-        eventList.add(new StringPair(eventType, date));
+        Document document = new Document();
 
-        Element control = eadElement.getChild("control", ns);
-        if (control == null) {
-            control = new Element("control", ns);
-            eadElement.addContent(control);
-        }
+        Element eadRoot = new Element("ead", nameSpaceWrite);
+        document.setRootElement(eadRoot);
+        addMetadata(eadRoot, rootElement, eadRoot, true);
 
-        Element maintenancehistory = control.getChild("maintenancehistory", ns);
-
-        if (maintenancehistory == null) {
-            maintenancehistory = new Element("maintenancehistory", ns);
-            control.addContent(maintenancehistory);
-        }
-        for (StringPair pair : eventList) {
-            Element maintenanceevent = new Element("maintenanceevent", ns);
-            maintenancehistory.addContent(maintenanceevent);
-            Element eventtype = new Element("eventtype", ns);
-            eventtype.setText(pair.getOne());
-            maintenanceevent.addContent(eventtype);
-            Element eventdatetime = new Element("eventdatetime", ns);
-            eventdatetime.setText(pair.getTwo());
-            maintenanceevent.addContent(eventdatetime);
-        }
-
+        return document;
     }
 
     public String saveArchiveAndLeave() {
-        createEadDocument();
+        // save current node
+        if (selectedEntry != null) {
+            // update node history, if node was changed
+            String oldFingerPrint = selectedEntry.getFingerprint();
+            selectedEntry.calculateFingerprint();
+            String newFingerPrint = selectedEntry.getFingerprint();
+
+            if (StringUtils.isNotBlank(oldFingerPrint) && StringUtils.isNotBlank(newFingerPrint) && !oldFingerPrint.equals(newFingerPrint)) {
+                updateChangeHistory(selectedEntry);
+            }
+
+            ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
+        }
 
         return cancelEdition();
 
@@ -2155,8 +2259,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public String cancelEdition() {
         // reset current settings
-        LockingBean.freeObject(selectedDatabase);
-        selectedDatabase = null;
+        if (selectedEntry != null) {
+            List<IEadEntry> entriesToUnlock = selectedEntry.getAllNodes();
+            for (IEadEntry e : entriesToUnlock) {
+                LockingBean.freeObject(e.getId());
+            }
+        }
+
+        databaseName = null;
         selectedEntry = null;
         rootElement = null;
         displayMode = "";
@@ -2181,7 +2291,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         Map<String, List<String>> valueMap = new HashMap<>();
 
         validateNode(rootElement, valueMap);
-        LockingBean.updateLocking(selectedDatabase);
+
     }
 
     private void validateNode(IEadEntry node, Map<String, List<String>> valueMap) {
@@ -2217,6 +2327,23 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private void validateMetadataField(IEadEntry node, Map<String, List<String>> valueMap, IMetadataField emf) {
         emf.setValid(true);
         if (emf.getValidationType() != null) {
+            if (emf.getValidationType().contains("date")) {
+                for (IFieldValue fv : emf.getValues()) {
+                    if (StringUtils.isNotBlank(fv.getValue())) {
+                        CharStream in = CharStreams.fromString(fv.getValue());
+                        ExtendedDateTimeFormatLexer lexer = new ExtendedDateTimeFormatLexer(in);
+                        lexer.removeErrorListeners();
+                        CommonTokenStream tokens = new CommonTokenStream(lexer);
+                        ExtendedDateTimeFormatParser parser = new ExtendedDateTimeFormatParser(tokens);
+                        parser.removeErrorListeners();
+                        parser.edtf();
+                        if (parser.getNumberOfSyntaxErrors() > 0) {
+                            emf.setValid(false);
+                            node.setValid(false);
+                        }
+                    }
+                }
+            }
             if (emf.getValidationType().contains("unique")) {
                 for (IFieldValue fv : emf.getValues()) {
                     if (StringUtils.isNotBlank(fv.getValue())) {
@@ -2256,7 +2383,29 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     }
                 }
             }
+
+            // list validation
+            if (emf.getValidationType().contains("list")) {
+                List<String> possibleValues = emf.getSelectItemList();
+
+                for (IFieldValue fv : emf.getValues()) {
+
+                    if (!fv.getMultiselectSelectedValues().isEmpty()) {
+                        for (String value : fv.getMultiselectSelectedValues()) {
+                            if (!possibleValues.contains(value)) {
+                                emf.setValid(false);
+                                node.setValid(false);
+                            }
+                        }
+                    } else if (StringUtils.isNotBlank(fv.getValue()) && !possibleValues.contains(fv.getValue())) {
+                        emf.setValid(false);
+                        node.setValid(false);
+                    }
+
+                }
+            }
         }
+
     }
 
     public void updateAreaDisplay(int level) {
@@ -2298,16 +2447,30 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             return;
         }
 
-        createProcessesForChildren(selectedEntry);
+        List<Process> processList = new ArrayList<>();
+        createProcessesForChildren(selectedEntry, processList);
+        // if more than one process was created, put them into a batch
+        if (processList.size() > 1) {
+            Batch batch = new Batch();
+            ProcessManager.saveBatch(batch);
+            for (Process proc : processList) {
+                proc.setBatch(batch);
+                try {
+                    ProcessManager.saveProcess(proc);
+                } catch (DAOException e) {
+                    log.error(e);
+                }
+            }
+        }
     }
 
-    private void createProcessesForChildren(IEadEntry currentEntry) {
+    private void createProcessesForChildren(IEadEntry currentEntry, List<Process> processList) {
 
         setSelectedEntry(currentEntry);
-
         if (!currentEntry.isHasChildren() && currentEntry.getGoobiProcessTitle() == null) {
             try {
-                createProcess();
+                Process proc = createProcess();
+                processList.add(proc);
                 Helper.setMeldung("Created " + currentEntry.getGoobiProcessTitle() + " for " + currentEntry.getLabel());
             } catch (Exception e) {
                 Helper.setFehlerMeldung(e.getMessage());
@@ -2316,7 +2479,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         } else if (currentEntry.isHasChildren()) {
 
             for (IEadEntry childEntry : currentEntry.getSubEntryList()) {
-                createProcessesForChildren(childEntry);
+                createProcessesForChildren(childEntry, processList);
             }
         }
     }
@@ -2324,6 +2487,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     public void updateGoobiIds() {
 
         IEadEntry selected = getSelectedEntry();
+        if (selected == null) {
+            selectedEntry = rootElement;
+            selected = rootElement;
+        }
         List<String> lstNodesWithoutIds = removeInvalidProcessIds();
         checkGoobiProcessesForArchiveRefs(lstNodesWithoutIds);
         setSelectedEntry(selected);
@@ -2347,11 +2514,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             return lstNodesWithoutIds;
         }
 
-        IEadEntry currentEntry = selectedEntry;
-
         lstNodesWithoutIds = removeInvalidProcessIdsForChildren(selectedEntry);
-
-        setSelectedEntry(currentEntry);
 
         return lstNodesWithoutIds;
     }
@@ -2359,8 +2522,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private List<String> removeInvalidProcessIdsForChildren(IEadEntry currentEntry) {
 
         List<String> lstNodesWithoutIds = new ArrayList<>();
-
-        setSelectedEntry(currentEntry);
 
         String goobiProcessTitle = currentEntry.getGoobiProcessTitle();
 
@@ -2425,8 +2586,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 //perhaps remove the NodeId from the process?
             }
         }
-
-        LockingBean.updateLocking(selectedDatabase);
 
         return lstNodesWithNewIds;
     }
@@ -2551,35 +2710,56 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             copy.setOrderNumber(selectedEntry.getParentNode().getSubEntryList().size() + 1);
 
             selectedEntry.getParentNode().addSubEntry(copy);
+            // update node history, if node was changed
+            String oldFingerPrint = selectedEntry.getFingerprint();
+            selectedEntry.calculateFingerprint();
+            String newFingerPrint = selectedEntry.getFingerprint();
+
+            if (StringUtils.isNotBlank(oldFingerPrint) && StringUtils.isNotBlank(newFingerPrint) && !oldFingerPrint.equals(newFingerPrint)) {
+                updateChangeHistory(selectedEntry);
+            }
+            ArchiveManagementManager.saveNode(recordGroup.getId(), copy);
+            resetFlatList();
         }
     }
 
     public void duplicateEadFile() {
-        String[] nameParts = selectedDatabase.split(" - ");
-        String newFileName = nameParts[1].replace(".xml", "") + "_copy.xml";
 
-        IEadEntry duplicate = rootElement.deepCopy(duplicationConfiguration);
+        if (selectedEntry != null) {
+            // save current data
+            // update node history, if node was changed
+            String oldFingerPrint = selectedEntry.getFingerprint();
+            selectedEntry.calculateFingerprint();
+            String newFingerPrint = selectedEntry.getFingerprint();
 
-        Document document = new Document();
-
-        Element eadRoot = new Element("ead", ns);
-        document.setRootElement(eadRoot);
-
-        addMetadata(eadRoot, duplicate);
-        createEventFields(eadRoot);
-        XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
-        try {
-            out.output(document, new FileOutputStream(exportFolder + "/" + newFileName));
-        } catch (IOException e) {
-            log.error(e);
+            if (StringUtils.isNotBlank(oldFingerPrint) && StringUtils.isNotBlank(newFingerPrint) && !oldFingerPrint.equals(newFingerPrint)) {
+                updateChangeHistory(selectedEntry);
+            }
+            ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
         }
+        // create new recordGroup
+        RecordGroup clonedRecordGroup = new RecordGroup();
+        clonedRecordGroup.setTitle(recordGroup.getTitle() + " - copy");
 
-        // call function to import created ead file
-        String importUrl = datastoreUrl + "import/" + nameParts[0] + "/" + newFileName;
+        // load all metadata and all nodes for current record group
+        loadMetadataForAllNodes();
 
-        HttpUtils.getStringFromUrl(importUrl);
+        // duplicate rootElement and its children
+        IEadEntry newRootElement = rootElement.deepCopy(getDuplicationConfiguration());
 
-        LockingBean.updateLocking(selectedDatabase);
+        // save new data
+        ArchiveManagementManager.saveRecordGroup(clonedRecordGroup);
+        ArchiveManagementManager.saveNodes(clonedRecordGroup.getId(), newRootElement.getAllNodes());
+    }
+
+    public void duplicateEadFileFromOverview() {
+        // load selected file
+        loadSelectedDatabase();
+        // duplicate
+        duplicateEadFile();
+
+        // stay in overview
+        databaseName = null;
     }
 
     public IConfiguration getDuplicationConfiguration() {
@@ -2588,4 +2768,360 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
         return duplicationConfiguration;
     }
+
+    /**
+     * Replace an existing node in the EAD document in <baseX with the selected node.
+     * 
+     * The method searches for a node with the same id in the selected XML file and replaces the complete node and its children with the new content
+     * 
+     */
+
+    public void updateSingleNode() {
+        if (selectedEntry != null) {
+            if (selectedEntry.getNodeType() == null && configuredNodes != null) {
+                selectedEntry.setNodeType(configuredNodes.get(0));
+            }
+            // update node history, if node was changed
+            String oldFingerPrint = selectedEntry.getFingerprint();
+            selectedEntry.calculateFingerprint();
+            String newFingerPrint = selectedEntry.getFingerprint();
+
+            if (StringUtils.isNotBlank(oldFingerPrint) && StringUtils.isNotBlank(newFingerPrint) && !oldFingerPrint.equals(newFingerPrint)) {
+                updateChangeHistory(selectedEntry);
+            }
+            ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
+        }
+    }
+
+    private void loadMetadataForNode(IEadEntry entry) {
+        // clear old, outdated metadata
+        if (entry.getDatabaseId() != null) {
+            entry.getIdentityStatementAreaList().clear();
+            entry.getContextAreaList().clear();
+            entry.getContentAndStructureAreaAreaList().clear();
+            entry.getAccessAndUseAreaList().clear();
+            entry.getAlliedMaterialsAreaList().clear();
+            entry.getNotesAreaList().clear();
+            entry.getDescriptionControlAreaList().clear();
+
+            Map<String, List<IValue>> metadata = ArchiveManagementManager.loadMetadataForNode(entry.getDatabaseId());
+
+            for (IMetadataField emf : configuredFields) {
+                if (emf.isGroup()) {
+                    List<IValue> groups = metadata.get(emf.getName());
+                    loadGroupMetadata(entry, emf, groups);
+                } else {
+                    List<IValue> values = metadata.get(emf.getName());
+                    IMetadataField toAdd = addFieldToEntry(entry, emf, values);
+                    addFieldToNode(entry, toAdd);
+                }
+            }
+            entry.calculateFingerprint();
+        }
+    }
+
+    private void loadGroupMetadata(IEadEntry entry, IMetadataField template, List<IValue> groups) {
+        IMetadataField instance = new EadMetadataField(template.getName(), template.getLevel(), template.getXpath(), template.getXpathType(),
+                template.isRepeatable(),
+                template.isVisible(), template.isShowField(), template.getFieldType(), template.getMetadataName(), template.isImportMetadataInChild(),
+                template.getValidationType(),
+                template.getRegularExpression(), template.isSearchable(), template.getViafSearchFields(), template.getViafDisplayFields(),
+                template.isGroup(), template.getVocabularyName());
+        instance.setValidationError(template.getValidationError());
+        instance.setSelectItemList(template.getSelectItemList());
+        instance.setSearchParameter(template.getSearchParameter());
+        instance.setEadEntry(entry);
+
+        // sub fields
+        for (IMetadataField sub : template.getSubfields()) {
+            IMetadataField toAdd = addFieldToEntry(entry, sub, null);
+            instance.getSubfields().add(toAdd);
+        }
+
+        addGroupData(instance, groups);
+        addFieldToNode(entry, instance);
+    }
+
+    private void addGroupData(IMetadataField instance, List<IValue> groups) {
+        if (groups != null) {
+            for (IValue groupData : groups) {
+                IMetadataGroup eadGroup = instance.createGroup();
+                GroupValue gv = (GroupValue) groupData;
+                Map<String, List<IValue>> groupMetadata = gv.getSubfields();
+
+                for (IMetadataField sub : eadGroup.getFields()) {
+                    List<IValue> values = groupMetadata.get(sub.getName());
+
+                    if (values != null && !values.isEmpty()) {
+                        instance.setShowField(true);
+
+                        // split single value into multiple fields
+                        for (IValue value : values) {
+                            ExtendendValue val = (ExtendendValue) value;
+                            String stringValue = val.getValue();
+                            IFieldValue fv = null;
+                            for (IFieldValue v : sub.getValues()) {
+                                if (StringUtils.isBlank(v.getValue())) {
+                                    fv = v;
+                                }
+                            }
+                            if (fv == null) {
+                                fv = new FieldValue(sub);
+                                sub.addFieldValue(fv);
+                            }
+                            fv.setAuthorityType(val.getAuthorityType());
+                            fv.setAuthorityValue(val.getAuthorityValue());
+
+                            if ("multiselect".equals(sub.getFieldType()) && StringUtils.isNotBlank(stringValue)) {
+                                String[] splittedValues = stringValue.split("; ");
+                                for (String s : splittedValues) {
+                                    fv.setMultiselectValue(s);
+                                }
+                            } else {
+                                fv.setValue(stringValue);
+                            }
+
+                        }
+                    } else {
+                        IFieldValue fv = new FieldValue(sub);
+                        sub.addFieldValue(fv);
+                    }
+                }
+            }
+        } else {
+            instance.createGroup();
+        }
+    }
+
+    private void loadMetadataForAllNodes() {
+
+        List<IEadEntry> allNodes = rootElement.getAllNodes();
+
+        for (IEadEntry entry : allNodes) {
+            Map<String, List<IValue>> metadata = ArchiveManagementManager.convertStringToMap(entry.getData());
+            entry.getIdentityStatementAreaList().clear();
+            entry.getContextAreaList().clear();
+            entry.getContentAndStructureAreaAreaList().clear();
+            entry.getAccessAndUseAreaList().clear();
+            entry.getAlliedMaterialsAreaList().clear();
+            entry.getNotesAreaList().clear();
+            entry.getDescriptionControlAreaList().clear();
+            for (IMetadataField emf : configuredFields) {
+                List<IValue> values = metadata.get(emf.getName());
+                if (emf.isGroup()) {
+                    loadGroupMetadata(entry, emf, values);
+
+                } else {
+                    IMetadataField toAdd = addFieldToEntry(entry, emf, values);
+                    addFieldToNode(entry, toAdd);
+                }
+            }
+        }
+    }
+
+    // link nodes to other nodes
+
+    public List<IEadEntry> getLinkNodeList() {
+        if (isDisplayLinkedModal() && linkNodeList == null) {
+            linkNodeList = rootElement.getAllNodes();
+        }
+
+        return linkNodeList;
+    }
+
+    public void linkNode() {
+        String idToLink = destinationEntry.getId();
+        fieldToLink.setValue(idToLink);
+        displayLinkedModal = false;
+    }
+
+    public void addGroup() {
+        addGroupData(selectedGroup, null);
+    }
+
+    public void showAllFields() {
+        if (selectedEntry != null) {
+            displayIdentityStatementArea = true;
+            displayContextArea = true;
+            displayContentArea = true;
+            displayAccessArea = true;
+            displayMaterialsArea = true;
+            displayNotesArea = true;
+            displayControlArea = true;
+
+            for (IMetadataField field : selectedEntry.getIdentityStatementAreaList()) {
+                field.setShowField(true);
+            }
+            for (IMetadataField field : selectedEntry.getContextAreaList()) {
+                field.setShowField(true);
+            }
+            for (IMetadataField field : selectedEntry.getContentAndStructureAreaAreaList()) {
+                field.setShowField(true);
+            }
+            for (IMetadataField field : selectedEntry.getAccessAndUseAreaList()) {
+                field.setShowField(true);
+            }
+            for (IMetadataField field : selectedEntry.getAlliedMaterialsAreaList()) {
+                field.setShowField(true);
+            }
+            for (IMetadataField field : selectedEntry.getNotesAreaList()) {
+                field.setShowField(true);
+            }
+            for (IMetadataField field : selectedEntry.getDescriptionControlAreaList()) {
+                field.setShowField(true);
+            }
+        }
+    }
+
+    // add multiple nodes to current node
+
+    public List<IParameter> getMetadataToAdd() {
+        if (metadataToAdd == null && rootElement != null) {
+            metadataToAdd = new ArrayList<>();
+            metadataToAdd.add(new DuplicationParameter(""));
+            metadataToAdd.add(new DuplicationParameter(""));
+            metadataToAdd.add(new DuplicationParameter(""));
+        }
+        return metadataToAdd;
+    }
+
+    public void addMetadataRow() {
+        metadataToAdd.add(new DuplicationParameter(""));
+    }
+
+    public void removeMetadataRow(IParameter row) {
+        metadataToAdd.remove(row);
+    }
+
+    public void addNodes() {
+        if (selectedEntry != null) {
+            INodeType selectedNodeType = null;
+            for (INodeType node : configuredNodes) {
+                if (node.getNodeName().equals(nodeType)) {
+                    selectedNodeType = node;
+                }
+            }
+            int nodes = Integer.parseInt(numberOfNodes);
+            for (int counter = 0; counter < nodes; counter++) {
+                IEadEntry entry =
+                        new EadEntry(selectedEntry.isHasChildren() ? selectedEntry.getSubEntryList().size() : 0,
+                                selectedEntry.getHierarchy() + 1);
+                entry.setId("id_" + UUID.randomUUID());
+                entry.setNodeType(selectedNodeType);
+                selectedEntry.addSubEntry(entry);
+
+                // initialize all metadata fields
+                for (IMetadataField emf : configuredFields) {
+                    if (emf.isGroup()) {
+                        loadGroupMetadata(entry, emf, null);
+                    } else {
+                        IParameter configuredField = null;
+                        for (IParameter param : metadataToAdd) {
+                            if (emf.getName().equals(param.getFieldName())) {
+                                configuredField = param;
+                            }
+                        }
+                        List<IValue> metadataValues = new ArrayList<>();
+                        if (configuredField != null) {
+                            String value = null;
+                            switch (configuredField.getFieldType()) {
+                                case "generated":
+                                    value = "id_" + UUID.randomUUID();
+                                    break;
+                                case "text":
+                                    value = configuredField.getPrefix();
+                                    break;
+                                case "counter":
+                                    value = configuredField.getPrefix()
+                                            + String.format(configuredField.getCounterFormat(), configuredField.getCounterStartValue() + counter);
+                                    break;
+                                default:
+                                    break;
+                            }
+                            IValue val = new ExtendendValue(emf.getName(), value, null, null);
+                            metadataValues.add(val);
+                        }
+
+                        IMetadataField toAdd = addFieldToEntry(entry, emf, metadataValues);
+                        addFieldToNode(entry, toAdd);
+                    }
+                }
+                entry.calculateFingerprint();
+                // save new node
+                ArchiveManagementManager.saveNode(recordGroup.getId(), entry);
+            }
+
+            selectedEntry.setDisplayChildren(true);
+            resetFlatList();
+        }
+
+    }
+
+    public boolean isReadOnlyModus() {
+        return readOnlyMode;
+    }
+
+    public void eadExport() {
+        if (StringUtils.isBlank(exportFolder)) {
+            Helper.setFehlerMeldung("plugin_administration_archive_eadExportNotConfigured");
+            return;
+        }
+
+        Path downloadFile = Paths.get(exportFolder, databaseName.replace(" ", "_"));
+        Document document = createEadFile();
+        XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
+        try {
+            outputter.output(document, Files.newOutputStream(downloadFile));
+        } catch (IOException e) {
+            log.error(e);
+        }
+    }
+
+    public void eadExportFrommOverview() {
+        eadExport();
+        databaseName = null;
+    }
+
+    public void initializeRecord() {
+        try {
+            ExtendedVocabulary vocabulary = vocabularyAPI.vocabularies().findByName(vocabularyField.getVocabularyName());
+            newRecord = vocabularyAPI.vocabularyRecords().createEmptyRecord(vocabulary.getId(), null, false);
+        } catch (Exception e) {
+            // configured vocabulary does not exist or vocabulary server is down
+            newRecord = null;
+            displayVocabularyModal = false;
+        }
+    }
+
+    public void addEntry() {
+        // save new record
+        vocabularyAPI.vocabularyRecords().save(newRecord);
+
+        // populate new item list
+        loadVocabulary(vocabularyField);
+
+        // update template field
+        for (IMetadataField template : configuredFields) {
+            if (template.getName().equals(vocabularyField.getName())) {
+                template.setSelectItemList(vocabularyField.getSelectItemList());
+            }
+
+        }
+    }
+
+    public void deleteSelectedDatabase() {
+        if (allowDeletion) {
+            if (StringUtils.isBlank(databaseName) || "null".equals(databaseName)) {
+                // show error text
+                databaseName = null;
+                Helper.setFehlerMeldung("plugin_administration_archive_noArchiveSelected");
+                return;
+            }
+            // delete selected data
+            ArchiveManagementManager.deleteRecordGroup(databaseName);
+            // clean current selection
+            databaseName = null;
+        }
+    }
+
 }

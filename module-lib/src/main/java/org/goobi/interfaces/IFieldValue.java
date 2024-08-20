@@ -2,14 +2,20 @@ package org.goobi.interfaces;
 
 import java.util.List;
 
-public interface IFieldValue {
+import org.goobi.production.properties.GeonamesSearchProperty;
+import org.goobi.production.properties.GndSearchProperty;
+import org.goobi.production.properties.ViafSearchProperty;
 
+public interface IFieldValue extends GndSearchProperty, GeonamesSearchProperty, ViafSearchProperty {
+
+    @Override
     public String getValue();
 
     public List<String> getMultiselectSelectedValues();
 
     public IMetadataField getField();
 
+    @Override
     public void setValue(String value);
 
     public void setMultiselectSelectedValues(List<String> values);
@@ -27,4 +33,12 @@ public interface IFieldValue {
     public String getValuesForXmlExport();
 
     public List<String> getSelectItemList();
+
+    public String getAuthorityType();
+
+    public void setAuthorityType(String type);
+
+    public String getAuthorityValue();
+
+    public void setAuthorityValue(String value);
 }
