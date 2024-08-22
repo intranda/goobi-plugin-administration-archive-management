@@ -116,7 +116,9 @@ public class ArchiveManagementAdministrationPluginTest {
 
         ArchiveManagementManager.saveNodes(EasyMock.anyInt(), EasyMock.anyObject());
         ArchiveManagementManager.saveRecordGroup(EasyMock.anyObject());
-        ArchiveManagementManager.setConfiguredNodes(EasyMock.anyObject());
+        for (int i = 0; i < 3; i++) {
+            ArchiveManagementManager.setConfiguredNodes(EasyMock.anyObject());
+        }
         ArchiveManagementManager.createTables();
         ArchiveManagementManager.deleteNodes(EasyMock.anyObject());
         EasyMock.expect(ArchiveManagementManager.loadMetadataForNode(EasyMock.anyInt())).andReturn(new HashMap<>()).anyTimes();
