@@ -25,6 +25,7 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
 import de.sub.goobi.config.ConfigurationHelper;
+import de.sub.goobi.helper.StorageProvider;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
@@ -65,6 +66,15 @@ public class ExportEadFileJob extends AbstractGoobiJob {
             Document document = archive.createEadFile();
             XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
             for (String exportFolder : entry.getValue()) {
+                Path folder = Paths.get(exportFolder);
+                if (!StorageProvider.getInstance().isFileExists(folder)) {
+                    try {
+                        StorageProvider.getInstance().createDirectories(folder);
+                    } catch (IOException e) {
+                        log.error(e);
+                    }
+                }
+
                 Path downloadFile = Paths.get(exportFolder, file.replace(" ", "_"));
                 try {
                     outputter.output(document, Files.newOutputStream(downloadFile));
