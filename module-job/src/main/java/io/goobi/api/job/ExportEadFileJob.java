@@ -5,9 +5,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
@@ -26,9 +30,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class ExportEadFileJob extends AbstractGoobiJob {
 
-    private String exportFolder;
-
-    private List<String> filesToExport;
+    private Map<String, List<String>> exportConfiguration;
 
     /**
      * When called, this method gets executed
@@ -44,24 +46,26 @@ public class ExportEadFileJob extends AbstractGoobiJob {
 
         log.debug("Export configured ead files");
 
-        if (filesToExport != null && !filesToExport.isEmpty()) {
+        for (Entry<String, List<String>> entry : exportConfiguration.entrySet()) {
+
             // initialize plugin
 
             IPlugin p = PluginLoader.getPluginByTitle(PluginType.Administration, "intranda_administration_archive_management");
             IArchiveManagementAdministrationPlugin archive = (IArchiveManagementAdministrationPlugin) p;
 
-            for (String file : filesToExport) {
-                // load record from database
-                archive.setDatabaseName(file);
-                archive.loadSelectedDatabase();
+            String file = entry.getKey();
+            // load record from database
+            archive.setDatabaseName(file);
+            archive.loadSelectedDatabase();
 
-                //  write document to servlet output stream
-                if (!file.endsWith(".xml")) {
-                    file = file + ".xml";
-                }
+            //  write document to servlet output stream
+            if (!file.endsWith(".xml")) {
+                file = file + ".xml";
+            }
+            Document document = archive.createEadFile();
+            XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
+            for (String exportFolder : entry.getValue()) {
                 Path downloadFile = Paths.get(exportFolder, file.replace(" ", "_"));
-                Document document = archive.createEadFile();
-                XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
                 try {
                     outputter.output(document, Files.newOutputStream(downloadFile));
                 } catch (IOException e) {
@@ -96,11 +100,15 @@ public class ExportEadFileJob extends AbstractGoobiJob {
             xmlConfig.setReloadingStrategy(new FileChangedReloadingStrategy());
             xmlConfig.setExpressionEngine(new XPathExpressionEngine());
 
-            // get folder from configuration file
-            exportFolder = xmlConfig.getString("/export/folder");
+            exportConfiguration = new HashMap<>();
 
-            // check which files shall be exported
-            filesToExport = Arrays.asList(xmlConfig.getStringArray("/export/file"));
+            List<HierarchicalConfiguration> subconfig = xmlConfig.configurationsAt("/export/file");
+
+            for (HierarchicalConfiguration hc : subconfig) {
+                String filename = hc.getString("@name");
+                List<String> exportFolders = Arrays.asList(hc.getStringArray("/folder"));
+                exportConfiguration.put(filename, exportFolders);
+            }
 
         } catch (ConfigurationException e2) {
             log.error(e2);

@@ -78,6 +78,7 @@ import de.sub.goobi.helper.FacesContextHelper;
 import de.sub.goobi.helper.Helper;
 import de.sub.goobi.helper.ProcessTitleGenerator;
 import de.sub.goobi.helper.ScriptThreadWithoutHibernate;
+import de.sub.goobi.helper.StorageProvider;
 import de.sub.goobi.helper.XmlTools;
 import de.sub.goobi.helper.enums.ManipulationType;
 import de.sub.goobi.helper.enums.StepStatus;
@@ -301,7 +302,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private List<String> inventoryList = new ArrayList<>();
 
     @Getter
-    private String exportFolder;
+    private Map<String, List<String>> exportConfiguration;
 
     private transient VocabularyAPIManager vocabularyAPI = null;
 
@@ -393,6 +394,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     @Override
     public List<String> getPossibleDatabases() {
+        readConfiguration();
         List<IRecordGroup> allRecordGroups = getRecordGroups();
 
         List<String> databases = new ArrayList<>();
@@ -788,7 +790,15 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
         }
 
-        exportFolder = xmlConfig.getString("/export/folder");
+        exportConfiguration = new HashMap<>();
+
+        List<HierarchicalConfiguration> subconfig = xmlConfig.configurationsAt("/export/file");
+
+        for (HierarchicalConfiguration hc : subconfig) {
+            String filename = hc.getString("@name");
+            List<String> exportFolders = Arrays.asList(hc.getStringArray("/folder"));
+            exportConfiguration.put(filename, exportFolders);
+        }
 
         nameSpaceRead = Namespace.getNamespace("ead", config.getString("/eadNamespaceRead", "urn:isbn:1-931666-22-9"));
         nameSpaceWrite = Namespace.getNamespace("ead", config.getString("/eadNamespaceWrite", "urn:isbn:1-931666-22-9"));
@@ -3062,22 +3072,38 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     public void eadExport() {
-        if (StringUtils.isBlank(exportFolder)) {
+        List<String> exportFolders = exportConfiguration.get(databaseName);
+        if (exportFolders == null || exportFolders.isEmpty()) {
             Helper.setFehlerMeldung("plugin_administration_archive_eadExportNotConfigured");
+            databaseName = null;
             return;
         }
 
-        Path downloadFile = Paths.get(exportFolder, databaseName.replace(" ", "_"));
         Document document = createEadFile();
         XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
-        try {
-            outputter.output(document, Files.newOutputStream(downloadFile));
-        } catch (IOException e) {
-            log.error(e);
+
+        for (String exportFolder : exportFolders) {
+            Path folder = Paths.get(exportFolder);
+            if (!StorageProvider.getInstance().isFileExists(folder)) {
+                try {
+                    StorageProvider.getInstance().createDirectories(folder);
+                } catch (IOException e) {
+                    log.error(e);
+                }
+            }
+
+            Path downloadFile = Paths.get(exportFolder, databaseName.replace(" ", "_"));
+            try {
+                outputter.output(document, Files.newOutputStream(downloadFile));
+            } catch (IOException e) {
+                log.error(e);
+            }
         }
     }
 
     public void eadExportFrommOverview() {
+        readConfiguration();
+        recordGroup = ArchiveManagementManager.getRecordGroupByTitle(databaseName);
         eadExport();
         databaseName = null;
     }

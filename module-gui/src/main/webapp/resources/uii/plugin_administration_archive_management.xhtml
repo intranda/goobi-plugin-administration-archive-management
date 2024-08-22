@@ -106,7 +106,7 @@
                                                         </h:commandLink>
                                                         <h:commandLink
                                                             rendered="#{!AdministrationForm.administrationPlugin.readOnlyModus}"
-                                                            styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.readOnlyModus ? 'disabled' : ''}"
+                                                            styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.getExportConfiguration().get(db) == null ? 'disabled' : ''}"
                                                             type="submit"
                                                             action="#{AdministrationForm.administrationPlugin.eadExportFrommOverview}"
                                                             disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}">
