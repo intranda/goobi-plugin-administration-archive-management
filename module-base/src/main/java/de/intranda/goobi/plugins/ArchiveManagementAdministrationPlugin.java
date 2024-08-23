@@ -318,6 +318,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      */
     public ArchiveManagementAdministrationPlugin() {
         try {
+
             ArchiveManagementManager.createTables();
             vocabularyAPI = VocabularyAPIManager.getInstance();
         } catch (APIException e) {
@@ -373,8 +374,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                         }
                     }
                 }
-
             }
+            readExportConfiguration();
 
         } catch (ConfigurationException e2) {
             log.error(e2);
@@ -394,7 +395,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     @Override
     public List<String> getPossibleDatabases() {
-        readConfiguration();
         List<IRecordGroup> allRecordGroups = getRecordGroups();
 
         List<String> databases = new ArrayList<>();
@@ -769,6 +769,17 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
     }
 
+    public void readExportConfiguration() {
+        exportConfiguration = new HashMap<>();
+        List<HierarchicalConfiguration> subconfig = xmlConfig.configurationsAt("/export/file");
+
+        for (HierarchicalConfiguration hc : subconfig) {
+            String filename = hc.getString("@name");
+            List<String> exportFolders = Arrays.asList(hc.getStringArray("/folder"));
+            exportConfiguration.put(filename, exportFolders);
+        }
+    }
+
     /**
      * read in all parameters from the configuration file
      * 
@@ -790,15 +801,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
         }
 
-        exportConfiguration = new HashMap<>();
-
-        List<HierarchicalConfiguration> subconfig = xmlConfig.configurationsAt("/export/file");
-
-        for (HierarchicalConfiguration hc : subconfig) {
-            String filename = hc.getString("@name");
-            List<String> exportFolders = Arrays.asList(hc.getStringArray("/folder"));
-            exportConfiguration.put(filename, exportFolders);
-        }
+        readExportConfiguration();
 
         nameSpaceRead = Namespace.getNamespace("ead", config.getString("/eadNamespaceRead", "urn:isbn:1-931666-22-9"));
         nameSpaceWrite = Namespace.getNamespace("ead", config.getString("/eadNamespaceWrite", "urn:isbn:1-931666-22-9"));
@@ -3102,7 +3105,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     public void eadExportFrommOverview() {
-        readConfiguration();
         recordGroup = ArchiveManagementManager.getRecordGroupByTitle(databaseName);
         eadExport();
         databaseName = null;
