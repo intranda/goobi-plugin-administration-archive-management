@@ -652,23 +652,27 @@
                                             <h:outputText value="#{msgs.plugin_administration_archive_download_l}" />
                                         </span>
                                     </h:commandLink>
-                                    <h:commandLink
-                                        rendered="#{!AdministrationForm.administrationPlugin.readOnlyModus}"
-                                        styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.readOnlyModus ? 'disabled' : ''}"
-                                        type="submit"
-                                        action="#{AdministrationForm.administrationPlugin.eadExport}"
-                                        disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}">
-                                        <f:passThroughAttribute
-                                            name="data-bs-toggle"
-                                            value="tooltip" />
-                                        <f:passThroughAttribute
-                                            name="data-bs-title"
-                                            value="#{msgs.plugin_administration_archive_eadExport}" />
-                                        <span class="fa fa-globe" />
-                                        <span>
-                                            <h:outputText value="#{msgs.export_verb}" />
-                                        </span>
-                                    </h:commandLink>
+                                    <ui:fragment rendered="AdministrationForm.administrationPlugin.getExportConfiguration().get(db) != null">
+                                        <h:commandLink
+                                            rendered="#{
+                                                !AdministrationForm.administrationPlugin.readOnlyModus
+                                            }"
+                                            styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.readOnlyModus ? 'disabled' : ''}"
+                                            type="submit"
+                                            action="#{AdministrationForm.administrationPlugin.eadExport}"
+                                            disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}">
+                                            <f:passThroughAttribute
+                                                name="data-bs-toggle"
+                                                value="tooltip" />
+                                            <f:passThroughAttribute
+                                                name="data-bs-title"
+                                                value="#{msgs.plugin_administration_archive_eadExport}" />
+                                            <span class="fa fa-globe" />
+                                            <span>
+                                                <h:outputText value="#{msgs.export_verb}" />
+                                            </span>
+                                        </h:commandLink>
+                                    </ui:fragment>
                                 </div>
                             </intranda:box>
                         </div>
