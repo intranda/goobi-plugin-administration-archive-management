@@ -75,9 +75,12 @@ public class ExportEadFileJob extends AbstractGoobiJob {
                     }
                 }
 
-                Path downloadFile = Paths.get(exportFolder, file.replace(" ", "_"));
                 try {
-                    outputter.output(document, Files.newOutputStream(downloadFile));
+                    Path downloadFile = Paths.get(exportFolder, file.replace(" ", "_"));
+                    Path tempFile = StorageProvider.getInstance().createTemporaryFile(file.replace(" ", "_"), "xml");
+                    outputter.output(document, Files.newOutputStream(tempFile));
+                    StorageProvider.getInstance().copyFile(tempFile, downloadFile);
+                    StorageProvider.getInstance().deleteFile(tempFile);
                 } catch (IOException e) {
                     log.error(e);
                 }

@@ -3095,10 +3095,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     log.error(e);
                 }
             }
-
-            Path downloadFile = Paths.get(exportFolder, databaseName.replace(" ", "_"));
             try {
-                outputter.output(document, Files.newOutputStream(downloadFile));
+                // export into temporary file, copy temp file to destination, remove temp file
+                Path downloadFile = Paths.get(exportFolder, databaseName.replace(" ", "_"));
+                Path tempFile = StorageProvider.getInstance().createTemporaryFile(databaseName.replace(" ", "_"), "xml");
+                outputter.output(document, Files.newOutputStream(tempFile));
+                StorageProvider.getInstance().copyFile(tempFile, downloadFile);
+                StorageProvider.getInstance().deleteFile(tempFile);
             } catch (IOException e) {
                 log.error(e);
             }
