@@ -2238,6 +2238,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     @Override
     public Document createEadFile() {
+        readConfiguration();
         // reload all nodes from db to get every change
         rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
         loadMetadataForAllNodes();
