@@ -340,7 +340,8 @@ public class ArchiveManagementManager implements Serializable {
                 String authorityValue = mr.group(3);
                 String value = mr.group(4);
                 List<IValue> values = metadataMap.getOrDefault(metadata, new ArrayList<>());
-                values.add(new ExtendendValue(metadata, value.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&"), authorityType,
+                values.add(new ExtendendValue(metadata, value.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&").replace("''", "'"),
+                        authorityType,
                         authorityValue));
                 metadataMap.put(metadata, values);
             }
@@ -363,7 +364,8 @@ public class ArchiveManagementManager implements Serializable {
                     String value = sub.group(4);
 
                     List<IValue> subvalues = gv.getSubfields().getOrDefault(metadata, new ArrayList<>());
-                    subvalues.add(new ExtendendValue(metadata, value.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&"), authorityType,
+                    subvalues.add(new ExtendendValue(metadata,
+                            value.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&").replace("''", "'"), authorityType,
                             authorityValue));
                     gv.getSubfields().put(metadata, subvalues);
                 }
