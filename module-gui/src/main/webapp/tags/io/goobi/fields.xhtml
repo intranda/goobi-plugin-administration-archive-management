@@ -77,7 +77,8 @@
                     <span class="fa fa-trash" />
                     <f:ajax
                         execute="@this"
-                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                        onevent="(data) => {scrollToCurrentNode(data);}" />
                 </h:commandLink>
             </intranda:formInputGndAjax>
         </ui:fragment>
@@ -100,7 +101,8 @@
                     <span class="fa fa-trash" />
                     <f:ajax
                         execute="@this"
-                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                        onevent="(data) => {scrollToCurrentNode(data);}" />
                 </h:commandLink>
             </intranda:formInputGeonamesAjax>
         </ui:fragment>
@@ -122,7 +124,8 @@
                     <span class="fa fa-trash" />
                     <f:ajax
                         execute="@this"
-                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                        onevent="(data) => {scrollToCurrentNode(data);}" />
                 </h:commandLink>
             </intranda:formInputViafAjax>
         </ui:fragment>

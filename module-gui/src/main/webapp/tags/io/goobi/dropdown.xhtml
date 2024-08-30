@@ -51,7 +51,8 @@
                     <f:ajax
                         event="change"
                         execute="@this"
-                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                        onevent="(data) => {scrollToCurrentNode(data);}" />
                 </h:selectOneMenu>
                 <h:message
                     for="#{fieldid}"
@@ -69,7 +70,8 @@
                 <span class="fa fa-trash" />
                 <f:ajax
                     execute="@this"
-                    render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                    render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                    onevent="(data) => {scrollToCurrentNode(data);}" />
             </h:commandLink>
         </div>
     </ui:composition>

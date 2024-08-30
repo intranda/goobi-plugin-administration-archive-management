@@ -100,7 +100,8 @@
                                         <span class="fa fa-trash" />
                                         <f:ajax
                                             execute="@this"
-                                            render="nodeBox::nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                                            render="nodeBox::nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                                            onevent="(data) => {scrollToCurrentNode(data);}" />
                                     </h:commandLink>
                                 </div>
                             </ui:fragment>
@@ -124,7 +125,8 @@
                                         <span class="fa fa-trash" />
                                         <f:ajax
                                             execute="@this"
-                                            render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                                            render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                                            onevent="(data) => {scrollToCurrentNode(data);}" />
                                     </h:commandLink>
                                 </div>
                             </ui:fragment>
@@ -147,7 +149,8 @@
                                         <span class="fa fa-trash" />
                                         <f:ajax
                                             execute="@this"
-                                            render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                                            render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                                            onevent="(data) => {scrollToCurrentNode(data);}" />
                                     </h:commandLink>
                                 </div>
                             </ui:fragment>
