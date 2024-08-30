@@ -1067,9 +1067,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             entry.setNodeType(selectedEntry.getNodeType());
             selectedEntry.addSubEntry(entry);
             selectedEntry.setDisplayChildren(true);
-            selectedEntry.setSelected(false);
-            selectedEntry = entry;
-            selectedEntry.setSelected(true);
+            setSelectedEntry(entry);
             flatEntryList = null;
             selectedEntry.calculateFingerprint();
             ArchiveManagementManager.saveNode(recordGroup.getId(), entry);
@@ -2733,6 +2731,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 updateChangeHistory(selectedEntry);
             }
             ArchiveManagementManager.saveNode(recordGroup.getId(), copy);
+
+            setSelectedEntry(copy);
+
             resetFlatList();
         }
     }
