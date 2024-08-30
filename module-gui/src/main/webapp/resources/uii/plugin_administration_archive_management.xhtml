@@ -360,7 +360,12 @@
                                                             <f:ajax
                                                                 execute="ead-details"
                                                                 render="ead-details"
-                                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                                onevent="(data) => {
+                                                                    gwHandleTooltip.init(data);
+                                                                    gwInitTooltips.init();
+                                                                    if (data.status === 'success') {
+                                                                        document.getElementById(data.source.id).scrollIntoView({block: 'start', inline: 'nearest'});
+                                                                    }}" />
                                                         </h:commandLink>
                                                     </div>
                                                     <div class="content">
@@ -404,7 +409,13 @@
                                                             <f:ajax
                                                                 execute="ead-details"
                                                                 render="hierarchy ead-details globalMessage"
-                                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                                onevent="(data) => {
+                                                                    gwHandleTooltip.init(data);
+                                                                    gwInitTooltips.init();
+                                                                    if (data.status === 'success') {
+                                                                        document.getElementById(data.source.id).scrollIntoView({block: 'start', inline: 'nearest'});
+                                                                    }
+                                                                }" />
                                                         </h:commandLink>
                                                     </div>
                                                 </div>
