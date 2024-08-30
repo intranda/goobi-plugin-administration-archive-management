@@ -363,9 +363,7 @@
                                                                 onevent="(data) => {
                                                                     gwHandleTooltip.init(data);
                                                                     gwInitTooltips.init();
-                                                                    if (data.status === 'success') {
-                                                                        document.getElementById(data.source.id).scrollIntoView({block: 'start', inline: 'nearest'});
-                                                                    }}" />
+                                                                    scrollToClickedElement(data)}" />
                                                         </h:commandLink>
                                                     </div>
                                                     <div class="content">
@@ -412,9 +410,7 @@
                                                                 onevent="(data) => {
                                                                     gwHandleTooltip.init(data);
                                                                     gwInitTooltips.init();
-                                                                    if (data.status === 'success') {
-                                                                        document.getElementById(data.source.id).scrollIntoView({block: 'start', inline: 'nearest'});
-                                                                    }
+                                                                    scrollToClickedElement(data);
                                                                 }" />
                                                         </h:commandLink>
                                                     </div>
@@ -1195,6 +1191,12 @@
                 if (data.status === 'success' &amp;&amp; input.value != "") {
                     const fileNameDisplay = document.querySelector('.upload-file-name');
                     fileNameDisplay.innerHTML = input.value.split(/(\\|\/)/g).pop();
+                }
+            };
+
+            const scrollToClickedElement = function scrollToClickedElement(data) {
+                if (data.status === 'success') {
+                    document.getElementById(data.source.id).scrollIntoView({block: 'start', inline: 'nearest'});
                 }
             };
         </script>
