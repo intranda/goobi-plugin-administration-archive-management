@@ -3157,4 +3157,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
     }
 
+    public void clearAdvancedSearch() {
+        for (StringPair sp : advancedSearch) {
+            sp.setOne("");
+            sp.setTwo("");
+        }
+
+    }
+
 }
