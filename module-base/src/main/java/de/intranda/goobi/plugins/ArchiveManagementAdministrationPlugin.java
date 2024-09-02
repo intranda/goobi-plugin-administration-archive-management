@@ -1067,10 +1067,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             entry.setNodeType(selectedEntry.getNodeType());
             selectedEntry.addSubEntry(entry);
             selectedEntry.setDisplayChildren(true);
-            setSelectedEntry(entry);
-            flatEntryList = null;
             selectedEntry.calculateFingerprint();
             ArchiveManagementManager.saveNode(recordGroup.getId(), entry);
+            setSelectedEntry(entry);
+
+            resetFlatList();
         }
     }
 
