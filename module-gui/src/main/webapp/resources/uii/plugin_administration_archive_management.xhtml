@@ -358,8 +358,8 @@
                                                                 property="#{entry.displayChildren}"
                                                                 value="#{not entry.displayChildren}" />
                                                             <f:ajax
-                                                                execute="ead-details"
-                                                                render="ead-details"
+                                                                execute="@this"
+                                                                render=":hierarchy:hierarchy"
                                                                 onevent="(data) => {
                                                                     gwHandleTooltip.init(data);
                                                                     gwInitTooltips.init();
