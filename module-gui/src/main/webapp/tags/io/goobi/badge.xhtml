@@ -25,8 +25,8 @@
                     <f:actionListener binding="#{AdministrationForm.administrationPlugin.updateAreaDisplay(item.level)}" />
                     <f:ajax
                         execute="@this"
-                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
-                        onevent="(data) => {scrollToCurrentNode(data);}" />
+                        render=":nodeBox:#{ajaxid} "
+                         />
                 </h:commandLink>
                 <h:commandLink
                     action="#{AdministrationForm.administrationPlugin.addGroup}"
@@ -45,8 +45,8 @@
                     <f:actionListener binding="#{AdministrationForm.administrationPlugin.updateAreaDisplay(item.level)}" />
                     <f:ajax
                         execute="@this"
-                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
-                        onevent="(data) => {scrollToCurrentNode(data);}" />
+                        render=":nodeBox:#{ajaxid} "
+                         />
                 </h:commandLink>
                 <h:commandLink
                     rendered="#{!item.repeatable or (item.repeatable and !item.showField)}"
@@ -66,8 +66,8 @@
                         value="true" />
                     <f:ajax
                         execute="@this"
-                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
-                        onevent="(data) => {scrollToCurrentNode(data);}" />
+                        render=":nodeBox:#{ajaxid} "
+                         />
                 </h:commandLink>
             </span>
         </ui:composition>
