@@ -32,6 +32,21 @@
         <h:panelGroup
             layout="block"
             rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management')}">
+            <ui:fragment rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management_Write')}">
+                <div class="alert alert-info">
+                    #{msgs.plugin_administration_archive_permission_management_write} <pre class="d-inline">Plugin_Administration_Archive_Management_Write</pre>
+                </div>
+            </ui:fragment>
+            <ui:fragment rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management_Upload')}">
+                <div class="alert alert-info">
+                    #{msgs.plugin_administration_archive_permission_management_upload} <pre class="d-inline">Plugin_Administration_Archive_Management_Upload</pre>
+                </div>
+            </ui:fragment>
+            <ui:fragment rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management_New')}">
+                <div class="alert alert-info">
+                    #{msgs.plugin_administration_archive_permission_management_new} <pre class="d-inline">Plugin_Administration_Archive_Management_New</pre>
+                </div>
+            </ui:fragment>
             <!-- Selection area for a record group to load -->
             <intranda:box
                 boxForm="true"
@@ -78,19 +93,21 @@
                                                 <td class="align-top"><h:outputText value="#{db}" /></td>
                                                 <td>
                                                     <div class="gw-table__actions__container">
-                                                        <h:commandLink
-                                                            styleClass="btn btn-blank"
-                                                            id="absenden"
-                                                            action="#{AdministrationForm.administrationPlugin.loadSelectedDatabase}">
-                                                            <f:passThroughAttribute
-                                                                name="data-bs-toggle"
-                                                                value="tooltip" />
-                                                            <f:passThroughAttribute
-                                                                name="title"
-                                                                value="#{msgs.plugin_administration_archive_loadDatabase}" />
-                                                            <span class="fa fa-pencil" />
-                                                            <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
-                                                        </h:commandLink>
+                                                        <ui:fragment rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management_Write')}">
+                                                            <h:commandLink
+                                                                styleClass="btn btn-blank"
+                                                                id="absenden"
+                                                                action="#{AdministrationForm.administrationPlugin.loadSelectedDatabase}">
+                                                                <f:passThroughAttribute
+                                                                    name="data-bs-toggle"
+                                                                    value="tooltip" />
+                                                                <f:passThroughAttribute
+                                                                    name="title"
+                                                                    value="#{msgs.plugin_administration_archive_loadDatabase}" />
+                                                                <span class="fa fa-pencil" />
+                                                                <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
+                                                            </h:commandLink>
+                                                        </ui:fragment>
                                                         <h:commandLink
                                                             styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowCreation ? '' : 'disabled'}"
                                                             action="#{AdministrationForm.administrationPlugin.duplicateEadFileFromOverview}"
@@ -104,21 +121,22 @@
                                                             <span class="fa fa-clipboard" />
                                                             <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
                                                         </h:commandLink>
-                                                        <h:commandLink
-                                                            rendered="#{!AdministrationForm.administrationPlugin.readOnlyModus}"
-                                                            styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.getExportConfiguration().get(db) == null ? 'disabled' : ''}"
-                                                            type="submit"
-                                                            action="#{AdministrationForm.administrationPlugin.eadExportFrommOverview}"
-                                                            disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}">
-                                                            <f:passThroughAttribute
-                                                                name="data-bs-toggle"
-                                                                value="tooltip" />
-                                                            <f:passThroughAttribute
-                                                                name="data-bs-title"
-                                                                value="#{msgs.export_verb}" />
-                                                            <span class="fa fa-globe" />
-                                                            <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
-                                                        </h:commandLink>
+                                                        <ui:fragment rendered="AdministrationForm.administrationPlugin.getExportConfiguration().get(db) != null">
+                                                            <h:commandLink
+                                                                rendered="#{!AdministrationForm.administrationPlugin.readOnlyModus}"
+                                                                styleClass="btn btn-blank"
+                                                                type="submit"
+                                                                action="#{AdministrationForm.administrationPlugin.eadExportFrommOverview}">
+                                                                <f:passThroughAttribute
+                                                                    name="data-bs-toggle"
+                                                                    value="tooltip" />
+                                                                <f:passThroughAttribute
+                                                                    name="data-bs-title"
+                                                                    value="#{msgs.export_verb}" />
+                                                                <span class="fa fa-globe" />
+                                                                <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
+                                                            </h:commandLink>
+                                                        </ui:fragment>
                                                         <h:commandLink
                                                             styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowDeletion ? '' : 'disabled'}"
                                                             disabled="#{!AdministrationForm.administrationPlugin.allowDeletion}"
@@ -370,7 +388,7 @@
                                                         <h:commandLink
                                                             id="link2"
                                                             immediate="true"
-                                                            styleClass="ps-1 #{entry.selected ? 'fw-700 current-node' : ''} #{entry.searchFound ? 'tree-highlight' : ''} #{entry.valid ? '' : 'bg-hot text-white p-1'} #{entry.valid and !entry.selected ? 'text-black' : '' }">
+                                                            styleClass="ps-1 #{entry.selected ? 'fw-700 current-node scroll-target' : ''} #{entry.searchFound ? 'tree-highlight' : ''} #{entry.valid ? '' : 'bg-hot text-white p-1'} #{entry.valid and !entry.selected ? 'text-black' : '' }">
                                                             <span
                                                                 class="#{entry.nodeType.icon}"
                                                                 aria-hidden="true" />
