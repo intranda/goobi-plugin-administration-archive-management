@@ -3163,7 +3163,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             sp.setOne("");
             sp.setTwo("");
         }
+    }
 
+    public void abortFileUpload() {
+        uploadFile = null;
     }
 
 }
