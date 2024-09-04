@@ -1196,7 +1196,7 @@
 
             const scrollToClickedElement = function scrollToClickedElement(data) {
                 if (data.status === 'success') {
-                    document.getElementById(data.source.id).scrollIntoView({block: 'center', inline: 'nearest'});
+                    document.getElementById(data.source.id).scrollIntoView({block: 'nearest', inline: 'nearest'});
                 }
             };
 
@@ -1204,7 +1204,7 @@
                 if (data.status === 'success') {
                     const currentNode = document.querySelector('.current-node');
                     if (currentNode) {
-                        currentNode.scrollIntoView({block: 'center', inline: 'center'});
+                        currentNode.scrollIntoView({block: 'nearest', inline: 'center'});
                     }
                 }
             };
