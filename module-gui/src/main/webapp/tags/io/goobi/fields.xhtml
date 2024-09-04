@@ -129,6 +129,14 @@
                 </h:commandLink>
             </intranda:formInputViafAjax>
         </ui:fragment>
+        
+        <ui:fragment rendered="#{subfield.fieldType=='checkbox'}">
+            <goobiio:checkbox
+                fieldid="#{subfield.name}checkbox"
+                fieldname="#{msgs['plugin_administration_archive_'.concat(subfield.name)]}"
+                fieldvalue="#{field.booleanValue}"
+                deletable="false" />
+        </ui:fragment>
     </ui:composition>
 </h:body>
 </html>

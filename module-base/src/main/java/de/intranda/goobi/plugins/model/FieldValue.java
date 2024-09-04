@@ -262,4 +262,15 @@ public class FieldValue implements IFieldValue {
         viafSearch.performSearchRequest();
     }
 
+    public boolean isBooleanValue() {
+        return StringUtils.isNotBlank(value) && "true".equals(value);
+    }
+
+    public void setBooleanValue(boolean val) {
+        if (val) {
+            value = "true";
+        } else {
+            value = "false";
+        }
+    }
 }

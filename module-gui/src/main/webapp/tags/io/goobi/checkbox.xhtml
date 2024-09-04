@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:x="http://myfaces.apache.org/tomahawk"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
+<h:body>
+    <ui:composition>
+        <div class="form-row">
+            <div class="form-label d-flex justify-content-between">
+                <intranda:formLabel
+                    labelFor="#{fieldid}"
+                    label="#{fieldname}" />
+            </div>
+            <div class="form-input">
+                <h:selectBooleanCheckbox
+                    id="#{fieldid}"
+                    forceId="true"
+                    styleClass="form-check-input"
+                    value="#{fieldvalue}"
+                    required="false"
+                    readonly="false">
+                    <f:ajax
+                        execute="@this"
+                        render=":nodeBox:#{ajaxid}" />
+                </h:selectBooleanCheckbox>
+            </div>
+            <h:commandLink
+                styleClass="btn btn-blank font-light fs-500"
+                action="#{item.deleteValue(field)}"
+                rendered="#{deletable}">
+                <span class="fa fa-trash" />
+                <f:ajax
+                    execute="@this"
+                    render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                    onevent="(data) => {scrollToCurrentNode(data);}" />
+            </h:commandLink>
+        </div>
+    </ui:composition>
+</h:body>
+</html>

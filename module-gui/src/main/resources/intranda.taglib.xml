@@ -23,6 +23,10 @@
         <source>tags/io/goobi/input.xhtml</source>
     </tag>
     <tag>
+        <tag-name>checkbox</tag-name>
+        <source>tags/io/goobi/checkbox.xhtml</source>
+    </tag>    
+    <tag>
         <tag-name>textarea</tag-name>
         <source>tags/io/goobi/textarea.xhtml</source>
     </tag>
