@@ -1477,6 +1477,7 @@ public class ArchiveManagementAdministrationPluginTest {
         assertFalse(plugin.isDisplayControlArea());
 
         // select a node
+        plugin.setDisplayAllFields(false);
         plugin.setSelectedEntry(plugin.getRootElement());
         plugin.showAllFields();
         assertTrue(plugin.isDisplayControlArea());
