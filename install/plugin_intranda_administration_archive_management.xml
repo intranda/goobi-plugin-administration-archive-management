@@ -1,15 +1,12 @@
 <config_plugin>
     <export>
-        <!-- export folder -->
-        <folder>/opt/digiverso/viewer/hotfolder</folder>
-
-        <!-- record group to export. Use the database names.
-         The generated file name is the same as the name in goobi, spaces are replaced with underscore,
-         '.xml' is added, if extensiion is missing.
-         -->
-        <file>112236_hub_edit.xml</file>
-        <file>2215.xml</file>
-        <file>EAD_Export_Koch_Foto_DDB_EAD.XML.xml</file>
+        <file name="112236_hub_edit.xml">
+            <folder>/opt/digiverso/sammlungen-digital/hotfolder/</folder>
+        </file>
+        <file name="2215.xml">
+            <folder>/opt/digiverso/sammlungen-digital/hotfolder/</folder>
+            <folder>/opt/digiverso/archiv-viewer/hotfolder/</folder>
+        </file>
     </export>
 
     <backup>

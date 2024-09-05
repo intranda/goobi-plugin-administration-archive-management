@@ -49,21 +49,21 @@
                                             <tr>
                                                 <th
                                                     scope="col"
-                                                    class="h5 pt-2">#{msgs.plugin_administration_archive_area_identity}</th>
+                                                    class="h6 pt-2">#{msgs.plugin_administration_archive_area_identity}</th>
                                                 <th
                                                     scope="col"
-                                                    class="h6 pt-2">#{msgs.plugin_administration_archive_prefix}</th>
+                                                    class="pt-2">#{msgs.plugin_administration_archive_prefix}</th>
                                                 <th
                                                     scope="col"
-                                                    class="h6 pt-2">#{msgs.plugin_administration_archive_suffix}</th>
+                                                    class="pt-2">#{msgs.plugin_administration_archive_suffix}</th>
                                             </tr>
                                             <ui:repeat
                                                 value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.identityStatementArea}"
                                                 var="entry">
                                                 <tr>
-                                                    <td>
+                                                    <th scope="row">
                                                         <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
-                                                    </td>
+                                                    </th>
                                                     <td>
                                                         <h:inputText
                                                             styleClass="form-control"
@@ -80,17 +80,17 @@
                                         <ui:fragment
                                             rendered="#{AdministrationForm.administrationPlugin.duplicationConfiguration.contextArea.size() gt 0}">
                                             <tr>
-                                                <th class="h5 pt-2">#{msgs.plugin_administration_archive_area_context}</th>
-                                                <th class="h6 pt-2">#{msgs.plugin_administration_archive_prefix}</th>
-                                                <th class="h6 pt-2">#{msgs.plugin_administration_archive_suffix}</th>
+                                                <th class="h6 pt-2">#{msgs.plugin_administration_archive_area_context}</th>
+                                                <th class="pt-2">#{msgs.plugin_administration_archive_prefix}</th>
+                                                <th class="pt-2">#{msgs.plugin_administration_archive_suffix}</th>
                                             </tr>
                                             <ui:repeat
                                                 value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.contextArea}"
                                                 var="entry">
                                                 <tr>
-                                                    <td>
+                                                    <th scope="row">
                                                         <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
-                                                    </td>
+                                                    </th>
                                                     <td>
                                                         <h:inputText
                                                             styleClass="form-control"
@@ -107,17 +107,17 @@
                                         <ui:fragment
                                             rendered="#{AdministrationForm.administrationPlugin.duplicationConfiguration.contentArea.size() gt 0}">
                                             <tr>
-                                                <th class="h5 pt-2">#{msgs.plugin_administration_archive_area_content}</th>
-                                                <th class="h6 pt-2">#{msgs.plugin_administration_archive_prefix}</th>
-                                                <th class="h6 pt-2">#{msgs.plugin_administration_archive_suffix}</th>
+                                                <th class="h6 pt-2">#{msgs.plugin_administration_archive_area_content}</th>
+                                                <th class="pt-2">#{msgs.plugin_administration_archive_prefix}</th>
+                                                <th class="pt-2">#{msgs.plugin_administration_archive_suffix}</th>
                                             </tr>
                                             <ui:repeat
                                                 value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.contentArea}"
                                                 var="entry">
                                                 <tr>
-                                                    <td>
+                                                    <th scope="row">
                                                         <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
-                                                    </td>
+                                                    </th>
                                                     <td>
                                                         <h:inputText
                                                             styleClass="form-control"
@@ -134,17 +134,17 @@
                                         <ui:fragment
                                             rendered="#{AdministrationForm.administrationPlugin.duplicationConfiguration.accessArea.size() gt 0}">
                                             <tr>
-                                                <th class="h5 pt-2">#{msgs.plugin_administration_archive_area_access}</th>
-                                                <th class="h6 pt-2">#{msgs.plugin_administration_archive_prefix}</th>
-                                                <th class="h6 pt-2">#{msgs.plugin_administration_archive_suffix}</th>
+                                                <th class="h6 pt-2">#{msgs.plugin_administration_archive_area_access}</th>
+                                                <th class="pt-2">#{msgs.plugin_administration_archive_prefix}</th>
+                                                <th class="pt-2">#{msgs.plugin_administration_archive_suffix}</th>
                                             </tr>
                                             <ui:repeat
                                                 value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.accessArea}"
                                                 var="entry">
                                                 <tr>
-                                                    <td>
+                                                    <th scope="row">
                                                         <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
-                                                    </td>
+                                                    </th>
                                                     <td>
                                                         <h:inputText
                                                             styleClass="form-control"
@@ -161,17 +161,17 @@
                                         <ui:fragment
                                             rendered="#{AdministrationForm.administrationPlugin.duplicationConfiguration.alliedMaterialsArea.size() gt 0}">
                                             <tr>
-                                                <th class="h5 pt-2">#{msgs.plugin_administration_archive_area_materials}</th>
-                                                <th class="h6 pt-2">#{msgs.plugin_administration_archive_prefix}</th>
-                                                <th class="h6 pt-2">#{msgs.plugin_administration_archive_suffix}</th>
+                                                <th class="h6 pt-2">#{msgs.plugin_administration_archive_area_materials}</th>
+                                                <th class="pt-2">#{msgs.plugin_administration_archive_prefix}</th>
+                                                <th class="pt-2">#{msgs.plugin_administration_archive_suffix}</th>
                                             </tr>
                                             <ui:repeat
                                                 value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.alliedMaterialsArea}"
                                                 var="entry">
                                                 <tr>
-                                                    <td>
+                                                    <th scope="row">
                                                         <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
-                                                    </td>
+                                                    </th>
                                                     <td>
                                                         <h:inputText
                                                             styleClass="form-control"
@@ -188,17 +188,17 @@
                                         <ui:fragment
                                             rendered="#{AdministrationForm.administrationPlugin.duplicationConfiguration.notesArea.size() gt 0}">
                                             <tr>
-                                                <th class="h5 pt-2">#{msgs.plugin_administration_archive_area_notes}</th>
-                                                <th class="h6 pt-2">#{msgs.plugin_administration_archive_prefix}</th>
-                                                <th class="h6 pt-2">#{msgs.plugin_administration_archive_suffix}</th>
+                                                <th class="h6 pt-2">#{msgs.plugin_administration_archive_area_notes}</th>
+                                                <th class="pt-2">#{msgs.plugin_administration_archive_prefix}</th>
+                                                <th class="pt-2">#{msgs.plugin_administration_archive_suffix}</th>
                                             </tr>
                                             <ui:repeat
                                                 value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.notesArea}"
                                                 var="entry">
                                                 <tr>
-                                                    <td>
+                                                    <th scope="row">
                                                         <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
-                                                    </td>
+                                                    </th>
                                                     <td>
                                                         <h:inputText
                                                             styleClass="form-control"
@@ -215,17 +215,17 @@
                                         <ui:fragment
                                             rendered="#{AdministrationForm.administrationPlugin.duplicationConfiguration.descriptionArea.size() gt 0}">
                                             <tr>
-                                                <th class="h5 pt-2">#{msgs.plugin_administration_archive_area_descriptionControl}</th>
-                                                <th class="h6 pt-2">#{msgs.plugin_administration_archive_prefix}</th>
-                                                <th class="h6 pt-2">#{msgs.plugin_administration_archive_suffix}</th>
+                                                <th class="h6 pt-2">#{msgs.plugin_administration_archive_area_descriptionControl}</th>
+                                                <th class="pt-2">#{msgs.plugin_administration_archive_prefix}</th>
+                                                <th class="pt-2">#{msgs.plugin_administration_archive_suffix}</th>
                                             </tr>
                                             <ui:repeat
                                                 value="#{AdministrationForm.administrationPlugin.duplicationConfiguration.descriptionArea}"
                                                 var="entry">
                                                 <tr>
-                                                    <td>
+                                                    <th scope="row">
                                                         <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
-                                                    </td>
+                                                    </th>
                                                     <td>
                                                         <h:inputText
                                                             styleClass="form-control"

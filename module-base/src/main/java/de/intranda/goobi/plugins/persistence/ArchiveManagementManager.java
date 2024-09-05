@@ -39,13 +39,13 @@ public class ArchiveManagementManager implements Serializable {
     private static List<INodeType> configuredNodes;
 
     // $1 = metadata name, $2=authority type, $3 = authority value, $4 = metadata value
-    private static Pattern metadataPattern = Pattern.compile("<([^<\\/ ]+?)(?: source=\"(.+)\" value=\"(.+)\")?>([^<]+)<\\/[^<]+?>");
+    private static Pattern metadataPattern = Pattern.compile("<([^<\\/ ]+?)(?: source=\'(.+)\' value=\'(.+)\')?>([^<]+)<\\/[^<]+?>");
 
     // $1 = group name
-    private static Pattern groupPattern = Pattern.compile("<group name=\"(.*?)\">[\\w\\W]*?<\\/group>"); //NOSONAR \w\W is needed because '.' does not include newline
+    private static Pattern groupPattern = Pattern.compile("<group name=\'(.*?)\'>[\\w\\W]*?<\\/group>"); //NOSONAR \w\W is needed because '.' does not include newline
 
     // $1 = metadata name, $2=authority type, $3 = authority value, $4 = metadata value
-    private static Pattern subfieldPattern = Pattern.compile("<field name=\"(.*?)\"(?: source=\"(.+)\" value=\"(.+)\")?>([^<]*)<\\/field>");
+    private static Pattern subfieldPattern = Pattern.compile("<field name=\'(.*?)\'(?: source=\'(.+)\' value=\'(.+)\')?>([^<]*)<\\/field>");
 
     public static void setConfiguredNodes(List<INodeType> configuredNodes) {
         ArchiveManagementManager.configuredNodes = configuredNodes;
@@ -340,7 +340,8 @@ public class ArchiveManagementManager implements Serializable {
                 String authorityValue = mr.group(3);
                 String value = mr.group(4);
                 List<IValue> values = metadataMap.getOrDefault(metadata, new ArrayList<>());
-                values.add(new ExtendendValue(metadata, value.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&"), authorityType,
+                values.add(new ExtendendValue(metadata, value.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&").replace("''", "'"),
+                        authorityType,
                         authorityValue));
                 metadataMap.put(metadata, values);
             }
@@ -363,7 +364,8 @@ public class ArchiveManagementManager implements Serializable {
                     String value = sub.group(4);
 
                     List<IValue> subvalues = gv.getSubfields().getOrDefault(metadata, new ArrayList<>());
-                    subvalues.add(new ExtendendValue(metadata, value.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&"), authorityType,
+                    subvalues.add(new ExtendendValue(metadata,
+                            value.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&").replace("''", "'"), authorityType,
                             authorityValue));
                     gv.getSubfields().put(metadata, subvalues);
                 }

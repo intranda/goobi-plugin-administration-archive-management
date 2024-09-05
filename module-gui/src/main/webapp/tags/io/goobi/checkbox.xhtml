@@ -5,35 +5,29 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:x="http://myfaces.apache.org/tomahawk"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:x="http://myfaces.apache.org/tomahawk">
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
 <h:body>
     <ui:composition>
         <div class="form-row">
             <div class="form-label d-flex justify-content-between">
-                <h:outputLabel
-                    for="#{fieldid}"
-                    value="#{fieldname}" />
+                <intranda:formLabel
+                    labelFor="#{fieldid}"
+                    label="#{fieldname}" />
             </div>
             <div class="form-input">
-                <h:inputTextarea
+                <h:selectBooleanCheckbox
                     id="#{fieldid}"
                     forceId="true"
-                    styleClass="form-control #{item.valid ? '' : 'invalid'}"
+                    styleClass="form-check-input"
                     value="#{fieldvalue}"
                     required="false"
                     readonly="false">
                     <f:ajax
                         execute="@this"
-                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
-                        onevent="(data) => {scrollToCurrentNode(data);}"
-                        event="blur" />
-                </h:inputTextarea>
-                <h:message
-                    for="#{fieldid}"
-                    showDetail="true"
-                    styleClass="help-inline color-F" />
-                <h:outputText styleClass="help-inline color-F" rendered="#{!item.valid}" value="#{msgs[item.validationError]}"/>
+                        render=":nodeBox:#{ajaxid}" />
+                </h:selectBooleanCheckbox>
             </div>
             <h:commandLink
                 styleClass="btn btn-blank font-light fs-500"
@@ -41,7 +35,7 @@
                 rendered="#{deletable}">
                 <span class="fa fa-trash" />
                 <f:ajax
-                    execute="#{fieldid}"
+                    execute="@this"
                     render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
                     onevent="(data) => {scrollToCurrentNode(data);}" />
             </h:commandLink>

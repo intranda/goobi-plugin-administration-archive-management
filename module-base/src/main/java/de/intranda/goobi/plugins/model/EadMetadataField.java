@@ -198,7 +198,11 @@ public class EadMetadataField implements IMetadataField {
         } else {
             for (IFieldValue val : values) {
                 IFieldValue newValue = new FieldValue(field);
-                newValue.setValue(prefix + val.getValue() + suffix);
+                if (val.getValue() != null) {
+                    newValue.setValue(prefix + val.getValue() + suffix);
+                } else {
+                    newValue.setValue(prefix + suffix);
+                }
                 newValue.setAuthorityType(val.getAuthorityType());
                 newValue.setAuthorityValue(val.getAuthorityValue());
                 field.addFieldValue(newValue);

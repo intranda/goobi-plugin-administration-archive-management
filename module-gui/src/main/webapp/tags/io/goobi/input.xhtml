@@ -27,6 +27,7 @@
                     <f:ajax
                         execute="@this"
                         render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                        onevent="(data) => {scrollToCurrentNode(data);}"
                         event="blur" />
                 </h:inputText>
                 <h:outputText styleClass="help-inline color-F" rendered="#{!item.valid}" value="#{msgs[item.validationError]}"/>
@@ -38,7 +39,8 @@
                 <span class="fa fa-trash" />
                 <f:ajax
                     execute="@this"
-                    render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                    render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                    onevent="(data) => {scrollToCurrentNode(data);}" />
             </h:commandLink>
         </div>
     </ui:composition>

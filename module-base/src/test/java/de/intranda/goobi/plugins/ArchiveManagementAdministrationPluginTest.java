@@ -116,7 +116,9 @@ public class ArchiveManagementAdministrationPluginTest {
 
         ArchiveManagementManager.saveNodes(EasyMock.anyInt(), EasyMock.anyObject());
         ArchiveManagementManager.saveRecordGroup(EasyMock.anyObject());
-        ArchiveManagementManager.setConfiguredNodes(EasyMock.anyObject());
+        for (int i = 0; i < 3; i++) {
+            ArchiveManagementManager.setConfiguredNodes(EasyMock.anyObject());
+        }
         ArchiveManagementManager.createTables();
         ArchiveManagementManager.deleteNodes(EasyMock.anyObject());
         EasyMock.expect(ArchiveManagementManager.loadMetadataForNode(EasyMock.anyInt())).andReturn(new HashMap<>()).anyTimes();
@@ -219,7 +221,8 @@ public class ArchiveManagementAdministrationPluginTest {
         EasyMock.expect(selectedEntry.getFingerprint()).andReturn("").anyTimes();
         selectedEntry.calculateFingerprint();
         selectedEntry.calculateFingerprint();
-
+        selectedEntry.calculateFingerprint();
+        selectedEntry.setSelected(EasyMock.anyBoolean());
         selectedEntry.setSelected(EasyMock.anyBoolean());
         EasyMock.expect(selectedEntry.getIdentityStatementAreaList()).andReturn(new ArrayList<>()).anyTimes();
         EasyMock.expect(selectedEntry.getContextAreaList()).andReturn(new ArrayList<>()).anyTimes();
@@ -237,7 +240,19 @@ public class ArchiveManagementAdministrationPluginTest {
         // Setting up mocks for copyNode
         copyNode.setOrderNumber(2);
         EasyMock.expectLastCall().once();
+        EasyMock.expect(copyNode.getDatabaseId()).andReturn(1).anyTimes();
 
+        EasyMock.expect(copyNode.getIdentityStatementAreaList()).andReturn(new ArrayList<>()).anyTimes();
+        EasyMock.expect(copyNode.getContextAreaList()).andReturn(new ArrayList<>()).anyTimes();
+        EasyMock.expect(copyNode.getContentAndStructureAreaAreaList()).andReturn(new ArrayList<>()).anyTimes();
+        EasyMock.expect(copyNode.getAccessAndUseAreaList()).andReturn(new ArrayList<>()).anyTimes();
+        EasyMock.expect(copyNode.getAlliedMaterialsAreaList()).andReturn(new ArrayList<>()).anyTimes();
+        EasyMock.expect(copyNode.getNotesAreaList()).andReturn(new ArrayList<>()).anyTimes();
+        EasyMock.expect(copyNode.getDescriptionControlAreaList()).andReturn(new ArrayList<>()).anyTimes();
+        copyNode.calculateFingerprint();
+        copyNode.setSelected(EasyMock.anyBoolean());
+        EasyMock.expect(copyNode.getAllNodes()).andReturn(Collections.emptyList()).anyTimes();
+        EasyMock.expect(copyNode.getLabel()).andReturn("label").anyTimes();
         PowerMock.replay(selectedEntry, parentNode, copyNode);
 
     }
@@ -1462,6 +1477,7 @@ public class ArchiveManagementAdministrationPluginTest {
         assertFalse(plugin.isDisplayControlArea());
 
         // select a node
+        plugin.setDisplayAllFields(false);
         plugin.setSelectedEntry(plugin.getRootElement());
         plugin.showAllFields();
         assertTrue(plugin.isDisplayControlArea());

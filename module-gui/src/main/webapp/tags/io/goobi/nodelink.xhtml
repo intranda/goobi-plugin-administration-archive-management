@@ -28,6 +28,7 @@
                     <f:ajax
                         execute="@this"
                         render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                        onevent="(data) => {scrollToCurrentNode(data);}"
                         event="blur" />
                 </h:inputText>
                 <!-- search button, opens modal -->
@@ -63,7 +64,8 @@
                 <span class="fa fa-trash" />
                 <f:ajax
                     execute="@this"
-                    render=":nodeBox:#{ajaxid} :hierarchy:hierarchy" />
+                    render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                    onevent="(data) => {scrollToCurrentNode(data);}" />
             </h:commandLink>
         </div>
     </ui:composition>

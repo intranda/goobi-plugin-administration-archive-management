@@ -78,6 +78,7 @@ import de.sub.goobi.helper.FacesContextHelper;
 import de.sub.goobi.helper.Helper;
 import de.sub.goobi.helper.ProcessTitleGenerator;
 import de.sub.goobi.helper.ScriptThreadWithoutHibernate;
+import de.sub.goobi.helper.StorageProvider;
 import de.sub.goobi.helper.XmlTools;
 import de.sub.goobi.helper.enums.ManipulationType;
 import de.sub.goobi.helper.enums.StepStatus;
@@ -301,7 +302,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private List<String> inventoryList = new ArrayList<>();
 
     @Getter
-    private String exportFolder;
+    private Map<String, List<String>> exportConfiguration;
 
     private transient VocabularyAPIManager vocabularyAPI = null;
 
@@ -312,11 +313,16 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Setter
     private transient IMetadataField vocabularyField;
 
+    @Getter
+    @Setter
+    private boolean displayAllFields = false;
+
     /**
      * Constructor
      */
     public ArchiveManagementAdministrationPlugin() {
         try {
+
             ArchiveManagementManager.createTables();
             vocabularyAPI = VocabularyAPIManager.getInstance();
         } catch (APIException e) {
@@ -372,8 +378,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                         }
                     }
                 }
-
             }
+            readExportConfiguration();
 
         } catch (ConfigurationException e2) {
             log.error(e2);
@@ -767,6 +773,17 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
     }
 
+    public void readExportConfiguration() {
+        exportConfiguration = new HashMap<>();
+        List<HierarchicalConfiguration> subconfig = xmlConfig.configurationsAt("/export/file");
+
+        for (HierarchicalConfiguration hc : subconfig) {
+            String filename = hc.getString("@name");
+            List<String> exportFolders = Arrays.asList(hc.getStringArray("/folder"));
+            exportConfiguration.put(filename, exportFolders);
+        }
+    }
+
     /**
      * read in all parameters from the configuration file
      * 
@@ -788,7 +805,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
         }
 
-        exportFolder = xmlConfig.getString("/export/folder");
+        readExportConfiguration();
 
         nameSpaceRead = Namespace.getNamespace("ead", config.getString("/eadNamespaceRead", "urn:isbn:1-931666-22-9"));
         nameSpaceWrite = Namespace.getNamespace("ead", config.getString("/eadNamespaceWrite", "urn:isbn:1-931666-22-9"));
@@ -1054,12 +1071,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             entry.setNodeType(selectedEntry.getNodeType());
             selectedEntry.addSubEntry(entry);
             selectedEntry.setDisplayChildren(true);
-            selectedEntry.setSelected(false);
-            selectedEntry = entry;
-            selectedEntry.setSelected(true);
-            flatEntryList = null;
             selectedEntry.calculateFingerprint();
             ArchiveManagementManager.saveNode(recordGroup.getId(), entry);
+            setSelectedEntry(entry);
+
+            resetFlatList();
         }
     }
 
@@ -2225,6 +2241,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     @Override
     public Document createEadFile() {
+        readConfiguration();
         // reload all nodes from db to get every change
         rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
         loadMetadataForAllNodes();
@@ -2719,6 +2736,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 updateChangeHistory(selectedEntry);
             }
             ArchiveManagementManager.saveNode(recordGroup.getId(), copy);
+
+            setSelectedEntry(copy);
+
             resetFlatList();
         }
     }
@@ -2941,34 +2961,89 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public void showAllFields() {
         if (selectedEntry != null) {
-            displayIdentityStatementArea = true;
-            displayContextArea = true;
-            displayContentArea = true;
-            displayAccessArea = true;
-            displayMaterialsArea = true;
-            displayNotesArea = true;
-            displayControlArea = true;
+
+            if (displayAllFields) {
+                hideAllFields();
+            } else {
+
+                displayIdentityStatementArea = true;
+                displayContextArea = true;
+                displayContentArea = true;
+                displayAccessArea = true;
+                displayMaterialsArea = true;
+                displayNotesArea = true;
+                displayControlArea = true;
+
+                for (IMetadataField field : selectedEntry.getIdentityStatementAreaList()) {
+                    field.setShowField(true);
+                }
+                for (IMetadataField field : selectedEntry.getContextAreaList()) {
+                    field.setShowField(true);
+                }
+                for (IMetadataField field : selectedEntry.getContentAndStructureAreaAreaList()) {
+                    field.setShowField(true);
+                }
+                for (IMetadataField field : selectedEntry.getAccessAndUseAreaList()) {
+                    field.setShowField(true);
+                }
+                for (IMetadataField field : selectedEntry.getAlliedMaterialsAreaList()) {
+                    field.setShowField(true);
+                }
+                for (IMetadataField field : selectedEntry.getNotesAreaList()) {
+                    field.setShowField(true);
+                }
+                for (IMetadataField field : selectedEntry.getDescriptionControlAreaList()) {
+                    field.setShowField(true);
+                }
+            }
+        }
+        displayAllFields = !displayAllFields;
+    }
+
+    public void hideAllFields() {
+        if (selectedEntry != null) {
+            displayIdentityStatementArea = false;
+            displayContextArea = false;
+            displayContentArea = false;
+            displayAccessArea = false;
+            displayMaterialsArea = false;
+            displayNotesArea = false;
+            displayControlArea = false;
 
             for (IMetadataField field : selectedEntry.getIdentityStatementAreaList()) {
-                field.setShowField(true);
+                if (!field.isFilled()) {
+                    field.setShowField(false);
+                }
             }
             for (IMetadataField field : selectedEntry.getContextAreaList()) {
-                field.setShowField(true);
+                if (!field.isFilled()) {
+                    field.setShowField(false);
+                }
             }
             for (IMetadataField field : selectedEntry.getContentAndStructureAreaAreaList()) {
-                field.setShowField(true);
+                if (!field.isFilled()) {
+                    field.setShowField(false);
+                }
             }
             for (IMetadataField field : selectedEntry.getAccessAndUseAreaList()) {
-                field.setShowField(true);
+                if (!field.isFilled()) {
+                    field.setShowField(false);
+                }
             }
             for (IMetadataField field : selectedEntry.getAlliedMaterialsAreaList()) {
-                field.setShowField(true);
+                if (!field.isFilled()) {
+                    field.setShowField(false);
+                }
             }
             for (IMetadataField field : selectedEntry.getNotesAreaList()) {
-                field.setShowField(true);
+                if (!field.isFilled()) {
+                    field.setShowField(false);
+                }
             }
             for (IMetadataField field : selectedEntry.getDescriptionControlAreaList()) {
-                field.setShowField(true);
+                if (!field.isFilled()) {
+                    field.setShowField(false);
+                }
             }
         }
     }
@@ -3062,22 +3137,40 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     public void eadExport() {
-        if (StringUtils.isBlank(exportFolder)) {
+        List<String> exportFolders = exportConfiguration.get(databaseName);
+        if (exportFolders == null || exportFolders.isEmpty()) {
             Helper.setFehlerMeldung("plugin_administration_archive_eadExportNotConfigured");
+            databaseName = null;
             return;
         }
 
-        Path downloadFile = Paths.get(exportFolder, databaseName.replace(" ", "_"));
         Document document = createEadFile();
         XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
-        try {
-            outputter.output(document, Files.newOutputStream(downloadFile));
-        } catch (IOException e) {
-            log.error(e);
+
+        for (String exportFolder : exportFolders) {
+            Path folder = Paths.get(exportFolder);
+            if (!StorageProvider.getInstance().isFileExists(folder)) {
+                try {
+                    StorageProvider.getInstance().createDirectories(folder);
+                } catch (IOException e) {
+                    log.error(e);
+                }
+            }
+            try {
+                // export into temporary file, copy temp file to destination, remove temp file
+                Path downloadFile = Paths.get(exportFolder, databaseName.replace(" ", "_"));
+                Path tempFile = StorageProvider.getInstance().createTemporaryFile(databaseName.replace(" ", "_"), "xml");
+                outputter.output(document, Files.newOutputStream(tempFile));
+                StorageProvider.getInstance().copyFile(tempFile, downloadFile);
+                StorageProvider.getInstance().deleteFile(tempFile);
+            } catch (IOException e) {
+                log.error(e);
+            }
         }
     }
 
     public void eadExportFrommOverview() {
+        recordGroup = ArchiveManagementManager.getRecordGroupByTitle(databaseName);
         eadExport();
         databaseName = null;
     }
@@ -3122,6 +3215,17 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             // clean current selection
             databaseName = null;
         }
+    }
+
+    public void clearAdvancedSearch() {
+        for (StringPair sp : advancedSearch) {
+            sp.setOne("");
+            sp.setTwo("");
+        }
+    }
+
+    public void abortFileUpload() {
+        uploadFile = null;
     }
 
 }

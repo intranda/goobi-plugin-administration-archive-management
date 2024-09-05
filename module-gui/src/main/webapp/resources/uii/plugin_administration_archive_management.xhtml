@@ -32,6 +32,21 @@
         <h:panelGroup
             layout="block"
             rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management')}">
+            <!-- <ui:fragment rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management_Write')}">
+                <div class="alert alert-info">
+                    #{msgs.plugin_administration_archive_permission_management_write} <pre class="d-inline">Plugin_Administration_Archive_Management_Write</pre>
+                </div>
+            </ui:fragment>
+            <ui:fragment rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management_Upload')}">
+                <div class="alert alert-info">
+                    #{msgs.plugin_administration_archive_permission_management_upload} <pre class="d-inline">Plugin_Administration_Archive_Management_Upload</pre>
+                </div>
+            </ui:fragment>
+            <ui:fragment rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management_New')}">
+                <div class="alert alert-info">
+                    #{msgs.plugin_administration_archive_permission_management_new} <pre class="d-inline">Plugin_Administration_Archive_Management_New</pre>
+                </div>
+            </ui:fragment> -->
             <!-- Selection area for a record group to load -->
             <intranda:box
                 boxForm="true"
@@ -70,13 +85,15 @@
                                                    #{msgs.auswahl}
                                                 </th>
                                             </tr>
-                                            <ui:repeat
-                                                var="db"
-                                                value="#{AdministrationForm.administrationPlugin.possibleDatabases}">
-                                                <tr role="row">
-                                                    <td class="align-top"><h:outputText value="#{db}" /></td>
-                                                    <td>
-                                                        <div class="gw-table__actions__container">
+                                        </thead>
+                                        <ui:repeat
+                                            var="db"
+                                            value="#{AdministrationForm.administrationPlugin.possibleDatabases}">
+                                            <tr role="row">
+                                                <td class="align-top"><h:outputText value="#{db}" /></td>
+                                                <td>
+                                                    <div class="gw-table__actions__container">
+                                                        <ui:fragment rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management_Write')}">
                                                             <h:commandLink
                                                                 styleClass="btn btn-blank"
                                                                 id="absenden"
@@ -90,25 +107,26 @@
                                                                 <span class="fa fa-pencil" />
                                                                 <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
                                                             </h:commandLink>
-                                                            <h:commandLink
-                                                                styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowCreation ? '' : 'disabled'}"
-                                                                action="#{AdministrationForm.administrationPlugin.duplicateEadFileFromOverview}"
-                                                                disabled="#{!AdministrationForm.administrationPlugin.allowCreation}">
-                                                                <f:passThroughAttribute
-                                                                    name="data-bs-toggle"
-                                                                    value="tooltip" />
-                                                                <f:passThroughAttribute
-                                                                    name="data-bs-title"
-                                                                    value="#{msgs.duplicate}" />
-                                                                <span class="fa fa-clipboard" />
-                                                                <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
-                                                            </h:commandLink>
+                                                        </ui:fragment>
+                                                        <h:commandLink
+                                                            styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowCreation ? '' : 'disabled'}"
+                                                            action="#{AdministrationForm.administrationPlugin.duplicateEadFileFromOverview}"
+                                                            disabled="#{!AdministrationForm.administrationPlugin.allowCreation}">
+                                                            <f:passThroughAttribute
+                                                                name="data-bs-toggle"
+                                                                value="tooltip" />
+                                                            <f:passThroughAttribute
+                                                                name="data-bs-title"
+                                                                value="#{msgs.duplicate}" />
+                                                            <span class="fa fa-clipboard" />
+                                                            <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
+                                                        </h:commandLink>
+                                                        <ui:fragment rendered="AdministrationForm.administrationPlugin.getExportConfiguration().get(db) != null">
                                                             <h:commandLink
                                                                 rendered="#{!AdministrationForm.administrationPlugin.readOnlyModus}"
-                                                                styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.readOnlyModus ? 'disabled' : ''}"
+                                                                styleClass="btn btn-blank"
                                                                 type="submit"
-                                                                action="#{AdministrationForm.administrationPlugin.eadExportFrommOverview}"
-                                                                disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}">
+                                                                action="#{AdministrationForm.administrationPlugin.eadExportFrommOverview}">
                                                                 <f:passThroughAttribute
                                                                     name="data-bs-toggle"
                                                                     value="tooltip" />
@@ -118,26 +136,26 @@
                                                                 <span class="fa fa-globe" />
                                                                 <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
                                                             </h:commandLink>
-                                                            <h:commandLink
-                                                                styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowDeletion ? '' : 'disabled'}"
-                                                                disabled="#{!AdministrationForm.administrationPlugin.allowDeletion}"
-                                                                action="#{AdministrationForm.administrationPlugin.deleteSelectedDatabase}"
-                                                                onclick="if (!confirm('#{msgs.sollDieserEintragWirklichGeloeschtWerden}')) return false"
-                                                            >
-                                                                <f:passThroughAttribute
-                                                                    name="data-bs-toggle"
-                                                                    value="tooltip" />
-                                                                <f:passThroughAttribute
-                                                                    name="title"
-                                                                    value="#{msgs.loeschen}" />
-                                                                <span class="fa fa-trash" />
-                                                                <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
-                                                            </h:commandLink>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            </ui:repeat>
-                                        </thead>
+                                                        </ui:fragment>
+                                                        <h:commandLink
+                                                            styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowDeletion ? '' : 'disabled'}"
+                                                            disabled="#{!AdministrationForm.administrationPlugin.allowDeletion}"
+                                                            action="#{AdministrationForm.administrationPlugin.deleteSelectedDatabase}"
+                                                            onclick="if (!confirm('#{msgs.sollDieserEintragWirklichGeloeschtWerden}')) return false"
+                                                        >
+                                                            <f:passThroughAttribute
+                                                                name="data-bs-toggle"
+                                                                value="tooltip" />
+                                                            <f:passThroughAttribute
+                                                                name="title"
+                                                                value="#{msgs.loeschen}" />
+                                                            <span class="fa fa-trash" />
+                                                            <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
+                                                        </h:commandLink>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
                                     </table>
                                 </div>
                             </div>
@@ -220,7 +238,7 @@
                         <div
                             class="box__actions">
                             <!-- CANCEL BUTTON -->
-                            <h:commandLink styleClass="btn btn-blank">
+                            <h:commandLink styleClass="btn btn-blank" action="#{AdministrationForm.administrationPlugin.abortFileUpload}">
                                 <f:setPropertyActionListener
                                     value=""
                                     target="#{AdministrationForm.administrationPlugin.displayMode}" />
@@ -358,16 +376,19 @@
                                                                 property="#{entry.displayChildren}"
                                                                 value="#{not entry.displayChildren}" />
                                                             <f:ajax
-                                                                execute="ead-details"
-                                                                render="ead-details"
-                                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                                execute="@this"
+                                                                render=":hierarchy:hierarchy"
+                                                                onevent="(data) => {
+                                                                    gwHandleTooltip.init(data);
+                                                                    gwInitTooltips.init();
+                                                                    scrollToClickedElement(data)}" />
                                                         </h:commandLink>
                                                     </div>
                                                     <div class="content">
                                                         <h:commandLink
                                                             id="link2"
                                                             immediate="true"
-                                                            styleClass="ps-1 #{entry.selected ? 'fw-700' : ''} #{entry.searchFound ? 'tree-highlight' : ''} #{entry.valid ? '' : 'bg-hot text-white p-1'} #{entry.valid and !entry.selected ? 'text-black' : '' }">
+                                                            styleClass="ps-1 #{entry.selected ? 'fw-700 current-node scroll-target' : ''} #{entry.searchFound ? 'tree-highlight' : ''} #{entry.valid ? '' : 'bg-hot text-white p-1'} #{entry.valid and !entry.selected ? 'text-black' : '' }">
                                                             <span
                                                                 class="#{entry.nodeType.icon}"
                                                                 aria-hidden="true" />
@@ -404,7 +425,11 @@
                                                             <f:ajax
                                                                 execute="ead-details"
                                                                 render="hierarchy ead-details globalMessage"
-                                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                                onevent="(data) => {
+                                                                    gwHandleTooltip.init(data);
+                                                                    gwInitTooltips.init();
+                                                                    scrollToClickedElement(data);
+                                                                }" />
                                                         </h:commandLink>
                                                     </div>
                                                 </div>
@@ -430,8 +455,8 @@
                                                 value="tooltip" />
                                             <f:ajax
                                                 execute="@this"
-                                                render="hierarchy:hierarchy"
-                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                render="hierarchy:hierarchy nodeBox:nodeContentArea"
+                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
                                         </h:commandLink>
                                         <h:commandLink
                                             styleClass="btn btn-neutral-600"
@@ -451,7 +476,7 @@
                                             <f:ajax
                                                 execute="@this"
                                                 render="hierarchy:hierarchy createNodesModalContent"
-                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
                                         </h:commandLink>
                                         <h:commandLink
                                             styleClass="btn btn-blank"
@@ -464,7 +489,7 @@
                                             <f:ajax
                                                 execute="@this"
                                                 render="hierarchy:hierarchy"
-                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
                                         </h:commandLink>
                                         <div
                                             class="d-inline dropdown"
@@ -508,7 +533,7 @@
                                             <f:ajax
                                                 execute="@this"
                                                 render="hierarchy:hierarchy ead-details"
-                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
                                         </h:commandLink>
                                         <h:commandLink
                                             styleClass="btn btn-success"
@@ -531,7 +556,7 @@
                                             <f:ajax
                                                 execute="@this"
                                                 render="hierarchy:hierarchy globalMessage"
-                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
                                         </h:commandLink>
                                         <h:commandLink
                                             styleClass="btn btn-neutral-600"
@@ -544,7 +569,7 @@
                                             <f:ajax
                                                 execute="@this"
                                                 render="hierarchy:hierarchy globalMessage"
-                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
                                         </h:commandLink>
                                         <h:commandLink
                                             styleClass="btn btn-neutral-600"
@@ -557,7 +582,7 @@
                                             <f:ajax
                                                 execute="@this"
                                                 render="hierarchy:hierarchy globalMessage"
-                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
                                         </h:commandLink>
                                         <h:commandLink
                                             styleClass="btn btn-neutral-600"
@@ -570,7 +595,7 @@
                                             <f:ajax
                                                 execute="@this"
                                                 render="hierarchy:hierarchy globalMessage"
-                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
                                         </h:commandLink>
                                         <!-- move node to another position in separate view -->
                                         <h:commandLink
@@ -597,7 +622,7 @@
                                             <f:ajax
                                                 execute="@this"
                                                 render="hierarchy:hierarchy globalMessage"
-                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
                                         </h:commandLink>
                                     </fieldSet>
                                 </div>
@@ -652,23 +677,27 @@
                                             <h:outputText value="#{msgs.plugin_administration_archive_download_l}" />
                                         </span>
                                     </h:commandLink>
-                                    <h:commandLink
-                                        rendered="#{!AdministrationForm.administrationPlugin.readOnlyModus}"
-                                        styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.readOnlyModus ? 'disabled' : ''}"
-                                        type="submit"
-                                        action="#{AdministrationForm.administrationPlugin.eadExport}"
-                                        disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}">
-                                        <f:passThroughAttribute
-                                            name="data-bs-toggle"
-                                            value="tooltip" />
-                                        <f:passThroughAttribute
-                                            name="data-bs-title"
-                                            value="#{msgs.plugin_administration_archive_eadExport}" />
-                                        <span class="fa fa-globe" />
-                                        <span>
-                                            <h:outputText value="#{msgs.export_verb}" />
-                                        </span>
-                                    </h:commandLink>
+                                    <ui:fragment rendered="AdministrationForm.administrationPlugin.getExportConfiguration().get(db) != null">
+                                        <h:commandLink
+                                            rendered="#{
+                                                !AdministrationForm.administrationPlugin.readOnlyModus
+                                            }"
+                                            styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.readOnlyModus ? 'disabled' : ''}"
+                                            type="submit"
+                                            action="#{AdministrationForm.administrationPlugin.eadExport}"
+                                            disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}">
+                                            <f:passThroughAttribute
+                                                name="data-bs-toggle"
+                                                value="tooltip" />
+                                            <f:passThroughAttribute
+                                                name="data-bs-title"
+                                                value="#{msgs.plugin_administration_archive_eadExport}" />
+                                            <span class="fa fa-globe" />
+                                            <span>
+                                                <h:outputText value="#{msgs.export_verb}" />
+                                            </span>
+                                        </h:commandLink>
+                                    </ui:fragment>
                                 </div>
                             </intranda:box>
                         </div>
@@ -693,9 +722,9 @@
                                             jsf:id="showAll"
                                             jsf:action="#{AdministrationForm.administrationPlugin.showAllFields}"
                                             jsf:rendered="#{AdministrationForm.administrationPlugin.selectedEntry != null}">
-                                            <span class="fa fa-chevron-down" />
+                                            <span class="fa #{AdministrationForm.administrationPlugin.displayAllFields ? 'fa-chevron-up' : 'fa-chevron-down'}" />
                                             <f:ajax
-                                                render="nodeBox:nodeContentArea"
+                                                render="nodeBox:nodeContentArea @this"
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
@@ -827,7 +856,7 @@
                                                                     target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
                                                                 <f:ajax
                                                                     render="nodeBox:node-type hierarchy:hierarchy"
-                                                                    onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                                    onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
                                                                 <f:passThroughAttribute
                                                                     name="data-bs-toggle"
                                                                     value="tooltip" />
@@ -1180,6 +1209,21 @@
                 if (data.status === 'success' &amp;&amp; input.value != "") {
                     const fileNameDisplay = document.querySelector('.upload-file-name');
                     fileNameDisplay.innerHTML = input.value.split(/(\\|\/)/g).pop();
+                }
+            };
+
+            const scrollToClickedElement = function scrollToClickedElement(data) {
+                if (data.status === 'success') {
+                    document.getElementById(data.source.id).scrollIntoView({block: 'nearest', inline: 'nearest'});
+                }
+            };
+
+            const scrollToCurrentNode = function scrollToCurrentNode(data) {
+                if (data.status === 'success') {
+                    const currentNode = document.querySelector('.current-node');
+                    if (currentNode) {
+                        currentNode.scrollIntoView({block: 'nearest', inline: 'center'});
+                    }
                 }
             };
         </script>

@@ -15,8 +15,8 @@ Detail                      | Description
 **Plugin identifier**       | intranda_administration_archive_management
 **Plugin type**             | administration
 **Licence**                 | GPL 2.0 or newer
-**Documentation (German)**  | https://docs.goobi.io/workflow-plugins/v/eng/administration/goobi-plugin-administration-archive-management
-**Documentation (English)** | https://docs.goobi.io/workflow-plugins/v/ger/administration/goobi-plugin-administration-archive-management
+**Documentation (German)**  | https://docs.goobi.io/workflow-plugins/v/ger/administration/goobi-plugin-administration-archive-management
+**Documentation (English)** | https://docs.goobi.io/workflow-plugins/v/eng/administration/goobi-plugin-administration-archive-management
 
 ## Goobi details
 
