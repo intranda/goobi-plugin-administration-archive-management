@@ -704,9 +704,9 @@
                                             jsf:id="showAll"
                                             jsf:action="#{AdministrationForm.administrationPlugin.showAllFields}"
                                             jsf:rendered="#{AdministrationForm.administrationPlugin.selectedEntry != null}">
-                                            <span class="fa fa-chevron-down" />
+                                            <span class="fa #{AdministrationForm.administrationPlugin.displayAllFields ? 'fa-chevron-up' : 'fa-chevron-down'}" />
                                             <f:ajax
-                                                render="nodeBox:nodeContentArea"
+                                                render="nodeBox:nodeContentArea @this"
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"

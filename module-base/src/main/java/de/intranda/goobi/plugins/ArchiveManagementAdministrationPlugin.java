@@ -313,6 +313,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Setter
     private transient IMetadataField vocabularyField;
 
+    @Getter
+    @Setter
+    private boolean displayAllFields = false;
+
     /**
      * Constructor
      */
@@ -2957,34 +2961,89 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public void showAllFields() {
         if (selectedEntry != null) {
-            displayIdentityStatementArea = true;
-            displayContextArea = true;
-            displayContentArea = true;
-            displayAccessArea = true;
-            displayMaterialsArea = true;
-            displayNotesArea = true;
-            displayControlArea = true;
+
+            if (displayAllFields) {
+                hideAllFields();
+            } else {
+
+                displayIdentityStatementArea = true;
+                displayContextArea = true;
+                displayContentArea = true;
+                displayAccessArea = true;
+                displayMaterialsArea = true;
+                displayNotesArea = true;
+                displayControlArea = true;
+
+                for (IMetadataField field : selectedEntry.getIdentityStatementAreaList()) {
+                    field.setShowField(true);
+                }
+                for (IMetadataField field : selectedEntry.getContextAreaList()) {
+                    field.setShowField(true);
+                }
+                for (IMetadataField field : selectedEntry.getContentAndStructureAreaAreaList()) {
+                    field.setShowField(true);
+                }
+                for (IMetadataField field : selectedEntry.getAccessAndUseAreaList()) {
+                    field.setShowField(true);
+                }
+                for (IMetadataField field : selectedEntry.getAlliedMaterialsAreaList()) {
+                    field.setShowField(true);
+                }
+                for (IMetadataField field : selectedEntry.getNotesAreaList()) {
+                    field.setShowField(true);
+                }
+                for (IMetadataField field : selectedEntry.getDescriptionControlAreaList()) {
+                    field.setShowField(true);
+                }
+            }
+        }
+        displayAllFields = !displayAllFields;
+    }
+
+    public void hideAllFields() {
+        if (selectedEntry != null) {
+            displayIdentityStatementArea = false;
+            displayContextArea = false;
+            displayContentArea = false;
+            displayAccessArea = false;
+            displayMaterialsArea = false;
+            displayNotesArea = false;
+            displayControlArea = false;
 
             for (IMetadataField field : selectedEntry.getIdentityStatementAreaList()) {
-                field.setShowField(true);
+                if (!field.isFilled()) {
+                    field.setShowField(false);
+                }
             }
             for (IMetadataField field : selectedEntry.getContextAreaList()) {
-                field.setShowField(true);
+                if (!field.isFilled()) {
+                    field.setShowField(false);
+                }
             }
             for (IMetadataField field : selectedEntry.getContentAndStructureAreaAreaList()) {
-                field.setShowField(true);
+                if (!field.isFilled()) {
+                    field.setShowField(false);
+                }
             }
             for (IMetadataField field : selectedEntry.getAccessAndUseAreaList()) {
-                field.setShowField(true);
+                if (!field.isFilled()) {
+                    field.setShowField(false);
+                }
             }
             for (IMetadataField field : selectedEntry.getAlliedMaterialsAreaList()) {
-                field.setShowField(true);
+                if (!field.isFilled()) {
+                    field.setShowField(false);
+                }
             }
             for (IMetadataField field : selectedEntry.getNotesAreaList()) {
-                field.setShowField(true);
+                if (!field.isFilled()) {
+                    field.setShowField(false);
+                }
             }
             for (IMetadataField field : selectedEntry.getDescriptionControlAreaList()) {
-                field.setShowField(true);
+                if (!field.isFilled()) {
+                    field.setShowField(false);
+                }
             }
         }
     }
