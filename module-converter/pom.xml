@@ -3,7 +3,7 @@
   <parent>
     <groupId>io.goobi.workflow.plugin</groupId>
     <artifactId>plugin-administration-archive-management</artifactId>
-    <version>24.08.1</version>
+    <version>24.09-SNAPSHOT</version>
   </parent>
   <artifactId>plugin-administration-archive-management-converter</artifactId>
   <packaging>jar</packaging>
@@ -11,13 +11,13 @@
     <dependency>
       <groupId>io.goobi.workflow.plugin</groupId>
       <artifactId>plugin-administration-archive-management-lib</artifactId>
-      <version>24.08.1</version>
+      <version>24.09-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>io.goobi.workflow.plugin</groupId>
       <artifactId>plugin-administration-archive-management-base</artifactId>
-      <version>24.08.1</version>
+      <version>24.09-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>    
   </dependencies>
