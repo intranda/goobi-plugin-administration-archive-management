@@ -79,7 +79,7 @@ public class EadMetadataFieldTest {
         expect(fieldValueMock.getAuthorityValue()).andReturn("authValue").anyTimes();
         replay(fieldValueMock);
 
-        IMetadataField copiedField = eadMetadataField.copy("prefix", "suffix");
+        IMetadataField copiedField = eadMetadataField.copy("prefix", "suffix", true);
 
         assertEquals("prefixvaluesuffix", copiedField.getValues().get(0).getValue());
         assertEquals("type", copiedField.getValues().get(0).getAuthorityType());
