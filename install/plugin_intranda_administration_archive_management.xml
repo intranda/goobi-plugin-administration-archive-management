@@ -240,8 +240,6 @@
         <!-- Note Area -->
         <metadata xpath="(./ead:archdesc/ead:note/ead:p|./ead:note/ead:p)[1]" xpathType="element" name="didnote" level="6" repeatable="true" fieldType="textarea" rulesetName="DidNote" />
        
-        <metadata xpath="./ead:processinfo/ead:p" xpathType="element" name="ArchivistNote" level="6" repeatable="false" fieldType="textarea" rulesetName="ArchivistNote" />
-        
         <metadata xpath="./ead:control/ead:localtypedeclaration" xpathType="element" name="Conventions" level="6" repeatable="false" fieldType="textarea" rulesetName="ConventionDeclaration" />
         
         <metadata xpath="./ead:processinfo/ead:chronlist/ead:chronitem/ead:datesingle" xpathType="element" name="DescriptionDates" level="6" repeatable="false" fieldType="textarea" rulesetName="DescriptionDates" />
@@ -249,6 +247,8 @@
 
         <!-- Description Control Area -->
         <metadata xpath="./ead:archdesc/ead:processinfo/ead:list/ead:item" xpathType="element" name="editorName" level="7" repeatable="true" fieldType="textarea" visible="false" />
+
+        <metadata xpath="./ead:processinfo/ead:p" xpathType="element" name="ArchivistNote" level="7" repeatable="false" fieldType="textarea" rulesetName="ArchivistNote" />
 
         <metadata xpath="./ead:control/ead:conventiondeclaration/ead:abbr" xpathType="element" name="conventiondeclaration" level="7" repeatable="false" fieldType="multiselect">
             <value>ISAD(G)</value>
