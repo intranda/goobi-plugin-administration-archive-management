@@ -210,10 +210,6 @@
         </metadata>
 
         <metadata xpath="(./ead:archdesc/ead:phystech/ead:p | ./ead:phystech/ead:p)" xpathType="element" name="phystech" level="4" repeatable="false" fieldType="textarea" rulesetName="PhysTech" />
-       
-        <metadata xpath="(./ead:archdesc/ead:otherfindaid/ead:p | ./ead:otherfindaid/ead:p)" xpathType="element" name="otherfindaid" level="4" repeatable="true" fieldType="textarea" rulesetName="OtherFindAid" />
-        
-        <metadata xpath="(./ead:archdesc/ead:phystech/ead:p|./ead:phystech/ead:p)" xpathType="element" name="phystech" level="4" repeatable="false" fieldType="textarea" rulesetName="PhysTech" />
         
         <metadata xpath="(./ead:archdesc/ead:otherfindaid|./ead:otherfindaid)" group="true" name="otherfindaid" level="4" repeatable="true" visible="true" fieldType="group" rulesetName="OtherFindAidGroup">
             <metadata xpath="(ead:head|ead:head)" xpathType="element" name="otherfindaid_type" level="4" repeatable="false" fieldType="input" rulesetName="Type" />
@@ -246,7 +242,7 @@
        
         <metadata xpath="./ead:processinfo/ead:p" xpathType="element" name="ArchivistNote" level="6" repeatable="false" fieldType="textarea" rulesetName="ArchivistNote" />
         
-        <metadata xpath="./ead:control/ead:localtypedeclaration" xpathType="element" name="Conventions" level="6" repeatable="false" fieldType="textarea" rulesetName="Conventions" />
+        <metadata xpath="./ead:control/ead:localtypedeclaration" xpathType="element" name="Conventions" level="6" repeatable="false" fieldType="textarea" rulesetName="ConventionDeclaration" />
         
         <metadata xpath="./ead:processinfo/ead:chronlist/ead:chronitem/ead:datesingle" xpathType="element" name="DescriptionDates" level="6" repeatable="false" fieldType="textarea" rulesetName="DescriptionDates" />
 
