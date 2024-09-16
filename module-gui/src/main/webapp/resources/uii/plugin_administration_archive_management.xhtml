@@ -32,21 +32,6 @@
         <h:panelGroup
             layout="block"
             rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management')}">
-            <!-- <ui:fragment rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management_Write')}">
-                <div class="alert alert-info">
-                    #{msgs.plugin_administration_archive_permission_management_write} <pre class="d-inline">Plugin_Administration_Archive_Management_Write</pre>
-                </div>
-            </ui:fragment>
-            <ui:fragment rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management_Upload')}">
-                <div class="alert alert-info">
-                    #{msgs.plugin_administration_archive_permission_management_upload} <pre class="d-inline">Plugin_Administration_Archive_Management_Upload</pre>
-                </div>
-            </ui:fragment>
-            <ui:fragment rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management_New')}">
-                <div class="alert alert-info">
-                    #{msgs.plugin_administration_archive_permission_management_new} <pre class="d-inline">Plugin_Administration_Archive_Management_New</pre>
-                </div>
-            </ui:fragment> -->
             <!-- Selection area for a record group to load -->
             <intranda:box
                 boxForm="true"
@@ -81,16 +66,16 @@
                                                 <th
                                                     scope="col"
                                                     role="columnheader"
-                                                    class="header__buttons header__col-xxl">
-                                                   #{msgs.auswahl}
-                                                </th>
+                                                    class="header__buttons header__col-xxl">#{msgs.auswahl}</th>
                                             </tr>
                                         </thead>
                                         <ui:repeat
                                             var="db"
                                             value="#{AdministrationForm.administrationPlugin.possibleDatabases}">
                                             <tr role="row">
-                                                <td class="align-top"><h:outputText value="#{db}" /></td>
+                                                <td class="align-top">
+                                                    <h:outputText value="#{db}" />
+                                                </td>
                                                 <td>
                                                     <div class="gw-table__actions__container">
                                                         <ui:fragment>
@@ -105,7 +90,9 @@
                                                                     name="title"
                                                                     value="#{msgs.plugin_administration_archive_loadDatabase}" />
                                                                 <span class="fa fa-pencil" />
-                                                                <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
+                                                                <f:setPropertyActionListener
+                                                                    value="#{db}"
+                                                                    target="#{AdministrationForm.administrationPlugin.databaseName}" />
                                                             </h:commandLink>
                                                         </ui:fragment>
                                                         <h:commandLink
@@ -119,9 +106,12 @@
                                                                 name="data-bs-title"
                                                                 value="#{msgs.duplicate}" />
                                                             <span class="fa fa-clipboard" />
-                                                            <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
+                                                            <f:setPropertyActionListener
+                                                                value="#{db}"
+                                                                target="#{AdministrationForm.administrationPlugin.databaseName}" />
                                                         </h:commandLink>
-                                                        <ui:fragment rendered="AdministrationForm.administrationPlugin.getExportConfiguration().get(db) != null">
+                                                        <ui:fragment
+                                                            rendered="AdministrationForm.administrationPlugin.getExportConfiguration().get(db) != null">
                                                             <h:commandLink
                                                                 rendered="#{!AdministrationForm.administrationPlugin.readOnlyModus}"
                                                                 styleClass="btn btn-blank"
@@ -134,15 +124,16 @@
                                                                     name="data-bs-title"
                                                                     value="#{msgs.export_verb}" />
                                                                 <span class="fa fa-globe" />
-                                                                <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
+                                                                <f:setPropertyActionListener
+                                                                    value="#{db}"
+                                                                    target="#{AdministrationForm.administrationPlugin.databaseName}" />
                                                             </h:commandLink>
                                                         </ui:fragment>
                                                         <h:commandLink
                                                             styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowDeletion ? '' : 'disabled'}"
                                                             disabled="#{!AdministrationForm.administrationPlugin.allowDeletion}"
                                                             action="#{AdministrationForm.administrationPlugin.deleteSelectedDatabase}"
-                                                            onclick="if (!confirm('#{msgs.sollDieserEintragWirklichGeloeschtWerden}')) return false"
-                                                        >
+                                                            onclick="if (!confirm('#{msgs.sollDieserEintragWirklichGeloeschtWerden}')) return false">
                                                             <f:passThroughAttribute
                                                                 name="data-bs-toggle"
                                                                 value="tooltip" />
@@ -150,7 +141,9 @@
                                                                 name="title"
                                                                 value="#{msgs.loeschen}" />
                                                             <span class="fa fa-trash" />
-                                                            <f:setPropertyActionListener value="#{db}" target="#{AdministrationForm.administrationPlugin.databaseName}" />
+                                                            <f:setPropertyActionListener
+                                                                value="#{db}"
+                                                                target="#{AdministrationForm.administrationPlugin.databaseName}" />
                                                         </h:commandLink>
                                                     </div>
                                                 </td>
@@ -163,10 +156,8 @@
                         <h:panelGroup
                             layout="block"
                             rendered="#{AdministrationForm.administrationPlugin.possibleDatabases.size() eq 0}"
-                            styleClass="me-auto"
-                            >
-                            <h:outputText
-                                value="#{msgs.plugin_administration_archive_noArchivesAvailable}" />
+                            styleClass="me-auto">
+                            <h:outputText value="#{msgs.plugin_administration_archive_noArchivesAvailable}" />
                         </h:panelGroup>
                         <div class="box__actions">
                             <h:commandLink
@@ -235,10 +226,11 @@
                                 <div class="upload-file-name" />
                             </div>
                         </div>
-                        <div
-                            class="box__actions">
+                        <div class="box__actions">
                             <!-- CANCEL BUTTON -->
-                            <h:commandLink styleClass="btn btn-blank" action="#{AdministrationForm.administrationPlugin.abortFileUpload}">
+                            <h:commandLink
+                                styleClass="btn btn-blank"
+                                action="#{AdministrationForm.administrationPlugin.abortFileUpload}">
                                 <f:setPropertyActionListener
                                     value=""
                                     target="#{AdministrationForm.administrationPlugin.displayMode}" />
@@ -262,8 +254,7 @@
                                 </h:inputFile>
                             </label>
                             <!-- GROUP OF TWO VERSIONS OF THE UPLOAD BUTTON -->
-                            <h:panelGroup
-                                id="uploadFileButtonGroup">
+                            <h:panelGroup id="uploadFileButtonGroup">
                                 <!-- UPLOAD BUTTON FOR THE CASE WHERE NO SUCH FILE EXISTS YET -->
                                 <h:commandLink
                                     styleClass="btn btn-primary"
@@ -399,7 +390,9 @@
                                                                 <h:outputText
                                                                     value=" - "
                                                                     rendered="#{entry.label == null}" />
-                                                                <h:panelGroup styleClass="text-secondary" rendered="#{AdministrationForm.administrationPlugin.showNodeIdInTree}">
+                                                                <h:panelGroup
+                                                                    styleClass="text-secondary"
+                                                                    rendered="#{AdministrationForm.administrationPlugin.showNodeIdInTree}">
                                                                     <h:outputText value=" (#{entry.id})" />
                                                                 </h:panelGroup>
                                                             </span>
@@ -446,7 +439,9 @@
                                             styleClass="btn btn-neutral-600"
                                             action="#{AdministrationForm.administrationPlugin.addNode}"
                                             title="#{msgs.plugin_administration_archive_newNode}">
-                                            <span class="fa-stack" style="font-size: 10px;">
+                                            <span
+                                                class="fa-stack"
+                                                style="font-size: 10px;">
                                                 <span class="fa fa-plus fa-stack-1x" />
                                                 <span class="fa fa-square-o fa-stack-2x m-0" />
                                             </span>
@@ -463,8 +458,12 @@
                                             onclick="$('#createNodesModal').modal('show');"
                                             disabled="#{AdministrationForm.administrationPlugin.selectedEntry == null}"
                                             title="#{msgs.plugin_administration_archive_addMultipleNodes}">
-                                            <span class="fa-stack" style="font-size: 10px;">
-                                                <span class="fa fa-plus fa-stack-1x" style="margin-inline-start: .25em; margin-block-start: .25em;" />
+                                            <span
+                                                class="fa-stack"
+                                                style="font-size: 10px;">
+                                                <span
+                                                    class="fa fa-plus fa-stack-1x"
+                                                    style="margin-inline-start: .25em; margin-block-start: .25em;" />
                                                 <span class="fa fa-clone fa-stack-2x m-0" />
                                             </span>
                                             <f:passThroughAttribute
@@ -632,8 +631,7 @@
                                         id="delete"
                                         action="#{AdministrationForm.administrationPlugin.deleteSelectedDatabase}"
                                         onclick="if (!confirm('#{msgs.sollDieserEintragWirklichGeloeschtWerden}')) return false"
-                                        rendered="#{!AdministrationForm.administrationPlugin.allowDeletion}"
-                                        >
+                                        rendered="#{!AdministrationForm.administrationPlugin.allowDeletion}">
                                         <span class="fa fa-trash" />
                                         <span>
                                             <h:outputText value="#{msgs.loeschen}" />
@@ -657,8 +655,8 @@
                                         type="submit"
                                         action="#{AdministrationForm.administrationPlugin.cancelEdition}">
                                         <f:passThroughAttribute
-                                        name="data-bs-toggle"
-                                        value="tooltip" />
+                                            name="data-bs-toggle"
+                                            value="tooltip" />
                                         <h:outputText value="#{msgs.abbrechen}" />
                                     </h:commandLink>
                                     <h:commandLink
@@ -722,7 +720,8 @@
                                             jsf:id="showAll"
                                             jsf:action="#{AdministrationForm.administrationPlugin.showAllFields}"
                                             jsf:rendered="#{AdministrationForm.administrationPlugin.selectedEntry != null}">
-                                            <span class="fa #{AdministrationForm.administrationPlugin.displayAllFields ? 'fa-chevron-up' : 'fa-chevron-down'}" />
+                                            <span
+                                                class="fa #{AdministrationForm.administrationPlugin.displayAllFields ? 'fa-chevron-up' : 'fa-chevron-down'}" />
                                             <f:ajax
                                                 render="nodeBox:nodeContentArea @this"
                                                 onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
@@ -735,27 +734,27 @@
                                         </button>
                                     </div>
                                 </intranda:boxTitle>
-                                <fieldSet jsf:id="inputArea">
-                                    <f:passThroughAttribute
-                                        name="#{AdministrationForm.administrationPlugin.readOnlyModus ? 'disabled' :'data-enabled'}"
-                                        value="true" />
-                                    <div>
-                                        <!-- no node selected -->
-                                        <h:panelGroup
-                                            layout="block"
-                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry == null}"
-                                            styleClass="p-3">
-                                            <h:outputText
-                                                value="#{msgs.plugin_administration_archive_noElementSelectedText}" />
-                                        </h:panelGroup>
-                                        <!-- // no node selected -->
-                                        <!-- a node was selected -->
-                                        <h:panelGroup
-                                            layout="block"
-                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry != null}"
-                                            id="nodeContentArea"
-                                            styleClass="form-content">
-                                            <div class="processcreation">
+
+                                <div>
+                                    <!-- no node selected -->
+                                    <h:panelGroup
+                                        layout="block"
+                                        rendered="#{AdministrationForm.administrationPlugin.selectedEntry == null}"
+                                        styleClass="p-3">
+                                        <h:outputText value="#{msgs.plugin_administration_archive_noElementSelectedText}" />
+                                    </h:panelGroup>
+                                    <!-- // no node selected -->
+                                    <!-- a node was selected -->
+                                    <h:panelGroup
+                                        layout="block"
+                                        rendered="#{AdministrationForm.administrationPlugin.selectedEntry != null}"
+                                        id="nodeContentArea"
+                                        styleClass="form-content">
+                                        <div class="processcreation">
+                                            <fieldSet jsf:id="creationArea">
+                                                <f:passThroughAttribute
+                                                    name="#{AdministrationForm.administrationPlugin.allowProcessCreation ? 'data-enabled': 'disabled'}"
+                                                    value="true" />
                                                 <!-- process title -->
                                                 <h:panelGroup
                                                     class="form-row"
@@ -831,8 +830,14 @@
                                                         </div>
                                                     </div>
                                                 </h:panelGroup>
-                                                <!-- //process title -->
-                                                <!-- node type as icon -->
+
+                                            </fieldSet>
+                                            <!-- //process title -->
+                                            <!-- node type as icon -->
+                                            <fieldSet jsf:id="nodeTypeArea">
+                                                <f:passThroughAttribute
+                                                    name="#{AdministrationForm.administrationPlugin.readOnlyModus ? 'disabled' :'data-enabled'}"
+                                                    value="true" />
                                                 <h:panelGroup
                                                     class="form-row"
                                                     id="node-type">
@@ -846,6 +851,7 @@
                                                             value="#{AdministrationForm.administrationPlugin.configuredNodes}"
                                                             var="nodeType">
                                                             <h:commandLink
+                                                                disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}"
                                                                 styleClass="node fs-600 pe-2 my-auto #{AdministrationForm.administrationPlugin.selectedEntry.nodeType.nodeName == nodeType.nodeName ? 'text-black' : 'text-secondary'}"
                                                                 title="#{msgs['plugin_administration_archive_nodeType_'.concat(nodeType.nodeName)]}">
                                                                 <span
@@ -878,7 +884,14 @@
                                                         <h:outputText value="#{AdministrationForm.administrationPlugin.selectedEntry.id}" />
                                                     </div>
                                                 </h:panelGroup>
-                                            </div>
+                                            </fieldSet>
+                                        </div>
+
+
+                                        <fieldSet jsf:id="inputArea">
+                                            <f:passThroughAttribute
+                                                name="#{AdministrationForm.administrationPlugin.readOnlyModus ? 'disabled' :'data-enabled'}"
+                                                value="true" />
                                             <!-- Group: Identifikation / Identity Statement Area -->
                                             <h:panelGroup
                                                 layout="block"
@@ -1092,10 +1105,10 @@
                                                     dataVisible="#{AdministrationForm.administrationPlugin.selectedEntry.descriptionControlAreaVisible}" />
                                             </h:panelGroup>
                                             <!-- // Group: Verzeichnungskontrolle / Description Control Area -->
-                                        </h:panelGroup>
-                                    </div>
+                                        </fieldSet>
+                                    </h:panelGroup>
+                                </div>
 
-                                </fieldSet>
 
                             </intranda:box>
                         </div>
@@ -1116,8 +1129,7 @@
                     icon="fa fa-arrows"
                     title="#{msgs.plugin_administration_archive_moveNode}">
                     <div class="p-2">
-                        <h:outputText
-                            value="#{msgs.plugin_administration_archive_moveNodeText}" />
+                        <h:outputText value="#{msgs.plugin_administration_archive_moveNodeText}" />
                     </div>
                     <h:form class="p-2">
                         <ui:repeat
