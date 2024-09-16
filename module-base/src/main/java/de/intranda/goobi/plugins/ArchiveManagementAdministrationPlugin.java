@@ -287,6 +287,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private boolean readOnlyMode = true;
 
     @Getter
+    private boolean allowProcessCreation = false;
+
+    @Getter
     private boolean allowFileUpload = false;
 
     @Getter
@@ -347,11 +350,15 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 // role to edit vocabularies: Plugin_Administration_Archive_Management_Vocabulary
                 // role to access all: Plugin_Administration_Archive_Management_All_Inventories
                 // role to access the inventory 'XYZ':  Plugin_Administration_Archive_Management_Inventory_XYZ
-
+                // role for process creation: Plugin_Administration_Archive_Management_Process
                 // role to delete inventory: Plugin_Administration_Archive_Management_Delete
 
                 if ((user.isSuperAdmin() || user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Write"))) {
                     readOnlyMode = false;
+                }
+
+                if (user.isSuperAdmin() || (user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Process"))) {
+                    allowProcessCreation = true;
                 }
 
                 if (user.isSuperAdmin() || (user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Upload"))) {
