@@ -111,7 +111,7 @@
                                                                 target="#{AdministrationForm.administrationPlugin.databaseName}" />
                                                         </h:commandLink>
                                                         <ui:fragment
-                                                            rendered="AdministrationForm.administrationPlugin.getExportConfiguration().get(db) != null">
+                                                            rendered="#{AdministrationForm.administrationPlugin.getExportConfiguration().get(db) != null}">
                                                             <h:commandLink
                                                                 rendered="#{!AdministrationForm.administrationPlugin.readOnlyModus}"
                                                                 styleClass="btn btn-blank"
@@ -675,7 +675,7 @@
                                             <h:outputText value="#{msgs.plugin_administration_archive_download_l}" />
                                         </span>
                                     </h:commandLink>
-                                    <ui:fragment rendered="AdministrationForm.administrationPlugin.getExportConfiguration().get(db) != null">
+                                    <ui:fragment rendered="#{AdministrationForm.administrationPlugin.getExportConfiguration().get(db) != null}">
                                         <h:commandLink
                                             rendered="#{
                                                 !AdministrationForm.administrationPlugin.readOnlyModus
