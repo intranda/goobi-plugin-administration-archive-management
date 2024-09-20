@@ -3143,9 +3143,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     public void eadExport() {
         List<String> exportFolders = exportConfiguration.get(databaseName);
         if (exportFolders == null || exportFolders.isEmpty()) {
-            Helper.setFehlerMeldung("plugin_administration_archive_eadExportNotConfigured");
-            databaseName = null;
-            return;
+            exportFolders = exportConfiguration.get("*");
+            if (exportFolders == null || exportFolders.isEmpty()) {
+                Helper.setFehlerMeldung("plugin_administration_archive_eadExportNotConfigured");
+                databaseName = null;
+                return;
+            }
         }
 
         Document document = createEadFile();
@@ -3171,7 +3174,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 log.error(e);
             }
         }
-        readExportConfiguration();
     }
 
     public void eadExportFrommOverview() {
