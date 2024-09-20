@@ -1119,9 +1119,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             Helper.setFehlerMeldung("plugin_administration_archive_missing_Data");
             return;
         }
-        readConfiguration();
 
         String uploadedFileName = processUploadedFileName(uploadFile);
+        databaseName = uploadedFileName;
+        readConfiguration();
+
         // open document, parse it
         try (InputStream input = uploadFile.getInputStream()) {
             Document document = XmlTools.readDocumentFromStream(input);
@@ -1200,7 +1202,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         String uploadedFileName = Paths.get(file.getSubmittedFileName()).getFileName().toString(); // MSIE fix.
 
         // filename must end with xml
-        if (!uploadedFileName.endsWith(".xml")) {
+        if (!uploadedFileName.toLowerCase().endsWith(".xml")) {
             uploadedFileName = uploadedFileName + ".xml";
         }
         // remove whitespaces from filename
