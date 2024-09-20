@@ -801,7 +801,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         configuredNodes = new ArrayList<>();
 
         HierarchicalConfiguration config = null;
-
         try {
             config = xmlConfig.configurationAt("//config[./archive = '" + databaseName + "']");
         } catch (IllegalArgumentException e) {
@@ -2556,7 +2555,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 if (process == null) {
                     currentEntry.setGoobiProcessTitle(null);
                     lstNodesWithoutIds.add(currentEntry.getId());
-
+                    ArchiveManagementManager.saveNode(recordGroup.getId(), currentEntry);
                     Helper.setMeldung("Removing " + strProcessTitle + " from " + currentEntry.getLabel());
                 }
             } catch (Exception e) {
@@ -2605,9 +2604,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 node.setGoobiProcessTitle(strProcessTitle);
                 lstNodesWithNewIds.add(node.getLabel());
                 Helper.setMeldung("Node '" + node.getLabel() + "' has been given Goobi process ID: " + strProcessTitle);
-            } else {
-
-                //perhaps remove the NodeId from the process?
+                ArchiveManagementManager.saveNode(recordGroup.getId(), node);
             }
         }
 
@@ -3174,6 +3171,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 log.error(e);
             }
         }
+        readExportConfiguration();
     }
 
     public void eadExportFrommOverview() {
