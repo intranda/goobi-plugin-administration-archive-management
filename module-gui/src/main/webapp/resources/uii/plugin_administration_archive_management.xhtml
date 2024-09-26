@@ -111,7 +111,7 @@
                                                                 target="#{AdministrationForm.administrationPlugin.databaseName}" />
                                                         </h:commandLink>
                                                         <ui:fragment
-                                                            rendered="#{AdministrationForm.administrationPlugin.getExportConfiguration().get(db) != null 
+                                                            rendered="#{AdministrationForm.administrationPlugin.getExportConfiguration().get(db) != null
                                                                       or AdministrationForm.administrationPlugin.getExportConfiguration().get('*') != null}">
                                                             <h:commandLink
                                                                 rendered="#{!AdministrationForm.administrationPlugin.readOnlyModus}"
@@ -346,7 +346,7 @@
                                     </div>
                                 </intranda:boxTitle>
                                 <div class="d-flex flex-nowrap justify-content-between">
-                                    <div class="scroll-container p-2 w-100">
+                                    <div class="scroll-container p-2 flex-grow-1">
                                         <div>
                                             <ui:repeat
                                                 var="entry"
@@ -432,7 +432,7 @@
                                     </div>
                                     <fieldSet
                                         jsf:id="buttons"
-                                        class="p-2 flex-shrink-1 d-flex flex-column gap-2">
+                                        class="p-2 flex-shrink-0 d-flex flex-column gap-2">
                                         <f:passThroughAttribute
                                             name="#{AdministrationForm.administrationPlugin.readOnlyModus ? 'disabled' :'data-enabled'}"
                                             value="true" />
@@ -677,7 +677,7 @@
                                         </span>
                                     </h:commandLink>
                                     <ui:fragment
-                                        rendered="#{AdministrationForm.administrationPlugin.getExportConfiguration().get(AdministrationForm.administrationPlugin.databaseName) != null 
+                                        rendered="#{AdministrationForm.administrationPlugin.getExportConfiguration().get(AdministrationForm.administrationPlugin.databaseName) != null
                                                   or AdministrationForm.administrationPlugin.getExportConfiguration().get('*') != null}">
                                         <h:commandLink
                                             rendered="#{!AdministrationForm.administrationPlugin.readOnlyModus}"
