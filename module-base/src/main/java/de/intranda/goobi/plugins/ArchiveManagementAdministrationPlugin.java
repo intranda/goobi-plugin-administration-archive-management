@@ -1213,6 +1213,27 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public void addMetadata(Element currentElement, IEadEntry node, Element xmlRootElement, boolean updateHistory) {
         boolean isMainElement = false;
+
+        Map<String, List<IValue>> metadata = ArchiveManagementManager.convertStringToMap(node.getData());
+        node.getIdentityStatementAreaList().clear();
+        node.getContextAreaList().clear();
+        node.getContentAndStructureAreaAreaList().clear();
+        node.getAccessAndUseAreaList().clear();
+        node.getAlliedMaterialsAreaList().clear();
+        node.getNotesAreaList().clear();
+        node.getDescriptionControlAreaList().clear();
+
+        for (IMetadataField emf : configuredFields) {
+            List<IValue> values = metadata.get(emf.getName());
+            if (emf.isGroup()) {
+                loadGroupMetadata(node, emf, values);
+
+            } else {
+                IMetadataField toAdd = addFieldToEntry(node, emf, values);
+                addFieldToNode(node, toAdd);
+            }
+        }
+
         if ("ead".equals(currentElement.getName())) {
             isMainElement = true;
             if (updateHistory) {
@@ -1241,6 +1262,15 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         for (IMetadataField emf : node.getDescriptionControlAreaList()) {
             createEadElement(currentElement, isMainElement, emf, xmlRootElement);
         }
+
+        node.getIdentityStatementAreaList().clear();
+        node.getContextAreaList().clear();
+        node.getContentAndStructureAreaAreaList().clear();
+        node.getAccessAndUseAreaList().clear();
+        node.getAlliedMaterialsAreaList().clear();
+        node.getNotesAreaList().clear();
+        node.getDescriptionControlAreaList().clear();
+
         Element dsc = null;
         if (isMainElement) {
             if (StringUtils.isNotBlank(node.getId())) {
@@ -2252,14 +2282,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         readConfiguration();
         // reload all nodes from db to get every change
         rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
-        loadMetadataForAllNodes();
 
         Document document = new Document();
-
         Element eadRoot = new Element("ead", nameSpaceWrite);
         document.setRootElement(eadRoot);
-        addMetadata(eadRoot, rootElement, eadRoot, true);
 
+        addMetadata(eadRoot, rootElement, eadRoot, true);
         return document;
     }
 
