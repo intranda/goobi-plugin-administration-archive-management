@@ -24,8 +24,8 @@ public class DuplicationParameter implements Serializable, IParameter {
     private int counterStartValue = 1;
 
     private boolean generated;
-
     private String fieldType;
+    private boolean selected;
 
     public DuplicationParameter(String fieldName) {
         this.fieldName = fieldName;
@@ -40,6 +40,6 @@ public class DuplicationParameter implements Serializable, IParameter {
         this.counterStartValue = other.getCounterStartValue();
         this.generated = other.isGenerated();
         this.fieldType = other.getFieldType();
-
+        this.selected = other.isSelected();
     }
 }

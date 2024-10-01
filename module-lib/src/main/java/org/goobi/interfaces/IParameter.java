@@ -32,4 +32,8 @@ public interface IParameter {
 
     public void setFieldType(String fieldType);
 
+    public boolean isSelected();
+
+    public void setSelected(boolean selected);
+
 }

@@ -62,6 +62,8 @@ Berechtigung | Erläuterung
 `Plugin_Administration_Archive_Management_Inventory_NAME` | Zugriff auf einzelne ausgewählte Bestände, wobei der Suffix NAME durch den Namen des Bestands zu ersetzen ist
 `Plugin_Administration_Archive_Management_All_Inventories` | Zugriff auf alle Bestände
 `Plugin_Administration_Archive_Management_Delete` | Löschen des ausgewählten Bestandes
+`Plugin_Administration_Archive_Management_Process` | Erstellen von Vorgängen
+
 
 Eine detaillierte Erläuterung über die Bedienung des Plugins bzw. dessen Funktionen findet sich auf dieser Seite:
 

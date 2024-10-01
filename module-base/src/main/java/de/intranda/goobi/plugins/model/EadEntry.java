@@ -437,15 +437,17 @@ public class EadEntry implements IEadEntry {
     private IMetadataField copyIdentityStatementField(IConfiguration configuration, IEadEntry other, IMetadataField field) {
         String prefix = "";
         String suffix = "";
+        boolean copyField = false;
         if (configuration != null) {
             for (IParameter param : configuration.getIdentityStatementArea()) {
                 if (param.getFieldName().equals(field.getName())) {
                     prefix = param.getPrefix();
                     suffix = param.getSuffix();
+                    copyField = param.isSelected();
                 }
             }
         }
-        IMetadataField otherField = field.copy(prefix, suffix);
+        IMetadataField otherField = field.copy(prefix, suffix, copyField);
         otherField.setEadEntry(other);
         return otherField;
     }
@@ -453,15 +455,17 @@ public class EadEntry implements IEadEntry {
     private IMetadataField copyContextField(IConfiguration configuration, IEadEntry other, IMetadataField field) {
         String prefix = "";
         String suffix = "";
+        boolean copyField = false;
         if (configuration != null) {
             for (IParameter param : configuration.getContextArea()) {
                 if (param.getFieldName().equals(field.getName())) {
                     prefix = param.getPrefix();
                     suffix = param.getSuffix();
+                    copyField = param.isSelected();
                 }
             }
         }
-        IMetadataField otherField = field.copy(prefix, suffix);
+        IMetadataField otherField = field.copy(prefix, suffix, copyField);
         otherField.setEadEntry(other);
         return otherField;
     }
@@ -469,15 +473,17 @@ public class EadEntry implements IEadEntry {
     private IMetadataField copyContentField(IConfiguration configuration, IEadEntry other, IMetadataField field) {
         String prefix = "";
         String suffix = "";
+        boolean copyField = false;
         if (configuration != null) {
             for (IParameter param : configuration.getContentArea()) {
                 if (param.getFieldName().equals(field.getName())) {
                     prefix = param.getPrefix();
                     suffix = param.getSuffix();
+                    copyField = param.isSelected();
                 }
             }
         }
-        IMetadataField otherField = field.copy(prefix, suffix);
+        IMetadataField otherField = field.copy(prefix, suffix, copyField);
         otherField.setEadEntry(other);
         return otherField;
     }
@@ -485,15 +491,17 @@ public class EadEntry implements IEadEntry {
     private IMetadataField copyAccessField(IConfiguration configuration, IEadEntry other, IMetadataField field) {
         String prefix = "";
         String suffix = "";
+        boolean copyField = false;
         if (configuration != null) {
             for (IParameter param : configuration.getAccessArea()) {
                 if (param.getFieldName().equals(field.getName())) {
                     prefix = param.getPrefix();
                     suffix = param.getSuffix();
+                    copyField = param.isSelected();
                 }
             }
         }
-        IMetadataField otherField = field.copy(prefix, suffix);
+        IMetadataField otherField = field.copy(prefix, suffix, copyField);
         otherField.setEadEntry(other);
         return otherField;
     }
@@ -501,15 +509,17 @@ public class EadEntry implements IEadEntry {
     private IMetadataField copyAlliedMaterialsField(IConfiguration configuration, IEadEntry other, IMetadataField field) {
         String prefix = "";
         String suffix = "";
+        boolean copyField = false;
         if (configuration != null) {
             for (IParameter param : configuration.getAlliedMaterialsArea()) {
                 if (param.getFieldName().equals(field.getName())) {
                     prefix = param.getPrefix();
                     suffix = param.getSuffix();
+                    copyField = param.isSelected();
                 }
             }
         }
-        IMetadataField otherField = field.copy(prefix, suffix);
+        IMetadataField otherField = field.copy(prefix, suffix, copyField);
         otherField.setEadEntry(other);
         return otherField;
     }
@@ -517,15 +527,17 @@ public class EadEntry implements IEadEntry {
     private IMetadataField copyNotesField(IConfiguration configuration, IEadEntry other, IMetadataField field) {
         String prefix = "";
         String suffix = "";
+        boolean copyField = false;
         if (configuration != null) {
             for (IParameter param : configuration.getNotesArea()) {
                 if (param.getFieldName().equals(field.getName())) {
                     prefix = param.getPrefix();
                     suffix = param.getSuffix();
+                    copyField = param.isSelected();
                 }
             }
         }
-        IMetadataField otherField = field.copy(prefix, suffix);
+        IMetadataField otherField = field.copy(prefix, suffix, copyField);
         otherField.setEadEntry(other);
         return otherField;
     }
@@ -533,15 +545,17 @@ public class EadEntry implements IEadEntry {
     private IMetadataField copyDescriptionField(IConfiguration configuration, IEadEntry other, IMetadataField field) {
         String prefix = "";
         String suffix = "";
+        boolean copyField = false;
         if (configuration != null) {
             for (IParameter param : configuration.getDescriptionArea()) {
                 if (param.getFieldName().equals(field.getName())) {
                     prefix = param.getPrefix();
                     suffix = param.getSuffix();
+                    copyField = param.isSelected();
                 }
             }
         }
-        IMetadataField otherField = field.copy(prefix, suffix);
+        IMetadataField otherField = field.copy(prefix, suffix, copyField);
         otherField.setEadEntry(other);
         return otherField;
     }

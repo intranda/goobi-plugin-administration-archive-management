@@ -52,6 +52,9 @@
                                                     class="h6 pt-2">#{msgs.plugin_administration_archive_area_identity}</th>
                                                 <th
                                                     scope="col"
+                                                    class="pt-2">#{msgs.plugin_administration_archive_selection}</th>
+                                                <th
+                                                    scope="col"
                                                     class="pt-2">#{msgs.plugin_administration_archive_prefix}</th>
                                                 <th
                                                     scope="col"
@@ -64,6 +67,11 @@
                                                     <th scope="row">
                                                         <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
                                                     </th>
+                                                    <td>
+                                                        <h:selectBooleanCheckbox
+                                                            styleClass="form-check-input"
+                                                            value="#{entry.selected}" />
+                                                    </td>
                                                     <td>
                                                         <h:inputText
                                                             styleClass="form-control"
@@ -81,6 +89,7 @@
                                             rendered="#{AdministrationForm.administrationPlugin.duplicationConfiguration.contextArea.size() gt 0}">
                                             <tr>
                                                 <th class="h6 pt-2">#{msgs.plugin_administration_archive_area_context}</th>
+                                                <th class="pt-2">#{msgs.plugin_administration_archive_selection}</th>
                                                 <th class="pt-2">#{msgs.plugin_administration_archive_prefix}</th>
                                                 <th class="pt-2">#{msgs.plugin_administration_archive_suffix}</th>
                                             </tr>
@@ -91,6 +100,11 @@
                                                     <th scope="row">
                                                         <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
                                                     </th>
+                                                    <td>
+                                                        <h:selectBooleanCheckbox
+                                                            styleClass="form-check-input"
+                                                            value="#{entry.selected}" />
+                                                    </td>
                                                     <td>
                                                         <h:inputText
                                                             styleClass="form-control"
@@ -108,6 +122,7 @@
                                             rendered="#{AdministrationForm.administrationPlugin.duplicationConfiguration.contentArea.size() gt 0}">
                                             <tr>
                                                 <th class="h6 pt-2">#{msgs.plugin_administration_archive_area_content}</th>
+                                                <th class="pt-2">#{msgs.plugin_administration_archive_selection}</th>
                                                 <th class="pt-2">#{msgs.plugin_administration_archive_prefix}</th>
                                                 <th class="pt-2">#{msgs.plugin_administration_archive_suffix}</th>
                                             </tr>
@@ -118,6 +133,11 @@
                                                     <th scope="row">
                                                         <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
                                                     </th>
+                                                    <td>
+                                                        <h:selectBooleanCheckbox
+                                                            styleClass="form-check-input"
+                                                            value="#{entry.selected}" />
+                                                    </td>
                                                     <td>
                                                         <h:inputText
                                                             styleClass="form-control"
@@ -135,6 +155,7 @@
                                             rendered="#{AdministrationForm.administrationPlugin.duplicationConfiguration.accessArea.size() gt 0}">
                                             <tr>
                                                 <th class="h6 pt-2">#{msgs.plugin_administration_archive_area_access}</th>
+                                                <th class="pt-2">#{msgs.plugin_administration_archive_selection}</th>
                                                 <th class="pt-2">#{msgs.plugin_administration_archive_prefix}</th>
                                                 <th class="pt-2">#{msgs.plugin_administration_archive_suffix}</th>
                                             </tr>
@@ -145,6 +166,11 @@
                                                     <th scope="row">
                                                         <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
                                                     </th>
+                                                    <td>
+                                                        <h:selectBooleanCheckbox
+                                                            styleClass="form-check-input"
+                                                            value="#{entry.selected}" />
+                                                    </td>
                                                     <td>
                                                         <h:inputText
                                                             styleClass="form-control"
@@ -162,6 +188,7 @@
                                             rendered="#{AdministrationForm.administrationPlugin.duplicationConfiguration.alliedMaterialsArea.size() gt 0}">
                                             <tr>
                                                 <th class="h6 pt-2">#{msgs.plugin_administration_archive_area_materials}</th>
+                                                <th class="pt-2">#{msgs.plugin_administration_archive_selection}</th>
                                                 <th class="pt-2">#{msgs.plugin_administration_archive_prefix}</th>
                                                 <th class="pt-2">#{msgs.plugin_administration_archive_suffix}</th>
                                             </tr>
@@ -172,6 +199,11 @@
                                                     <th scope="row">
                                                         <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
                                                     </th>
+                                                    <td>
+                                                        <h:selectBooleanCheckbox
+                                                            styleClass="form-check-input"
+                                                            value="#{entry.selected}" />
+                                                    </td>
                                                     <td>
                                                         <h:inputText
                                                             styleClass="form-control"
@@ -189,6 +221,7 @@
                                             rendered="#{AdministrationForm.administrationPlugin.duplicationConfiguration.notesArea.size() gt 0}">
                                             <tr>
                                                 <th class="h6 pt-2">#{msgs.plugin_administration_archive_area_notes}</th>
+                                                <th class="pt-2">#{msgs.plugin_administration_archive_selection}</th>
                                                 <th class="pt-2">#{msgs.plugin_administration_archive_prefix}</th>
                                                 <th class="pt-2">#{msgs.plugin_administration_archive_suffix}</th>
                                             </tr>
@@ -199,6 +232,11 @@
                                                     <th scope="row">
                                                         <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
                                                     </th>
+                                                    <td>
+                                                        <h:selectBooleanCheckbox
+                                                            styleClass="form-check-input"
+                                                            value="#{entry.selected}" />
+                                                    </td>
                                                     <td>
                                                         <h:inputText
                                                             styleClass="form-control"
@@ -216,6 +254,7 @@
                                             rendered="#{AdministrationForm.administrationPlugin.duplicationConfiguration.descriptionArea.size() gt 0}">
                                             <tr>
                                                 <th class="h6 pt-2">#{msgs.plugin_administration_archive_area_descriptionControl}</th>
+                                                <th class="pt-2">#{msgs.plugin_administration_archive_selection}</th>
                                                 <th class="pt-2">#{msgs.plugin_administration_archive_prefix}</th>
                                                 <th class="pt-2">#{msgs.plugin_administration_archive_suffix}</th>
                                             </tr>
@@ -226,6 +265,11 @@
                                                     <th scope="row">
                                                         <h:outputText value="#{msgs['plugin_administration_archive_'.concat(entry.fieldName)]}" />
                                                     </th>
+                                                    <td>
+                                                        <h:selectBooleanCheckbox
+                                                            styleClass="form-check-input"
+                                                            value="#{entry.selected}" />
+                                                    </td>
                                                     <td>
                                                         <h:inputText
                                                             styleClass="form-control"

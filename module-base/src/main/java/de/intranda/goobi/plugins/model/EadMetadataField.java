@@ -179,7 +179,7 @@ public class EadMetadataField implements IMetadataField {
     }
 
     @Override
-    public IMetadataField copy(String prefix, String suffix) {
+    public IMetadataField copy(String prefix, String suffix, boolean copyValue) {
         IMetadataField field = new EadMetadataField(name, level, xpath, xpathType, repeatable, visible, showField,
                 fieldType, metadataName, importMetadataInChild, validationType, regularExpression, searchable, viafSearchFields, viafDisplayFields,
                 group, vocabularyName);
@@ -190,12 +190,11 @@ public class EadMetadataField implements IMetadataField {
                 IMetadataGroup newGroup = new EadMetadataGroup(this);
                 field.getGroups().add(newGroup);
                 for (IMetadataField f : grp.getFields()) {
-                    IMetadataField newSubfield = f.copy(prefix, suffix);
+                    IMetadataField newSubfield = f.copy(prefix, suffix, copyValue);
                     newGroup.getFields().add(newSubfield);
                 }
             }
-
-        } else {
+        } else if (copyValue) {
             for (IFieldValue val : values) {
                 IFieldValue newValue = new FieldValue(field);
                 if (val.getValue() != null) {
@@ -207,6 +206,9 @@ public class EadMetadataField implements IMetadataField {
                 newValue.setAuthorityValue(val.getAuthorityValue());
                 field.addFieldValue(newValue);
             }
+        } else {
+            IFieldValue newValue = new FieldValue(field);
+            field.addFieldValue(newValue);
         }
         return field;
     }

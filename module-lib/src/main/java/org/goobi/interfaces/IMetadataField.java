@@ -82,7 +82,7 @@ public interface IMetadataField {
 
     public boolean isSearchable();
 
-    public IMetadataField copy(String prefix, String suffix);
+    public IMetadataField copy(String prefix, String suffix, boolean copyValues);
 
     public IFieldValue createFieldValue();
 

@@ -37,42 +37,44 @@
                 </h:commandLink>
             </div>
             <div class="form-input">
-                <h:selectOneMenu
-                    id="#{fieldid}"
-                    forceId="true"
-                    styleClass="form-select #{item.valid ? '' : 'invalid'}"
-                    value="#{fieldvalue}"
-                    required="false"
-                    readonly="false">
-                    <f:selectItem
-                        itemValue=""
-                        itemLabel="#{msgs.bitteAuswaehlen}" />
-                    <f:selectItems value="#{selectItems}" />
-                    <f:ajax
-                        event="change"
-                        execute="@this"
-                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
-                        onevent="(data) => {scrollToCurrentNode(data);}" />
-                </h:selectOneMenu>
-                <div class="pt-1">
-                    <x:dataList
-                        value="#{selectedItems}"
-                        var="selection">
-                        <h:commandLink action="#{field.removeSelectedValue(selection)}">
-                            <span class="badge badge-light-grey">
-                                <h:outputText value="#{msgs[selection]}" />
-                            </span>
-                            <f:ajax
-                                execute="@this"
-                                render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
-                                onevent="(data) => {scrollToCurrentNode(data);}" />
-                        </h:commandLink>
-                    </x:dataList>
+                <div class="w-100 d-flex flex-wrap">
+                    <h:selectOneMenu
+                        id="#{fieldid}"
+                        forceId="true"
+                        styleClass="form-select #{item.valid ? '' : 'invalid'} w-100"
+                        value="#{fieldvalue}"
+                        required="false"
+                        readonly="false">
+                        <f:selectItem
+                            itemValue=""
+                            itemLabel="#{msgs.bitteAuswaehlen}" />
+                        <f:selectItems value="#{selectItems}" />
+                        <f:ajax
+                            event="change"
+                            execute="@this"
+                            render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                            onevent="(data) => {scrollToCurrentNode(data);}" />
+                    </h:selectOneMenu>
+                    <div class="pt-1 w-100">
+                        <x:dataList
+                            value="#{selectedItems}"
+                            var="selection">
+                            <h:commandLink action="#{field.removeSelectedValue(selection)}">
+                                <span class="badge badge-light-grey">
+                                    <h:outputText value="#{msgs[selection]}" />
+                                </span>
+                                <f:ajax
+                                    execute="@this"
+                                    render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                                    onevent="(data) => {scrollToCurrentNode(data);}" />
+                            </h:commandLink>
+                        </x:dataList>
+                    </div>
+                    <h:outputText
+                        styleClass="help-inline color-F"
+                        rendered="#{!item.valid}"
+                        value="#{msgs[item.validationError]}" />
                 </div>
-                <h:outputText
-                    styleClass="help-inline color-F"
-                    rendered="#{!item.valid}"
-                    value="#{msgs[item.validationError]}" />
             </div>
             <h:commandLink
                 class="btn btn-blank font-light fs-500"

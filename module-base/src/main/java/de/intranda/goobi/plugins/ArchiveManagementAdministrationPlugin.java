@@ -287,6 +287,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private boolean readOnlyMode = true;
 
     @Getter
+    private boolean allowProcessCreation = false;
+
+    @Getter
     private boolean allowFileUpload = false;
 
     @Getter
@@ -347,11 +350,15 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 // role to edit vocabularies: Plugin_Administration_Archive_Management_Vocabulary
                 // role to access all: Plugin_Administration_Archive_Management_All_Inventories
                 // role to access the inventory 'XYZ':  Plugin_Administration_Archive_Management_Inventory_XYZ
-
+                // role for process creation: Plugin_Administration_Archive_Management_Process
                 // role to delete inventory: Plugin_Administration_Archive_Management_Delete
 
                 if ((user.isSuperAdmin() || user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Write"))) {
                     readOnlyMode = false;
+                }
+
+                if (user.isSuperAdmin() || (user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Process"))) {
+                    allowProcessCreation = true;
                 }
 
                 if (user.isSuperAdmin() || (user.getAllUserRoles().contains("Plugin_Administration_Archive_Management_Upload"))) {
@@ -516,7 +523,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     /*
      * get root node from ead document
      */
-    public void parseEadFile(Document document) {
+    public void parseEadFile(Document document, Integer recordGroupId) {
         Element eadElement = null;
         Element collection = document.getRootElement();
         if ("collection".equals(collection.getName())) {
@@ -524,8 +531,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         } else {
             eadElement = collection;
         }
-
-        rootElement = parseElement(0, 0, eadElement);
+        rootElement = parseElement(0, 0, eadElement, recordGroupId);
         INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
         rootElement.setNodeType(rootType);
         rootElement.setDisplayChildren(true);
@@ -533,11 +539,18 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         getDuplicationConfiguration();
     }
 
+    /*
+     * get root node from ead document
+     */
+    public void parseEadFile(Document document) {
+        parseEadFile(document, null);
+    }
+
     /**
      * read the metadata for the current xml node. - create an {@link EadEntry} - execute the configured xpaths on the current node - add the metadata
      * to one of the 7 levels - check if the node has sub nodes - call the method recursively for all sub nodes
      */
-    private IEadEntry parseElement(int order, int hierarchy, Element element) {
+    private IEadEntry parseElement(int order, int hierarchy, Element element, Integer recordGroupId) {
         IEadEntry entry = new EadEntry(order, hierarchy);
 
         for (IMetadataField emf : configuredFields) {
@@ -623,6 +636,30 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         if (entry.getNodeType() == null) {
             entry.setNodeType(configuredNodes.get(0));
         }
+        // generate new id, if id is null
+        if (entry.getId() == null) {
+            entry.setId("id_" + UUID.randomUUID());
+        }
+
+        // generate new id, if id is null
+        if (entry.getId() == null) {
+            entry.setId("id_" + UUID.randomUUID());
+        }
+        entry.calculateFingerprint();
+
+        if (recordGroupId != null) {
+            // save current node
+            ArchiveManagementManager.saveNode(recordGroupId, entry);
+            // clear saved metadata to reduce memory usage
+            entry.getIdentityStatementAreaList().clear();
+            entry.getContextAreaList().clear();
+            entry.getContentAndStructureAreaAreaList().clear();
+            entry.getAccessAndUseAreaList().clear();
+            entry.getAlliedMaterialsAreaList().clear();
+            entry.getNotesAreaList().clear();
+            entry.getDescriptionControlAreaList().clear();
+        }
+
         if (clist == null) {
             clist = element.getChildren("c", nameSpaceRead);
         }
@@ -631,18 +668,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             int subHierarchy = hierarchy + 1;
             for (Element c : clist) {
 
-                IEadEntry child = parseElement(subOrder, subHierarchy, c);
+                IEadEntry child = parseElement(subOrder, subHierarchy, c, recordGroupId);
                 entry.addSubEntry(child);
                 child.setParentNode(entry);
                 subOrder++;
             }
         }
 
-        // generate new id, if id is null
-        if (entry.getId() == null) {
-            entry.setId("id_" + UUID.randomUUID());
-        }
-        entry.calculateFingerprint();
         return entry;
     }
 
@@ -794,7 +826,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         configuredNodes = new ArrayList<>();
 
         HierarchicalConfiguration config = null;
-
         try {
             config = xmlConfig.configurationAt("//config[./archive = '" + databaseName + "']");
         } catch (IllegalArgumentException e) {
@@ -1113,9 +1144,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             Helper.setFehlerMeldung("plugin_administration_archive_missing_Data");
             return;
         }
-        readConfiguration();
 
         String uploadedFileName = processUploadedFileName(uploadFile);
+        databaseName = uploadedFileName;
+        readConfiguration();
+
         // open document, parse it
         try (InputStream input = uploadFile.getInputStream()) {
             Document document = XmlTools.readDocumentFromStream(input);
@@ -1131,27 +1164,23 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     String message = "plugin_administration_archive_notEadFile";
                     throw new FileNotFoundException(message);
                 }
-
-                parseEadFile(document);
-
+                // check, if uploaded file was used before
+                recordGroup = ArchiveManagementManager.getRecordGroupByTitle(uploadedFileName);
+                if (recordGroup == null) {
+                    recordGroup = new RecordGroup();
+                    recordGroup.setTitle(uploadedFileName);
+                } else {
+                    // replace existing records
+                    ArchiveManagementManager.deleteAllNodes(recordGroup.getId());
+                }
+                ArchiveManagementManager.saveRecordGroup(recordGroup);
+                parseEadFile(document, recordGroup.getId());
             }
         } catch (IOException e) {
             log.error(e);
         }
-        // check, if uploaded file was used before
-        recordGroup = ArchiveManagementManager.getRecordGroupByTitle(uploadedFileName);
-        if (recordGroup == null) {
-            recordGroup = new RecordGroup();
-            recordGroup.setTitle(uploadedFileName);
-        } else {
-            // replace existing records
-            ArchiveManagementManager.deleteAllNodes(recordGroup.getId());
-        }
 
         // save nodes
-        ArchiveManagementManager.saveRecordGroup(recordGroup);
-        List<IEadEntry> nodes = rootElement.getAllNodes();
-        ArchiveManagementManager.saveNodes(recordGroup.getId(), nodes);
         databaseName = recordGroup.getTitle();
         displayMode = "";
         // update existing process ids if the uploaded EAD file has an older version
@@ -1194,7 +1223,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         String uploadedFileName = Paths.get(file.getSubmittedFileName()).getFileName().toString(); // MSIE fix.
 
         // filename must end with xml
-        if (!uploadedFileName.endsWith(".xml")) {
+        if (!uploadedFileName.toLowerCase().endsWith(".xml")) {
             uploadedFileName = uploadedFileName + ".xml";
         }
         // remove whitespaces from filename
@@ -1205,6 +1234,27 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public void addMetadata(Element currentElement, IEadEntry node, Element xmlRootElement, boolean updateHistory) {
         boolean isMainElement = false;
+
+        Map<String, List<IValue>> metadata = ArchiveManagementManager.convertStringToMap(node.getData());
+        node.getIdentityStatementAreaList().clear();
+        node.getContextAreaList().clear();
+        node.getContentAndStructureAreaAreaList().clear();
+        node.getAccessAndUseAreaList().clear();
+        node.getAlliedMaterialsAreaList().clear();
+        node.getNotesAreaList().clear();
+        node.getDescriptionControlAreaList().clear();
+
+        for (IMetadataField emf : configuredFields) {
+            List<IValue> values = metadata.get(emf.getName());
+            if (emf.isGroup()) {
+                loadGroupMetadata(node, emf, values);
+
+            } else {
+                IMetadataField toAdd = addFieldToEntry(node, emf, values);
+                addFieldToNode(node, toAdd);
+            }
+        }
+
         if ("ead".equals(currentElement.getName())) {
             isMainElement = true;
             if (updateHistory) {
@@ -1233,6 +1283,15 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         for (IMetadataField emf : node.getDescriptionControlAreaList()) {
             createEadElement(currentElement, isMainElement, emf, xmlRootElement);
         }
+
+        node.getIdentityStatementAreaList().clear();
+        node.getContextAreaList().clear();
+        node.getContentAndStructureAreaAreaList().clear();
+        node.getAccessAndUseAreaList().clear();
+        node.getAlliedMaterialsAreaList().clear();
+        node.getNotesAreaList().clear();
+        node.getDescriptionControlAreaList().clear();
+
         Element dsc = null;
         if (isMainElement) {
             if (StringUtils.isNotBlank(node.getId())) {
@@ -2244,14 +2303,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         readConfiguration();
         // reload all nodes from db to get every change
         rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
-        loadMetadataForAllNodes();
 
         Document document = new Document();
-
         Element eadRoot = new Element("ead", nameSpaceWrite);
         document.setRootElement(eadRoot);
-        addMetadata(eadRoot, rootElement, eadRoot, true);
 
+        addMetadata(eadRoot, rootElement, eadRoot, true);
         return document;
     }
 
@@ -2509,7 +2566,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             selected = rootElement;
         }
         List<String> lstNodesWithoutIds = removeInvalidProcessIds();
+
         checkGoobiProcessesForArchiveRefs(lstNodesWithoutIds);
+
         setSelectedEntry(selected);
     }
 
@@ -2545,11 +2604,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         if (!currentEntry.isHasChildren() && goobiProcessTitle != null) {
             try {
                 String strProcessTitle = currentEntry.getGoobiProcessTitle();
-                Process process = ProcessManager.getProcessByTitle(strProcessTitle);
-                if (process == null) {
+                if (ProcessManager.countProcessTitle(strProcessTitle, null) == 0) {
                     currentEntry.setGoobiProcessTitle(null);
                     lstNodesWithoutIds.add(currentEntry.getId());
-
+                    ArchiveManagementManager.saveNode(recordGroup.getId(), currentEntry);
                     Helper.setMeldung("Removing " + strProcessTitle + " from " + currentEntry.getLabel());
                 }
             } catch (Exception e) {
@@ -2598,9 +2656,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 node.setGoobiProcessTitle(strProcessTitle);
                 lstNodesWithNewIds.add(node.getLabel());
                 Helper.setMeldung("Node '" + node.getLabel() + "' has been given Goobi process ID: " + strProcessTitle);
-            } else {
-
-                //perhaps remove the NodeId from the process?
+                ArchiveManagementManager.saveNode(recordGroup.getId(), node);
             }
         }
 
@@ -3139,9 +3195,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     public void eadExport() {
         List<String> exportFolders = exportConfiguration.get(databaseName);
         if (exportFolders == null || exportFolders.isEmpty()) {
-            Helper.setFehlerMeldung("plugin_administration_archive_eadExportNotConfigured");
-            databaseName = null;
-            return;
+            exportFolders = exportConfiguration.get("*");
+            if (exportFolders == null || exportFolders.isEmpty()) {
+                Helper.setFehlerMeldung("plugin_administration_archive_eadExportNotConfigured");
+                databaseName = null;
+                return;
+            }
         }
 
         Document document = createEadFile();
