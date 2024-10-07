@@ -531,7 +531,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         } else {
             eadElement = collection;
         }
-        rootElement = parseElement(0, 0, eadElement, recordGroupId);
+        rootElement = parseElement(0, 0, eadElement, recordGroupId, null);
         INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
         rootElement.setNodeType(rootType);
         rootElement.setDisplayChildren(true);
@@ -550,7 +550,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * read the metadata for the current xml node. - create an {@link EadEntry} - execute the configured xpaths on the current node - add the metadata
      * to one of the 7 levels - check if the node has sub nodes - call the method recursively for all sub nodes
      */
-    private IEadEntry parseElement(int order, int hierarchy, Element element, Integer recordGroupId) {
+    private IEadEntry parseElement(int order, int hierarchy, Element element, Integer recordGroupId, IEadEntry parent) {
         IEadEntry entry = new EadEntry(order, hierarchy);
 
         for (IMetadataField emf : configuredFields) {
@@ -647,6 +647,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
         entry.calculateFingerprint();
 
+        if (parent != null) {
+            entry.setParentNode(parent);
+        }
+
         if (recordGroupId != null) {
             // save current node
             ArchiveManagementManager.saveNode(recordGroupId, entry);
@@ -668,9 +672,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             int subHierarchy = hierarchy + 1;
             for (Element c : clist) {
 
-                IEadEntry child = parseElement(subOrder, subHierarchy, c, recordGroupId);
+                IEadEntry child = parseElement(subOrder, subHierarchy, c, recordGroupId, entry);
                 entry.addSubEntry(child);
-                child.setParentNode(entry);
                 subOrder++;
             }
         }
@@ -2607,7 +2610,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 if (ProcessManager.countProcessTitle(strProcessTitle, null) == 0) {
                     currentEntry.setGoobiProcessTitle(null);
                     lstNodesWithoutIds.add(currentEntry.getId());
-                    ArchiveManagementManager.saveNode(recordGroup.getId(), currentEntry);
+                    ArchiveManagementManager.updateProcessLink(currentEntry);
                     Helper.setMeldung("Removing " + strProcessTitle + " from " + currentEntry.getLabel());
                 }
             } catch (Exception e) {
@@ -2656,7 +2659,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 node.setGoobiProcessTitle(strProcessTitle);
                 lstNodesWithNewIds.add(node.getLabel());
                 Helper.setMeldung("Node '" + node.getLabel() + "' has been given Goobi process ID: " + strProcessTitle);
-                ArchiveManagementManager.saveNode(recordGroup.getId(), node);
+                ArchiveManagementManager.updateProcessLink(node);
             }
         }
 

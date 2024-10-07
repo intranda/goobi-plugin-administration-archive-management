@@ -130,6 +130,16 @@ public class ArchiveManagementManager implements Serializable {
         saveNodes(archiveId, list);
     }
 
+    public static void updateProcessLink(IEadEntry node) {
+        String sql = "update archive_record_node set processtitle = ? where id = ?";
+        try (Connection connection = MySQLHelper.getInstance().getConnection()) {
+            QueryRunner run = new QueryRunner();
+            run.update(connection, sql, node.getGoobiProcessTitle(), node.getDatabaseId());
+        } catch (SQLException e) {
+            log.error(e);
+        }
+    }
+
     public static synchronized void saveNodes(Integer archiveId, List<IEadEntry> nodes) {
         String insertSql =
                 "INSERT INTO archive_record_node (id, uuid, archive_record_group_id, hierarchy, order_number, node_type, sequence, processtitle, parent_id,label, data) VALUES ";
