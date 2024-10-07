@@ -1722,7 +1722,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         destinationEntry.addSubEntry(selectedEntry);
         destinationEntry.reOrderElements();
         selectedEntry.updateHierarchy();
-        ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
+        List<IEadEntry> nodesToUpdate = selectedEntry.getAllNodes();
+        ArchiveManagementManager.saveNodes(recordGroup.getId(), nodesToUpdate);
+
         setSelectedEntry(selectedEntry);
         displayMode = "";
         flatEntryList = null;
@@ -1759,6 +1761,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         ArchiveManagementManager.saveNode(recordGroup.getId(), previousNode);
         ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
         selectedEntry.getParentNode().sortElements();
+        selectedEntry.updateHierarchy();
+        List<IEadEntry> nodesToUpdate = selectedEntry.getAllNodes();
+        ArchiveManagementManager.saveNodes(recordGroup.getId(), nodesToUpdate);
 
         flatEntryList = null;
 
@@ -1794,7 +1799,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         ArchiveManagementManager.saveNode(recordGroup.getId(), followingNode);
         ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
         selectedEntry.getParentNode().sortElements();
-
+        selectedEntry.updateHierarchy();
+        List<IEadEntry> nodesToUpdate = selectedEntry.getAllNodes();
+        ArchiveManagementManager.saveNodes(recordGroup.getId(), nodesToUpdate);
         flatEntryList = null;
 
     }
@@ -1819,6 +1826,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         // move node to prev.
         destinationEntry = previousNode;
         destinationEntry.setDisplayChildren(true);
+        destinationEntry.updateHierarchy();
+        List<IEadEntry> nodesToUpdate = destinationEntry.getAllNodes();
+        ArchiveManagementManager.saveNodes(recordGroup.getId(), nodesToUpdate);
         moveNode();
     }
 
@@ -1847,7 +1857,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         if (selectedEntry.getOrderNumber().intValue() != oldParent.getOrderNumber().intValue() + 1) {
             Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), oldParent.getOrderNumber() + 1);
             selectedEntry.getParentNode().reOrderElements();
+            selectedEntry.getParentNode().updateHierarchy();
+            List<IEadEntry> nodesToUpdate = selectedEntry.getParentNode().getAllNodes();
+            ArchiveManagementManager.saveNodes(recordGroup.getId(), nodesToUpdate);
         }
+
     }
 
     public void searchAdvanced() {
