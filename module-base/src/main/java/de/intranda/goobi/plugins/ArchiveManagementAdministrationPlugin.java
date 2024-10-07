@@ -2056,8 +2056,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         // create process based on configured process template
         Process process = bhelp.createAndSaveNewProcess(processTemplate, processTitle, fileformat);
-
         // save current node
+        selectedEntry.setGoobiProcessTitle(processTitle);
         ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
 
         // start any open automatic tasks
