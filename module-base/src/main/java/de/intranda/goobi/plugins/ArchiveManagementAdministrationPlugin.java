@@ -1723,7 +1723,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         destinationEntry.reOrderElements();
         selectedEntry.updateHierarchy();
         List<IEadEntry> nodesToUpdate = selectedEntry.getAllNodes();
-        ArchiveManagementManager.saveNodes(recordGroup.getId(), nodesToUpdate);
+
+        ArchiveManagementManager.updateNodeHierarchy(recordGroup.getId(), nodesToUpdate);
 
         setSelectedEntry(selectedEntry);
         displayMode = "";
@@ -1758,12 +1759,16 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         previousNode.setOrderNumber(currentOrderNumber);
 
         // save nodes
-        ArchiveManagementManager.saveNode(recordGroup.getId(), previousNode);
-        ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
+        List<IEadEntry> nodes = new ArrayList<>();
+        nodes.add(previousNode);
+        nodes.add(selectedEntry);
+        ArchiveManagementManager.updateNodeHierarchy(recordGroup.getId(), nodes);
+
         selectedEntry.getParentNode().sortElements();
-        selectedEntry.updateHierarchy();
-        List<IEadEntry> nodesToUpdate = selectedEntry.getAllNodes();
-        ArchiveManagementManager.saveNodes(recordGroup.getId(), nodesToUpdate);
+        selectedEntry.getParentNode().updateHierarchy();
+
+        List<IEadEntry> nodesToUpdate = selectedEntry.getParentNode().getAllNodes();
+        ArchiveManagementManager.updateNodeHierarchy(recordGroup.getId(), nodesToUpdate);
 
         flatEntryList = null;
 
@@ -1796,12 +1801,16 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         followingNode.setOrderNumber(currentOrderNumber);
 
         // save nodes
-        ArchiveManagementManager.saveNode(recordGroup.getId(), followingNode);
-        ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
+        List<IEadEntry> nodes = new ArrayList<>();
+        nodes.add(followingNode);
+        nodes.add(selectedEntry);
+        ArchiveManagementManager.updateNodeHierarchy(recordGroup.getId(), nodes);
+
         selectedEntry.getParentNode().sortElements();
-        selectedEntry.updateHierarchy();
-        List<IEadEntry> nodesToUpdate = selectedEntry.getAllNodes();
-        ArchiveManagementManager.saveNodes(recordGroup.getId(), nodesToUpdate);
+        selectedEntry.getParentNode().updateHierarchy();
+
+        List<IEadEntry> nodesToUpdate = selectedEntry.getParentNode().getAllNodes();
+        ArchiveManagementManager.updateNodeHierarchy(recordGroup.getId(), nodesToUpdate);
         flatEntryList = null;
 
     }
@@ -1826,9 +1835,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         // move node to prev.
         destinationEntry = previousNode;
         destinationEntry.setDisplayChildren(true);
-        destinationEntry.updateHierarchy();
-        List<IEadEntry> nodesToUpdate = destinationEntry.getAllNodes();
-        ArchiveManagementManager.saveNodes(recordGroup.getId(), nodesToUpdate);
         moveNode();
     }
 
@@ -1859,7 +1865,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             selectedEntry.getParentNode().reOrderElements();
             selectedEntry.getParentNode().updateHierarchy();
             List<IEadEntry> nodesToUpdate = selectedEntry.getParentNode().getAllNodes();
-            ArchiveManagementManager.saveNodes(recordGroup.getId(), nodesToUpdate);
+            ArchiveManagementManager.updateNodeHierarchy(recordGroup.getId(), nodesToUpdate);
         }
 
     }
@@ -2114,10 +2120,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             ManipulationType manipulationType = null;
             // check for special types
             switch (comp.getType().toLowerCase()) {
-                case "camelcase":
-                case "camel_case":
-                case "camelcaselenghtlimited":
-                case "camel_case_lenght_limited":
+                case "camelcase", "camel_case", "camelcaselenghtlimited", "camel_case_lenght_limited":
                     if (lengthLimit > 0) {
                         manipulationType = ManipulationType.CAMEL_CASE_LENGTH_LIMITED;
                     } else {
@@ -2125,12 +2128,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     }
 
                     break;
-                case "afterlastseparator":
-                case "after_last_separator":
+                case "afterlastseparator", "after_last_separator":
                     manipulationType = ManipulationType.AFTER_LAST_SEPARATOR;
                     break;
-                case "beforefirstseparator":
-                case "before_first_separator":
+                case "beforefirstseparator", "before_first_separator":
                     manipulationType = ManipulationType.BEFORE_FIRST_SEPARATOR;
                     break;
                 case "normal":
