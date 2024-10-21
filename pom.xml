@@ -3,11 +3,12 @@
   <parent>
     <groupId>io.goobi.workflow</groupId>
     <artifactId>workflow-base</artifactId>
-    <version>24.10-SNAPSHOT</version>
+    <version>24.09.5</version>
     <relativePath />
   </parent>
   <groupId>io.goobi.workflow.plugin</groupId>
   <artifactId>plugin-administration-archive-management</artifactId>
+  <version>24.09.1</version>
   <packaging>pom</packaging>
   <modules>
     <module>module-base</module>
@@ -26,7 +27,7 @@
     <dependency>
       <groupId>io.goobi.workflow</groupId>
       <artifactId>workflow-core</artifactId>
-      <version>${project.version}</version>
+      <version>24.09.5</version>
       <classifier>classes</classifier>
     </dependency>
   </dependencies>
