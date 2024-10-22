@@ -818,9 +818,8 @@
                                                                 <h:panelGroup
                                                                     layout="block"
                                                                     rendered="#{AdministrationForm.administrationPlugin.showProjectSelection}"
-                                                                    styleClass="d-inline"
-                                                                    data-bs-title="#{msgs.plugin_administration_archive_process_create_process}"
-                                                                    data-bs-toggle="tooltip">
+                                                                    styleClass="input-group"
+                                                                    >
 
                                                                     <!-- select process template -->
                                                                     <h:selectOneMenu
@@ -852,12 +851,15 @@
                                                                             render="@this" />
                                                                     </h:selectOneMenu>
 
-
                                                                     <!-- create process -->
                                                                     <button
                                                                         class="btn btn-primary"
-                                                                        jsf:action="#{AdministrationForm.administrationPlugin.createProcesses}">
-                                                                        <span class="fa fa-file-o"></span>
+                                                                        jsf:action="#{AdministrationForm.administrationPlugin.createProcesses}"
+                                                                        data-bs-title="#{msgs.plugin_administration_archive_process_create_process}"
+                                                                        data-bs-toggle="tooltip">
+                                                                        <span
+                                                                            aria-hidden="true"
+                                                                            class="fa fa-file-o"></span>
                                                                     </button>
 
 
