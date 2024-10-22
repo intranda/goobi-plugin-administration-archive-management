@@ -36,6 +36,7 @@ import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang3.StringUtils;
 import org.goobi.beans.Batch;
 import org.goobi.beans.Process;
+import org.goobi.beans.Project;
 import org.goobi.beans.Step;
 import org.goobi.beans.User;
 import org.goobi.interfaces.IArchiveManagementAdministrationPlugin;
@@ -46,6 +47,7 @@ import org.goobi.interfaces.IMetadataField;
 import org.goobi.interfaces.IMetadataGroup;
 import org.goobi.interfaces.INodeType;
 import org.goobi.interfaces.IParameter;
+import org.goobi.interfaces.IProcessTemplate;
 import org.goobi.interfaces.IRecordGroup;
 import org.goobi.interfaces.IValue;
 import org.goobi.model.ExtendendValue;
@@ -69,6 +71,7 @@ import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.EadMetadataField;
 import de.intranda.goobi.plugins.model.FieldValue;
 import de.intranda.goobi.plugins.model.NodeType;
+import de.intranda.goobi.plugins.model.ProcessTemplate;
 import de.intranda.goobi.plugins.model.RecordGroup;
 import de.intranda.goobi.plugins.model.TitleComponent;
 import de.intranda.goobi.plugins.persistence.ArchiveManagementManager;
@@ -85,6 +88,7 @@ import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.persistence.managers.MetadataManager;
 import de.sub.goobi.persistence.managers.ProcessManager;
+import de.sub.goobi.persistence.managers.ProjectManager;
 import de.sub.goobi.validator.ExtendedDateTimeFormatLexer;
 import de.sub.goobi.validator.ExtendedDateTimeFormatParser;
 import io.goobi.vocabulary.exchange.FieldDefinition;
@@ -220,10 +224,19 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Setter
     private transient Part uploadFile;
 
-    private List<StringPair> processTemplates = new ArrayList<>();
+    private List<IProcessTemplate> processTemplates = new ArrayList<>();
     @Getter
     @Setter
     private String selectedTemplate;
+
+    @Getter
+    @Setter
+    private String selectedProject;
+
+    @Getter
+    private boolean showProjectSelection;
+
+    private List<StringPair> projects = new ArrayList<>();
 
     // maximum length of each component that is to be used to generate the process title
     private int lengthLimit;
@@ -843,6 +856,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         nameSpaceRead = Namespace.getNamespace("ead", config.getString("/eadNamespaceRead", "urn:isbn:1-931666-22-9"));
         nameSpaceWrite = Namespace.getNamespace("ead", config.getString("/eadNamespaceWrite", "urn:isbn:1-931666-22-9"));
+
+        showProjectSelection = config.getBoolean("/showProjectSelection", false);
 
         showNodeIdInTree = config.getBoolean("/treeView/showNodeId", false);
 
@@ -1918,11 +1933,34 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         flatEntryList = null;
     }
 
-    public List<StringPair> getProcessTemplates() {
+    public List<IProcessTemplate> getProcessTemplates() {
         if (processTemplates.isEmpty()) {
             StringBuilder sql = new StringBuilder();
-            sql.append("select ProzesseID, Titel from prozesse where IstTemplate = true and ProjekteID in ");
-            sql.append("(select projekteId from projektbenutzer where BenutzerID=");
+            sql.append("select ProzesseID, Titel, ProjekteID from prozesse where IstTemplate = true ");
+            if (!showProjectSelection) {
+                sql.append("and ProjekteID in (select projekteId from projektbenutzer where BenutzerID=");
+                sql.append(Helper.getCurrentUser().getId());
+                sql.append(") ");
+            }
+            sql.append("order by titel;");
+
+            @SuppressWarnings("unchecked")
+            List<Object> rawData = ProcessManager.runSQL(sql.toString());
+            for (int i = 0; i < rawData.size(); i++) {
+                Object[] rowData = (Object[]) rawData.get(i);
+                String processId = (String) rowData[0];
+                String processTitle = (String) rowData[1];
+                String projectId = (String) rowData[2];
+                processTemplates.add(new ProcessTemplate(processId, processTitle, projectId));
+            }
+        }
+        return processTemplates;
+    }
+
+    public List<StringPair> getProjectNames() {
+        if (projects.isEmpty()) {
+            StringBuilder sql = new StringBuilder();
+            sql.append("select ProjekteID, Titel from projekte where ProjekteID in (select projekteId from projektbenutzer where BenutzerID=");
             sql.append(Helper.getCurrentUser().getId());
             sql.append(") order by titel;");
             @SuppressWarnings("unchecked")
@@ -1931,10 +1969,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 Object[] rowData = (Object[]) rawData.get(i);
                 String processId = (String) rowData[0];
                 String processTitle = (String) rowData[1];
-                processTemplates.add(new StringPair(processId, processTitle));
+                projects.add(new StringPair(processId, processTitle));
             }
         }
-        return processTemplates;
+        return projects;
     }
 
     public Process createProcess() {
@@ -2073,9 +2111,21 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         } catch (DocStructHasNoTypeException | UGHException e) {
             log.error(e);
         }
+        // set project based on selection
+        if (showProjectSelection && StringUtils.isNotBlank(selectedProject)) {
+            try {
+                Integer projectId = Integer.parseInt(selectedProject);
+
+                Project p = ProjectManager.getProjectById(projectId);
+                processTemplate.setProjekt(p);
+            } catch (DAOException e) {
+                log.error(e);
+            }
+        }
 
         // create process based on configured process template
         Process process = bhelp.createAndSaveNewProcess(processTemplate, processTitle, fileformat);
+
         // save current node
         selectedEntry.setGoobiProcessTitle(processTitle);
         ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);

@@ -310,6 +310,8 @@
             <showNodeId>false</showNodeId>
         </treeView>
 
+
+        <showProjectSelection>true</showProjectSelection>
         <!-- 
         possible namespaces: 
             ead2: urn:isbn:1-931666-22-9
