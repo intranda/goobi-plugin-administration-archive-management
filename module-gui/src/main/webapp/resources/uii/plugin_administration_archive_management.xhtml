@@ -766,22 +766,29 @@
                                                     <div
                                                         class="form-label"
                                                         tabindex="-1">
-                                                        <h:outputText value="#{msgs.plugin_administration_archive_process}" />
+                                                        <h:outputText
+                                                            value="#{msgs.plugin_administration_archive_process}"
+                                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null || !AdministrationForm.administrationPlugin.showProjectSelection}" />
+
+                                                        <h:outputText
+                                                            value="#{msgs.plugin_administration_archive_process_create_process}"
+                                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null and AdministrationForm.administrationPlugin.showProjectSelection}" />
+
                                                     </div>
                                                     <div class="form-input">
                                                         <div class="w-100 d-flex flex-nowrap justify-content-between">
                                                             <!-- no process exists, so allow creation of a process here -->
                                                             <ui:fragment
                                                                 rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
-                                                                <span class="my-auto">
-                                                                    <h:outputText value="#{msgs.plugin_administration_archive_process_no_process}" />
-                                                                </span>
                                                                 <h:panelGroup
                                                                     layout="block"
                                                                     rendered="#{!AdministrationForm.administrationPlugin.showProjectSelection}"
                                                                     styleClass="d-inline"
                                                                     data-bs-title="#{msgs.plugin_administration_archive_process_create_process}"
                                                                     data-bs-toggle="tooltip">
+                                                                    <span class="my-auto">
+                                                                        <h:outputText value="#{msgs.plugin_administration_archive_process_no_process}" />
+                                                                    </span>
                                                                     <button
                                                                         aria-expanded="false"
                                                                         aria-haspopup="true"
@@ -818,8 +825,7 @@
                                                                 <h:panelGroup
                                                                     layout="block"
                                                                     rendered="#{AdministrationForm.administrationPlugin.showProjectSelection}"
-                                                                    styleClass="input-group my-auto"
-                                                                    >
+                                                                    styleClass="input-group my-auto">
 
                                                                     <!-- select process template -->
                                                                     <h:selectOneMenu
