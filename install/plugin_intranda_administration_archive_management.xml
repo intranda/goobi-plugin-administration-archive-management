@@ -310,8 +310,8 @@
             <showNodeId>false</showNodeId>
         </treeView>
 
-
-        <showProjectSelection>true</showProjectSelection>
+        <!-- enables template and project name selection in process creation area -->
+        <showProjectSelection>false</showProjectSelection>
         <!-- 
         possible namespaces: 
             ead2: urn:isbn:1-931666-22-9
