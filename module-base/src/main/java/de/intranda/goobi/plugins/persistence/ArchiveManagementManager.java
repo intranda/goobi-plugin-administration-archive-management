@@ -571,4 +571,20 @@ public class ArchiveManagementManager implements Serializable {
         }
 
     }
+
+    public static String getMetadataValue(String metadataName, Integer recordGroupId, String nodeId) {
+        StringBuilder sql = new StringBuilder();
+
+        sql.append("select ExtractValue(data, '/xml/");
+        sql.append(metadataName);
+        sql.append("') from archive_record_node where archive_record_group_id= ? and uuid = ? ");
+        try (Connection connection = MySQLHelper.getInstance().getConnection()) {
+            QueryRunner run = new QueryRunner();
+            return run.query(connection, sql.toString(), MySQLHelper.resultSetToStringHandler, recordGroupId, nodeId);
+
+        } catch (SQLException e) {
+            log.error(e);
+        }
+        return null;
+    }
 }

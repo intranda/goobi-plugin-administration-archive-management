@@ -2669,12 +2669,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         String goobiProcessTitle = currentEntry.getGoobiProcessTitle();
 
+        // check if process exists, otherwise remove link
         if (!currentEntry.isHasChildren() && goobiProcessTitle != null) {
             try {
                 String strProcessTitle = currentEntry.getGoobiProcessTitle();
                 if (ProcessManager.countProcessTitle(strProcessTitle, null) == 0) {
                     currentEntry.setGoobiProcessTitle(null);
-                    lstNodesWithoutIds.add(currentEntry.getId());
                     ArchiveManagementManager.updateProcessLink(currentEntry);
                     Helper.setMeldung("Removing " + strProcessTitle + " from " + currentEntry.getLabel());
                 }
@@ -2682,13 +2682,65 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 Helper.setFehlerMeldung(e.getMessage());
                 log.error(e);
             }
-        } else if (currentEntry.isHasChildren()) {
+        }
+
+        if (currentEntry.isHasChildren()) {
 
             for (IEadEntry childEntry : currentEntry.getSubEntryList()) {
                 lstNodesWithoutIds.addAll(removeInvalidProcessIdsForChildren(childEntry));
             }
         } else if (goobiProcessTitle == null) {
-            lstNodesWithoutIds.add(currentEntry.getId());
+            // default option, use id to match nodes
+            if ("id".equalsIgnoreCase(identifierNodeName)) {
+                lstNodesWithoutIds.add(currentEntry.getId());
+            } else {
+                // otherwise find configured metadata
+                String value = ArchiveManagementManager.getMetadataValue(identifierNodeName, recordGroup.getId(), currentEntry.getId());
+                if (StringUtils.isNotBlank(value)) {
+                    lstNodesWithoutIds.add(value);
+
+                }
+                //                IMetadataField metadataField = null;
+                //                for (IMetadataField field : currentEntry.getIdentityStatementAreaList()) {
+                //                    if (field.getName().equals(identifierNodeName)) {
+                //                        metadataField = field;
+                //                    }
+                //                }
+                //
+                //                for (IMetadataField field : currentEntry.getContextAreaList()) {
+                //                    if (field.getName().equals(identifierNodeName)) {
+                //                        metadataField = field;
+                //                    }
+                //                }
+                //                for (IMetadataField field : currentEntry.getContentAndStructureAreaAreaList()) {
+                //                    if (field.getName().equals(identifierNodeName)) {
+                //                        metadataField = field;
+                //                    }
+                //                }
+                //                for (IMetadataField field : currentEntry.getAccessAndUseAreaList()) {
+                //                    if (field.getName().equals(identifierNodeName)) {
+                //                        metadataField = field;
+                //                    }
+                //                }
+                //                for (IMetadataField field : currentEntry.getAlliedMaterialsAreaList()) {
+                //                    if (field.getName().equals(identifierNodeName)) {
+                //                        metadataField = field;
+                //                    }
+                //                }
+                //                for (IMetadataField field : currentEntry.getNotesAreaList()) {
+                //                    if (field.getName().equals(identifierNodeName)) {
+                //                        metadataField = field;
+                //                    }
+                //                }
+                //                for (IMetadataField field : currentEntry.getDescriptionControlAreaList()) {
+                //                    if (field.getName().equals(identifierNodeName)) {
+                //                        metadataField = field;
+                //                    }
+                //                }
+                //                if (metadataField != null) {
+                //                    lstNodesWithoutIds.add(metadataField.getValues().get(0).getValue());
+                //                }
+            }
         }
 
         return lstNodesWithoutIds;
