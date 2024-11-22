@@ -36,6 +36,7 @@ import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang3.StringUtils;
 import org.goobi.beans.Batch;
 import org.goobi.beans.Process;
+import org.goobi.beans.Project;
 import org.goobi.beans.Step;
 import org.goobi.beans.User;
 import org.goobi.interfaces.IArchiveManagementAdministrationPlugin;
@@ -46,6 +47,7 @@ import org.goobi.interfaces.IMetadataField;
 import org.goobi.interfaces.IMetadataGroup;
 import org.goobi.interfaces.INodeType;
 import org.goobi.interfaces.IParameter;
+import org.goobi.interfaces.IProcessTemplate;
 import org.goobi.interfaces.IRecordGroup;
 import org.goobi.interfaces.IValue;
 import org.goobi.model.ExtendendValue;
@@ -69,6 +71,7 @@ import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.EadMetadataField;
 import de.intranda.goobi.plugins.model.FieldValue;
 import de.intranda.goobi.plugins.model.NodeType;
+import de.intranda.goobi.plugins.model.ProcessTemplate;
 import de.intranda.goobi.plugins.model.RecordGroup;
 import de.intranda.goobi.plugins.model.TitleComponent;
 import de.intranda.goobi.plugins.persistence.ArchiveManagementManager;
@@ -85,6 +88,7 @@ import de.sub.goobi.helper.enums.StepStatus;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.persistence.managers.MetadataManager;
 import de.sub.goobi.persistence.managers.ProcessManager;
+import de.sub.goobi.persistence.managers.ProjectManager;
 import de.sub.goobi.validator.ExtendedDateTimeFormatLexer;
 import de.sub.goobi.validator.ExtendedDateTimeFormatParser;
 import io.goobi.vocabulary.exchange.FieldDefinition;
@@ -220,10 +224,19 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Setter
     private transient Part uploadFile;
 
-    private List<StringPair> processTemplates = new ArrayList<>();
+    private List<IProcessTemplate> processTemplates = new ArrayList<>();
     @Getter
     @Setter
     private String selectedTemplate;
+
+    @Getter
+    @Setter
+    private String selectedProject;
+
+    @Getter
+    private boolean showProjectSelection;
+
+    private List<StringPair> projects = new ArrayList<>();
 
     // maximum length of each component that is to be used to generate the process title
     private int lengthLimit;
@@ -531,7 +544,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         } else {
             eadElement = collection;
         }
-        rootElement = parseElement(0, 0, eadElement, recordGroupId);
+        rootElement = parseElement(0, 0, eadElement, recordGroupId, null);
         INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
         rootElement.setNodeType(rootType);
         rootElement.setDisplayChildren(true);
@@ -550,7 +563,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * read the metadata for the current xml node. - create an {@link EadEntry} - execute the configured xpaths on the current node - add the metadata
      * to one of the 7 levels - check if the node has sub nodes - call the method recursively for all sub nodes
      */
-    private IEadEntry parseElement(int order, int hierarchy, Element element, Integer recordGroupId) {
+    private IEadEntry parseElement(int order, int hierarchy, Element element, Integer recordGroupId, IEadEntry parent) {
         IEadEntry entry = new EadEntry(order, hierarchy);
 
         for (IMetadataField emf : configuredFields) {
@@ -647,6 +660,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
         entry.calculateFingerprint();
 
+        if (parent != null) {
+            entry.setParentNode(parent);
+        }
+
         if (recordGroupId != null) {
             // save current node
             ArchiveManagementManager.saveNode(recordGroupId, entry);
@@ -668,9 +685,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             int subHierarchy = hierarchy + 1;
             for (Element c : clist) {
 
-                IEadEntry child = parseElement(subOrder, subHierarchy, c, recordGroupId);
+                IEadEntry child = parseElement(subOrder, subHierarchy, c, recordGroupId, entry);
                 entry.addSubEntry(child);
-                child.setParentNode(entry);
                 subOrder++;
             }
         }
@@ -840,6 +856,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         nameSpaceRead = Namespace.getNamespace("ead", config.getString("/eadNamespaceRead", "urn:isbn:1-931666-22-9"));
         nameSpaceWrite = Namespace.getNamespace("ead", config.getString("/eadNamespaceWrite", "urn:isbn:1-931666-22-9"));
+
+        showProjectSelection = config.getBoolean("/showProjectSelection", false);
 
         showNodeIdInTree = config.getBoolean("/treeView/showNodeId", false);
 
@@ -1719,7 +1737,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         destinationEntry.addSubEntry(selectedEntry);
         destinationEntry.reOrderElements();
         selectedEntry.updateHierarchy();
-        ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
+        List<IEadEntry> nodesToUpdate = selectedEntry.getAllNodes();
+
+        ArchiveManagementManager.updateNodeHierarchy(recordGroup.getId(), nodesToUpdate);
+
         setSelectedEntry(selectedEntry);
         displayMode = "";
         flatEntryList = null;
@@ -1753,9 +1774,16 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         previousNode.setOrderNumber(currentOrderNumber);
 
         // save nodes
-        ArchiveManagementManager.saveNode(recordGroup.getId(), previousNode);
-        ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
+        List<IEadEntry> nodes = new ArrayList<>();
+        nodes.add(previousNode);
+        nodes.add(selectedEntry);
+        ArchiveManagementManager.updateNodeHierarchy(recordGroup.getId(), nodes);
+
         selectedEntry.getParentNode().sortElements();
+        selectedEntry.getParentNode().updateHierarchy();
+
+        List<IEadEntry> nodesToUpdate = selectedEntry.getParentNode().getAllNodes();
+        ArchiveManagementManager.updateNodeHierarchy(recordGroup.getId(), nodesToUpdate);
 
         flatEntryList = null;
 
@@ -1788,10 +1816,16 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         followingNode.setOrderNumber(currentOrderNumber);
 
         // save nodes
-        ArchiveManagementManager.saveNode(recordGroup.getId(), followingNode);
-        ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
-        selectedEntry.getParentNode().sortElements();
+        List<IEadEntry> nodes = new ArrayList<>();
+        nodes.add(followingNode);
+        nodes.add(selectedEntry);
+        ArchiveManagementManager.updateNodeHierarchy(recordGroup.getId(), nodes);
 
+        selectedEntry.getParentNode().sortElements();
+        selectedEntry.getParentNode().updateHierarchy();
+
+        List<IEadEntry> nodesToUpdate = selectedEntry.getParentNode().getAllNodes();
+        ArchiveManagementManager.updateNodeHierarchy(recordGroup.getId(), nodesToUpdate);
         flatEntryList = null;
 
     }
@@ -1844,7 +1878,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         if (selectedEntry.getOrderNumber().intValue() != oldParent.getOrderNumber().intValue() + 1) {
             Collections.swap(selectedEntry.getParentNode().getSubEntryList(), selectedEntry.getOrderNumber(), oldParent.getOrderNumber() + 1);
             selectedEntry.getParentNode().reOrderElements();
+            selectedEntry.getParentNode().updateHierarchy();
+            List<IEadEntry> nodesToUpdate = selectedEntry.getParentNode().getAllNodes();
+            ArchiveManagementManager.updateNodeHierarchy(recordGroup.getId(), nodesToUpdate);
         }
+
     }
 
     public void searchAdvanced() {
@@ -1895,11 +1933,34 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         flatEntryList = null;
     }
 
-    public List<StringPair> getProcessTemplates() {
+    public List<IProcessTemplate> getProcessTemplates() {
         if (processTemplates.isEmpty()) {
             StringBuilder sql = new StringBuilder();
-            sql.append("select ProzesseID, Titel from prozesse where IstTemplate = true and ProjekteID in ");
-            sql.append("(select projekteId from projektbenutzer where BenutzerID=");
+            sql.append("select ProzesseID, Titel, ProjekteID from prozesse where IstTemplate = true ");
+            if (!showProjectSelection) {
+                sql.append("and ProjekteID in (select projekteId from projektbenutzer where BenutzerID=");
+                sql.append(Helper.getCurrentUser().getId());
+                sql.append(") ");
+            }
+            sql.append("order by titel;");
+
+            @SuppressWarnings("unchecked")
+            List<Object> rawData = ProcessManager.runSQL(sql.toString());
+            for (int i = 0; i < rawData.size(); i++) {
+                Object[] rowData = (Object[]) rawData.get(i);
+                String processId = (String) rowData[0];
+                String processTitle = (String) rowData[1];
+                String projectId = (String) rowData[2];
+                processTemplates.add(new ProcessTemplate(processId, processTitle, projectId));
+            }
+        }
+        return processTemplates;
+    }
+
+    public List<StringPair> getProjectNames() {
+        if (projects.isEmpty()) {
+            StringBuilder sql = new StringBuilder();
+            sql.append("select ProjekteID, Titel from projekte where ProjekteID in (select projekteId from projektbenutzer where BenutzerID=");
             sql.append(Helper.getCurrentUser().getId());
             sql.append(") order by titel;");
             @SuppressWarnings("unchecked")
@@ -1908,10 +1969,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 Object[] rowData = (Object[]) rawData.get(i);
                 String processId = (String) rowData[0];
                 String processTitle = (String) rowData[1];
-                processTemplates.add(new StringPair(processId, processTitle));
+                projects.add(new StringPair(processId, processTitle));
             }
         }
-        return processTemplates;
+        return projects;
     }
 
     public Process createProcess() {
@@ -2050,11 +2111,23 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         } catch (DocStructHasNoTypeException | UGHException e) {
             log.error(e);
         }
+        // set project based on selection
+        if (showProjectSelection && StringUtils.isNotBlank(selectedProject)) {
+            try {
+                Integer projectId = Integer.parseInt(selectedProject);
+
+                Project p = ProjectManager.getProjectById(projectId);
+                processTemplate.setProjekt(p);
+            } catch (DAOException e) {
+                log.error(e);
+            }
+        }
 
         // create process based on configured process template
         Process process = bhelp.createAndSaveNewProcess(processTemplate, processTitle, fileformat);
 
         // save current node
+        selectedEntry.setGoobiProcessTitle(processTitle);
         ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
 
         // start any open automatic tasks
@@ -2097,10 +2170,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             ManipulationType manipulationType = null;
             // check for special types
             switch (comp.getType().toLowerCase()) {
-                case "camelcase":
-                case "camel_case":
-                case "camelcaselenghtlimited":
-                case "camel_case_lenght_limited":
+                case "camelcase", "camel_case", "camelcaselenghtlimited", "camel_case_lenght_limited":
                     if (lengthLimit > 0) {
                         manipulationType = ManipulationType.CAMEL_CASE_LENGTH_LIMITED;
                     } else {
@@ -2108,12 +2178,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     }
 
                     break;
-                case "afterlastseparator":
-                case "after_last_separator":
+                case "afterlastseparator", "after_last_separator":
                     manipulationType = ManipulationType.AFTER_LAST_SEPARATOR;
                     break;
-                case "beforefirstseparator":
-                case "before_first_separator":
+                case "beforefirstseparator", "before_first_separator":
                     manipulationType = ManipulationType.BEFORE_FIRST_SEPARATOR;
                     break;
                 case "normal":
@@ -2601,26 +2669,78 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         String goobiProcessTitle = currentEntry.getGoobiProcessTitle();
 
+        // check if process exists, otherwise remove link
         if (!currentEntry.isHasChildren() && goobiProcessTitle != null) {
             try {
                 String strProcessTitle = currentEntry.getGoobiProcessTitle();
                 if (ProcessManager.countProcessTitle(strProcessTitle, null) == 0) {
                     currentEntry.setGoobiProcessTitle(null);
-                    lstNodesWithoutIds.add(currentEntry.getId());
-                    ArchiveManagementManager.saveNode(recordGroup.getId(), currentEntry);
+                    ArchiveManagementManager.updateProcessLink(currentEntry);
                     Helper.setMeldung("Removing " + strProcessTitle + " from " + currentEntry.getLabel());
                 }
             } catch (Exception e) {
                 Helper.setFehlerMeldung(e.getMessage());
                 log.error(e);
             }
-        } else if (currentEntry.isHasChildren()) {
+        }
+
+        if (currentEntry.isHasChildren()) {
 
             for (IEadEntry childEntry : currentEntry.getSubEntryList()) {
                 lstNodesWithoutIds.addAll(removeInvalidProcessIdsForChildren(childEntry));
             }
         } else if (goobiProcessTitle == null) {
-            lstNodesWithoutIds.add(currentEntry.getId());
+            // default option, use id to match nodes
+            if ("id".equalsIgnoreCase(identifierNodeName)) {
+                lstNodesWithoutIds.add(currentEntry.getId());
+            } else {
+                // otherwise find configured metadata
+                String value = ArchiveManagementManager.getMetadataValue(identifierNodeName, recordGroup.getId(), currentEntry.getId());
+                if (StringUtils.isNotBlank(value)) {
+                    lstNodesWithoutIds.add(value);
+
+                }
+                //                IMetadataField metadataField = null;
+                //                for (IMetadataField field : currentEntry.getIdentityStatementAreaList()) {
+                //                    if (field.getName().equals(identifierNodeName)) {
+                //                        metadataField = field;
+                //                    }
+                //                }
+                //
+                //                for (IMetadataField field : currentEntry.getContextAreaList()) {
+                //                    if (field.getName().equals(identifierNodeName)) {
+                //                        metadataField = field;
+                //                    }
+                //                }
+                //                for (IMetadataField field : currentEntry.getContentAndStructureAreaAreaList()) {
+                //                    if (field.getName().equals(identifierNodeName)) {
+                //                        metadataField = field;
+                //                    }
+                //                }
+                //                for (IMetadataField field : currentEntry.getAccessAndUseAreaList()) {
+                //                    if (field.getName().equals(identifierNodeName)) {
+                //                        metadataField = field;
+                //                    }
+                //                }
+                //                for (IMetadataField field : currentEntry.getAlliedMaterialsAreaList()) {
+                //                    if (field.getName().equals(identifierNodeName)) {
+                //                        metadataField = field;
+                //                    }
+                //                }
+                //                for (IMetadataField field : currentEntry.getNotesAreaList()) {
+                //                    if (field.getName().equals(identifierNodeName)) {
+                //                        metadataField = field;
+                //                    }
+                //                }
+                //                for (IMetadataField field : currentEntry.getDescriptionControlAreaList()) {
+                //                    if (field.getName().equals(identifierNodeName)) {
+                //                        metadataField = field;
+                //                    }
+                //                }
+                //                if (metadataField != null) {
+                //                    lstNodesWithoutIds.add(metadataField.getValues().get(0).getValue());
+                //                }
+            }
         }
 
         return lstNodesWithoutIds;
@@ -2656,7 +2776,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 node.setGoobiProcessTitle(strProcessTitle);
                 lstNodesWithNewIds.add(node.getLabel());
                 Helper.setMeldung("Node '" + node.getLabel() + "' has been given Goobi process ID: " + strProcessTitle);
-                ArchiveManagementManager.saveNode(recordGroup.getId(), node);
+                ArchiveManagementManager.updateProcessLink(node);
             }
         }
 

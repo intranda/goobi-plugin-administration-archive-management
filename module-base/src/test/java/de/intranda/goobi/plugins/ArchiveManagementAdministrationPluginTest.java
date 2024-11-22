@@ -112,9 +112,9 @@ public class ArchiveManagementAdministrationPluginTest {
 
         for (int i = 0; i < 10; i++) {
             ArchiveManagementManager.saveNode(EasyMock.anyInt(), EasyMock.anyObject());
+            ArchiveManagementManager.saveNodes(EasyMock.anyInt(), EasyMock.anyObject());
+            ArchiveManagementManager.updateNodeHierarchy(EasyMock.anyInt(), EasyMock.anyObject());
         }
-
-        ArchiveManagementManager.saveNodes(EasyMock.anyInt(), EasyMock.anyObject());
         ArchiveManagementManager.saveRecordGroup(EasyMock.anyObject());
         for (int i = 0; i < 3; i++) {
             ArchiveManagementManager.setConfiguredNodes(EasyMock.anyObject());

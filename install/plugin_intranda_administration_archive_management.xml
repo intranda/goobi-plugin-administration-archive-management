@@ -56,6 +56,18 @@
 
         <!-- // configurations for generating process titles // -->
 
+        <!-- configuration for node/process mapping -->
+        <!-- it will be used during ead import or when the button to update references is used -->
+        
+        <!--
+            nodeIdentifierField contains the identifying value of the node 
+            processIdentifierField contains the name of the metadata where the node value is stored
+            If both fields contain the same value, a link between node and process is created
+        --> 
+        <!-- 
+        <nodeIdentifierField>id</nodeIdentifierField>
+        <processIdentifierField>NodeId</processIdentifierField>
+        -->
         <!-- define metadata fields. All fields are displayed on the UI based on the level and the order within this file.
                 - @name: contains the internal name of the field. The value can be used to translate the field in the messages files. The field must start with a letter and can not contain any white spaces.
                 - @level: metadata level, allowed values are 1-7:
@@ -298,6 +310,8 @@
             <showNodeId>false</showNodeId>
         </treeView>
 
+        <!-- enables template and project name selection in process creation area -->
+        <showProjectSelection>false</showProjectSelection>
         <!-- 
         possible namespaces: 
             ead2: urn:isbn:1-931666-22-9

@@ -28,6 +28,13 @@ Die Parameter `<lengthLimit>` `<separator>` `<useIdFromParent>` und `<title>` we
 - Der Parameter `<title>` konfiguriert, welche Metadaten für die Titelgenerierung genutzt werden sollen. Dabei kann das Attribut `value` einen statischen Text oder das Attribut `name` den Namen eines Metadatenfeldes beinhalten. Mittels `type` wird gesteuert, was mit dem Wert geschehen soll `NORMAL` fügt das Feld unverändert ein, `CAMEL_CASE` ersetzt Leerzeichen und lässt jedes Wort mit einem Großbuchstaben starten, `AFTER_LAST_SEPARATOR` fügt das Feld immer am Ende an, `BEFORE_FIRST_SEPARATOR` fügt es immer am Anfang an. Wenn kein title konfiguriert wurde, wird der Vorgangstitel auf Basis der node ID gebildet.
 
 
+## Konfiguration der Verknüpfung zwischen Knoten und Vorgang
+
+Die beiden Parameter `<nodeIdentifierField>` und `<processIdentifierField>` dienen zur Verknüpfung zwischen Knoten und Vorgang. Im Feld `<nodeIdentifierField>` steht der Name des Feldes, das den Identifier des Knotens enthält. Dabei kann jedes konfigurierte Feld genutzt werden. Wenn nicht anders angegeben, wird `id` genutzt. In `<processIdentifierField>` steht das Metadatum, in dem der Identifier des Knotes gespeichert werden soll. Üblicherweise ist dies `NodeId`.
+
+Wenn eine neue EAD Datei importiert wird oder der Button "Verweise zu Vorgängen aktualisieren" genutzt wird, wird in allen Vorgängen nach dem konfigurierten Metadatum gesucht. Anschließend wird verglichen, ob das Metadatum den Wert enthält, der im Feld in einem Knoten eingetragen ist. Wenn dies der Fall ist, wird eine Verknüpfung zwischen Knoten und Vorgang erstellt. Bei allen Knoten, zu denen kein Treffer gefunden wurde, werden eventuell vorhandene Verweise entfernt.
+
+
 ## Konfiguration der Metadatenfelder
 Anschließend folgt eine Liste von `<metadata>` Elementen. Darüber wird gesteuert, welche Felder angezeigt werden, importiert werden können, wie sie sich verhalten sollen und ob es Validierungsregeln gibt.
 

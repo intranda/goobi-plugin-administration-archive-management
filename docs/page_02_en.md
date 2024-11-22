@@ -28,6 +28,12 @@ The parameters `<lengthLimit>` `<separator>` `<useIdFromParent>` and `<title>` a
 - The `<title>` parameter configures which metadata should be used for the title generation. The `value` attribute can contain a static text or the `name` attribute can contain the name of a metadata field. The `type` is used to control what should happen with the value `NORMAL` inserts the field unchanged, `CAMEL_CASE` replaces spaces and starts each word with a capital letter, `AFTER_LAST_SEPARATOR` always inserts the field at the end, `BEFORE_FIRST_SEPARATOR` always inserts it at the beginning. If no title has been configured, the process title is formed on the basis of the node ID.
 
 
+## Configuration of the reference between node and process
+
+The two parameters `<nodeIdentifierField>` and `<processIdentifierField>` are used to link the node and the process. The `<nodeIdentifierField>` field contains the name of the field that contains the identifier of the node. Any configured field can be used. Unless otherwise specified, `id` is used. The `<processIdentifierField>` contains the metadata in which the identifier of the node is to be saved. This is usually `NodeId`.
+
+If a new EAD file is imported or the ‘ Update references to processes ’ button is used, the configured metadata is searched for in all processes. The system then compares whether the metadata contains the value that is entered in the field in a node. If this is the case, a link is created between the node and the process. For all nodes for which no match was found, any existing links are removed.
+
 ## Configuration of the metadata fields
 This is followed by a list of `<metadata>` elements. This controls which fields are displayed, can be imported, how they should behave and whether there are validation rules.
 

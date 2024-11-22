@@ -130,6 +130,16 @@ public class ArchiveManagementManager implements Serializable {
         saveNodes(archiveId, list);
     }
 
+    public static void updateProcessLink(IEadEntry node) {
+        String sql = "update archive_record_node set processtitle = ? where id = ?";
+        try (Connection connection = MySQLHelper.getInstance().getConnection()) {
+            QueryRunner run = new QueryRunner();
+            run.update(connection, sql, node.getGoobiProcessTitle(), node.getDatabaseId());
+        } catch (SQLException e) {
+            log.error(e);
+        }
+    }
+
     public static synchronized void saveNodes(Integer archiveId, List<IEadEntry> nodes) {
         String insertSql =
                 "INSERT INTO archive_record_node (id, uuid, archive_record_group_id, hierarchy, order_number, node_type, sequence, processtitle, parent_id,label, data) VALUES ";
@@ -201,7 +211,7 @@ public class ArchiveManagementManager implements Serializable {
                 sql.append(values.toString());
                 sql.append("ON DUPLICATE KEY UPDATE hierarchy = VALUES(hierarchy), order_number = VALUES(order_number), "
                         + "node_type =  VALUES(node_type), sequence = VALUES(sequence), processtitle = VALUES(processtitle), "
-                        + "processtitle = VALUES(processtitle), label = VALUES(label), data = VALUES(data)");
+                        + "processtitle = VALUES(processtitle), parent_id = VALUES(parent_id), label = VALUES(label), data = VALUES(data)");
                 try (Connection connection = MySQLHelper.getInstance().getConnection()) {
                     QueryRunner run = new QueryRunner();
                     run.update(connection, sql.toString());
@@ -212,6 +222,50 @@ public class ArchiveManagementManager implements Serializable {
                 values = new StringBuilder();
             }
         }
+    }
+
+    public static void updateNodeHierarchy(Integer archiveId, List<IEadEntry> nodes) {
+        String insertSql = "INSERT INTO archive_record_node (id, hierarchy, order_number, sequence, parent_id) VALUES ";
+
+        StringBuilder values = new StringBuilder();
+        for (int i = 0; i < nodes.size(); i++) {
+            IEadEntry entry = nodes.get(i);
+            if (values.length() > 0) {
+                values.append(", ");
+            }
+            Integer parentId = null;
+            if (entry.getParentNode() != null) {
+                parentId = entry.getParentNode().getDatabaseId();
+            }
+
+            values.append("(");
+            values.append(entry.getDatabaseId());
+            values.append(", ");
+            values.append(entry.getHierarchy());
+            values.append(", ");
+            values.append(entry.getOrderNumber());
+            values.append(", '");
+            values.append(entry.getSequence());
+            values.append("', ");
+            values.append(parentId);
+            values.append(")");
+            // save every 50 records or when we reached the last one
+            if (i % 50 == 49 || i + 1 == nodes.size()) {
+                StringBuilder sql = new StringBuilder(insertSql);
+                sql.append(values.toString());
+                sql.append(
+                        "ON DUPLICATE KEY UPDATE hierarchy = VALUES(hierarchy), order_number = VALUES(order_number), sequence = VALUES(sequence), parent_id = VALUES(parent_id)");
+                try (Connection connection = MySQLHelper.getInstance().getConnection()) {
+                    QueryRunner run = new QueryRunner();
+                    run.update(connection, sql.toString());
+                } catch (SQLException e) {
+                    log.error(e);
+                }
+                // reset values
+                values = new StringBuilder();
+            }
+        }
+
     }
 
     public static IEadEntry loadRecordGroup(int recordGroupId) {
@@ -516,5 +570,21 @@ public class ArchiveManagementManager implements Serializable {
             log.error(e1);
         }
 
+    }
+
+    public static String getMetadataValue(String metadataName, Integer recordGroupId, String nodeId) {
+        StringBuilder sql = new StringBuilder();
+
+        sql.append("select ExtractValue(data, '/xml/");
+        sql.append(metadataName);
+        sql.append("') from archive_record_node where archive_record_group_id= ? and uuid = ? ");
+        try (Connection connection = MySQLHelper.getInstance().getConnection()) {
+            QueryRunner run = new QueryRunner();
+            return run.query(connection, sql.toString(), MySQLHelper.resultSetToStringHandler, recordGroupId, nodeId);
+
+        } catch (SQLException e) {
+            log.error(e);
+        }
+        return null;
     }
 }

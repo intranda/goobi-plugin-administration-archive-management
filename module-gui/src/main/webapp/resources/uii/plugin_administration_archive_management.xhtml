@@ -511,11 +511,14 @@
                                                         <h:commandLink
                                                             action="#{AdministrationForm.administrationPlugin.createProcesses}"
                                                             styleClass="dropdown-item"
-                                                            pt:aria-label="#{template.two}">
-                                                            <h:outputText value="#{template.two}" />
+                                                            pt:aria-label="#{template.templateName}">
+                                                            <h:outputText value="#{template.templateName}" />
                                                             <x:updateActionListener
                                                                 property="#{AdministrationForm.administrationPlugin.selectedTemplate}"
-                                                                value="#{template.one}" />
+                                                                value="#{template.templateId}" />
+                                                            <x:updateActionListener
+                                                                property="#{AdministrationForm.administrationPlugin.selectedProject}"
+                                                                value="#{template.projectId}" />
                                                         </h:commandLink>
                                                     </li>
                                                 </ui:repeat>
@@ -763,20 +766,29 @@
                                                     <div
                                                         class="form-label"
                                                         tabindex="-1">
-                                                        <h:outputText value="#{msgs.plugin_administration_archive_process}" />
+                                                        <h:outputText
+                                                            value="#{msgs.plugin_administration_archive_process}"
+                                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null || !AdministrationForm.administrationPlugin.showProjectSelection}" />
+
+                                                        <h:outputText
+                                                            value="#{msgs.plugin_administration_archive_process_create_process}"
+                                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null and AdministrationForm.administrationPlugin.showProjectSelection}" />
+
                                                     </div>
                                                     <div class="form-input">
                                                         <div class="w-100 d-flex flex-nowrap justify-content-between">
                                                             <!-- no process exists, so allow creation of a process here -->
                                                             <ui:fragment
                                                                 rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
-                                                                <span class="my-auto">
-                                                                    <h:outputText value="#{msgs.plugin_administration_archive_process_no_process}" />
-                                                                </span>
-                                                                <div
-                                                                    class="d-inline"
+                                                                <h:panelGroup
+                                                                    layout="block"
+                                                                    rendered="#{!AdministrationForm.administrationPlugin.showProjectSelection}"
+                                                                    styleClass="d-inline"
                                                                     data-bs-title="#{msgs.plugin_administration_archive_process_create_process}"
                                                                     data-bs-toggle="tooltip">
+                                                                    <span class="my-auto">
+                                                                        <h:outputText value="#{msgs.plugin_administration_archive_process_no_process}" />
+                                                                    </span>
                                                                     <button
                                                                         aria-expanded="false"
                                                                         aria-haspopup="true"
@@ -787,24 +799,77 @@
                                                                         <h:outputText
                                                                             value="#{msgs.plugin_administration_archive_process_create_process}" />
                                                                     </button>
+
                                                                     <ul class="dropdown-menu dropdown-menu-end">
                                                                         <ui:repeat
                                                                             var="template"
                                                                             value="#{AdministrationForm.administrationPlugin.processTemplates}">
+
                                                                             <li>
                                                                                 <h:commandLink
                                                                                     action="#{AdministrationForm.administrationPlugin.createProcess}"
-                                                                                    pt:aria-label="#{template.two}"
+                                                                                    pt:aria-label="#{template.templateName}"
                                                                                     styleClass="dropdown-item">
-                                                                                    <h:outputText value="#{template.two}" />
+                                                                                    <h:outputText value="#{template.templateName}" />
                                                                                     <x:updateActionListener
                                                                                         property="#{AdministrationForm.administrationPlugin.selectedTemplate}"
-                                                                                        value="#{template.one}" />
+                                                                                        value="#{template.templateId}" />
                                                                                 </h:commandLink>
                                                                             </li>
                                                                         </ui:repeat>
                                                                     </ul>
-                                                                </div>
+                                                                </h:panelGroup>
+
+
+
+                                                                <h:panelGroup
+                                                                    layout="block"
+                                                                    rendered="#{AdministrationForm.administrationPlugin.showProjectSelection}"
+                                                                    styleClass="input-group my-auto">
+
+                                                                    <!-- select process template -->
+                                                                    <h:selectOneMenu
+                                                                        styleClass="form-select"
+                                                                        id="template"
+                                                                        value="#{AdministrationForm.administrationPlugin.selectedTemplate}">
+                                                                        <f:selectItems
+                                                                            itemValue="#{template.templateId}"
+                                                                            itemLabel="#{template.templateName}"
+                                                                            var="template"
+                                                                            value="#{AdministrationForm.administrationPlugin.processTemplates}" />
+                                                                        <f:ajax
+                                                                            execute="@this"
+                                                                            render="@this" />
+                                                                    </h:selectOneMenu>
+
+                                                                    <!--  select project -->
+                                                                    <h:selectOneMenu
+                                                                        styleClass="form-select"
+                                                                        id="project"
+                                                                        value="#{AdministrationForm.administrationPlugin.selectedProject}">
+                                                                        <f:selectItems
+                                                                            itemValue="#{proj.one}"
+                                                                            itemLabel="#{proj.two}"
+                                                                            var="proj"
+                                                                            value="#{AdministrationForm.administrationPlugin.projectNames}" />
+                                                                        <f:ajax
+                                                                            execute="@this"
+                                                                            render="@this" />
+                                                                    </h:selectOneMenu>
+
+                                                                    <!-- create process -->
+                                                                    <button
+                                                                        class="btn btn-primary"
+                                                                        jsf:action="#{AdministrationForm.administrationPlugin.createProcesses}"
+                                                                        data-bs-title="#{msgs.plugin_administration_archive_process_create_process}"
+                                                                        data-bs-toggle="tooltip">
+                                                                        <span
+                                                                            aria-hidden="true"
+                                                                            class="fa fa-file-o"></span>
+                                                                    </button>
+
+
+                                                                </h:panelGroup>
                                                             </ui:fragment>
                                                             <!-- // no process exists, so allow creation of a process here -->
                                                             <!-- process exists -->
