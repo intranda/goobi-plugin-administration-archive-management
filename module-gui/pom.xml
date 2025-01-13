@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.goobi.workflow.plugin</groupId>
         <artifactId>plugin-administration-archive-management</artifactId>
-        <version>24.12-SNAPSHOT</version>
+        <version>24.12</version>
     </parent>
     <artifactId>plugin-administration-archive-management-gui</artifactId>
     <packaging>jar</packaging>
