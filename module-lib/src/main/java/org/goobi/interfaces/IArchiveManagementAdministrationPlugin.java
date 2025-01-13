@@ -22,6 +22,8 @@ public interface IArchiveManagementAdministrationPlugin extends IAdministrationP
 
     public void setDatabaseName(String databaseName);
 
+    public String getDatabaseName();
+
     public void createNewDatabase();
 
     public Document createEadFile();
@@ -33,9 +35,17 @@ public interface IArchiveManagementAdministrationPlugin extends IAdministrationP
 
     public void addNode();
 
+    public void updateSingleNode();
+
     public List<INodeType> getConfiguredNodes();
 
     public List<IMetadataField> getConfiguredFields();
 
-    List<IRecordGroup> getRecordGroups();
+    public List<IRecordGroup> getRecordGroups();
+
+    public void deleteNode();
+
+    public String saveArchiveAndLeave();
+
+    public String cancelEdition();
 }
