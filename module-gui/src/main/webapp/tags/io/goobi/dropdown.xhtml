@@ -47,7 +47,7 @@
                     <f:selectItem
                         itemValue=""
                         itemLabel="#{msgs.bitteAuswaehlen}" />
-                    <f:selectItems value="#{selectItems}" />
+                    <f:selectItems value="#{selectItems}" var="item" itemLabel="#{msgs[item]}" itemValue="#{item}" />
                     <f:ajax
                         event="change"
                         execute="@this"
