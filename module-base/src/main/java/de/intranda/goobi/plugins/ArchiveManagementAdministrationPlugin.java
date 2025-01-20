@@ -2843,9 +2843,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     private boolean findMatchingNode(String strNodeId, IMetadataField field) {
-        if (field.getName().equals(identifierNodeName)) {
+        if (strNodeId == null) {
+            return false;
+        }
+        if (identifierNodeName.equals(field.getName())) {
             for (IFieldValue fv : field.getValues()) {
-                if (fv.getValue().equals(strNodeId)) {
+                if (strNodeId.equals(fv.getValue())) {
                     return true;
                 }
             }
