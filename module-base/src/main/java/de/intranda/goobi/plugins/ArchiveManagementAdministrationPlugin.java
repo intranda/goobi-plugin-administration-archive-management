@@ -2784,7 +2784,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     private IEadEntry getNodeWithId(String strNodeId, IEadEntry node) {
-
+        loadMetadataForNode(node);
         if ("id".equalsIgnoreCase(identifierNodeName)) {
             if (node.getId() != null && node.getId().contentEquals(strNodeId)) {
                 return node;
