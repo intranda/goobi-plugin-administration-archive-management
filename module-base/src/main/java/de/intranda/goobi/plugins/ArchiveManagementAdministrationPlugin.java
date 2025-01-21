@@ -654,10 +654,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             entry.setId("id_" + UUID.randomUUID());
         }
 
-        // generate new id, if id is null
-        if (entry.getId() == null) {
-            entry.setId("id_" + UUID.randomUUID());
-        }
         entry.calculateFingerprint();
 
         if (parent != null) {
@@ -1128,6 +1124,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
     }
 
+    @Override
     public void deleteNode() {
         if (selectedEntry != null) {
             IEadEntry parentNode = selectedEntry.getParentNode();
@@ -2380,6 +2377,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         return document;
     }
 
+    @Override
     public String saveArchiveAndLeave() {
         // save current node
         if (selectedEntry != null) {
@@ -2399,6 +2397,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     }
 
+    @Override
     public String cancelEdition() {
         // reset current settings
         if (selectedEntry != null) {
@@ -2975,6 +2974,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * 
      */
 
+    @Override
     public void updateSingleNode() {
         if (selectedEntry != null) {
             if (selectedEntry.getNodeType() == null && configuredNodes != null) {

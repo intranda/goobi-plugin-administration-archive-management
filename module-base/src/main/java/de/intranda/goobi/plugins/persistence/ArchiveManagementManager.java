@@ -209,7 +209,7 @@ public class ArchiveManagementManager implements Serializable {
             if (i % 50 == 49 || i + 1 == nodes.size()) {
                 StringBuilder sql = new StringBuilder(insertSql);
                 sql.append(values.toString());
-                sql.append("ON DUPLICATE KEY UPDATE hierarchy = VALUES(hierarchy), order_number = VALUES(order_number), "
+                sql.append("ON DUPLICATE KEY UPDATE  uuid = VALUES(uuid), hierarchy = VALUES(hierarchy), order_number = VALUES(order_number), "
                         + "node_type =  VALUES(node_type), sequence = VALUES(sequence), processtitle = VALUES(processtitle), "
                         + "processtitle = VALUES(processtitle), parent_id = VALUES(parent_id), label = VALUES(label), data = VALUES(data)");
                 try (Connection connection = MySQLHelper.getInstance().getConnection()) {
