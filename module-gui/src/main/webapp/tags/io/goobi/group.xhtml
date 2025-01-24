@@ -6,13 +6,12 @@
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:x="http://myfaces.apache.org/tomahawk"
     xmlns:jsf="http://xmlns.jcp.org/jsf"
     xmlns:goobiio="http://goobi.io/facelets"
     xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
 <h:body>
     <ui:composition>
-    <x:dataList var="group" value="#{item.groups}">
+    <ui:repeat var="group" value="#{item.groups}">
 
         <fieldset class="field-set">
             <legend
@@ -20,15 +19,15 @@
                 <h:outputText value="#{fieldname}" />
             </legend>
             <div class="field-set-content">
-                <x:dataList
+                <ui:repeat
                     var="subfield"
                     value="#{group.fields}">
-                    <x:dataList
+                    <ui:repeat
                         var="field"
                         value="#{subfield.values}">
                         <goobiio:fields />
-                    </x:dataList>
-                </x:dataList>
+                    </ui:repeat>
+                </ui:repeat>
                 <h:commandLink
                     action="#{AdministrationForm.administrationPlugin.selectedEntry.deleteGroup(group)}"
                     styleClass="btn btn-blank font-light fs-500">
@@ -40,7 +39,7 @@
                 </h:commandLink>
             </div>
         </fieldset>
-        </x:dataList>
+        </ui:repeat>
     </ui:composition>
 </h:body>
 </html>
