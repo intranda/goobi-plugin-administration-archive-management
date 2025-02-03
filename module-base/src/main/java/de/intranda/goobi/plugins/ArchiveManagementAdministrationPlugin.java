@@ -1444,7 +1444,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             String[] fields = xpath.split(strRegex);
 
             Element groupElement = xmlElement;
-            if (xpath.contains("ead:control")) {
+            if (xpath.contains("ead:control/")) {
                 groupElement = xmlRootElement;
             }
 
@@ -1453,7 +1453,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             String[] prevElements = Arrays.copyOf(fields, fields.length - 1);
 
             for (int i = 0; i < prevElements.length; i++) {
-                String field = fields[i];
+                String field = fields[i].trim();
                 if (!".".equals(field)) {
                     // reuse elements until the last element
                     groupElement = findElement(field, groupElement);
@@ -1488,7 +1488,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         Element currentElement = xmlElement;
         String xpath = getXpath(isMainElement, emf);
 
-        if (xpath.contains("ead:control")) {
+        if (xpath.contains("ead:control/")) {
             currentElement = xmlRootElement;
         }
 
