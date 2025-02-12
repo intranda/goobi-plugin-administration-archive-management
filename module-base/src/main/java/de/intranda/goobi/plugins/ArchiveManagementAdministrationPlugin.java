@@ -424,7 +424,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         List<String> databases = new ArrayList<>();
         for (IRecordGroup rec : allRecordGroups) {
             // allow access if username is null (api request), access is granted to all or to the specific record
-            if (username == null || allowAllInventories || inventoryList.contains(rec.getTitle())) {
+            if (StringUtils.isBlank(username) || allowAllInventories || inventoryList.contains(rec.getTitle())) {
                 databases.add(rec.getTitle());
             }
         }
