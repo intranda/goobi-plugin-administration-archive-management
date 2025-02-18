@@ -1226,7 +1226,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * process the file name of the selected file in such way that the file name is assured to contain no white spaces as well as it has the correct
      * extension .xml
      * 
-     * @param file the selected file as a javax.servlet.http.Part object
+     * @param file the selected file as a jakarta.servlet.http.Part object
      * @return the corrected file name as a string
      */
     private String processUploadedFileName(Part file) {
