@@ -4,7 +4,6 @@
     xmlns:composite="http://xmlns.jcp.org/jsf/composite"
     xmlns:h="http://xmlns.jcp.org/jsf/html"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:x="http://myfaces.apache.org/tomahawk"
     xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
     xmlns:jsf="http://xmlns.jcp.org/jsf"
     xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
@@ -42,8 +41,9 @@
                                 <span
                                     aria-hidden="true"
                                     class="fa fa-times" />
-                                <x:updateActionListener
-                                    property="#{AdministrationForm.administrationPlugin.displayCreateNodesModal}"
+                                    
+                                <f:setPropertyActionListener
+                                    target="#{AdministrationForm.administrationPlugin.displayCreateNodesModal}"
                                     value="false" />
                             </button>
                         </div>
@@ -60,16 +60,15 @@
                                             labelRequired="true" />
                                     </div>
                                     <div class="form-input">
-                                        <x:inputText
+                                        <h:inputText
                                             id="numberOfNodes"
-                                            forceId="true"
                                             styleClass="form-control"
                                             value="#{AdministrationForm.administrationPlugin.numberOfNodes}"
                                             readonly="false"
                                             required="false">
                                             <!-- validation: value must be be a number greater than zero -->
                                             <f:validator validatorId="numberOfNodesValidator" />
-                                        </x:inputText>
+                                        </h:inputText>
                                         <h:message
                                             for="numberOfNodes"
                                             showDetail="true"
@@ -116,11 +115,11 @@
                             <div class="modal-footer">
                                 <h:commandLink
                                     styleClass="btn btn-blank">
-                                    <x:updateActionListener
-                                        property="#{AdministrationForm.administrationPlugin.displayMode}"
+                                    <f:setPropertyActionListener
+                                        target="#{AdministrationForm.administrationPlugin.displayMode}"
                                         value="" />
-                                    <x:updateActionListener
-                                        property="#{AdministrationForm.administrationPlugin.displayCreateNodesModal}"
+                                    <f:setPropertyActionListener
+                                        target="#{AdministrationForm.administrationPlugin.displayCreateNodesModal}"
                                         value="false" />
                                     <h:outputText value="#{msgs.abbrechen}" />
                                 </h:commandLink>

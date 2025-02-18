@@ -5,7 +5,6 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:ui="http://java.sun.com/jsf/facelets"
-    xmlns:x="http://myfaces.apache.org/tomahawk"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:goobiio="http://goobi.io/facelets"
     xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
@@ -13,7 +12,7 @@
     <ui:composition>
         <ui:fragment id="#{area}">
             <span class="p-2 flex-grow-1 d-flex justify-content-end flex-wrap flex-basis-75">
-                <x:dataList
+                <ui:repeat
                     var="item"
                     value="#{itemlist}">
                     <!--  and (!item.showField or !showDetails) -->
@@ -23,15 +22,15 @@
                             fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
                             showfield="#{item.showField}" />
                     </ui:fragment>
-                </x:dataList>
+                </ui:repeat>
             </span>
             <div class="border-top w-100">
-                <x:dataList
+                <ui:repeat
                     var="item"
                     value="#{itemlist}"
                     rendered="#{showDetails}">
                     <ui:fragment rendered="#{item.showField and item.visible}">
-                        <x:dataList
+                        <ui:repeat
                             value="#{item.values}"
                             var="field">
                             <ui:fragment rendered="#{item.fieldType=='input' or item.fieldType=='date'}">
@@ -163,12 +162,12 @@
                 fieldvalue="#{field.booleanValue}"
                 deletable="true" />
         </ui:fragment>
-                        </x:dataList>
+                        </ui:repeat>
                         <ui:fragment rendered="#{item.fieldType=='group'}">
                             <goobiio:group fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}" />
                         </ui:fragment>
                     </ui:fragment>
-                </x:dataList>
+                </ui:repeat>
             </div>
         </ui:fragment>
     </ui:composition>

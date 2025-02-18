@@ -4,7 +4,6 @@
     xmlns:composite="http://xmlns.jcp.org/jsf/composite"
     xmlns:h="http://xmlns.jcp.org/jsf/html"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:x="http://myfaces.apache.org/tomahawk"
     xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG"
     xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
     xmlns:p="http://primefaces.org/ui"
@@ -15,13 +14,7 @@
     <composite:interface>
     </composite:interface>
     <composite:implementation>
-        <h:head>
-            <f:metadata>
-                <f:viewParam
-                    name="name"
-                    value="#{AdministrationForm.administrationPlugin.databaseName}" />
-            </f:metadata>
-        </h:head>
+
         <h:panelGroup
             rendered="#{!LoginForm.hasRole('Plugin_Administration_Archive_Management')}"
             styleClass="color-box bg-hot text-white d-flex flex-row p-3">
@@ -329,9 +322,8 @@
                                                 class="fa fa-search"
                                                 aria-hidden="true"></span>
                                         </button>
-                                        <x:commandLink
+                                        <h:commandLink
                                             id="FilterAlle2"
-                                            forceId="true"
                                             styleClass="btn d-flex align-items-center btn--title-action"
                                             onclick="$('#advancedSearchBox').modal('show');"
                                             title="#{msgs.plugin_administration_archive_advancedSearch}">
@@ -342,7 +334,7 @@
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
                                             <f:ajax />
-                                        </x:commandLink>
+                                        </h:commandLink>
                                     </div>
                                 </intranda:boxTitle>
                                 <div class="d-flex flex-nowrap justify-content-between">
@@ -364,8 +356,8 @@
                                                             <span
                                                                 class="#{entry.displayChildren ? 'fa fa-caret-down fa-lg' : 'fa fa-caret-right fa-lg'}"
                                                                 aria-hidden="true" />
-                                                            <x:updateActionListener
-                                                                property="#{entry.displayChildren}"
+                                                            <f:setPropertyActionListener
+                                                                target="#{entry.displayChildren}"
                                                                 value="#{not entry.displayChildren}" />
                                                             <f:ajax
                                                                 execute="@this"
@@ -413,8 +405,8 @@
                                                                     class="fa fa-exclamation-triangle margin-left-5"
                                                                     style="margin-right: 5px;" />
                                                             </ui:fragment>
-                                                            <x:updateActionListener
-                                                                property="#{AdministrationForm.administrationPlugin.selectedEntry}"
+                                                            <f:setPropertyActionListener
+                                                                target="#{AdministrationForm.administrationPlugin.selectedEntry}"
                                                                 value="#{entry}" />
                                                             <f:ajax
                                                                 execute="ead-details"
@@ -470,8 +462,8 @@
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
-                                            <x:updateActionListener
-                                                property="#{AdministrationForm.administrationPlugin.displayCreateNodesModal}"
+                                            <f:setPropertyActionListener
+                                                target="#{AdministrationForm.administrationPlugin.displayCreateNodesModal}"
                                                 value="true" />
                                             <f:ajax
                                                 execute="@this"
@@ -513,11 +505,11 @@
                                                             styleClass="dropdown-item"
                                                             pt:aria-label="#{template.templateName}">
                                                             <h:outputText value="#{template.templateName}" />
-                                                            <x:updateActionListener
-                                                                property="#{AdministrationForm.administrationPlugin.selectedTemplate}"
+                                                            <f:setPropertyActionListener
+                                                                target="#{AdministrationForm.administrationPlugin.selectedTemplate}"
                                                                 value="#{template.templateId}" />
-                                                            <x:updateActionListener
-                                                                property="#{AdministrationForm.administrationPlugin.selectedProject}"
+                                                            <f:setPropertyActionListener
+                                                                target="#{AdministrationForm.administrationPlugin.selectedProject}"
                                                                 value="#{template.projectId}" />
                                                         </h:commandLink>
                                                     </li>
@@ -609,8 +601,8 @@
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
-                                            <x:updateActionListener
-                                                property="#{AdministrationForm.administrationPlugin.displayMode}"
+                                            <f:setPropertyActionListener
+                                                target="#{AdministrationForm.administrationPlugin.displayMode}"
                                                 value="moveNode" />
                                         </h:commandLink>
                                         <!-- duplicate selected node and insert it as last sibling -->
@@ -811,8 +803,8 @@
                                                                                     pt:aria-label="#{template.templateName}"
                                                                                     styleClass="dropdown-item">
                                                                                     <h:outputText value="#{template.templateName}" />
-                                                                                    <x:updateActionListener
-                                                                                        property="#{AdministrationForm.administrationPlugin.selectedTemplate}"
+                                                                                    <f:setPropertyActionListener
+                                                                                        target="#{AdministrationForm.administrationPlugin.selectedTemplate}"
                                                                                         value="#{template.templateId}" />
                                                                                 </h:commandLink>
                                                                             </li>
@@ -913,7 +905,7 @@
                                                         <h:outputText value="#{msgs.plugin_administration_archive_nodeType}" />
                                                     </div>
                                                     <div class="form-input">
-                                                        <x:dataList
+                                                        <ui:repeat
                                                             value="#{AdministrationForm.administrationPlugin.configuredNodes}"
                                                             var="nodeType">
                                                             <h:commandLink
@@ -933,7 +925,7 @@
                                                                     name="data-bs-toggle"
                                                                     value="tooltip" />
                                                             </h:commandLink>
-                                                        </x:dataList>
+                                                        </ui:repeat>
                                                     </div>
                                                 </h:panelGroup>
                                                 <!-- // node type as icon -->
@@ -973,8 +965,8 @@
                                                             styleClass="text-black"
                                                             value="#{msgs.plugin_administration_archive_area_identity}" />
                                                     </span>
-                                                    <x:updateActionListener
-                                                        property="#{AdministrationForm.administrationPlugin.displayIdentityStatementArea}"
+                                                    <f:setPropertyActionListener
+                                                        target="#{AdministrationForm.administrationPlugin.displayIdentityStatementArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayIdentityStatementArea}" />
                                                     <f:ajax
                                                         render="identity-statement-area"
@@ -1006,8 +998,8 @@
                                                             styleClass="text-black"
                                                             value="#{msgs.plugin_administration_archive_area_context}" />
                                                     </span>
-                                                    <x:updateActionListener
-                                                        property="#{AdministrationForm.administrationPlugin.displayContextArea}"
+                                                    <f:setPropertyActionListener
+                                                        target="#{AdministrationForm.administrationPlugin.displayContextArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayContextArea}" />
                                                     <f:ajax
                                                         render="context-area"
@@ -1036,8 +1028,8 @@
                                                             styleClass="text-black"
                                                             value="#{msgs.plugin_administration_archive_area_content}" />
                                                     </span>
-                                                    <x:updateActionListener
-                                                        property="#{AdministrationForm.administrationPlugin.displayContentArea}"
+                                                    <f:setPropertyActionListener
+                                                        target="#{AdministrationForm.administrationPlugin.displayContentArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayContentArea}" />
                                                     <f:ajax
                                                         render="content-area"
@@ -1066,8 +1058,8 @@
                                                             styleClass="text-black"
                                                             value="#{msgs.plugin_administration_archive_area_access}" />
                                                     </span>
-                                                    <x:updateActionListener
-                                                        property="#{AdministrationForm.administrationPlugin.displayAccessArea}"
+                                                    <f:setPropertyActionListener
+                                                        target="#{AdministrationForm.administrationPlugin.displayAccessArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayAccessArea}" />
                                                     <f:ajax
                                                         render="access-area"
@@ -1096,8 +1088,8 @@
                                                             styleClass="text-black"
                                                             value="#{msgs.plugin_administration_archive_area_materials}" />
                                                     </span>
-                                                    <x:updateActionListener
-                                                        property="#{AdministrationForm.administrationPlugin.displayMaterialsArea}"
+                                                    <f:setPropertyActionListener
+                                                        target="#{AdministrationForm.administrationPlugin.displayMaterialsArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayMaterialsArea}" />
                                                     <f:ajax
                                                         render="materials-area"
@@ -1126,8 +1118,8 @@
                                                             styleClass="text-black"
                                                             value="#{msgs.plugin_administration_archive_area_notes}" />
                                                     </span>
-                                                    <x:updateActionListener
-                                                        property="#{AdministrationForm.administrationPlugin.displayNotesArea}"
+                                                    <f:setPropertyActionListener
+                                                        target="#{AdministrationForm.administrationPlugin.displayNotesArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayNotesArea}" />
                                                     <f:ajax
                                                         render="notes-area"
@@ -1156,8 +1148,8 @@
                                                             styleClass="text-black"
                                                             value="#{msgs.plugin_administration_archive_area_descriptionControl}" />
                                                     </span>
-                                                    <x:updateActionListener
-                                                        property="#{AdministrationForm.administrationPlugin.displayControlArea}"
+                                                    <f:setPropertyActionListener
+                                                        target="#{AdministrationForm.administrationPlugin.displayControlArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayControlArea}" />
                                                     <f:ajax
                                                         render="control-area"
@@ -1224,8 +1216,8 @@
                                                 value="#{entry.orderNumber}"
                                                 rendered="#{entry.label == null}" />
                                         </span>
-                                        <x:updateActionListener
-                                            property="#{AdministrationForm.administrationPlugin.destinationEntry}"
+                                        <f:setPropertyActionListener
+                                            target="#{AdministrationForm.administrationPlugin.destinationEntry}"
                                             value="#{entry}" />
                                         <f:passThroughAttribute
                                             name="data-bs-toggle"
@@ -1241,8 +1233,8 @@
                             <h:commandLink
                                 styleClass="btn btn-blank"
                                 type="submit">
-                                <x:updateActionListener
-                                    property="#{AdministrationForm.administrationPlugin.displayMode}"
+                                <f:setPropertyActionListener
+                                    target="#{AdministrationForm.administrationPlugin.displayMode}"
                                     value="" />
                                 <h:outputText value="#{msgs.abbrechen}" />
                             </h:commandLink>
