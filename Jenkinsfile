@@ -3,7 +3,6 @@ pipeline {
 
   agent {
     docker {
-      /* using a custom build image with a defined home directory for UID 1000 among other things */
       image 'maven:3-eclipse-temurin-21'
       args '-v $HOME/.m2:/var/maven/.m2:z -v $HOME/.config:/var/maven/.config -v $HOME/.sonar:/var/maven/.sonar -u 1000 -ti -e _JAVA_OPTIONS=-Duser.home=/var/maven -e MAVEN_CONFIG=/var/maven/.m2'
     }
