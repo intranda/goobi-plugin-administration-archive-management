@@ -5,8 +5,7 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:ui="http://java.sun.com/jsf/facelets"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:x="http://myfaces.apache.org/tomahawk">
+    xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body>
         <ui:composition>
         <!--#{styleclassname} -->
@@ -19,8 +18,8 @@
                     <span>
                         <h:outputText value="#{fieldname}" />
                     </span>
-                    <x:updateActionListener
-                        property="#{item.showField}"
+                    <f:setPropertyActionListener
+                        target="#{item.showField}"
                         value="true" />
                     <f:actionListener binding="#{AdministrationForm.administrationPlugin.updateAreaDisplay(item.level)}" />
                     <f:ajax
@@ -36,11 +35,11 @@
                     <span>
                         <h:outputText value="#{fieldname}" />
                     </span>
-                    <x:updateActionListener
-                        property="#{item.showField}"
+                    <f:setPropertyActionListener
+                        target="#{item.showField}"
                         value="true" />
-                    <x:updateActionListener
-                        property="#{AdministrationForm.administrationPlugin.selectedGroup}"
+                    <f:setPropertyActionListener
+                        target="#{AdministrationForm.administrationPlugin.selectedGroup}"
                         value="#{item}" />
                     <f:actionListener binding="#{AdministrationForm.administrationPlugin.updateAreaDisplay(item.level)}" />
                     <f:ajax
@@ -61,8 +60,8 @@
                         <span class="fa fa-exclamation-triangle" />
                     </ui:fragment>
                     <f:actionListener binding="#{AdministrationForm.administrationPlugin.updateAreaDisplay(item.level)}" />
-                    <x:updateActionListener
-                        property="#{item.showField}"
+                    <f:setPropertyActionListener
+                        target="#{item.showField}"
                         value="true" />
                     <f:ajax
                         execute="@this"

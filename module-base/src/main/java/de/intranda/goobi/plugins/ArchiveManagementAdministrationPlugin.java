@@ -18,13 +18,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
-
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -99,6 +92,12 @@ import io.goobi.workflow.api.vocabulary.helper.ExtendedVocabulary;
 import io.goobi.workflow.api.vocabulary.helper.ExtendedVocabularyRecord;
 import io.goobi.workflow.locking.LockingBean;
 import io.goobi.workflow.xslt.XsltToPdf;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -424,7 +423,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         List<String> databases = new ArrayList<>();
         for (IRecordGroup rec : allRecordGroups) {
             // allow access if username is null (api request), access is granted to all or to the specific record
-            if (username == null || allowAllInventories || inventoryList.contains(rec.getTitle())) {
+            if (StringUtils.isBlank(username) || allowAllInventories || inventoryList.contains(rec.getTitle())) {
                 databases.add(rec.getTitle());
             }
         }
@@ -654,10 +653,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             entry.setId("id_" + UUID.randomUUID());
         }
 
-        // generate new id, if id is null
-        if (entry.getId() == null) {
-            entry.setId("id_" + UUID.randomUUID());
-        }
         entry.calculateFingerprint();
 
         if (parent != null) {
@@ -1128,6 +1123,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
     }
 
+    @Override
     public void deleteNode() {
         if (selectedEntry != null) {
             IEadEntry parentNode = selectedEntry.getParentNode();
@@ -1230,7 +1226,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * process the file name of the selected file in such way that the file name is assured to contain no white spaces as well as it has the correct
      * extension .xml
      * 
-     * @param file the selected file as a javax.servlet.http.Part object
+     * @param file the selected file as a jakarta.servlet.http.Part object
      * @return the corrected file name as a string
      */
     private String processUploadedFileName(Part file) {
@@ -1448,7 +1444,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             String[] fields = xpath.split(strRegex);
 
             Element groupElement = xmlElement;
-            if (xpath.contains("ead:control")) {
+            if (xpath.contains("ead:control/")) {
                 groupElement = xmlRootElement;
             }
 
@@ -1457,7 +1453,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             String[] prevElements = Arrays.copyOf(fields, fields.length - 1);
 
             for (int i = 0; i < prevElements.length; i++) {
-                String field = fields[i];
+                String field = fields[i].trim();
                 if (!".".equals(field)) {
                     // reuse elements until the last element
                     groupElement = findElement(field, groupElement);
@@ -1492,7 +1488,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         Element currentElement = xmlElement;
         String xpath = getXpath(isMainElement, emf);
 
-        if (xpath.contains("ead:control")) {
+        if (xpath.contains("ead:control/")) {
             currentElement = xmlRootElement;
         }
 
@@ -2380,6 +2376,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         return document;
     }
 
+    @Override
     public String saveArchiveAndLeave() {
         // save current node
         if (selectedEntry != null) {
@@ -2399,6 +2396,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     }
 
+    @Override
     public String cancelEdition() {
         // reset current settings
         if (selectedEntry != null) {
@@ -2784,7 +2782,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     private IEadEntry getNodeWithId(String strNodeId, IEadEntry node) {
-
+        loadMetadataForNode(node);
         if ("id".equalsIgnoreCase(identifierNodeName)) {
             if (node.getId() != null && node.getId().contentEquals(strNodeId)) {
                 return node;
@@ -2843,9 +2841,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     private boolean findMatchingNode(String strNodeId, IMetadataField field) {
-        if (field.getName().equals(identifierNodeName)) {
+        if (strNodeId == null) {
+            return false;
+        }
+        if (identifierNodeName.equals(field.getName())) {
             for (IFieldValue fv : field.getValues()) {
-                if (fv.getValue().equals(strNodeId)) {
+                if (strNodeId.equals(fv.getValue())) {
                     return true;
                 }
             }
@@ -2972,6 +2973,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * 
      */
 
+    @Override
     public void updateSingleNode() {
         if (selectedEntry != null) {
             if (selectedEntry.getNodeType() == null && configuredNodes != null) {

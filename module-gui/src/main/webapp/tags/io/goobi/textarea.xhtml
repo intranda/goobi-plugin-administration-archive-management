@@ -5,8 +5,7 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:ui="http://java.sun.com/jsf/facelets"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:x="http://myfaces.apache.org/tomahawk">
+    xmlns:f="http://xmlns.jcp.org/jsf/core">
 <h:body>
     <ui:composition>
         <div class="form-row">
@@ -18,7 +17,6 @@
             <div class="form-input">
                 <h:inputTextarea
                     id="#{fieldid}"
-                    forceId="true"
                     styleClass="form-control #{item.valid ? '' : 'invalid'}"
                     value="#{fieldvalue}"
                     required="false"

@@ -209,7 +209,7 @@ public class ArchiveManagementManager implements Serializable {
             if (i % 50 == 49 || i + 1 == nodes.size()) {
                 StringBuilder sql = new StringBuilder(insertSql);
                 sql.append(values.toString());
-                sql.append("ON DUPLICATE KEY UPDATE hierarchy = VALUES(hierarchy), order_number = VALUES(order_number), "
+                sql.append("ON DUPLICATE KEY UPDATE  uuid = VALUES(uuid), hierarchy = VALUES(hierarchy), order_number = VALUES(order_number), "
                         + "node_type =  VALUES(node_type), sequence = VALUES(sequence), processtitle = VALUES(processtitle), "
                         + "processtitle = VALUES(processtitle), parent_id = VALUES(parent_id), label = VALUES(label), data = VALUES(data)");
                 try (Connection connection = MySQLHelper.getInstance().getConnection()) {
@@ -582,6 +582,22 @@ public class ArchiveManagementManager implements Serializable {
             QueryRunner run = new QueryRunner();
             return run.query(connection, sql.toString(), MySQLHelper.resultSetToStringHandler, recordGroupId, nodeId);
 
+        } catch (SQLException e) {
+            log.error(e);
+        }
+        return null;
+    }
+
+    public static IEadEntry findNodeById(String metadataName, String metadataValue) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("select id from archive_record_node WHERE ExtractValue(data, '/xml/")
+                .append(metadataName)
+                .append("') = '")
+                .append(metadataValue)
+                .append("");
+        try (Connection connection = MySQLHelper.getInstance().getConnection()) {
+            QueryRunner run = new QueryRunner();
+            return run.query(connection, sql.toString(), resultSetToNodeHandler);
         } catch (SQLException e) {
             log.error(e);
         }

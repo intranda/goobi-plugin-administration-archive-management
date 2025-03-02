@@ -5,8 +5,7 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:ui="http://java.sun.com/jsf/facelets"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:x="http://myfaces.apache.org/tomahawk">
+    xmlns:f="http://xmlns.jcp.org/jsf/core">
 <h:body>
     <ui:composition>
         <div class="form-row">
@@ -40,7 +39,6 @@
                 <div class="w-100 d-flex flex-wrap">
                     <h:selectOneMenu
                         id="#{fieldid}"
-                        forceId="true"
                         styleClass="form-select #{item.valid ? '' : 'invalid'} w-100"
                         value="#{fieldvalue}"
                         required="false"
@@ -56,7 +54,7 @@
                             onevent="(data) => {scrollToCurrentNode(data);}" />
                     </h:selectOneMenu>
                     <div class="pt-1 w-100">
-                        <x:dataList
+                        <ui:repeat
                             value="#{selectedItems}"
                             var="selection">
                             <h:commandLink action="#{field.removeSelectedValue(selection)}">
@@ -68,7 +66,7 @@
                                     render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
                                     onevent="(data) => {scrollToCurrentNode(data);}" />
                             </h:commandLink>
-                        </x:dataList>
+                        </ui:repeat>
                     </div>
                     <h:outputText
                         styleClass="help-inline color-F"
