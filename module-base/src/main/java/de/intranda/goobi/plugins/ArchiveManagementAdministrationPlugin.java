@@ -62,6 +62,7 @@ import de.intranda.goobi.plugins.model.ProcessTemplate;
 import de.intranda.goobi.plugins.model.RecordGroup;
 import de.intranda.goobi.plugins.model.TitleComponent;
 import de.intranda.goobi.plugins.persistence.ArchiveManagementManager;
+import de.intranda.goobi.plugins.persistence.NodeInitializer;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.BeanHelper;
 import de.sub.goobi.helper.FacesContextHelper;
@@ -542,11 +543,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                         gv.getSubfields().put(sub.getName(), valueList);
                     }
                 }
-                ArchiveManagementManager.loadGroupMetadata(entry, emf, groups);
+                NodeInitializer.loadGroupMetadata(entry, emf, groups);
             } else {
                 List<IValue> valueList = getValuesFromXml(element, emf);
-                IMetadataField toAdd = ArchiveManagementManager.addFieldToEntry(entry, emf, valueList);
-                ArchiveManagementManager.addFieldToNode(entry, toAdd);
+                IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, valueList);
+                NodeInitializer.addFieldToNode(entry, toAdd);
             }
         }
 
@@ -781,12 +782,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
             for (IMetadataField emf : config.getConfiguredFields()) {
                 if (emf.isGroup()) {
-                    ArchiveManagementManager.loadGroupMetadata(entry, emf, null);
+                    NodeInitializer.loadGroupMetadata(entry, emf, null);
                 } else if (emf.getXpath().contains("unittitle")) {
-                    IMetadataField toAdd = ArchiveManagementManager.addFieldToEntry(entry, emf, titleData);
-                    ArchiveManagementManager.addFieldToNode(entry, toAdd);
+                    IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, titleData);
+                    NodeInitializer.addFieldToNode(entry, toAdd);
                 } else {
-                    ArchiveManagementManager.addFieldToEntry(entry, emf, null);
+                    NodeInitializer.addFieldToEntry(entry, emf, null);
                 }
             }
             entry.setNodeType(selectedEntry.getNodeType());
@@ -938,11 +939,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         for (IMetadataField emf : config.getConfiguredFields()) {
             List<IValue> values = metadata.get(emf.getName());
             if (emf.isGroup()) {
-                ArchiveManagementManager.loadGroupMetadata(node, emf, values);
+                NodeInitializer.loadGroupMetadata(node, emf, values);
 
             } else {
-                IMetadataField toAdd = ArchiveManagementManager.addFieldToEntry(node, emf, values);
-                ArchiveManagementManager.addFieldToNode(node, toAdd);
+                IMetadataField toAdd = NodeInitializer.addFieldToEntry(node, emf, values);
+                NodeInitializer.addFieldToNode(node, toAdd);
             }
         }
 
@@ -1078,7 +1079,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 newHistoryEvent.getSubfields().put("agent", val);
                 List<IValue> grps = new ArrayList<>();
                 grps.add(newHistoryEvent);
-                ArchiveManagementManager.addGroupData(field, grps);
+                NodeInitializer.addGroupData(field, grps);
                 break;
             }
         }
@@ -2684,11 +2685,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             for (IMetadataField emf : config.getConfiguredFields()) {
                 if (emf.isGroup()) {
                     List<IValue> groups = metadata.get(emf.getName());
-                    ArchiveManagementManager.loadGroupMetadata(entry, emf, groups);
+                    NodeInitializer.loadGroupMetadata(entry, emf, groups);
                 } else {
                     List<IValue> values = metadata.get(emf.getName());
-                    IMetadataField toAdd = ArchiveManagementManager.addFieldToEntry(entry, emf, values);
-                    ArchiveManagementManager.addFieldToNode(entry, toAdd);
+                    IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, values);
+                    NodeInitializer.addFieldToNode(entry, toAdd);
                 }
             }
             entry.calculateFingerprint();
@@ -2711,11 +2712,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             for (IMetadataField emf : config.getConfiguredFields()) {
                 List<IValue> values = metadata.get(emf.getName());
                 if (emf.isGroup()) {
-                    ArchiveManagementManager.loadGroupMetadata(entry, emf, values);
+                    NodeInitializer.loadGroupMetadata(entry, emf, values);
 
                 } else {
-                    IMetadataField toAdd = ArchiveManagementManager.addFieldToEntry(entry, emf, values);
-                    ArchiveManagementManager.addFieldToNode(entry, toAdd);
+                    IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, values);
+                    NodeInitializer.addFieldToNode(entry, toAdd);
                 }
             }
         }
@@ -2738,7 +2739,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     public void addGroup() {
-        ArchiveManagementManager.addGroupData(selectedGroup, null);
+        NodeInitializer.addGroupData(selectedGroup, null);
     }
 
     public void showAllFields() {
@@ -2870,7 +2871,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 // initialize all metadata fields
                 for (IMetadataField emf : config.getConfiguredFields()) {
                     if (emf.isGroup()) {
-                        ArchiveManagementManager.loadGroupMetadata(entry, emf, null);
+                        NodeInitializer.loadGroupMetadata(entry, emf, null);
                     } else {
                         IParameter configuredField = null;
                         for (IParameter param : metadataToAdd) {
@@ -2899,8 +2900,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                             metadataValues.add(val);
                         }
 
-                        IMetadataField toAdd = ArchiveManagementManager.addFieldToEntry(entry, emf, metadataValues);
-                        ArchiveManagementManager.addFieldToNode(entry, toAdd);
+                        IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, metadataValues);
+                        NodeInitializer.addFieldToNode(entry, toAdd);
                     }
                 }
                 entry.calculateFingerprint();
