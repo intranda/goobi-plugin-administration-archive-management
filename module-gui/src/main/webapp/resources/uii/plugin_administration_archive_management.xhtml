@@ -104,8 +104,8 @@
                                                                 target="#{AdministrationForm.administrationPlugin.databaseName}" />
                                                         </h:commandLink>
                                                         <ui:fragment
-                                                            rendered="#{AdministrationForm.administrationPlugin.getExportConfiguration().get(db) != null
-                                                                      or AdministrationForm.administrationPlugin.getExportConfiguration().get('*') != null}">
+                                                            rendered="#{AdministrationForm.administrationPlugin.config.getExportConfiguration().get(db) != null
+                                                                      or AdministrationForm.administrationPlugin.config.getExportConfiguration().get('*') != null}">
                                                             <h:commandLink
                                                                 rendered="#{!AdministrationForm.administrationPlugin.readOnlyModus}"
                                                                 styleClass="btn btn-blank"
@@ -385,7 +385,7 @@
                                                                     rendered="#{entry.label == null}" />
                                                                 <h:panelGroup
                                                                     styleClass="text-secondary"
-                                                                    rendered="#{AdministrationForm.administrationPlugin.showNodeIdInTree}">
+                                                                    rendered="#{AdministrationForm.administrationPlugin.config.showNodeIdInTree}">
                                                                     <h:outputText value=" (#{entry.id})" />
                                                                 </h:panelGroup>
                                                             </span>
@@ -672,8 +672,8 @@
                                         </span>
                                     </h:commandLink>
                                     <ui:fragment
-                                        rendered="#{AdministrationForm.administrationPlugin.getExportConfiguration().get(AdministrationForm.administrationPlugin.databaseName) != null
-                                                  or AdministrationForm.administrationPlugin.getExportConfiguration().get('*') != null}">
+                                        rendered="#{AdministrationForm.administrationPlugin.config.getExportConfiguration().get(AdministrationForm.administrationPlugin.databaseName) != null
+                                                  or AdministrationForm.administrationPlugin.config.getExportConfiguration().get('*') != null}">
                                         <h:commandLink
                                             rendered="#{!AdministrationForm.administrationPlugin.readOnlyModus}"
                                             styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.readOnlyModus ? 'disabled' : ''}"
@@ -760,11 +760,11 @@
                                                         tabindex="-1">
                                                         <h:outputText
                                                             value="#{msgs.plugin_administration_archive_process}"
-                                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null || !AdministrationForm.administrationPlugin.showProjectSelection}" />
+                                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null || !AdministrationForm.administrationPlugin.config.showProjectSelection}" />
 
                                                         <h:outputText
                                                             value="#{msgs.plugin_administration_archive_process_create_process}"
-                                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null and AdministrationForm.administrationPlugin.showProjectSelection}" />
+                                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null and AdministrationForm.administrationPlugin.config.showProjectSelection}" />
 
                                                     </div>
                                                     <div class="form-input">
@@ -774,7 +774,7 @@
                                                                 rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
                                                                 <h:panelGroup
                                                                     layout="block"
-                                                                    rendered="#{!AdministrationForm.administrationPlugin.showProjectSelection}"
+                                                                    rendered="#{!AdministrationForm.administrationPlugin.config.showProjectSelection}"
                                                                     styleClass="d-inline"
                                                                     data-bs-title="#{msgs.plugin_administration_archive_process_create_process}"
                                                                     data-bs-toggle="tooltip">
@@ -816,7 +816,7 @@
 
                                                                 <h:panelGroup
                                                                     layout="block"
-                                                                    rendered="#{AdministrationForm.administrationPlugin.showProjectSelection}"
+                                                                    rendered="#{AdministrationForm.administrationPlugin.config.showProjectSelection}"
                                                                     styleClass="input-group my-auto">
 
                                                                     <!-- select process template -->
@@ -906,7 +906,7 @@
                                                     </div>
                                                     <div class="form-input">
                                                         <ui:repeat
-                                                            value="#{AdministrationForm.administrationPlugin.configuredNodes}"
+                                                            value="#{AdministrationForm.administrationPlugin.config.configuredNodes}"
                                                             var="nodeType">
                                                             <h:commandLink
                                                                 disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}"

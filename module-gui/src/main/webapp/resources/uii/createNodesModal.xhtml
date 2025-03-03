@@ -95,7 +95,7 @@
                                                 itemValue=""
                                                 itemLabel="#{msgs.bitteAuswaehlen}" />
                                             <f:selectItems
-                                                value="#{AdministrationForm.administrationPlugin.configuredNodes}"
+                                                value="#{AdministrationForm.administrationPlugin.config.configuredNodes}"
                                                 var="var"
                                                 itemValue="#{var.nodeName}"
                                                 itemLabel="#{msgs['plugin_administration_archive_nodeType_'.concat(var.nodeName)]}" />

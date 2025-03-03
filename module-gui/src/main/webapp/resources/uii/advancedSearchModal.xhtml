@@ -61,7 +61,7 @@
                                                     itemLabel="#{msgs.bitteAuswaehlen}" />
                                                 <f:selectItems
                                                     var="fieldname"
-                                                    value="#{AdministrationForm.administrationPlugin.advancedSearchFields}"
+                                                    value="#{AdministrationForm.administrationPlugin.config.advancedSearchFields}"
                                                     itemValue="#{fieldname}"
                                                     itemLabel="#{msgs['plugin_administration_archive_'.concat(fieldname)]}" />
                                             </h:selectOneMenu>

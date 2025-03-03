@@ -5,6 +5,8 @@ import java.util.List;
 import org.goobi.production.plugin.interfaces.IAdministrationPlugin;
 import org.jdom2.Document;
 
+import de.intranda.goobi.plugins.model.ArchiveManagementConfiguration;
+
 public interface IArchiveManagementAdministrationPlugin extends IAdministrationPlugin {
 
     @Override
@@ -37,10 +39,6 @@ public interface IArchiveManagementAdministrationPlugin extends IAdministrationP
 
     public void updateSingleNode();
 
-    public List<INodeType> getConfiguredNodes();
-
-    public List<IMetadataField> getConfiguredFields();
-
     public List<IRecordGroup> getRecordGroups();
 
     public void deleteNode();
@@ -48,4 +46,6 @@ public interface IArchiveManagementAdministrationPlugin extends IAdministrationP
     public String saveArchiveAndLeave();
 
     public String cancelEdition();
+
+    public ArchiveManagementConfiguration getConfig();
 }
