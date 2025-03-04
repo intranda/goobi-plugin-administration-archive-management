@@ -772,12 +772,8 @@
                                                             <!-- no process exists, so allow creation of a process here -->
                                                             <ui:fragment
                                                                 rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
-                                                                <h:panelGroup
-                                                                    layout="block"
-                                                                    rendered="#{!AdministrationForm.administrationPlugin.config.showProjectSelection}"
-                                                                    styleClass="d-inline"
-                                                                    data-bs-title="#{msgs.plugin_administration_archive_process_create_process}"
-                                                                    data-bs-toggle="tooltip">
+                                                                <ui:fragment
+                                                                    rendered="#{!AdministrationForm.administrationPlugin.config.showProjectSelection}">
                                                                     <span class="my-auto">
                                                                         <h:outputText value="#{msgs.plugin_administration_archive_process_no_process}" />
                                                                     </span>
@@ -810,7 +806,7 @@
                                                                             </li>
                                                                         </ui:repeat>
                                                                     </ul>
-                                                                </h:panelGroup>
+                                                                </ui:fragment>
 
 
 
