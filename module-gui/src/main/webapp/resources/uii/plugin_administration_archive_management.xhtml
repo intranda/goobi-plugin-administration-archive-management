@@ -250,20 +250,27 @@
                             <!-- GROUP OF TWO VERSIONS OF THE UPLOAD BUTTON -->
                             <h:panelGroup id="uploadFileButtonGroup">
                                 <!-- UPLOAD BUTTON FOR THE CASE WHERE NO SUCH FILE EXISTS YET -->
-                                <h:commandLink
-                                    styleClass="btn btn-primary"
-                                    action="#{AdministrationForm.administrationPlugin.upload}"
-                                    rendered="#{AdministrationForm.administrationPlugin.uploadFile ne null &amp;&amp; not AdministrationForm.administrationPlugin.fileToUploadExists}">
+                                <button
+                                    class="btn btn-primary"
+                                    jsf:action="#{AdministrationForm.administrationPlugin.upload}"
+                                    jsf:rendered="#{AdministrationForm.administrationPlugin.uploadFile ne null &amp;&amp; not AdministrationForm.administrationPlugin.fileToUploadExists}">
                                     <h:outputText value="#{msgs.plugin_administration_archive_uploadDatabase}" />
-                                </h:commandLink>
+                                    <f:ajax
+                                        render="@all"
+                                        execute="@form" />
+                                </button>
                                 <!-- UPLOAD BUTTON FOR THE CASE WHERE AN OLD VERSION OF THE FILE ALREADY EXISTS -->
-                                <h:commandLink
-                                    styleClass="btn btn-primary"
-                                    action="#{AdministrationForm.administrationPlugin.upload}"
-                                    rendered="#{AdministrationForm.administrationPlugin.uploadFile ne null &amp;&amp; AdministrationForm.administrationPlugin.fileToUploadExists}"
-                                    onclick="if (!confirm('#{msgs.plugin_administration_archive_confirmReplacement}')) return false;">
+                                <button
+                                    type="button"
+                                    class="btn btn-primary"
+                                    jsf:action="#{AdministrationForm.administrationPlugin.upload}"
+                                    jsf:rendered="#{AdministrationForm.administrationPlugin.uploadFile ne null &amp;&amp; AdministrationForm.administrationPlugin.fileToUploadExists}"
+                                    jsf:onclick="if (!confirm('#{msgs.plugin_administration_archive_confirmReplacement}')) return false;">
                                     <h:outputText value="#{msgs.plugin_administration_archive_uploadDatabase}" />
-                                </h:commandLink>
+                                    <f:ajax
+                                        render="@all"
+                                        execute="@form" />
+                                </button>
                             </h:panelGroup>
                         </div>
                         <!-- // GROUP OF TWO VERSIONS OF THE UPLOAD BUTTON -->
