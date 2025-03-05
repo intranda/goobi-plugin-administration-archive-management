@@ -7,7 +7,7 @@
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:goobiio="http://goobi.io/facelets"
-    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites">
 <h:body>
     <ui:composition>
         <ui:fragment rendered="#{subfield.fieldType=='input' or subfield.fieldType=='date'}">
@@ -128,7 +128,7 @@
                 </h:commandLink>
             </intranda:formInputViafAjax>
         </ui:fragment>
-        
+
         <ui:fragment rendered="#{subfield.fieldType=='checkbox'}">
             <goobiio:checkbox
                 fieldid="#{subfield.name}checkbox"

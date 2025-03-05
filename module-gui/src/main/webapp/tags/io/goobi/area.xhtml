@@ -7,7 +7,7 @@
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:goobiio="http://goobi.io/facelets"
-    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites">
 <h:body>
     <ui:composition>
         <ui:fragment id="#{area}">
@@ -153,8 +153,8 @@
                                     </h:commandLink>
                                 </div>
                             </ui:fragment>
-                            
-                     
+
+
                                     <ui:fragment rendered="#{item.fieldType=='checkbox'}">
             <goobiio:checkbox
                 fieldid="#{item.name}checkbox"
