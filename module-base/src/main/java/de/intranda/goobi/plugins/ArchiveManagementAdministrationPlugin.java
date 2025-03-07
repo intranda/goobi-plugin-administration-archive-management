@@ -283,7 +283,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     @Getter
     @Setter
-    private ArchiveManagementConfiguration config;
+    private transient ArchiveManagementConfiguration config;
 
     /**
      * Constructor
