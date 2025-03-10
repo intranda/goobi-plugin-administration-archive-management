@@ -127,7 +127,7 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
 
         List<HierarchicalConfiguration> mapping = actaProConfig.configurationsAt("/metadata/field");
         for (HierarchicalConfiguration c : mapping) {
-            MetadataMapping mm = new MetadataMapping(c.getString("@type"), c.getString("@groupType", ""), c.getString("@jsonFieldType", "value"),
+            MetadataMapping mm = new MetadataMapping(c.getString("@type"), c.getString("@groupType", ""), c.getString("@fieldType", "value"),
                     c.getString("@eadField"), c.getString("@eadGroup", ""), c.getString("@eadArea"));
             metadataFields.add(mm);
         }
@@ -173,7 +173,7 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
                     }
 
                     NodeInitializer.initEadNodeWithMetadata(entry, getConfig().getConfiguredFields());
-
+                    entry.calculateFingerprint();
                     String fingerprintBeforeImport = entry.getFingerprint();
 
                     // TODO check if document still have the same parent node
