@@ -652,7 +652,8 @@ public class EadEntry implements IEadEntry {
                                                             actualValue.replaceAll("&(?!amp;|gt;|lt;)", "&amp;")
                                                                     .replace("<", "&lt;")
                                                                     .replace("\"", "\\\"")
-                                                                    .replace(">", "&gt;")));
+                                                                    .replace(">", "&gt;"))
+                                                    .replace("\''", "\\\'"));
                                 }
                                 xml.append("</field>");
                             }
@@ -671,12 +672,16 @@ public class EadEntry implements IEadEntry {
                     }
                     xml.append(">");
                     // mask ending backslash
+                    // TODO mask ' and "
                     String actualValue = val.getValue();
                     if (actualValue.endsWith("\\")) {
                         actualValue = val.getValue() + "\\";
                     }
                     xml.append(
-                            MySQLHelper.escapeSql(actualValue.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "\\\"")));
+                            MySQLHelper.escapeSql(actualValue.replace("&", "&amp;")
+                                    .replace("<", "&lt;")
+                                    .replace(">", "&gt;")
+                                    .replace("\"", "\\\"")).replace("\''", "\\\'"));
                     xml.append("</").append(field.getName()).append(">");
                 }
             }
