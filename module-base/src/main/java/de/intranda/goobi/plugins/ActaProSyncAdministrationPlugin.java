@@ -278,72 +278,68 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
                                     break;
                                 }
                             }
-
-                            EadEntry entry =
-                                    new EadEntry(lastAncestorNode.isHasChildren() ? lastAncestorNode.getSubEntryList().size() : 0,
-                                            lastAncestorNode.getHierarchy() + 1);
-                            entry.setId("id_" + UUID.randomUUID());
-
-                            entry.setLabel(doc.getDocTitle());
-
-                            for (IMetadataField emf : config.getConfiguredFields()) {
-                                if (emf.isGroup()) {
-                                    NodeInitializer.loadGroupMetadata(entry, emf, null);
-                                } else if (emf.getXpath().contains("unittitle")) {
-                                    List<IValue> titleData = new ArrayList<>();
-                                    titleData.add(new ExtendendValue(null, doc.getDocTitle(), null, null));
-                                    IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, titleData);
-                                    NodeInitializer.addFieldToNode(entry, toAdd);
-                                } else if (emf.getName().equals(identifierFieldName)) {
-                                    List<IValue> idData = new ArrayList<>();
-                                    idData.add(new ExtendendValue(null, doc.getDocKey(), null, null));
-                                    IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, idData);
-                                    NodeInitializer.addFieldToNode(entry, toAdd);
-                                } else {
-                                    IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, null);
-                                    NodeInitializer.addFieldToNode(entry, toAdd);
-                                }
-
-                            }
                             try (Client client = ClientBuilder.newClient()) {
-                                //  add all metadata from document
                                 AuthenticationToken token = authenticate(client);
                                 Document currentDoc = getDocumentByKey(client, token, path);
 
-                                parseDocumentMetadata(currentDoc, entry);
-                            }
+                                int orderNumber = 0;
 
-                            for (IMetadataField emf : entry.getIdentityStatementAreaList()) {
-                                if (emf.getName().equals(identifierFieldName)) {
-                                    emf.getValues().get(0).setValue(path);
+                                for (DocumentField field : currentDoc.getBlock().getFields()) {
+                                    String fieldType = field.getType();
+                                    if ("Ref_Gp".equals(fieldType)) {
+                                        for (DocumentField subfield : field.getFields()) {
+                                            if ("Ref_DocOrder".equals(subfield.getType())) {
+                                                orderNumber = Integer.parseInt(subfield.getValue());
+                                            }
+                                        }
+                                    }
                                 }
+                                EadEntry entry =
+                                        new EadEntry(orderNumber,
+                                                lastAncestorNode.getHierarchy() + 1);
+                                entry.setId("id_" + UUID.randomUUID());
+
+                                //  add all metadata from document
+
+                                entry.setLabel(currentDoc.getDocTitle());
+
+                                for (IMetadataField emf : config.getConfiguredFields()) {
+                                    if (emf.isGroup()) {
+                                        NodeInitializer.loadGroupMetadata(entry, emf, null);
+                                    } else if ("unittitle".equals(emf.getName())) {
+                                        List<IValue> titleData = new ArrayList<>();
+                                        titleData.add(new ExtendendValue(null, currentDoc.getDocTitle(), null, null));
+                                        IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, titleData);
+                                        NodeInitializer.addFieldToNode(entry, toAdd);
+                                    } else if (emf.getName().equals(identifierFieldName)) {
+                                        List<IValue> idData = new ArrayList<>();
+                                        idData.add(new ExtendendValue(null, currentDoc.getDocKey(), null, null));
+                                        IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, idData);
+                                        NodeInitializer.addFieldToNode(entry, toAdd);
+                                    } else {
+                                        IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, null);
+                                        NodeInitializer.addFieldToNode(entry, toAdd);
+                                    }
+                                }
+                                parseDocumentMetadata(currentDoc, entry);
+                                if (path.startsWith("Vz")) {
+                                    entry.setNodeType(fileType);
+                                } else {
+                                    entry.setNodeType(folderType);
+                                }
+
+                                // move to correct position within the parent
+                                lastAncestorNode.addSubEntry(entry);
+                                lastAncestorNode.sortElements();
+                                lastAncestorNode.updateHierarchy();
+                                entry.calculateFingerprint();
+
+                                ArchiveManagementManager.saveNode(recordGroup.getId(), entry);
+                                lastElementId = entry.getDatabaseId();
+                                ArchiveManagementManager.updateNodeHierarchy(recordGroup.getId(), lastAncestorNode.getAllNodes());
                             }
-
-                            if (path.startsWith("Vz")) {
-                                entry.setNodeType(fileType);
-                            } else {
-                                entry.setNodeType(folderType);
-                            }
-
-                            if (">Vz      246d752d-952b-48a7-b79d-3d8536bd0bab".equals(path)) {
-                                System.out.println("test");
-                            }
-
-                            entry.setOrderNumber(Integer.parseInt(docOrder));
-                            // move to correct position within the parent
-                            lastAncestorNode.addSubEntry(entry);
-                            lastAncestorNode.sortElements();
-                            lastAncestorNode.updateHierarchy();
-                            entry.calculateFingerprint();
-
-                            ArchiveManagementManager.saveNode(recordGroup.getId(), entry);
-                            lastElementId = entry.getDatabaseId();
-                            ArchiveManagementManager.updateNodeHierarchy(recordGroup.getId(), lastAncestorNode.getAllNodes());
-
                         }
-
                     }
-
                 }
             }
         }
@@ -382,13 +378,25 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
     }
 
     private void addMetadataValue(IEadEntry entry, MetadataMapping matchedMapping, DocumentField matchedField) {
-        String value = null;
-        if ("value".equals(matchedMapping.getJsonFieldType())) {
+        String value = matchedField.getPlainValue();
+        if (StringUtils.isBlank(value)) {
             value = matchedField.getValue();
-        } else if ("plain_value".equals(matchedMapping.getJsonFieldType())) {
-            value = matchedField.getPlainValue();
         }
-        // find configured ead group/field
+
+        //TODO temporary encoding fix
+        value = value
+                .replace("\\'e4", "ä")
+                .replace("\\'f6", "ö")
+                .replace("\\'fc", "ü")
+                .replace("\\'df", "ß")
+                .replace("\\'c4", "Ä")
+                .replace("\\'d6", "Ö")
+                .replace("\\'dc", "Ü")
+
+        ;
+        if (value.contains("'")) {
+            System.out.println(value);
+        }
 
         switch (matchedMapping.getEadArea()) {
             case "1":
@@ -515,11 +523,11 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
                 SearchResultPage srp = response.readEntity(SearchResultPage.class);
                 List<Map<String, String>> contentMap = srp.getContent();
                 for (Map<String, String> content : contentMap) {
-                    String id = content.get("id");
-                    Document doc = getDocumentByKey(client, token, id);
-                    doc.setPath(content.get("path"));
-                    // only add documents from the selected archive
-                    if (doc.getPath().startsWith(rootElementId)) {
+                    if (content.get("path").startsWith(rootElementId)) {
+                        String id = content.get("id");
+                        Document doc = getDocumentByKey(client, token, id);
+                        doc.setPath(content.get("path"));
+                        // only add documents from the selected archive
                         documents.add(doc);
                     }
                 }

@@ -652,8 +652,7 @@ public class EadEntry implements IEadEntry {
                                                             actualValue.replaceAll("&(?!amp;|gt;|lt;)", "&amp;")
                                                                     .replace("<", "&lt;")
                                                                     .replace("\"", "\\\"")
-                                                                    .replace(">", "&gt;"))
-                                                    .replace("\''", "\\\'"));
+                                                                    .replace(">", "&gt;")));
                                 }
                                 xml.append("</field>");
                             }
@@ -681,7 +680,7 @@ public class EadEntry implements IEadEntry {
                             MySQLHelper.escapeSql(actualValue.replace("&", "&amp;")
                                     .replace("<", "&lt;")
                                     .replace(">", "&gt;")
-                                    .replace("\"", "\\\"")).replace("\''", "\\\'"));
+                                    .replace("\"", "\\\"")));
                     xml.append("</").append(field.getName()).append(">");
                 }
             }
