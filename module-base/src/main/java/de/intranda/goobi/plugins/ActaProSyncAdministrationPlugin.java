@@ -137,8 +137,8 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
 
         List<HierarchicalConfiguration> mapping = actaProConfig.configurationsAt("/metadata/field");
         for (HierarchicalConfiguration c : mapping) {
-            MetadataMapping mm = new MetadataMapping(c.getString("@type"), c.getString("@groupType", ""), c.getString("@fieldType", "value"),
-                    c.getString("@eadField"), c.getString("@eadGroup", ""), c.getString("@eadArea"));
+            MetadataMapping mm = new MetadataMapping(c.getString("@type"), c.getString("@groupType", ""), c.getString("@eadField"),
+                    c.getString("@eadGroup", ""), c.getString("@eadArea"));
             metadataFields.add(mm);
         }
 
@@ -391,12 +391,7 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
                 .replace("\\'df", "ß")
                 .replace("\\'c4", "Ä")
                 .replace("\\'d6", "Ö")
-                .replace("\\'dc", "Ü")
-
-        ;
-        if (value.contains("'")) {
-            System.out.println(value);
-        }
+                .replace("\\'dc", "Ü");
 
         switch (matchedMapping.getEadArea()) {
             case "1":
@@ -440,6 +435,284 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
 
     public void uploadToActaPro() {
 
+        // load database
+
+        String databaseName = database.getOne();
+
+        // check if database exist, load it
+
+        RecordGroup recordGroup = ArchiveManagementManager.getRecordGroupByTitle(databaseName);
+        IEadEntry rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
+
+        List<IEadEntry> allNodes = rootElement.getAllNodes();
+        try (Client client = ClientBuilder.newClient()) {
+            AuthenticationToken token = authenticate(client);
+            for (IEadEntry entry : allNodes) {
+                NodeInitializer.initEadNodeWithMetadata(entry, getConfig().getConfiguredFields());
+
+                // check if id field exists
+                String nodeId = null;
+                for (IMetadataField emf : entry.getIdentityStatementAreaList()) {
+                    if (emf.getName().equals(identifierFieldName)) {
+                        nodeId = emf.getValues().get(0).getValue();
+                    }
+                }
+                if (StringUtils.isNotBlank(nodeId)) {
+                    // if yes -> find document
+                    Document doc = getDocumentByKey(client, token, nodeId);
+                    // check if parent is still the same
+                    updateParentDocument(entry, doc);
+
+                    // for each configured field
+                    for (MetadataMapping mm : metadataFields) {
+                        // find node metadata
+                        String value = getNodeMetadataVaue(mm, entry);
+
+                        // find documentField
+                        DocumentField f = null;
+
+                        for (DocumentField field : doc.getBlock().getFields()) {
+                            String fieldType = field.getType();
+
+                            if (StringUtils.isNoneBlank(mm.getJsonGroupType())) {
+                                if (mm.getJsonGroupType().equals(fieldType)) {
+                                    for (DocumentField subfield : field.getFields()) {
+                                        String subType = subfield.getType();
+                                        if (subType.equals(mm.getJsonType())) {
+                                            f = subfield;
+                                        }
+                                    }
+                                }
+                            } else if (mm.getJsonType().equals(fieldType)) {
+                                f = field;
+                            }
+                        }
+                        // change fields
+
+                        if (value != null && f != null) {
+                            // field exists in both instances, update plain_value/value
+                            if (StringUtils.isNotBlank(f.getPlainValue())) {
+                                f.setPlainValue(value);
+                            } else {
+                                f.setValue(value);
+                            }
+                        } else if (value != null && f == null) {
+                            // field is new in node, create new DocumentField
+                            // check if group field is needed,
+                            if (StringUtils.isNoneBlank(mm.getJsonGroupType())) {
+                                DocumentField groupField = null;
+                                // re-use existing group field
+                                for (DocumentField gf : doc.getBlock().getFields()) {
+                                    if (mm.getJsonGroupType().equals(gf.getType())) {
+                                        groupField = gf;
+                                        break;
+                                    }
+                                }
+                                // or create it if its missing
+                                if (groupField == null) {
+                                    groupField = new DocumentField();
+                                    groupField.setType(mm.getJsonGroupType());
+                                    doc.getBlock().addFieldsItem(groupField);
+                                }
+                                // add new field as sub field
+                                DocumentField df = new DocumentField();
+                                df.setType(mm.getJsonType());
+                                df.setValue(value);
+                                groupField.addFieldsItem(df);
+                            } else {
+                                // add new field to block
+                                DocumentField df = new DocumentField();
+                                df.setType(mm.getJsonType());
+                                df.setValue(value);
+                                doc.getBlock().addFieldsItem(df);
+                            }
+
+                        } else if (value == null && f != null) {
+                            // field was deleted in the node, remove DocumentField
+                            if (f.getPlainValue() != null) {
+                                f.setPlainValue(null);
+                            }
+                            f.setValue(null);
+
+                        } else if (value == null && f == null) {
+                            // metadata does not exist on both sides, nothing to do
+                        }
+
+                    }
+
+                    // update document
+                    //                    updateDocument(client, token, doc);
+
+                } else {
+                    // if not -> create new document
+                    //  Document doc = new Document();
+
+                    // add  node type, order, hierarchy, path
+
+                    // add metadata
+                    // insert as new doc
+                    // get id from response document
+                    // save id in node
+                }
+            }
+        }
+
+    }
+
+    private String getNodeMetadataVaue(MetadataMapping mm, IEadEntry entry) {
+        switch (mm.getEadArea()) {
+            case "1":
+                for (IMetadataField emf : entry.getIdentityStatementAreaList()) {
+                    if (StringUtils.isNotBlank(mm.getEadGroup())) {
+                        if (emf.getName().equals(mm.getEadGroup())) {
+                            IMetadataGroup grp = emf.getGroups().get(0);
+                            for (IMetadataField f : grp.getFields()) {
+                                if (f.getName().equals(mm.getEadField())) {
+                                    return f.getValues().get(0).getValue();
+                                }
+                            }
+                        }
+                    } else if (emf.getName().equals(mm.getEadField())) {
+                        return emf.getValues().get(0).getValue();
+                    }
+                }
+
+                break;
+            case "2":
+                for (IMetadataField emf : entry.getContextAreaList()) {
+                    if (StringUtils.isNotBlank(mm.getEadGroup())) {
+                        if (emf.getName().equals(mm.getEadGroup())) {
+                            IMetadataGroup grp = emf.getGroups().get(0);
+                            for (IMetadataField f : grp.getFields()) {
+                                if (f.getName().equals(mm.getEadField())) {
+                                    return f.getValues().get(0).getValue();
+                                }
+                            }
+                        }
+                    } else if (emf.getName().equals(mm.getEadField())) {
+                        return emf.getValues().get(0).getValue();
+                    }
+                }
+                break;
+            case "3":
+                for (IMetadataField emf : entry.getContentAndStructureAreaAreaList()) {
+                    if (StringUtils.isNotBlank(mm.getEadGroup())) {
+                        if (emf.getName().equals(mm.getEadGroup())) {
+                            IMetadataGroup grp = emf.getGroups().get(0);
+                            for (IMetadataField f : grp.getFields()) {
+                                if (f.getName().equals(mm.getEadField())) {
+                                    return f.getValues().get(0).getValue();
+                                }
+                            }
+                        }
+                    } else if (emf.getName().equals(mm.getEadField())) {
+                        return emf.getValues().get(0).getValue();
+                    }
+                }
+                break;
+            case "4":
+                for (IMetadataField emf : entry.getAccessAndUseAreaList()) {
+                    if (StringUtils.isNotBlank(mm.getEadGroup())) {
+                        if (emf.getName().equals(mm.getEadGroup())) {
+                            IMetadataGroup grp = emf.getGroups().get(0);
+                            for (IMetadataField f : grp.getFields()) {
+                                if (f.getName().equals(mm.getEadField())) {
+                                    return f.getValues().get(0).getValue();
+                                }
+                            }
+                        }
+                    } else if (emf.getName().equals(mm.getEadField())) {
+                        return emf.getValues().get(0).getValue();
+                    }
+                }
+                break;
+            case "5":
+                for (IMetadataField emf : entry.getAlliedMaterialsAreaList()) {
+                    if (StringUtils.isNotBlank(mm.getEadGroup())) {
+                        if (emf.getName().equals(mm.getEadGroup())) {
+                            IMetadataGroup grp = emf.getGroups().get(0);
+                            for (IMetadataField f : grp.getFields()) {
+                                if (f.getName().equals(mm.getEadField())) {
+                                    return f.getValues().get(0).getValue();
+                                }
+                            }
+                        }
+                    } else if (emf.getName().equals(mm.getEadField())) {
+                        return emf.getValues().get(0).getValue();
+                    }
+                }
+                break;
+            case "6":
+                for (IMetadataField emf : entry.getNotesAreaList()) {
+                    if (StringUtils.isNotBlank(mm.getEadGroup())) {
+                        if (emf.getName().equals(mm.getEadGroup())) {
+                            IMetadataGroup grp = emf.getGroups().get(0);
+                            for (IMetadataField f : grp.getFields()) {
+                                if (f.getName().equals(mm.getEadField())) {
+                                    return f.getValues().get(0).getValue();
+                                }
+                            }
+                        }
+                    } else if (emf.getName().equals(mm.getEadField())) {
+                        return emf.getValues().get(0).getValue();
+                    }
+                }
+                break;
+            case "7":
+                for (IMetadataField emf : entry.getDescriptionControlAreaList()) {
+                    if (StringUtils.isNotBlank(mm.getEadGroup())) {
+                        if (emf.getName().equals(mm.getEadGroup())) {
+                            IMetadataGroup grp = emf.getGroups().get(0);
+                            for (IMetadataField f : grp.getFields()) {
+                                if (f.getName().equals(mm.getEadField())) {
+                                    return f.getValues().get(0).getValue();
+                                }
+                            }
+                        }
+                    } else if (emf.getName().equals(mm.getEadField())) {
+                        return emf.getValues().get(0).getValue();
+                    }
+                }
+                break;
+            default:
+                // do nothing
+        }
+
+        return null;
+
+    }
+
+    private void updateParentDocument(IEadEntry entry, Document doc) {
+        String parentNodeId = null;
+        for (DocumentField df : doc.getBlock().getFields()) {
+            if ("Ref_DocKey".equals(df.getType())) {
+                parentNodeId = df.getValue();
+            }
+        }
+
+        // ignore root element
+        if (StringUtils.isNotBlank(parentNodeId) && entry.getParentNode() != null) {
+            Integer parentEntryId = ArchiveManagementManager.findNodeById(identifierFieldName, parentNodeId);
+            if (parentEntryId.intValue() != entry.getParentNode().getDatabaseId()) {
+                // parent node was changed
+                IEadEntry parent = entry.getParentNode();
+                // update Ref_DocKey, Ref_DocOrder fields
+                NodeInitializer.initEadNodeWithMetadata(parent, getConfig().getConfiguredFields());
+                String newParentNodeId = null;
+                for (IMetadataField emf : parent.getIdentityStatementAreaList()) {
+                    if (emf.getName().equals(identifierFieldName)) {
+                        newParentNodeId = emf.getValues().get(0).getValue();
+                    }
+                }
+                for (DocumentField df : doc.getBlock().getFields()) {
+                    if ("Ref_DocKey".equals(df.getType())) {
+                        df.setValue(newParentNodeId);
+                    } else if ("Ref_DocOrder".equals(df.getType())) {
+                        df.setValue(String.valueOf(entry.getOrderNumber()));
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -623,4 +896,45 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
             }
         }
     }
+
+    public Document updateDocument(Client client, AuthenticationToken token, Document doc) {
+        if (token == null) {
+            return null;
+        }
+
+        if (StringUtils.isBlank(doc.getDocKey())) {
+            // its a new document, call createDocument instead
+            return null;
+        }
+
+        WebTarget target = client.target(connectorUrl).path("document").path(doc.getDocKey());
+        Invocation.Builder builder = target.request();
+        builder.header("Accept", "application/json");
+        builder.header("Authorization", "Bearer " + token.getAccessToken());
+        Response response = builder.put(Entity.entity(doc, MediaType.APPLICATION_JSON));
+        if (response.getStatus() > 0) {
+            return response.readEntity(Document.class);
+        } else {
+            log.error("Status: {}, Error: {}", response.getStatus(), response.getStatusInfo().getReasonPhrase());
+            return null;
+        }
+    }
+
+    public Document createDocument(Client client, AuthenticationToken token, String parentDocKey, Document doc) {
+        if (token == null) {
+            return null;
+        }
+        WebTarget target = client.target(connectorUrl).path("document").queryParam("parentDocKey", parentDocKey).queryParam("format", "json");
+        Invocation.Builder builder = target.request();
+        builder.header("Accept", "application/json");
+        builder.header("Authorization", "Bearer " + token.getAccessToken());
+        Response response = builder.post(Entity.entity(doc, MediaType.APPLICATION_JSON));
+        if (response.getStatus() > 0) {
+            return response.readEntity(Document.class);
+        } else {
+            log.error("Status: {}, Error: {}", response.getStatus(), response.getStatusInfo().getReasonPhrase());
+            return null;
+        }
+    }
+
 }

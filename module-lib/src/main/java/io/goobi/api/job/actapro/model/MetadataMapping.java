@@ -11,7 +11,6 @@ public class MetadataMapping {
 
     private String jsonType;
     private String jsonGroupType;
-    private String jsonFieldType;
 
     private String eadField;
     private String eadGroup;
