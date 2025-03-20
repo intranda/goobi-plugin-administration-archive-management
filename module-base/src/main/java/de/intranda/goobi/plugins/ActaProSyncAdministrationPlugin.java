@@ -1,6 +1,10 @@
 package de.intranda.goobi.plugins;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -21,6 +25,10 @@ import org.goobi.production.cli.helper.StringPair;
 import org.goobi.production.enums.PluginType;
 import org.goobi.production.plugin.interfaces.IAdministrationPlugin;
 
+import com.fasterxml.jackson.core.exc.StreamWriteException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import de.intranda.goobi.plugins.model.ArchiveManagementConfiguration;
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.RecordGroup;
@@ -34,6 +42,7 @@ import io.goobi.api.job.actapro.model.DocumentField;
 import io.goobi.api.job.actapro.model.DocumentSearchFilter;
 import io.goobi.api.job.actapro.model.DocumentSearchFilter.OperatorEnum;
 import io.goobi.api.job.actapro.model.DocumentSearchParams;
+import io.goobi.api.job.actapro.model.ErrorResponse;
 import io.goobi.api.job.actapro.model.MetadataMapping;
 import io.goobi.api.job.actapro.model.SearchResultPage;
 import jakarta.ws.rs.client.Client;
@@ -87,8 +96,7 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
 
     private transient List<MetadataMapping> metadataFields;
 
-    private INodeType folderType;
-    private INodeType fileType;
+    private transient Map<String, INodeType> nodes;
 
     public ActaProSyncAdministrationPlugin() {
         log.trace("initialize plugin");
@@ -142,11 +150,31 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
             metadataFields.add(mm);
         }
 
+        nodes = new HashMap<>();
+        List<HierarchicalConfiguration> nodeTypes = actaProConfig.configurationsAt("/nodeTypes/type");
+
+        INodeType defaultType = null;
         for (INodeType nodeType : config.getConfiguredNodes()) {
-            if ("file".equals(nodeType.getNodeName())) {
-                fileType = nodeType;
-            } else if ("folder".equals(nodeType.getNodeName())) {
-                folderType = nodeType;
+            if ("folder".equals(nodeType.getNodeName())) {
+                defaultType = nodeType;
+            }
+        }
+
+        for (HierarchicalConfiguration c : nodeTypes) {
+            String actaProType = c.getString("@actaPro");
+            String nodeType = c.getString("@node");
+            INodeType type = null;
+            for (INodeType nt : config.getConfiguredNodes()) {
+                if (nt.getNodeName().equals(nodeType)) {
+                    type = nt;
+                }
+            }
+            if (type != null) {
+                // use configured type
+                nodes.put(actaProType, type);
+            } else {
+                // or default type
+                nodes.put(actaProType, defaultType);
             }
         }
     }
@@ -322,11 +350,8 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
                                     }
                                 }
                                 parseDocumentMetadata(currentDoc, entry);
-                                if (path.startsWith("Vz")) {
-                                    entry.setNodeType(fileType);
-                                } else {
-                                    entry.setNodeType(folderType);
-                                }
+
+                                entry.setNodeType(nodes.get(currentDoc.getType()));
 
                                 // move to correct position within the parent
                                 lastAncestorNode.addSubEntry(entry);
@@ -529,10 +554,7 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
 
                         } else if (value == null && f != null) {
                             // field was deleted in the node, remove DocumentField
-                            if (f.getPlainValue() != null) {
-                                f.setPlainValue(null);
-                            }
-                            f.setValue(null);
+                            doc.getBlock().getFields().remove(f);
 
                         } else if (value == null && f == null) {
                             // metadata does not exist on both sides, nothing to do
@@ -541,7 +563,7 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
                     }
 
                     // update document
-                    //                    updateDocument(client, token, doc);
+                    updateDocument(client, token, doc);
 
                 } else {
                     // if not -> create new document
@@ -775,8 +797,8 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
         //        searchRequest.addDocumentTypesItem("Best");
         //        searchRequest.addDocumentTypesItem("Klas");
         //        searchRequest.addDocumentTypesItem("Ser");
-        searchRequest.addDocumentTypesItem("Vz");
         //        searchRequest.addDocumentTypesItem("Tekt");
+        //        searchRequest.addDocumentTypesItem("Vz");
 
         List<Document> documents = new ArrayList<>();
 
@@ -912,9 +934,12 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
         builder.header("Accept", "application/json");
         builder.header("Authorization", "Bearer " + token.getAccessToken());
         Response response = builder.put(Entity.entity(doc, MediaType.APPLICATION_JSON));
-        if (response.getStatus() > 0) {
+        if (response.getStatus() > 199 && response.getStatus() < 400) {
             return response.readEntity(Document.class);
         } else {
+            ErrorResponse error = response.readEntity(ErrorResponse.class);
+            System.out.println(error);
+
             log.error("Status: {}, Error: {}", response.getStatus(), response.getStatusInfo().getReasonPhrase());
             return null;
         }
@@ -935,6 +960,31 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
             log.error("Status: {}, Error: {}", response.getStatus(), response.getStatusInfo().getReasonPhrase());
             return null;
         }
+    }
+
+    public static void main(String[] args) throws StreamWriteException, DatabindException, FileNotFoundException, IOException {
+
+        ActaProSyncAdministrationPlugin plugin = new ActaProSyncAdministrationPlugin();
+        try (Client client = ClientBuilder.newClient()) {
+            AuthenticationToken token = plugin.authenticate(client);
+            Document doc = plugin.getDocumentByKey(client, token, "Vz      1ce4eedf-ed41-407c-bd09-c3c0d6d3c2f2");
+
+            // change a field
+
+            for (DocumentField df : doc.getBlock().getFields()) {
+                if ("Vz_Bez".equals(df.getType())) {
+                    df.setValue(df.getValue() + " - test");
+                }
+            }
+
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(new FileOutputStream("/tmp/bla.json"), doc);
+
+            // upload document
+            plugin.updateDocument(client, token, doc);
+
+        }
+
     }
 
 }
