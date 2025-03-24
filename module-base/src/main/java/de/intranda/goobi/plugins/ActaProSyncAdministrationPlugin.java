@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -488,97 +489,189 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
                     // check if parent is still the same
                     updateParentDocument(entry, doc);
 
-                    // for each configured field
-                    for (MetadataMapping mm : metadataFields) {
-                        // find node metadata
-                        String value = getNodeMetadataVaue(mm, entry);
-
-                        // find documentField
-                        DocumentField f = null;
-
-                        for (DocumentField field : doc.getBlock().getFields()) {
-                            String fieldType = field.getType();
-
-                            if (StringUtils.isNoneBlank(mm.getJsonGroupType())) {
-                                if (mm.getJsonGroupType().equals(fieldType)) {
-                                    for (DocumentField subfield : field.getFields()) {
-                                        String subType = subfield.getType();
-                                        if (subType.equals(mm.getJsonType())) {
-                                            f = subfield;
-                                        }
-                                    }
-                                }
-                            } else if (mm.getJsonType().equals(fieldType)) {
-                                f = field;
-                            }
+                    // update doc title
+                    for (IMetadataField emf : entry.getIdentityStatementAreaList()) {
+                        if ("unittitle".equals(emf.getName())) {
+                            doc.setDocTitle(emf.getValues().get(0).getValue());
                         }
-                        // change fields
-
-                        if (value != null && f != null) {
-                            // field exists in both instances, update plain_value/value
-                            if (StringUtils.isNotBlank(f.getPlainValue())) {
-                                f.setPlainValue(value);
-                            } else {
-                                f.setValue(value);
-                            }
-                        } else if (value != null && f == null) {
-                            // field is new in node, create new DocumentField
-                            // check if group field is needed,
-                            if (StringUtils.isNoneBlank(mm.getJsonGroupType())) {
-                                DocumentField groupField = null;
-                                // re-use existing group field
-                                for (DocumentField gf : doc.getBlock().getFields()) {
-                                    if (mm.getJsonGroupType().equals(gf.getType())) {
-                                        groupField = gf;
-                                        break;
-                                    }
-                                }
-                                // or create it if its missing
-                                if (groupField == null) {
-                                    groupField = new DocumentField();
-                                    groupField.setType(mm.getJsonGroupType());
-                                    doc.getBlock().addFieldsItem(groupField);
-                                }
-                                // add new field as sub field
-                                DocumentField df = new DocumentField();
-                                df.setType(mm.getJsonType());
-                                df.setValue(value);
-                                groupField.addFieldsItem(df);
-                            } else {
-                                // add new field to block
-                                DocumentField df = new DocumentField();
-                                df.setType(mm.getJsonType());
-                                df.setValue(value);
-                                doc.getBlock().addFieldsItem(df);
-                            }
-
-                        } else if (value == null && f != null) {
-                            // field was deleted in the node, remove DocumentField
-                            doc.getBlock().getFields().remove(f);
-
-                        } else if (value == null && f == null) {
-                            // metadata does not exist on both sides, nothing to do
-                        }
-
                     }
 
-                    // update document
-                    updateDocument(client, token, doc);
+                    if (writeMetadata(entry, doc)) {
 
-                } else {
+                        // update document
+                        updateDocument(client, token, doc);
+                    }
+
+                } else if (entry.getParentNode() != null) {
+                    // only sub elements are allowed, creating new root nodes is not supported
+
                     // if not -> create new document
-                    //  Document doc = new Document();
+                    Document doc = new Document();
+                    doc.setObject("document");
 
-                    // add  node type, order, hierarchy, path
+                    // set  node type
+                    for (Entry<String, INodeType> e : nodes.entrySet()) {
+                        if (e.getValue().getNodeName().equals(entry.getNodeType().getNodeName())) {
+                            doc.setType(e.getKey());
+                        }
+                    }
+
+                    // set doc title
+                    for (IMetadataField emf : entry.getIdentityStatementAreaList()) {
+                        if ("unittitle".equals(emf.getName())) {
+                            doc.setDocTitle(emf.getValues().get(0).getValue());
+                        }
+                    }
+
+                    DocumentBlock block = new DocumentBlock();
+                    doc.setBlock(block);
+                    block.setType(doc.getType());
+
+                    String parentDocKey = null;
+                    IEadEntry parent = entry.getParentNode();
+                    NodeInitializer.initEadNodeWithMetadata(parent, getConfig().getConfiguredFields());
+                    for (IMetadataField emf : parent.getIdentityStatementAreaList()) {
+                        if (emf.getName().equals(identifierFieldName)) {
+                            parentDocKey = emf.getValues().get(0).getValue();
+                        }
+                    }
+
+                    // Ref_Gp group: order (Ref_DocOrder),parent (Ref_DocKey, Ref_Doctype), Ref_Type=P
+
+                    DocumentField refDocKeyField = new DocumentField();
+                    refDocKeyField.setType("Ref_DocKey");
+                    refDocKeyField.setValue(parentDocKey);
+                    block.addFieldsItem(refDocKeyField);
+
+                    DocumentField refDocOrderField = new DocumentField();
+                    refDocOrderField.setType("Ref_DocOrder");
+                    refDocOrderField.setValue(String.valueOf(entry.getOrderNumber()));
+                    block.addFieldsItem(refDocOrderField);
+
+                    for (Entry<String, INodeType> e : nodes.entrySet()) {
+                        if (e.getValue().getNodeName().equals(entry.getNodeType().getNodeName())) {
+                            DocumentField refDocTypeField = new DocumentField();
+                            refDocTypeField.setType("Ref_Doctype");
+                            refDocTypeField.setValue(e.getKey());
+                            block.addFieldsItem(refDocTypeField);
+                        }
+                    }
+
+                    // TODO Ref_Type ???
 
                     // add metadata
+                    writeMetadata(entry, doc);
+
+                    // create required fields:
+
+                    doc.setOwnerId("ACTAPRO"); // TODO config?
+                    doc.setCreatorID("ACTAPRO");
+                    doc.setCreationDate("2025-03-24 12:00:00:000"); // TODO
+                    doc.setChangeDate("2025-03-24 12:00:00:000");
+
                     // insert as new doc
+                    doc = createDocument(client, token, parentDocKey, doc);
+
                     // get id from response document
-                    // save id in node
+                    String newDocumentKey = doc.getDocKey();
+                    // save generated id
+                    for (IMetadataField emf : entry.getIdentityStatementAreaList()) {
+                        if (emf.getName().equals(identifierFieldName)) {
+                            emf.getValues().get(0).setValue(newDocumentKey);
+                        }
+                    }
+                    ArchiveManagementManager.saveNode(recordGroup.getId(), entry);
+
                 }
             }
         }
 
+    }
+
+    private boolean writeMetadata(IEadEntry entry, Document doc) {
+
+        boolean metadataChanged = false;
+
+        // for each configured field
+        for (MetadataMapping mm : metadataFields) {
+            // find node metadata
+            String value = getNodeMetadataVaue(mm, entry);
+
+            // find documentField
+            DocumentField f = null;
+
+            for (DocumentField field : doc.getBlock().getFields()) {
+                String fieldType = field.getType();
+
+                if (StringUtils.isNoneBlank(mm.getJsonGroupType())) {
+                    if (mm.getJsonGroupType().equals(fieldType)) {
+                        for (DocumentField subfield : field.getFields()) {
+                            String subType = subfield.getType();
+                            if (subType.equals(mm.getJsonType())) {
+                                f = subfield;
+                            }
+                        }
+                    }
+                } else if (mm.getJsonType().equals(fieldType)) {
+                    f = field;
+                }
+            }
+            // change fields
+
+            if (value != null && f != null) {
+                // field exists in both instances, update plain_value/value
+                if (StringUtils.isNotBlank(f.getPlainValue())) {
+                    if (!value.equals(f.getPlainValue())) {
+                        f.setPlainValue(value);
+                        metadataChanged = true;
+                    }
+                } else if (!value.equals(f.getValue())) {
+                    f.setValue(value);
+                    metadataChanged = true;
+                }
+            } else if (value != null && f == null) {
+                // field is new in node, create new DocumentField
+                // check if group field is needed
+                if (StringUtils.isNoneBlank(mm.getJsonGroupType())) {
+                    DocumentField groupField = null;
+                    // re-use existing group field
+                    for (DocumentField gf : doc.getBlock().getFields()) {
+                        if (mm.getJsonGroupType().equals(gf.getType())) {
+                            groupField = gf;
+                            break;
+                        }
+                    }
+                    // or create it if its missing
+                    if (groupField == null) {
+                        groupField = new DocumentField();
+                        groupField.setType(mm.getJsonGroupType());
+                        doc.getBlock().addFieldsItem(groupField);
+                    }
+                    // add new field as sub field
+                    DocumentField df = new DocumentField();
+                    df.setType(mm.getJsonType());
+                    df.setValue(value);
+                    groupField.addFieldsItem(df);
+                } else {
+                    // add new field to block
+                    DocumentField df = new DocumentField();
+                    df.setType(mm.getJsonType());
+                    df.setValue(value);
+                    doc.getBlock().addFieldsItem(df);
+                }
+                metadataChanged = true;
+            } else if (value == null && f != null) {
+                // field was deleted in the node, remove DocumentField
+                doc.getBlock().getFields().remove(f);
+                metadataChanged = true;
+
+            } else if (value == null && f == null) {
+                // metadata does not exist on both sides, nothing to do
+            }
+
+        }
+
+        return metadataChanged;
     }
 
     private String getNodeMetadataVaue(MetadataMapping mm, IEadEntry entry) {
@@ -731,6 +824,13 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
                         df.setValue(newParentNodeId);
                     } else if ("Ref_DocOrder".equals(df.getType())) {
                         df.setValue(String.valueOf(entry.getOrderNumber()));
+                    } else if ("Ref_Doctype".equals(df.getType())) {
+                        for (Entry<String, INodeType> e : nodes.entrySet()) {
+                            if (e.getValue().getNodeName().equals(entry.getNodeType().getNodeName())) {
+                                df.setValue(e.getKey());
+                            }
+                        }
+
                     }
                 }
             }
@@ -954,9 +1054,11 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
         builder.header("Accept", "application/json");
         builder.header("Authorization", "Bearer " + token.getAccessToken());
         Response response = builder.post(Entity.entity(doc, MediaType.APPLICATION_JSON));
-        if (response.getStatus() > 0) {
+        if (200 == response.getStatus()) {
             return response.readEntity(Document.class);
         } else {
+            ErrorResponse error = response.readEntity(ErrorResponse.class);
+            System.out.println(error);
             log.error("Status: {}, Error: {}", response.getStatus(), response.getStatusInfo().getReasonPhrase());
             return null;
         }

@@ -1,8 +1,5 @@
 package io.goobi.api.job.actapro.model;
 
-import java.util.Date;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,15 +30,13 @@ public class Document {
 
     @JsonProperty("CreationDate")
     // TODO enable correct format after api got fixed
-    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "GMT")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd.MM.yyyy")
-    private Date creationDate = null;
+    //    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd.MM.yyyy HH:mm:ss:SSS")
+    private String creationDate = null;
 
     @JsonProperty("ChangeDate")
-    // TODO enable correct format after api got fixed
-    // @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "GMT")
     //    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd.MM.yyyy' 'HH:mm:ss:SSS", timezone = "GMT")
     // private Date changeDate = null;
+    //    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd.MM.yyyy HH:mm:ss:SSS")
     private String changeDate = null;
 
     @JsonProperty("object")
@@ -77,11 +72,15 @@ public class Document {
         return this;
     }
 
-    public Document creationDate(Date creationDate) {
+    //    public Document creationDate(Date creationDate) {
+    //        this.creationDate = creationDate;
+    //        return this;
+    //    }
+
+    public Document creationDate(String creationDate) {
         this.creationDate = creationDate;
         return this;
     }
-
     //    public Document changeDate(Date changeDate) {
     //        this.changeDate = changeDate;
     //        return this;
