@@ -754,6 +754,7 @@
                                         id="nodeContentArea"
                                         styleClass="form-content">
                                         <div class="processcreation">
+                                        <!-- TODO: disabled when node type does not allow process creation -->
                                             <fieldSet jsf:id="creationArea">
                                                 <f:passThroughAttribute
                                                     name="#{AdministrationForm.administrationPlugin.allowProcessCreation ? 'data-enabled': 'disabled'}"
@@ -911,7 +912,11 @@
                                                         <ui:repeat
                                                             value="#{AdministrationForm.administrationPlugin.config.configuredNodes}"
                                                             var="nodeType">
+                                                            <!-- case 1: node type is allowed as root element and current element has no parent -->
+                                                            <!-- case 2: node type is allowed as child of parent element -->
+                                                            <!-- (AdministrationForm.administrationPlugin.selectedEntry.parentNode == null and nodeType.rootNode) OR -->
                                                             <h:commandLink
+                                                                rendered = "#{(AdministrationForm.administrationPlugin.selectedEntry.parentNode == null and nodeType.rootNode) || AdministrationForm.administrationPlugin.selectedEntry.parentNode.nodeType.isNodeAllowed(nodeType)}"
                                                                 disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}"
                                                                 styleClass="node fs-600 pe-2 my-auto #{AdministrationForm.administrationPlugin.selectedEntry.nodeType.nodeName == nodeType.nodeName ? 'text-black' : 'text-secondary'}"
                                                                 title="#{msgs['plugin_administration_archive_nodeType_'.concat(nodeType.nodeName)]}">

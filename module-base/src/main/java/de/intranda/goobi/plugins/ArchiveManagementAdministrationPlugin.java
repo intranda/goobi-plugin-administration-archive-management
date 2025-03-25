@@ -57,7 +57,6 @@ import de.intranda.goobi.plugins.model.DuplicationConfiguration;
 import de.intranda.goobi.plugins.model.DuplicationParameter;
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.FieldValue;
-import de.intranda.goobi.plugins.model.NodeType;
 import de.intranda.goobi.plugins.model.ProcessTemplate;
 import de.intranda.goobi.plugins.model.RecordGroup;
 import de.intranda.goobi.plugins.model.TitleComponent;
@@ -473,8 +472,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             rootElement.setId("id_" + UUID.randomUUID());
 
             rootElement.setDisplayChildren(true);
-            INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
-            rootElement.setNodeType(rootType);
+            for (INodeType type : config.getConfiguredNodes()) {
+                if (type.isRootNode()) {
+                    rootElement.setNodeType(type);
+                    break;
+                }
+            }
 
             ArchiveManagementManager.saveNode(recordGroup.getId(), rootElement);
             loadMetadataForNode(rootElement);
@@ -505,8 +508,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             eadElement = collection;
         }
         rootElement = parseElement(0, 0, eadElement, recordGroupId, null);
-        INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
-        rootElement.setNodeType(rootType);
+        for (INodeType type : config.getConfiguredNodes()) {
+            if (type.isRootNode()) {
+                rootElement.setNodeType(type);
+                break;
+            }
+        }
         rootElement.setDisplayChildren(true);
 
         getDuplicationConfiguration();

@@ -96,7 +96,7 @@ public class EadEntryTest {
 
     @Test
     public void testNodeType() {
-        NodeType nt = new NodeType("fixture", "fixture", "fixture", 1);
+        NodeType nt = new NodeType("fixture", "fixture", "fixture", 1, true, true, null);
         EadEntry entry = new EadEntry(1, 1);
         entry.setNodeType(nt);
         assertEquals("fixture", entry.getNodeType().getNodeName());
