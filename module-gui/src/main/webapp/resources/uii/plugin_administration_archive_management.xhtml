@@ -779,7 +779,7 @@
                                                         <div class="w-100 d-flex flex-nowrap justify-content-between">
                                                             <!-- no process exists, so allow creation of a process here -->
                                                             <ui:fragment
-                                                                rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
+                                                                rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null and  AdministrationForm.administrationPlugin.selectedEntry.nodeType.allowProcessCreation}">
                                                                 <ui:fragment
                                                                     rendered="#{!AdministrationForm.administrationPlugin.config.showProjectSelection}">
                                                                     <span class="my-auto">
