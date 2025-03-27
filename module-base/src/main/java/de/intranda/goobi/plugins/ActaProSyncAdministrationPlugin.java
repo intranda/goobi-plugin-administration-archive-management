@@ -3,6 +3,8 @@ package de.intranda.goobi.plugins;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -74,7 +76,7 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
     @Getter
     private String gui = "/uii/plugin_administration_actapro_sync.xhtml";
 
-    private boolean completeSearch = false;
+    private boolean completeSearch = true;
 
     @Getter
     private List<StringPair> configuredInventories;
@@ -98,6 +100,8 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
     private transient List<MetadataMapping> metadataFields;
 
     private transient Map<String, INodeType> nodes;
+
+    private DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss:SSS");
 
     public ActaProSyncAdministrationPlugin() {
         log.trace("initialize plugin");
@@ -196,7 +200,7 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
             AuthenticationToken token = authenticate(client);
             documents = findDocuments(client, token, actaproId);
         }
-
+        long start = System.currentTimeMillis();
         if (!documents.isEmpty()) {
 
             log.debug("found {} documents to check", documents.size());
@@ -369,6 +373,7 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
                 }
             }
         }
+        log.debug("Import duration: " + (System.currentTimeMillis() - start));
 
     }
 
@@ -408,16 +413,6 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
         if (StringUtils.isBlank(value)) {
             value = matchedField.getValue();
         }
-
-        //TODO temporary encoding fix
-        value = value
-                .replace("\\'e4", "ä")
-                .replace("\\'f6", "ö")
-                .replace("\\'fc", "ü")
-                .replace("\\'df", "ß")
-                .replace("\\'c4", "Ä")
-                .replace("\\'d6", "Ö")
-                .replace("\\'dc", "Ü");
 
         switch (matchedMapping.getEadArea()) {
             case "1":
@@ -473,7 +468,8 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
         List<IEadEntry> allNodes = rootElement.getAllNodes();
         try (Client client = ClientBuilder.newClient()) {
             AuthenticationToken token = authenticate(client);
-            for (IEadEntry entry : allNodes) {
+            for (IEadEntry entry : allNodes) { // TODO Ref_Type ???
+
                 NodeInitializer.initEadNodeWithMetadata(entry, getConfig().getConfiguredFields());
 
                 // check if id field exists
@@ -557,8 +553,6 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
                         }
                     }
 
-                    // TODO Ref_Type ???
-
                     // add metadata
                     writeMetadata(entry, doc);
 
@@ -566,8 +560,8 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
 
                     doc.setOwnerId("ACTAPRO"); // TODO config?
                     doc.setCreatorID("ACTAPRO");
-                    doc.setCreationDate("2025-03-24 12:00:00:000"); // TODO
-                    doc.setChangeDate("2025-03-24 12:00:00:000");
+                    doc.setCreationDate(dateFormatter.format(LocalDateTime.now()));
+                    doc.setChangeDate(dateFormatter.format(LocalDateTime.now()));
 
                     // insert as new doc
                     doc = createDocument(client, token, parentDocKey, doc);
@@ -893,15 +887,15 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
             filter.fieldValue("2023-04-14T15:33:44Z");
             searchRequest.addFiltersItem(filter);
         }
-        //        searchRequest.addDocumentTypesItem("Arch");
-        //        searchRequest.addDocumentTypesItem("Best");
-        //        searchRequest.addDocumentTypesItem("Klas");
-        //        searchRequest.addDocumentTypesItem("Ser");
-        //        searchRequest.addDocumentTypesItem("Tekt");
-        //        searchRequest.addDocumentTypesItem("Vz");
+        searchRequest.addDocumentTypesItem("Arch");
+        searchRequest.addDocumentTypesItem("Best");
+        searchRequest.addDocumentTypesItem("Klas");
+        searchRequest.addDocumentTypesItem("Ser");
+        searchRequest.addDocumentTypesItem("Tekt");
+        searchRequest.addDocumentTypesItem("Vz");
 
         List<Document> documents = new ArrayList<>();
-
+        long start = System.currentTimeMillis();
         // post request
         boolean isLast = false;
         int currentPage = 1;
@@ -935,6 +929,8 @@ public class ActaProSyncAdministrationPlugin implements IAdministrationPlugin {
                 isLast = true;
             }
         }
+        log.debug("Found {} documents on {} pages.", documents.size(), currentPage);
+        log.debug("Duration: " + (System.currentTimeMillis() - start));
         return documents;
     }
 
