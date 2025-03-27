@@ -1,5 +1,6 @@
 package io.goobi.api.job.actapro.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -21,7 +22,7 @@ public class DocumentField {
     private String value = null;
 
     @JsonProperty("fields")
-    private List<DocumentField> fields = null;
+    private List<DocumentField> fields = new ArrayList<>();
 
     @JsonProperty("plain_value")
     private String plainValue = null;
