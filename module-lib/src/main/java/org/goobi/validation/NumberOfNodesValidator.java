@@ -12,11 +12,10 @@ import jakarta.faces.validator.ValidatorException;
 
 @FacesValidator(value = "numberOfNodesValidator")
 
-public class NumberOfNodesValidator implements Validator {
+public class NumberOfNodesValidator implements Validator<String> {
 
     @Override
-    public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-        String data = String.valueOf(value);
+    public void validate(FacesContext context, UIComponent component, String data) throws ValidatorException {
 
         FacesMessage message = null;
         boolean valid = true;
