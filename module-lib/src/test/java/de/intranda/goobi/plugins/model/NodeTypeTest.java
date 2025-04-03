@@ -11,7 +11,7 @@ public class NodeTypeTest {
 
     @Before
     public void setUp() {
-        nodeType = new NodeType("NodeName", "DocumentType", "Icon", 123);
+        nodeType = new NodeType("NodeName", "DocumentType", "Icon", 123, true, false, null);
     }
 
     @Test

@@ -671,12 +671,16 @@ public class EadEntry implements IEadEntry {
                     }
                     xml.append(">");
                     // mask ending backslash
+                    // TODO mask ' and "
                     String actualValue = val.getValue();
                     if (actualValue.endsWith("\\")) {
                         actualValue = val.getValue() + "\\";
                     }
                     xml.append(
-                            MySQLHelper.escapeSql(actualValue.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "\\\"")));
+                            MySQLHelper.escapeSql(actualValue.replace("&", "&amp;")
+                                    .replace("<", "&lt;")
+                                    .replace(">", "&gt;")
+                                    .replace("\"", "\\\"")));
                     xml.append("</").append(field.getName()).append(">");
                 }
             }

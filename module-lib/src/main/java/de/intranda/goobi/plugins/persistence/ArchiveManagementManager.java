@@ -588,19 +588,20 @@ public class ArchiveManagementManager implements Serializable {
         return null;
     }
 
-    public static IEadEntry findNodeById(String metadataName, String metadataValue) {
+    public static Integer findNodeById(String metadataName, String metadataValue) {
         StringBuilder sql = new StringBuilder();
         sql.append("select id from archive_record_node WHERE ExtractValue(data, '/xml/")
                 .append(metadataName)
                 .append("') = '")
                 .append(metadataValue)
-                .append("");
+                .append("'");
         try (Connection connection = MySQLHelper.getInstance().getConnection()) {
             QueryRunner run = new QueryRunner();
-            return run.query(connection, sql.toString(), resultSetToNodeHandler);
+            return run.query(connection, sql.toString(), MySQLHelper.resultSetToIntegerHandler);
         } catch (SQLException e) {
             log.error(e);
         }
         return null;
     }
+
 }

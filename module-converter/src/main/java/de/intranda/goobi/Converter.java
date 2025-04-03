@@ -50,8 +50,8 @@ public class Converter {
         oldConfigurationFile.setListDelimiter('&');
         oldConfigurationFile.setReloadingStrategy(new FileChangedReloadingStrategy());
         oldConfigurationFile.setExpressionEngine(new XPathExpressionEngine());
-        plugin.setXmlConfig(oldConfigurationFile);
-        plugin.readConfiguration();
+        plugin.getConfig().setXmlConfig(oldConfigurationFile);
+        plugin.getConfig().readConfiguration("");
 
         // load mapping file
         XMLConfiguration config = new XMLConfiguration(mappingFile);
@@ -83,10 +83,10 @@ public class Converter {
                 plugin.parseEadFile(document);
 
                 // change namespace, if needed
-                plugin.setNameSpaceWrite(Namespace.getNamespace("ead", config.getString("/newNamespace", "urn:isbn:1-931666-22-9")));
+                plugin.getConfig().setNameSpaceWrite(Namespace.getNamespace("ead", config.getString("/newNamespace", "urn:isbn:1-931666-22-9")));
 
                 // replace xpath in mappings
-                for (IMetadataField emf : plugin.getConfiguredFields()) {
+                for (IMetadataField emf : plugin.getConfig().getConfiguredFields()) {
                     String xpath = xpathMap.get(emf.getName());
                     if (StringUtils.isNotBlank(xpath)) {
                         emf.setXpath(xpath);
@@ -95,7 +95,7 @@ public class Converter {
                 // write new xml file with new mapping
                 Document outpuDoc = new Document();
 
-                Element eadRoot = new Element("ead", plugin.getNameSpaceWrite());
+                Element eadRoot = new Element("ead", plugin.getConfig().getNameSpaceWrite());
                 outpuDoc.setRootElement(eadRoot);
                 plugin.addMetadata(eadRoot, plugin.getRootElement(), eadRoot, false);
 

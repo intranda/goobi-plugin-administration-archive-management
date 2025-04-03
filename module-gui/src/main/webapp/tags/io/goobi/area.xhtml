@@ -7,7 +7,7 @@
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:goobiio="http://goobi.io/facelets"
-    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG">
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites">
 <h:body>
     <ui:composition>
         <ui:fragment id="#{area}">
@@ -25,6 +25,7 @@
                 </ui:repeat>
             </span>
             <div class="border-top w-100">
+            
                 <ui:repeat
                     var="item"
                     value="#{itemlist}"
@@ -35,14 +36,14 @@
                             var="field">
                             <ui:fragment rendered="#{item.fieldType=='input' or item.fieldType=='date'}">
                                 <goobiio:input
-                                    fieldid="#{item.name}input"
+                                    fieldid="input"
                                     fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
                                     fieldvalue="#{field.value}"
                                     deletable="true" />
                             </ui:fragment>
                             <ui:fragment rendered="#{item.fieldType=='textarea'}">
                                 <goobiio:textarea
-                                    fieldid="#{item.name}textarea"
+                                    fieldid="textarea"
                                     fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
                                     fieldvalue="#{field.value}"
                                     deletable="true" />
@@ -51,7 +52,7 @@
                                 <goobiio:dropdown
                                     fieldtype="#{item}"
                                     vocabularyname="#{item.vocabularyName}"
-                                    fieldid="#{item.name}dropdown"
+                                    fieldid="dropdown"
                                     fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
                                     fieldvalue="#{field.value}"
                                     selectItems="#{field.selectItemList}"
@@ -61,7 +62,7 @@
                                 <goobiio:multiselect
                                     fieldtype="#{item}"
                                     vocabularyname="#{item.vocabularyName}"
-                                    fieldid="#{item.name}multiselect"
+                                    fieldid="multiselect"
                                     fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
                                     fieldvalue="#{field.multiselectValue}"
                                     selectItems="#{field.possibleValues}"
@@ -70,13 +71,13 @@
                             </ui:fragment>
                             <ui:fragment rendered="#{item.fieldType=='readonly'}">
                                 <goobiio:readonly
-                                    fieldid="#{item.name}readonly"
+                                    fieldid="readonly"
                                     fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
                                     fieldvalue="#{field.value}" />
                             </ui:fragment>
                             <ui:fragment rendered="#{item.fieldType=='nodelink'}">
                                 <goobiio:nodelink
-                                    fieldid="#{item.name}nodelink"
+                                    fieldid="nodelink"
                                     fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
                                     fieldvalue="#{field.value}" />
                             </ui:fragment>
@@ -153,8 +154,8 @@
                                     </h:commandLink>
                                 </div>
                             </ui:fragment>
-                            
-                     
+
+
                                     <ui:fragment rendered="#{item.fieldType=='checkbox'}">
             <goobiio:checkbox
                 fieldid="#{item.name}checkbox"

@@ -15,17 +15,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
-import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang3.StringUtils;
 import org.goobi.beans.Batch;
 import org.goobi.beans.Process;
@@ -50,7 +45,6 @@ import org.goobi.production.enums.PluginType;
 import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.Namespace;
 import org.jdom2.Text;
 import org.jdom2.filter.Filters;
 import org.jdom2.output.Format;
@@ -58,16 +52,16 @@ import org.jdom2.output.XMLOutputter;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
+import de.intranda.goobi.plugins.model.ArchiveManagementConfiguration;
 import de.intranda.goobi.plugins.model.DuplicationConfiguration;
 import de.intranda.goobi.plugins.model.DuplicationParameter;
 import de.intranda.goobi.plugins.model.EadEntry;
-import de.intranda.goobi.plugins.model.EadMetadataField;
 import de.intranda.goobi.plugins.model.FieldValue;
-import de.intranda.goobi.plugins.model.NodeType;
 import de.intranda.goobi.plugins.model.ProcessTemplate;
 import de.intranda.goobi.plugins.model.RecordGroup;
 import de.intranda.goobi.plugins.model.TitleComponent;
 import de.intranda.goobi.plugins.persistence.ArchiveManagementManager;
+import de.intranda.goobi.plugins.persistence.NodeInitializer;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.BeanHelper;
 import de.sub.goobi.helper.FacesContextHelper;
@@ -84,10 +78,7 @@ import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.ProjectManager;
 import de.sub.goobi.validator.ExtendedDateTimeFormatLexer;
 import de.sub.goobi.validator.ExtendedDateTimeFormatParser;
-import io.goobi.vocabulary.exchange.FieldDefinition;
-import io.goobi.vocabulary.exchange.VocabularySchema;
 import io.goobi.workflow.api.vocabulary.APIException;
-import io.goobi.workflow.api.vocabulary.VocabularyAPIManager;
 import io.goobi.workflow.api.vocabulary.helper.ExtendedVocabulary;
 import io.goobi.workflow.api.vocabulary.helper.ExtendedVocabularyRecord;
 import io.goobi.workflow.locking.LockingBean;
@@ -159,20 +150,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Setter
     private transient IEadEntry destinationEntry;
 
-    private Namespace nameSpaceRead;
-    @Getter
-    @Setter
-    private Namespace nameSpaceWrite;
     private static XPathFactory xFactory = XPathFactory.instance();
-
-    @Getter
-    @Setter
-    private XMLConfiguration xmlConfig;
-    @Getter
-    private transient List<IMetadataField> configuredFields;
-
-    @Getter
-    private transient List<INodeType> configuredNodes;
 
     @Getter
     @Setter
@@ -206,14 +184,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Setter
     private boolean displayControlArea;
 
-    @Getter
-    public boolean showNodeIdInTree;
-
     @Setter
     private Process processTemplate;
     private BeanHelper bhelp = new BeanHelper();
-
-    private String nodeDefaultTitle;
 
     private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -232,32 +205,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Setter
     private String selectedProject;
 
-    @Getter
-    private boolean showProjectSelection;
-
     private List<StringPair> projects = new ArrayList<>();
-
-    // maximum length of each component that is to be used to generate the process title
-    private int lengthLimit;
-    // separator that will be used to join all components into a process title
-    private String separator;
-
-    private transient List<TitleComponent> titleParts = new ArrayList<>();
-    // true if the id to be used should be taken from current node's parent node, false if it should be of the current node
-    private boolean useIdFromParent;
 
     // true if the selected file to upload already has an older version in the same path, false otherwise
     @Getter
     @Setter
     private boolean fileToUploadExists = false;
 
-    private String identifierMetadataName = "NodeId";
-    private String identifierNodeName = "id";
-
     private transient IConfiguration duplicationConfiguration = null;
-
-    @Getter
-    private List<String> advancedSearchFields = new ArrayList<>();
 
     @Getter
     @Setter
@@ -293,8 +248,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private String nodeType;
 
     private transient List<IParameter> metadataToAdd;
-    @Getter
-    private List<String> metadataFieldNames = new ArrayList<>();
 
     private boolean readOnlyMode = true;
 
@@ -317,11 +270,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private List<String> inventoryList = new ArrayList<>();
 
     @Getter
-    private Map<String, List<String>> exportConfiguration;
-
-    private transient VocabularyAPIManager vocabularyAPI = null;
-
-    @Getter
     private transient ExtendedVocabularyRecord newRecord;
 
     @Getter
@@ -332,6 +280,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Setter
     private boolean displayAllFields = false;
 
+    @Getter
+    @Setter
+    private transient ArchiveManagementConfiguration config;
+
     /**
      * Constructor
      */
@@ -339,17 +291,18 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         try {
 
             ArchiveManagementManager.createTables();
-            vocabularyAPI = VocabularyAPIManager.getInstance();
+
         } catch (APIException e) {
             // api is not running
         }
-
+        advancedSearch = new ArrayList<>();
+        advancedSearch.add(new StringPair());
+        advancedSearch.add(new StringPair());
+        advancedSearch.add(new StringPair());
+        advancedSearch.add(new StringPair());
+        advancedSearch.add(new StringPair());
         try {
-            xmlConfig = new XMLConfiguration(
-                    ConfigurationHelper.getInstance().getConfigurationFolder() + "plugin_intranda_administration_archive_management.xml");
-            xmlConfig.setListDelimiter('&');
-            xmlConfig.setReloadingStrategy(new FileChangedReloadingStrategy());
-            xmlConfig.setExpressionEngine(new XPathExpressionEngine());
+            config = new ArchiveManagementConfiguration();
 
             User user = Helper.getCurrentUser();
             if (user != null) {
@@ -398,7 +351,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     }
                 }
             }
-            readExportConfiguration();
+            config.readExportConfiguration();
+            displayIdentityStatementArea = config.isDisplayIdentityStatementArea();
+            displayContextArea = config.isDisplayContextArea();
+            displayContentArea = config.isDisplayContentArea();
+            displayAccessArea = config.isDisplayAccessArea();
+            displayMaterialsArea = config.isDisplayMaterialsArea();
+            displayNotesArea = config.isDisplayNotesArea();
+            displayControlArea = config.isDisplayControlArea();
 
         } catch (ConfigurationException e2) {
             log.error(e2);
@@ -468,7 +428,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             if (StringUtils.isNotBlank(databaseName)) {
                 recordGroup = ArchiveManagementManager.getRecordGroupByTitle(databaseName);
                 // get field definitions from config file
-                readConfiguration();
+                config.readConfiguration(databaseName);
                 rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
                 loadMetadataForNode(rootElement);
                 rootElement.setDisplayChildren(true);
@@ -496,7 +456,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     public void createNewDatabase() {
         if (StringUtils.isNotBlank(databaseName)) {
 
-            readConfiguration();
+            config.readConfiguration(databaseName);
             if (ArchiveManagementManager.getRecordGroupByTitle(databaseName) != null) {
                 Helper.setFehlerMeldung("plugin_administration_archive_recordGroupExists");
                 databaseName = null;
@@ -512,8 +472,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             rootElement.setId("id_" + UUID.randomUUID());
 
             rootElement.setDisplayChildren(true);
-            INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
-            rootElement.setNodeType(rootType);
+            for (INodeType type : config.getConfiguredNodes()) {
+                if (type.isRootNode()) {
+                    rootElement.setNodeType(type);
+                    break;
+                }
+            }
 
             ArchiveManagementManager.saveNode(recordGroup.getId(), rootElement);
             loadMetadataForNode(rootElement);
@@ -539,13 +503,17 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         Element eadElement = null;
         Element collection = document.getRootElement();
         if ("collection".equals(collection.getName())) {
-            eadElement = collection.getChild("ead", nameSpaceRead);
+            eadElement = collection.getChild("ead", config.getNameSpaceRead());
         } else {
             eadElement = collection;
         }
         rootElement = parseElement(0, 0, eadElement, recordGroupId, null);
-        INodeType rootType = new NodeType("root", null, "fa fa-home", 0);
-        rootElement.setNodeType(rootType);
+        for (INodeType type : config.getConfiguredNodes()) {
+            if (type.isRootNode()) {
+                rootElement.setNodeType(type);
+                break;
+            }
+        }
         rootElement.setDisplayChildren(true);
 
         getDuplicationConfiguration();
@@ -565,10 +533,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private IEadEntry parseElement(int order, int hierarchy, Element element, Integer recordGroupId, IEadEntry parent) {
         IEadEntry entry = new EadEntry(order, hierarchy);
 
-        for (IMetadataField emf : configuredFields) {
+        for (IMetadataField emf : config.getConfiguredFields()) {
             if (emf.isGroup()) {
                 // find group root element
-                XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, nameSpaceRead);
+                XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, config.getNameSpaceRead());
                 List<IValue> groups = new ArrayList<>();
                 List<Element> values = engine.evaluate(element);
                 for (Element groupElement : values) {
@@ -582,24 +550,24 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                         gv.getSubfields().put(sub.getName(), valueList);
                     }
                 }
-                loadGroupMetadata(entry, emf, groups);
+                NodeInitializer.loadGroupMetadata(entry, emf, groups);
             } else {
                 List<IValue> valueList = getValuesFromXml(element, emf);
-                IMetadataField toAdd = addFieldToEntry(entry, emf, valueList);
-                addFieldToNode(entry, toAdd);
+                IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, valueList);
+                NodeInitializer.addFieldToNode(entry, toAdd);
             }
         }
 
-        Element eadheader = element.getChild("eadheader", nameSpaceRead);
+        Element eadheader = element.getChild("eadheader", config.getNameSpaceRead());
 
         entry.setId(element.getAttributeValue("id"));
         if (eadheader != null) {
             try {
-                Element filedesc = eadheader.getChild("filedesc", nameSpaceRead);
+                Element filedesc = eadheader.getChild("filedesc", config.getNameSpaceRead());
                 if (filedesc != null) {
-                    Element titlestmt = filedesc.getChild("titlestmt", nameSpaceRead);
+                    Element titlestmt = filedesc.getChild("titlestmt", config.getNameSpaceRead());
                     if (titlestmt != null) {
-                        String titleproper = titlestmt.getChildText("titleproper", nameSpaceRead);
+                        String titleproper = titlestmt.getChildText("titleproper", config.getNameSpaceRead());
                         entry.setLabel(titleproper);
                     }
                 }
@@ -611,34 +579,34 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         // nodeType
         // get child elements
         List<Element> clist = null;
-        Element archdesc = element.getChild("archdesc", nameSpaceRead);
+        Element archdesc = element.getChild("archdesc", config.getNameSpaceRead());
         if (archdesc != null) {
             String nodeTypeName = archdesc.getAttributeValue("localtype");
-            for (INodeType nt : configuredNodes) {
+            for (INodeType nt : config.getConfiguredNodes()) {
                 if (nt.getNodeName().equals(nodeTypeName)) {
                     entry.setNodeType(nt);
                 }
             }
-            Element dsc = archdesc.getChild("dsc", nameSpaceRead);
+            Element dsc = archdesc.getChild("dsc", config.getNameSpaceRead());
             if (dsc != null) {
                 // read process title
-                List<Element> altformavailList = dsc.getChildren("altformavail", nameSpaceRead);
+                List<Element> altformavailList = dsc.getChildren("altformavail", config.getNameSpaceRead());
                 for (Element altformavail : altformavailList) {
                     if ("goobi_process".equals(altformavail.getAttributeValue("localtype"))) {
                         entry.setGoobiProcessTitle(altformavail.getText());
                     }
                 }
-                clist = dsc.getChildren("c", nameSpaceRead);
+                clist = dsc.getChildren("c", config.getNameSpaceRead());
             }
 
         } else {
             String nodeTypeName = element.getAttributeValue("otherlevel");
-            for (INodeType nt : configuredNodes) {
+            for (INodeType nt : config.getConfiguredNodes()) {
                 if (nt.getNodeName().equals(nodeTypeName)) {
                     entry.setNodeType(nt);
                 }
             }
-            List<Element> altformavailList = element.getChildren("altformavail", nameSpaceRead);
+            List<Element> altformavailList = element.getChildren("altformavail", config.getNameSpaceRead());
             for (Element altformavail : altformavailList) {
                 if ("goobi_process".equals(altformavail.getAttributeValue("localtype"))) {
                     entry.setGoobiProcessTitle(altformavail.getText());
@@ -646,7 +614,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
         }
         if (entry.getNodeType() == null) {
-            entry.setNodeType(configuredNodes.get(0));
+            entry.setNodeType(config.getConfiguredNodes().get(0));
         }
         // generate new id, if id is null
         if (entry.getId() == null) {
@@ -673,7 +641,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
 
         if (clist == null) {
-            clist = element.getChildren("c", nameSpaceRead);
+            clist = element.getChildren("c", config.getNameSpaceRead());
         }
         if (clist != null) {
             int subOrder = 0;
@@ -692,7 +660,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private List<IValue> getValuesFromXml(Element element, IMetadataField emf) {
         List<IValue> valueList = new ArrayList<>();
         if ("text".equalsIgnoreCase(emf.getXpathType())) {
-            XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, nameSpaceRead);
+            XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, config.getNameSpaceRead());
             List<Text> values = engine.evaluate(element);
             if (emf.isRepeatable()) {
                 for (Text value : values) {
@@ -705,7 +673,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 valueList.add(new ExtendendValue(emf.getName(), stringValue, null, null));
             }
         } else if ("attribute".equalsIgnoreCase(emf.getXpathType())) {
-            XPathExpression<Attribute> engine = xFactory.compile(emf.getXpath(), Filters.attribute(), null, nameSpaceRead);
+            XPathExpression<Attribute> engine = xFactory.compile(emf.getXpath(), Filters.attribute(), null, config.getNameSpaceRead());
             List<Attribute> values = engine.evaluate(element);
 
             if (emf.isRepeatable()) {
@@ -719,7 +687,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 valueList.add(new ExtendendValue(emf.getName(), stringValue, null, null));
             }
         } else {
-            XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, nameSpaceRead);
+            XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, config.getNameSpaceRead());
             List<Element> values = engine.evaluate(element);
             if (emf.isRepeatable()) {
                 for (Element value : values) {
@@ -737,289 +705,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
         }
         return valueList;
-    }
-
-    /**
-     * Add the metadata to the configured level
-     */
-
-    private IMetadataField addFieldToEntry(IEadEntry entry, IMetadataField emf, List<IValue> values) {
-
-        IMetadataField toAdd = new EadMetadataField(emf.getName(), emf.getLevel(), emf.getXpath(), emf.getXpathType(), emf.isRepeatable(),
-                emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild(), emf.getValidationType(),
-                emf.getRegularExpression(), emf.isSearchable(), emf.getViafSearchFields(), emf.getViafDisplayFields(), emf.isGroup(),
-                emf.getVocabularyName());
-        toAdd.setValidationError(emf.getValidationError());
-        toAdd.setSelectItemList(emf.getSelectItemList());
-        toAdd.setSearchParameter(emf.getSearchParameter());
-        if (entry != null) {
-            if (StringUtils.isBlank(entry.getLabel()) && emf.getXpath().contains("unittitle") && values != null && !values.isEmpty()) {
-                IValue value = values.get(0);
-                entry.setLabel(((ExtendendValue) value).getValue());
-            }
-            toAdd.setEadEntry(entry);
-        }
-
-        if (values != null && !values.isEmpty()) {
-            toAdd.setShowField(true);
-
-            // split single value into multiple fields
-            for (IValue value : values) {
-                ExtendendValue val = (ExtendendValue) value;
-                IFieldValue fv = new FieldValue(toAdd);
-                String stringValue = val.getValue();
-                fv.setAuthorityType(val.getAuthorityType());
-                fv.setAuthorityValue(val.getAuthorityValue());
-
-                if ("multiselect".equals(toAdd.getFieldType()) && StringUtils.isNotBlank(stringValue)) {
-                    String[] splittedValues = stringValue.split("; ");
-                    for (String s : splittedValues) {
-                        fv.setMultiselectValue(s);
-                    }
-                } else {
-                    fv.setValue(stringValue);
-                }
-                toAdd.addFieldValue(fv);
-            }
-        } else {
-            IFieldValue fv = new FieldValue(toAdd);
-            toAdd.addFieldValue(fv);
-        }
-        return toAdd;
-
-    }
-
-    private void addFieldToNode(IEadEntry entry, IMetadataField toAdd) {
-        switch (toAdd.getLevel()) {
-            case 1:
-                entry.getIdentityStatementAreaList().add(toAdd);
-                break;
-            case 2:
-                entry.getContextAreaList().add(toAdd);
-                break;
-            case 3:
-                entry.getContentAndStructureAreaAreaList().add(toAdd);
-                break;
-            case 4:
-                entry.getAccessAndUseAreaList().add(toAdd);
-                break;
-            case 5:
-                entry.getAlliedMaterialsAreaList().add(toAdd);
-                break;
-            case 6:
-                entry.getNotesAreaList().add(toAdd);
-                break;
-            case 7:
-                entry.getDescriptionControlAreaList().add(toAdd);
-                break;
-            default:
-        }
-    }
-
-    public void readExportConfiguration() {
-        exportConfiguration = new HashMap<>();
-        List<HierarchicalConfiguration> subconfig = xmlConfig.configurationsAt("/export/file");
-
-        for (HierarchicalConfiguration hc : subconfig) {
-            String filename = hc.getString("@name");
-            List<String> exportFolders = Arrays.asList(hc.getStringArray("/folder"));
-            exportConfiguration.put(filename, exportFolders);
-        }
-    }
-
-    /**
-     * read in all parameters from the configuration file
-     * 
-     */
-    public void readConfiguration() {
-        log.debug("reading configuration");
-        configuredFields = new ArrayList<>();
-        configuredNodes = new ArrayList<>();
-
-        HierarchicalConfiguration config = null;
-        try {
-            config = xmlConfig.configurationAt("//config[./archive = '" + databaseName + "']");
-        } catch (IllegalArgumentException e) {
-            try {
-                config = xmlConfig.configurationAt("//config[./archive = '*']");
-            } catch (IllegalArgumentException e1) {
-                // do nothing
-            }
-        }
-
-        readExportConfiguration();
-
-        nameSpaceRead = Namespace.getNamespace("ead", config.getString("/eadNamespaceRead", "urn:isbn:1-931666-22-9"));
-        nameSpaceWrite = Namespace.getNamespace("ead", config.getString("/eadNamespaceWrite", "urn:isbn:1-931666-22-9"));
-
-        showProjectSelection = config.getBoolean("/showProjectSelection", false);
-
-        showNodeIdInTree = config.getBoolean("/treeView/showNodeId", false);
-
-        for (String level : config.getStringArray("/showGroup/@level")) {
-            switch (level) {
-                case "1":
-                    displayIdentityStatementArea = true;
-                    break;
-                case "2":
-                    displayContextArea = true;
-                    break;
-                case "3":
-                    displayContentArea = true;
-                    break;
-                case "4":
-                    displayAccessArea = true;
-                    break;
-                case "5":
-                    displayMaterialsArea = true;
-                    break;
-                case "6":
-                    displayNotesArea = true;
-                    break;
-                case "7":
-                    displayControlArea = true;
-                    break;
-                default:
-                    break;
-            }
-        }
-        identifierMetadataName = config.getString("/processIdentifierField", "NodeId");
-        identifierNodeName = config.getString("/nodeIdentifierField", "id");
-
-        nodeDefaultTitle = config.getString("/nodeDefaultTitle", "-");
-        for (HierarchicalConfiguration hc : config.configurationsAt("/node")) {
-            INodeType nt = new NodeType(hc.getString("@name"), hc.getString("@ruleset"), hc.getString("@icon"), hc.getInt("@processTemplateId"));
-            configuredNodes.add(nt);
-        }
-
-        // configurations for generating process title
-        lengthLimit = config.getInt("/lengthLimit", 0);
-        separator = config.getString("/separator", "_");
-        useIdFromParent = config.getBoolean("/useIdFromParent", false);
-
-        for (HierarchicalConfiguration hc : config.configurationsAt("/title")) {
-            String name = hc.getString("@name");
-            String manipulationType = hc.getString("@type", null);
-            String value = hc.getString("@value", "");
-            TitleComponent comp = new TitleComponent(name, manipulationType, value);
-            titleParts.add(comp);
-        }
-        advancedSearchFields = new ArrayList<>();
-        advancedSearch = new ArrayList<>();
-        advancedSearch.add(new StringPair());
-        advancedSearch.add(new StringPair());
-        advancedSearch.add(new StringPair());
-        advancedSearch.add(new StringPair());
-        advancedSearch.add(new StringPair());
-
-        // configurations for metadata
-        for (HierarchicalConfiguration fieldConfig : config.configurationsAt("/metadata")) {
-            IMetadataField field = new EadMetadataField(fieldConfig.getString("@name"), fieldConfig.getInt("@level"), fieldConfig.getString("@xpath"),
-                    fieldConfig.getString("@xpathType", "element"), fieldConfig.getBoolean("@repeatable", false),
-                    fieldConfig.getBoolean("@visible", true),
-                    fieldConfig.getBoolean("@showField", false), fieldConfig.getString("@fieldType", "input"),
-                    fieldConfig.getString("@rulesetName", null),
-                    fieldConfig.getBoolean("@importMetadataInChild", false), fieldConfig.getString("@validationType", null),
-                    fieldConfig.getString("@regularExpression"),
-                    fieldConfig.getBoolean("@searchable", false), fieldConfig.getString("@searchFields", null),
-                    fieldConfig.getString("@displayFields", null),
-                    fieldConfig.getBoolean("@group", false),
-                    fieldConfig.getString("/vocabulary"));
-            configureField(fieldConfig, field);
-            configuredFields.add(field);
-            // groups
-            if (field.isGroup()) {
-                for (HierarchicalConfiguration subfieldConfig : fieldConfig.configurationsAt("/metadata")) {
-                    IMetadataField subfield = new EadMetadataField(subfieldConfig.getString("@name"), subfieldConfig.getInt("@level"),
-                            subfieldConfig.getString("@xpath"),
-                            subfieldConfig.getString("@xpathType", "element"), subfieldConfig.getBoolean("@repeatable", false),
-                            subfieldConfig.getBoolean("@visible", true),
-                            subfieldConfig.getBoolean("@showField", false), subfieldConfig.getString("@fieldType", "input"),
-                            subfieldConfig.getString("@rulesetName", null),
-                            subfieldConfig.getBoolean("@importMetadataInChild", false), subfieldConfig.getString("@validationType", null),
-                            subfieldConfig.getString("@regularExpression"),
-                            subfieldConfig.getBoolean("@searchable", false), subfieldConfig.getString("@searchFields", null),
-                            subfieldConfig.getString("@displayFields", null),
-                            false, subfieldConfig.getString("/vocabulary"));
-                    configureField(subfieldConfig, subfield);
-                    field.addSubfield(subfield);
-                }
-            }
-            if (field.isVisible()) {
-                metadataFieldNames.add(field.getName());
-            }
-
-        }
-        ArchiveManagementManager.setConfiguredNodes(configuredNodes);
-    }
-
-    private void configureField(HierarchicalConfiguration fieldConfig, IMetadataField field) {
-        if (field.isSearchable()) {
-            advancedSearchFields.add(field.getName());
-        }
-
-        field.setValidationError(fieldConfig.getString("/validationError"));
-        field.setSearchParameter(Arrays.asList(fieldConfig.getStringArray("/searchParameter")));
-
-        if ("dropdown".equals(field.getFieldType()) || "multiselect".equals(field.getFieldType())) {
-            List<String> valueList = Arrays.asList(fieldConfig.getStringArray("/value"));
-            if (valueList == null || valueList.isEmpty()) {
-                loadVocabulary(field);
-            } else {
-                field.setSelectItemList(valueList);
-            }
-        } else if ("vocabulary".equals(field.getFieldType())) {
-            loadVocabulary(field);
-        }
-    }
-
-    private void loadVocabulary(IMetadataField field) {
-        List<String> iFieldValueList = Collections.emptyList();
-        if (vocabularyAPI != null) {
-            try {
-                ExtendedVocabulary vocabulary = vocabularyAPI.vocabularies().findByName(field.getVocabularyName());
-                if (field.getSearchParameter().isEmpty()) {
-                    iFieldValueList = vocabularyAPI.vocabularyRecords()
-                            .getRecordMainValues(vocabulary.getId());
-                } else {
-                    if (field.getSearchParameter().size() > 1) {
-                        Helper.setFehlerMeldung("vocabularyList with multiple fields is not supported right now");
-                        return;
-                    }
-
-                    String[] parts = field.getSearchParameter().get(0).trim().split("=");
-                    if (parts.length != 2) {
-                        Helper.setFehlerMeldung("Wrong field format");
-                        return;
-                    }
-
-                    String searchFieldName = parts[0];
-                    String searchFieldValue = parts[1];
-
-                    VocabularySchema schema = vocabularyAPI.vocabularySchemas().get(vocabulary.getSchemaId());
-                    Optional<FieldDefinition> searchField = schema.getDefinitions()
-                            .stream()
-                            .filter(d -> d.getName().equals(searchFieldName))
-                            .findFirst();
-
-                    if (searchField.isEmpty()) {
-                        Helper.setFehlerMeldung("Field " + searchFieldName + " not found in vocabulary " + vocabulary.getName());
-                        return;
-                    }
-
-                    iFieldValueList = vocabularyAPI.vocabularyRecords()
-                            .getRecordMainValues(vocabularyAPI.vocabularyRecords()
-                                    .list(vocabulary.getId())
-                                    .search(searchField.get().getId() + ":" + searchFieldValue));
-                }
-            } catch (APIException e) {
-                log.error(e);
-                field.setVocabularyName(null);
-            }
-        } else {
-            field.setVocabularyName(null);
-        }
-        field.setSelectItemList(iFieldValueList);
     }
 
     public void resetFlatList() {
@@ -1098,18 +783,18 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             entry.setId("id_" + UUID.randomUUID());
             // initial metadata values
             List<IValue> titleData = new ArrayList<>();
-            if (StringUtils.isNotBlank(nodeDefaultTitle)) {
-                titleData.add(new ExtendendValue(null, nodeDefaultTitle, null, null));
-                entry.setLabel(nodeDefaultTitle);
+            if (StringUtils.isNotBlank(config.getNodeDefaultTitle())) {
+                titleData.add(new ExtendendValue(null, config.getNodeDefaultTitle(), null, null));
+                entry.setLabel(config.getNodeDefaultTitle());
             }
-            for (IMetadataField emf : configuredFields) {
+            for (IMetadataField emf : config.getConfiguredFields()) {
                 if (emf.isGroup()) {
-                    loadGroupMetadata(entry, emf, null);
+                    NodeInitializer.loadGroupMetadata(entry, emf, null);
                 } else if (emf.getXpath().contains("unittitle")) {
-                    IMetadataField toAdd = addFieldToEntry(entry, emf, titleData);
-                    addFieldToNode(entry, toAdd);
+                    IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, titleData);
+                    NodeInitializer.addFieldToNode(entry, toAdd);
                 } else {
-                    addFieldToEntry(entry, emf, null);
+                    NodeInitializer.addFieldToEntry(entry, emf, null);
                 }
             }
             entry.setNodeType(selectedEntry.getNodeType());
@@ -1161,7 +846,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         String uploadedFileName = processUploadedFileName(uploadFile);
         databaseName = uploadedFileName;
-        readConfiguration();
+        config.readConfiguration(databaseName);
 
         // open document, parse it
         try (InputStream input = uploadFile.getInputStream()) {
@@ -1258,14 +943,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         node.getNotesAreaList().clear();
         node.getDescriptionControlAreaList().clear();
 
-        for (IMetadataField emf : configuredFields) {
+        for (IMetadataField emf : config.getConfiguredFields()) {
             List<IValue> values = metadata.get(emf.getName());
             if (emf.isGroup()) {
-                loadGroupMetadata(node, emf, values);
+                NodeInitializer.loadGroupMetadata(node, emf, values);
 
             } else {
-                IMetadataField toAdd = addFieldToEntry(node, emf, values);
-                addFieldToNode(node, toAdd);
+                IMetadataField toAdd = NodeInitializer.addFieldToEntry(node, emf, values);
+                NodeInitializer.addFieldToNode(node, toAdd);
             }
         }
 
@@ -1311,19 +996,19 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             if (StringUtils.isNotBlank(node.getId())) {
                 currentElement.setAttribute("id", node.getId());
             }
-            Element archdesc = currentElement.getChild("archdesc", nameSpaceWrite);
+            Element archdesc = currentElement.getChild("archdesc", config.getNameSpaceWrite());
             if (archdesc == null) {
-                archdesc = new Element("archdesc", nameSpaceWrite);
+                archdesc = new Element("archdesc", config.getNameSpaceWrite());
                 currentElement.addContent(archdesc);
             }
-            dsc = archdesc.getChild("dsc", nameSpaceWrite);
+            dsc = archdesc.getChild("dsc", config.getNameSpaceWrite());
             if (dsc == null) {
-                dsc = new Element("dsc", nameSpaceWrite);
+                dsc = new Element("dsc", config.getNameSpaceWrite());
                 archdesc.addContent(dsc);
             }
 
             if (StringUtils.isNotBlank(node.getGoobiProcessTitle())) {
-                Element altformavail = new Element("altformavail", nameSpaceWrite);
+                Element altformavail = new Element("altformavail", config.getNameSpaceWrite());
                 altformavail.setAttribute("localtype", "goobi_process");
                 altformavail.setText(node.getGoobiProcessTitle());
                 dsc.addContent(altformavail);
@@ -1341,14 +1026,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         for (IEadEntry subNode : node.getSubEntryList()) {
             if (dsc == null) {
-                dsc = new Element("dsc", nameSpaceWrite);
+                dsc = new Element("dsc", config.getNameSpaceWrite());
                 currentElement.addContent(dsc);
             }
 
-            Element c = new Element("c", nameSpaceWrite);
+            Element c = new Element("c", config.getNameSpaceWrite());
             dsc.addContent(c);
             if (StringUtils.isNotBlank(subNode.getGoobiProcessTitle())) {
-                Element altformavail = new Element("altformavail", nameSpaceWrite);
+                Element altformavail = new Element("altformavail", config.getNameSpaceWrite());
                 altformavail.setAttribute("localtype", "goobi_process");
                 altformavail.setText(subNode.getGoobiProcessTitle());
                 c.addContent(altformavail);
@@ -1401,7 +1086,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 newHistoryEvent.getSubfields().put("agent", val);
                 List<IValue> grps = new ArrayList<>();
                 grps.add(newHistoryEvent);
-                addGroupData(field, grps);
+                NodeInitializer.addGroupData(field, grps);
                 break;
             }
         }
@@ -1509,7 +1194,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 // create attribute on current element
                 // duplicate current element if attribute is not empty
                 if (currentElement.getAttribute(field) != null) {
-                    Element duplicate = new Element(currentElement.getName(), nameSpaceWrite);
+                    Element duplicate = new Element(currentElement.getName(), config.getNameSpaceWrite());
                     for (Attribute attr : currentElement.getAttributes()) {
                         if (!attr.getName().equals(field)) {
                             duplicate.setAttribute(attr.getName(), attr.getValue());
@@ -1528,14 +1213,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         if (!written) {
             // duplicate current element if not empty
             if (StringUtils.isNotBlank(currentElement.getText()) || !currentElement.getChildren().isEmpty()) {
-                Element duplicate = new Element(currentElement.getName(), nameSpaceWrite);
+                Element duplicate = new Element(currentElement.getName(), config.getNameSpaceWrite());
                 for (Attribute attr : currentElement.getAttributes()) {
                     duplicate.setAttribute(attr.getName(), attr.getValue());
                 }
 
                 if (!currentElement.getChildren().isEmpty()) {
                     for (Element child : currentElement.getChildren()) {
-                        Element duplicateChild = new Element(child.getName(), nameSpaceWrite);
+                        Element duplicateChild = new Element(child.getName(), config.getNameSpaceWrite());
                         duplicateChild.setText(child.getText());
                         duplicate.addContent(duplicateChild);
                     }
@@ -1566,7 +1251,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
 
         // check if element exists, re-use if possible
-        Element element = currentElement.getChild(field, nameSpaceWrite);
+        Element element = currentElement.getChild(field, config.getNameSpaceWrite());
         if (element == null) {
             element = createXmlElement(currentElement, field, conditions);
         } else if (conditions != null) {
@@ -1644,7 +1329,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     private Element createXmlElement(Element currentElement, String field, String conditions) {
-        Element element = new Element(field, nameSpaceWrite);
+        Element element = new Element(field, config.getNameSpaceWrite());
         currentElement.addContent(element);
         if (conditions != null) {
             String[] conditionArray = conditions.split("\\[");
@@ -1680,7 +1365,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     String[] attr = condition.split("=");
                     if (attr.length > 1) {
                         String strName = attr[1].replace("'", "");
-                        Element eltChild = new Element(attr[0], nameSpaceWrite);
+                        Element eltChild = new Element(attr[0], config.getNameSpaceWrite());
                         eltChild.setText(strName);
                         element.addContent(eltChild);
                     }
@@ -1933,7 +1618,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         if (processTemplates.isEmpty()) {
             StringBuilder sql = new StringBuilder();
             sql.append("select ProzesseID, Titel, ProjekteID from prozesse where IstTemplate = true ");
-            if (!showProjectSelection) {
+            if (!config.isShowProjectSelection()) {
                 sql.append("and ProjekteID in (select projekteId from projektbenutzer where BenutzerID=");
                 sql.append(Helper.getCurrentUser().getId());
                 sql.append(") ");
@@ -2108,7 +1793,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             log.error(e);
         }
         // set project based on selection
-        if (showProjectSelection && StringUtils.isNotBlank(selectedProject)) {
+        if (config.isShowProjectSelection() && StringUtils.isNotBlank(selectedProject)) {
             try {
                 Integer projectId = Integer.parseInt(selectedProject);
 
@@ -2159,15 +1844,15 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private ProcessTitleGenerator prepareTitleGenerator(DocStruct docstruct) {
 
         ProcessTitleGenerator titleGenerator = new ProcessTitleGenerator();
-        titleGenerator.setSeparator(separator);
-        titleGenerator.setBodyTokenLengthLimit(lengthLimit);
-        for (TitleComponent comp : titleParts) {
+        titleGenerator.setSeparator(config.getSeparator());
+        titleGenerator.setBodyTokenLengthLimit(config.getLengthLimit());
+        for (TitleComponent comp : config.getTitleParts()) {
             // set title type
             ManipulationType manipulationType = null;
             // check for special types
             switch (comp.getType().toLowerCase()) {
                 case "camelcase", "camel_case", "camelcaselenghtlimited", "camel_case_lenght_limited":
-                    if (lengthLimit > 0) {
+                    if (config.getLengthLimit() > 0) {
                         manipulationType = ManipulationType.CAMEL_CASE_LENGTH_LIMITED;
                     } else {
                         manipulationType = ManipulationType.CAMEL_CASE;
@@ -2208,11 +1893,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         if (StringUtils.isBlank(titleGenerator.generateTitle())) {
             // default title, if nothing is configured
-            IEadEntry idEntry = useIdFromParent ? selectedEntry.getParentNode() : selectedEntry;
+            IEadEntry idEntry = config.isUseIdFromParent() ? selectedEntry.getParentNode() : selectedEntry;
             String valueOfFirstToken = idEntry.getId();
             titleGenerator.addToken(valueOfFirstToken, ManipulationType.BEFORE_FIRST_SEPARATOR);
 
-            ManipulationType labelTokenType = lengthLimit > 0 ? ManipulationType.CAMEL_CASE_LENGTH_LIMITED : ManipulationType.CAMEL_CASE;
+            ManipulationType labelTokenType = config.getLengthLimit() > 0 ? ManipulationType.CAMEL_CASE_LENGTH_LIMITED : ManipulationType.CAMEL_CASE;
             String label = selectedEntry.getLabel();
             titleGenerator.addToken(label, labelTokenType);
         }
@@ -2364,12 +2049,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     @Override
     public Document createEadFile() {
-        readConfiguration();
+        config.readConfiguration(databaseName);
         // reload all nodes from db to get every change
         rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
 
         Document document = new Document();
-        Element eadRoot = new Element("ead", nameSpaceWrite);
+        Element eadRoot = new Element("ead", config.getNameSpaceWrite());
         document.setRootElement(eadRoot);
 
         addMetadata(eadRoot, rootElement, eadRoot, true);
@@ -2411,8 +2096,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         rootElement = null;
         displayMode = "";
         flatEntryList = null;
-        configuredFields = null;
         searchValue = null;
+        config.setConfiguredFields(null);
         displayIdentityStatementArea = false;
         displayContextArea = false;
         displayContentArea = false;
@@ -2689,11 +2374,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
         } else if (goobiProcessTitle == null) {
             // default option, use id to match nodes
-            if ("id".equalsIgnoreCase(identifierNodeName)) {
+            if ("id".equalsIgnoreCase(config.getIdentifierNodeName())) {
                 lstNodesWithoutIds.add(currentEntry.getId());
             } else {
                 // otherwise find configured metadata
-                String value = ArchiveManagementManager.getMetadataValue(identifierNodeName, recordGroup.getId(), currentEntry.getId());
+                String value = ArchiveManagementManager.getMetadataValue(config.getIdentifierNodeName(), recordGroup.getId(), currentEntry.getId());
                 if (StringUtils.isNotBlank(value)) {
                     lstNodesWithoutIds.add(value);
 
@@ -2767,7 +2452,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         //otherwise
         for (Integer processId : lstProcessIds) {
 
-            String strNodeId = MetadataManager.getMetadataValue(processId, identifierMetadataName);
+            String strNodeId = MetadataManager.getMetadataValue(processId, config.getIdentifierMetadataName());
             IEadEntry node = getNodeWithId(strNodeId, rootElement);
             if (node != null) {
                 String strProcessTitle = ProcessManager.getProcessById(processId).getTitel();
@@ -2783,7 +2468,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     private IEadEntry getNodeWithId(String strNodeId, IEadEntry node) {
         loadMetadataForNode(node);
-        if ("id".equalsIgnoreCase(identifierNodeName)) {
+        if ("id".equalsIgnoreCase(config.getIdentifierNodeName())) {
             if (node.getId() != null && node.getId().contentEquals(strNodeId)) {
                 return node;
             }
@@ -2844,7 +2529,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         if (strNodeId == null) {
             return false;
         }
-        if (identifierNodeName.equals(field.getName())) {
+        if (config.getIdentifierNodeName().equals(field.getName())) {
             for (IFieldValue fv : field.getValues()) {
                 if (strNodeId.equals(fv.getValue())) {
                     return true;
@@ -2868,7 +2553,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         StringBuilder sql = new StringBuilder();
 
-        sql.append("SELECT processid FROM metadata WHERE name = '" + identifierMetadataName + "' and value in ");
+        sql.append("SELECT processid FROM metadata WHERE name = '" + config.getIdentifierMetadataName() + "' and value in ");
         sql.append(strSQLNodes.toString());
         sql.append(" order by processid;");
         @SuppressWarnings("unchecked")
@@ -2976,8 +2661,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     @Override
     public void updateSingleNode() {
         if (selectedEntry != null) {
-            if (selectedEntry.getNodeType() == null && configuredNodes != null) {
-                selectedEntry.setNodeType(configuredNodes.get(0));
+            if (selectedEntry.getNodeType() == null && config.getConfiguredNodes() != null) {
+                selectedEntry.setNodeType(config.getConfiguredNodes().get(0));
             }
             // update node history, if node was changed
             String oldFingerPrint = selectedEntry.getFingerprint();
@@ -3004,90 +2689,17 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
             Map<String, List<IValue>> metadata = ArchiveManagementManager.loadMetadataForNode(entry.getDatabaseId());
 
-            for (IMetadataField emf : configuredFields) {
+            for (IMetadataField emf : config.getConfiguredFields()) {
                 if (emf.isGroup()) {
                     List<IValue> groups = metadata.get(emf.getName());
-                    loadGroupMetadata(entry, emf, groups);
+                    NodeInitializer.loadGroupMetadata(entry, emf, groups);
                 } else {
                     List<IValue> values = metadata.get(emf.getName());
-                    IMetadataField toAdd = addFieldToEntry(entry, emf, values);
-                    addFieldToNode(entry, toAdd);
+                    IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, values);
+                    NodeInitializer.addFieldToNode(entry, toAdd);
                 }
             }
             entry.calculateFingerprint();
-        }
-    }
-
-    private void loadGroupMetadata(IEadEntry entry, IMetadataField template, List<IValue> groups) {
-        IMetadataField instance = new EadMetadataField(template.getName(), template.getLevel(), template.getXpath(), template.getXpathType(),
-                template.isRepeatable(),
-                template.isVisible(), template.isShowField(), template.getFieldType(), template.getMetadataName(), template.isImportMetadataInChild(),
-                template.getValidationType(),
-                template.getRegularExpression(), template.isSearchable(), template.getViafSearchFields(), template.getViafDisplayFields(),
-                template.isGroup(), template.getVocabularyName());
-        instance.setValidationError(template.getValidationError());
-        instance.setSelectItemList(template.getSelectItemList());
-        instance.setSearchParameter(template.getSearchParameter());
-        instance.setEadEntry(entry);
-
-        // sub fields
-        for (IMetadataField sub : template.getSubfields()) {
-            IMetadataField toAdd = addFieldToEntry(entry, sub, null);
-            instance.getSubfields().add(toAdd);
-        }
-
-        addGroupData(instance, groups);
-        addFieldToNode(entry, instance);
-    }
-
-    private void addGroupData(IMetadataField instance, List<IValue> groups) {
-        if (groups != null) {
-            for (IValue groupData : groups) {
-                IMetadataGroup eadGroup = instance.createGroup();
-                GroupValue gv = (GroupValue) groupData;
-                Map<String, List<IValue>> groupMetadata = gv.getSubfields();
-
-                for (IMetadataField sub : eadGroup.getFields()) {
-                    List<IValue> values = groupMetadata.get(sub.getName());
-
-                    if (values != null && !values.isEmpty()) {
-                        instance.setShowField(true);
-
-                        // split single value into multiple fields
-                        for (IValue value : values) {
-                            ExtendendValue val = (ExtendendValue) value;
-                            String stringValue = val.getValue();
-                            IFieldValue fv = null;
-                            for (IFieldValue v : sub.getValues()) {
-                                if (StringUtils.isBlank(v.getValue())) {
-                                    fv = v;
-                                }
-                            }
-                            if (fv == null) {
-                                fv = new FieldValue(sub);
-                                sub.addFieldValue(fv);
-                            }
-                            fv.setAuthorityType(val.getAuthorityType());
-                            fv.setAuthorityValue(val.getAuthorityValue());
-
-                            if ("multiselect".equals(sub.getFieldType()) && StringUtils.isNotBlank(stringValue)) {
-                                String[] splittedValues = stringValue.split("; ");
-                                for (String s : splittedValues) {
-                                    fv.setMultiselectValue(s);
-                                }
-                            } else {
-                                fv.setValue(stringValue);
-                            }
-
-                        }
-                    } else {
-                        IFieldValue fv = new FieldValue(sub);
-                        sub.addFieldValue(fv);
-                    }
-                }
-            }
-        } else {
-            instance.createGroup();
         }
     }
 
@@ -3104,14 +2716,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             entry.getAlliedMaterialsAreaList().clear();
             entry.getNotesAreaList().clear();
             entry.getDescriptionControlAreaList().clear();
-            for (IMetadataField emf : configuredFields) {
+            for (IMetadataField emf : config.getConfiguredFields()) {
                 List<IValue> values = metadata.get(emf.getName());
                 if (emf.isGroup()) {
-                    loadGroupMetadata(entry, emf, values);
+                    NodeInitializer.loadGroupMetadata(entry, emf, values);
 
                 } else {
-                    IMetadataField toAdd = addFieldToEntry(entry, emf, values);
-                    addFieldToNode(entry, toAdd);
+                    IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, values);
+                    NodeInitializer.addFieldToNode(entry, toAdd);
                 }
             }
         }
@@ -3134,7 +2746,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     public void addGroup() {
-        addGroupData(selectedGroup, null);
+        NodeInitializer.addGroupData(selectedGroup, null);
     }
 
     public void showAllFields() {
@@ -3249,7 +2861,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     public void addNodes() {
         if (selectedEntry != null) {
             INodeType selectedNodeType = null;
-            for (INodeType node : configuredNodes) {
+            for (INodeType node : config.getConfiguredNodes()) {
                 if (node.getNodeName().equals(nodeType)) {
                     selectedNodeType = node;
                 }
@@ -3264,9 +2876,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 selectedEntry.addSubEntry(entry);
 
                 // initialize all metadata fields
-                for (IMetadataField emf : configuredFields) {
+                for (IMetadataField emf : config.getConfiguredFields()) {
                     if (emf.isGroup()) {
-                        loadGroupMetadata(entry, emf, null);
+                        NodeInitializer.loadGroupMetadata(entry, emf, null);
                     } else {
                         IParameter configuredField = null;
                         for (IParameter param : metadataToAdd) {
@@ -3295,8 +2907,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                             metadataValues.add(val);
                         }
 
-                        IMetadataField toAdd = addFieldToEntry(entry, emf, metadataValues);
-                        addFieldToNode(entry, toAdd);
+                        IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, metadataValues);
+                        NodeInitializer.addFieldToNode(entry, toAdd);
                     }
                 }
                 entry.calculateFingerprint();
@@ -3315,9 +2927,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     public void eadExport() {
-        List<String> exportFolders = exportConfiguration.get(databaseName);
+        List<String> exportFolders = config.getExportConfiguration().get(databaseName);
         if (exportFolders == null || exportFolders.isEmpty()) {
-            exportFolders = exportConfiguration.get("*");
+            exportFolders = config.getExportConfiguration().get("*");
             if (exportFolders == null || exportFolders.isEmpty()) {
                 Helper.setFehlerMeldung("plugin_administration_archive_eadExportNotConfigured");
                 databaseName = null;
@@ -3358,8 +2970,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public void initializeRecord() {
         try {
-            ExtendedVocabulary vocabulary = vocabularyAPI.vocabularies().findByName(vocabularyField.getVocabularyName());
-            newRecord = vocabularyAPI.vocabularyRecords().createEmptyRecord(vocabulary.getId(), null, false);
+            ExtendedVocabulary vocabulary = config.getVocabularyAPI().vocabularies().findByName(vocabularyField.getVocabularyName());
+            newRecord = config.getVocabularyAPI().vocabularyRecords().createEmptyRecord(vocabulary.getId(), null, false);
         } catch (Exception e) {
             // configured vocabulary does not exist or vocabulary server is down
             newRecord = null;
@@ -3369,13 +2981,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     public void addEntry() {
         // save new record
-        vocabularyAPI.vocabularyRecords().save(newRecord);
+        config.getVocabularyAPI().vocabularyRecords().save(newRecord);
 
         // populate new item list
-        loadVocabulary(vocabularyField);
+        config.loadVocabulary(vocabularyField);
 
         // update template field
-        for (IMetadataField template : configuredFields) {
+        for (IMetadataField template : config.getConfiguredFields()) {
             if (template.getName().equals(vocabularyField.getName())) {
                 template.setSelectItemList(vocabularyField.getSelectItemList());
             }

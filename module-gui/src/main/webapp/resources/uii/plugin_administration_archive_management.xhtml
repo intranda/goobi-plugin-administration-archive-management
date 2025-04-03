@@ -4,7 +4,7 @@
     xmlns:composite="http://xmlns.jcp.org/jsf/composite"
     xmlns:h="http://xmlns.jcp.org/jsf/html"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG"
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites"
     xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
     xmlns:p="http://primefaces.org/ui"
     xmlns:c="http://java.sun.com/jsp/jstl/core"
@@ -104,8 +104,8 @@
                                                                 target="#{AdministrationForm.administrationPlugin.databaseName}" />
                                                         </h:commandLink>
                                                         <ui:fragment
-                                                            rendered="#{AdministrationForm.administrationPlugin.getExportConfiguration().get(db) != null
-                                                                      or AdministrationForm.administrationPlugin.getExportConfiguration().get('*') != null}">
+                                                            rendered="#{AdministrationForm.administrationPlugin.config.getExportConfiguration().get(db) != null
+                                                                      or AdministrationForm.administrationPlugin.config.getExportConfiguration().get('*') != null}">
                                                             <h:commandLink
                                                                 rendered="#{!AdministrationForm.administrationPlugin.readOnlyModus}"
                                                                 styleClass="btn btn-blank"
@@ -250,20 +250,27 @@
                             <!-- GROUP OF TWO VERSIONS OF THE UPLOAD BUTTON -->
                             <h:panelGroup id="uploadFileButtonGroup">
                                 <!-- UPLOAD BUTTON FOR THE CASE WHERE NO SUCH FILE EXISTS YET -->
-                                <h:commandLink
-                                    styleClass="btn btn-primary"
-                                    action="#{AdministrationForm.administrationPlugin.upload}"
-                                    rendered="#{AdministrationForm.administrationPlugin.uploadFile ne null &amp;&amp; not AdministrationForm.administrationPlugin.fileToUploadExists}">
+                                <button
+                                    class="btn btn-primary"
+                                    jsf:action="#{AdministrationForm.administrationPlugin.upload}"
+                                    jsf:rendered="#{AdministrationForm.administrationPlugin.uploadFile ne null &amp;&amp; not AdministrationForm.administrationPlugin.fileToUploadExists}">
                                     <h:outputText value="#{msgs.plugin_administration_archive_uploadDatabase}" />
-                                </h:commandLink>
+                                    <f:ajax
+                                        render="@all"
+                                        execute="@form" />
+                                </button>
                                 <!-- UPLOAD BUTTON FOR THE CASE WHERE AN OLD VERSION OF THE FILE ALREADY EXISTS -->
-                                <h:commandLink
-                                    styleClass="btn btn-primary"
-                                    action="#{AdministrationForm.administrationPlugin.upload}"
-                                    rendered="#{AdministrationForm.administrationPlugin.uploadFile ne null &amp;&amp; AdministrationForm.administrationPlugin.fileToUploadExists}"
-                                    onclick="if (!confirm('#{msgs.plugin_administration_archive_confirmReplacement}')) return false;">
+                                <button
+                                    type="button"
+                                    class="btn btn-primary"
+                                    jsf:action="#{AdministrationForm.administrationPlugin.upload}"
+                                    jsf:rendered="#{AdministrationForm.administrationPlugin.uploadFile ne null &amp;&amp; AdministrationForm.administrationPlugin.fileToUploadExists}"
+                                    jsf:onclick="if (!confirm('#{msgs.plugin_administration_archive_confirmReplacement}')) return false;">
                                     <h:outputText value="#{msgs.plugin_administration_archive_uploadDatabase}" />
-                                </h:commandLink>
+                                    <f:ajax
+                                        render="@all"
+                                        execute="@form" />
+                                </button>
                             </h:panelGroup>
                         </div>
                         <!-- // GROUP OF TWO VERSIONS OF THE UPLOAD BUTTON -->
@@ -385,7 +392,7 @@
                                                                     rendered="#{entry.label == null}" />
                                                                 <h:panelGroup
                                                                     styleClass="text-secondary"
-                                                                    rendered="#{AdministrationForm.administrationPlugin.showNodeIdInTree}">
+                                                                    rendered="#{AdministrationForm.administrationPlugin.config.showNodeIdInTree}">
                                                                     <h:outputText value=" (#{entry.id})" />
                                                                 </h:panelGroup>
                                                             </span>
@@ -672,8 +679,8 @@
                                         </span>
                                     </h:commandLink>
                                     <ui:fragment
-                                        rendered="#{AdministrationForm.administrationPlugin.getExportConfiguration().get(AdministrationForm.administrationPlugin.databaseName) != null
-                                                  or AdministrationForm.administrationPlugin.getExportConfiguration().get('*') != null}">
+                                        rendered="#{AdministrationForm.administrationPlugin.config.getExportConfiguration().get(AdministrationForm.administrationPlugin.databaseName) != null
+                                                  or AdministrationForm.administrationPlugin.config.getExportConfiguration().get('*') != null}">
                                         <h:commandLink
                                             rendered="#{!AdministrationForm.administrationPlugin.readOnlyModus}"
                                             styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.readOnlyModus ? 'disabled' : ''}"
@@ -747,6 +754,7 @@
                                         id="nodeContentArea"
                                         styleClass="form-content">
                                         <div class="processcreation">
+                                        <!-- TODO: disabled when node type does not allow process creation -->
                                             <fieldSet jsf:id="creationArea">
                                                 <f:passThroughAttribute
                                                     name="#{AdministrationForm.administrationPlugin.allowProcessCreation ? 'data-enabled': 'disabled'}"
@@ -760,24 +768,20 @@
                                                         tabindex="-1">
                                                         <h:outputText
                                                             value="#{msgs.plugin_administration_archive_process}"
-                                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null || !AdministrationForm.administrationPlugin.showProjectSelection}" />
+                                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null || !AdministrationForm.administrationPlugin.config.showProjectSelection}" />
 
                                                         <h:outputText
                                                             value="#{msgs.plugin_administration_archive_process_create_process}"
-                                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null and AdministrationForm.administrationPlugin.showProjectSelection}" />
+                                                            rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null and AdministrationForm.administrationPlugin.config.showProjectSelection}" />
 
                                                     </div>
                                                     <div class="form-input">
                                                         <div class="w-100 d-flex flex-nowrap justify-content-between">
                                                             <!-- no process exists, so allow creation of a process here -->
                                                             <ui:fragment
-                                                                rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
-                                                                <h:panelGroup
-                                                                    layout="block"
-                                                                    rendered="#{!AdministrationForm.administrationPlugin.showProjectSelection}"
-                                                                    styleClass="d-inline"
-                                                                    data-bs-title="#{msgs.plugin_administration_archive_process_create_process}"
-                                                                    data-bs-toggle="tooltip">
+                                                                rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null and  AdministrationForm.administrationPlugin.selectedEntry.nodeType.allowProcessCreation}">
+                                                                <ui:fragment
+                                                                    rendered="#{!AdministrationForm.administrationPlugin.config.showProjectSelection}">
                                                                     <span class="my-auto">
                                                                         <h:outputText value="#{msgs.plugin_administration_archive_process_no_process}" />
                                                                     </span>
@@ -810,13 +814,13 @@
                                                                             </li>
                                                                         </ui:repeat>
                                                                     </ul>
-                                                                </h:panelGroup>
+                                                                </ui:fragment>
 
 
 
                                                                 <h:panelGroup
                                                                     layout="block"
-                                                                    rendered="#{AdministrationForm.administrationPlugin.showProjectSelection}"
+                                                                    rendered="#{AdministrationForm.administrationPlugin.config.showProjectSelection}"
                                                                     styleClass="input-group my-auto">
 
                                                                     <!-- select process template -->
@@ -906,9 +910,13 @@
                                                     </div>
                                                     <div class="form-input">
                                                         <ui:repeat
-                                                            value="#{AdministrationForm.administrationPlugin.configuredNodes}"
+                                                            value="#{AdministrationForm.administrationPlugin.config.configuredNodes}"
                                                             var="nodeType">
+                                                            <!-- case 1: node type is allowed as root element and current element has no parent -->
+                                                            <!-- case 2: node type is allowed as child of parent element -->
+                                                            <!-- (AdministrationForm.administrationPlugin.selectedEntry.parentNode == null and nodeType.rootNode) OR -->
                                                             <h:commandLink
+                                                                rendered = "#{(AdministrationForm.administrationPlugin.selectedEntry.parentNode == null and nodeType.rootNode) || AdministrationForm.administrationPlugin.selectedEntry.parentNode.nodeType.isNodeAllowed(nodeType)}"
                                                                 disabled="#{AdministrationForm.administrationPlugin.readOnlyModus}"
                                                                 styleClass="node fs-600 pe-2 my-auto #{AdministrationForm.administrationPlugin.selectedEntry.nodeType.nodeName == nodeType.nodeName ? 'text-black' : 'text-secondary'}"
                                                                 title="#{msgs['plugin_administration_archive_nodeType_'.concat(nodeType.nodeName)]}">

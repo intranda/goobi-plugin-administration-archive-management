@@ -26,7 +26,7 @@
                         itemLabel="#{msgs.bitteAuswaehlen}" />
                     <f:selectItems
                         var="fieldname"
-                        value="#{AdministrationForm.administrationPlugin.metadataFieldNames}"
+                        value="#{AdministrationForm.administrationPlugin.config.metadataFieldNames}"
                         itemValue="#{fieldname}"
                         itemLabel="#{msgs['plugin_administration_archive_'.concat(fieldname)]}" />
                     <f:ajax

@@ -466,12 +466,40 @@
         <eadNamespaceRead>urn:isbn:1-931666-22-9</eadNamespaceRead>
         <eadNamespaceWrite>urn:isbn:1-931666-22-9</eadNamespaceWrite>
 
-        <node name="file" ruleset="File" icon="fa fa-file-text-o" processTemplateId="309544" />
-        <node name="folder" ruleset="Folder" icon="fa fa-folder-open-o" processTemplateId="309544"/>
-        <node name="image" ruleset="Picture" icon="fa fa-file-image-o" processTemplateId="309544" />
-        <node name="audio" ruleset="Audio" icon="fa fa-file-audio-o" processTemplateId="309544"/>
-        <node name="video" ruleset="Video" icon="fa fa-file-video-o" processTemplateId="309544"/>
-        <node name="other" ruleset="Other" icon="fa fa-file-o" processTemplateId="309544" />
+        <!-- root nodes -->
+        <node name="archive" icon="fa fa-archive" processTemplateId="456" rootNode="true" allowProcessCreation="false">
+            <child>tectonics</child>
+            <child>inventory</child>
+            <child>folder</child>
+        </node>
+
+        <!-- folder level nodes -->
+        <node name="inventory" icon="fa fa-sitemap" processTemplateId="456" rootNode="true" allowProcessCreation="false">
+            <child>folder</child>
+            <child>tectonics</child>
+            <child>inventory</child>
+        </node>
+        <node name="tectonics" icon="fa fa-archive-o" processTemplateId="456" rootNode="true" allowProcessCreation="false">
+            <child>tectonics</child>
+            <child>folder</child>
+        </node>
+
+        <node name="folder" ruleset="Folder" icon="fa fa-folder-open-o" processTemplateId="456" allowProcessCreation="false">
+            <child>folder</child>
+            <child>file</child>
+            <child>image</child>
+            <child>audio</child>
+            <child>video</child>
+            <child>other</child>
+        </node>
+
+        <!-- item level nodes -->
+        <node name="file" ruleset="File" icon="fa fa-file-text-o" processTemplateId="456" allowProcessCreation="true" />
+        <node name="image" ruleset="Picture" icon="fa fa-file-image-o" processTemplateId="456" allowProcessCreation="true" />
+        <node name="audio" ruleset="Audio" icon="fa fa-file-audio-o" processTemplateId="456" allowProcessCreation="true" />
+        <node name="video" ruleset="Video" icon="fa fa-file-video-o" processTemplateId="456" allowProcessCreation="true" />
+        <node name="other" ruleset="Other" icon="fa fa-file-o" processTemplateId="456" allowProcessCreation="true" />
+
     </config>
     
     
