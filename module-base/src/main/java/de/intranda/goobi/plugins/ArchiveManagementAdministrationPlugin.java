@@ -2062,6 +2062,24 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     @Override
+    public Document createEadFileForNodeAndAncestors(IEadEntry entry) {
+
+        // clone node and its ancestors
+        IEadEntry newEntry = entry.copyWithAncestors();
+
+        while (newEntry.getParentNode() != null) {
+            newEntry = newEntry.getParentNode();
+        }
+
+        Document document = new Document();
+        Element eadRoot = new Element("ead", config.getNameSpaceWrite());
+        document.setRootElement(eadRoot);
+
+        addMetadata(eadRoot, newEntry, eadRoot, true);
+        return document;
+    }
+
+    @Override
     public String saveArchiveAndLeave() {
         // save current node
         if (selectedEntry != null) {

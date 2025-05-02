@@ -434,6 +434,27 @@ public class EadEntry implements IEadEntry {
         return other;
     }
 
+    @Override
+    public IEadEntry copyWithAncestors() {
+
+        IEadEntry other = new EadEntry(orderNumber, hierarchy);
+        other.setNodeType(nodeType);
+        other.setDisplayChildren(true);
+        other.setLabel(label);
+        other.setOrderNumber(orderNumber);
+        other.setData(getData());
+        // create new id
+        other.setId(id);
+
+        // copy all children
+        if (parentNode != null) {
+            IEadEntry newParent = parentNode.copyWithAncestors();
+            newParent.addSubEntry(other);
+        }
+
+        return other;
+    }
+
     private IMetadataField copyIdentityStatementField(IConfiguration configuration, IEadEntry other, IMetadataField field) {
         String prefix = "";
         String suffix = "";
