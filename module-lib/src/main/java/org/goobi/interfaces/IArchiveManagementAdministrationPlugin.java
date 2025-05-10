@@ -30,6 +30,8 @@ public interface IArchiveManagementAdministrationPlugin extends IAdministrationP
 
     public Document createEadFile();
 
+    public Document createEadFileForNodeAndAncestors(IEadEntry entry);
+
     // create new node as last child of the selected node
     public void setSelectedEntry(IEadEntry entry);
 
@@ -41,6 +43,8 @@ public interface IArchiveManagementAdministrationPlugin extends IAdministrationP
 
     public List<IRecordGroup> getRecordGroups();
 
+    public IRecordGroup getRecordGroup();
+
     public void deleteNode();
 
     public String saveArchiveAndLeave();
@@ -48,4 +52,5 @@ public interface IArchiveManagementAdministrationPlugin extends IAdministrationP
     public String cancelEdition();
 
     public ArchiveManagementConfiguration getConfig();
+
 }

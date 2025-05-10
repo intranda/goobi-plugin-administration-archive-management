@@ -126,6 +126,8 @@ public interface IEadEntry extends Comparable<IEadEntry> {
 
     public IEadEntry deepCopy(IConfiguration configuration);
 
+    public IEadEntry copyWithAncestors();
+
     public List<IEadEntry> getAllNodes();
 
     public String getSequence();
