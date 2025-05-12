@@ -165,8 +165,7 @@
                                     value="createArchive"
                                     target="#{AdministrationForm.administrationPlugin.displayMode}" />
                                 <f:ajax
-                                    render="@form selectionBox:selectionBox"
-                                    onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                    render="@form selectionBox:selectionBox" />
                             </h:commandLink>
                             <h:commandLink
                                 styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowFileUpload ? '' : 'disabled'} me-auto"
@@ -176,8 +175,7 @@
                                     value="uploadFile"
                                     target="#{AdministrationForm.administrationPlugin.displayMode}" />
                                 <f:ajax
-                                    render="@form selectionBox:selectionBox"
-                                    onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                    render="@form selectionBox:selectionBox" />
                             </h:commandLink>
 
                         </div>
@@ -195,8 +193,7 @@
                                     value=""
                                     target="#{AdministrationForm.administrationPlugin.displayMode}" />
                                 <f:ajax
-                                    render="@form selectionBox:selectionBox"
-                                    onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                    render="@form selectionBox:selectionBox" />
                                 <h:outputText value="#{msgs.abbrechen}" />
                             </h:commandLink>
                             <h:commandLink
@@ -229,8 +226,7 @@
                                     value=""
                                     target="#{AdministrationForm.administrationPlugin.displayMode}" />
                                 <f:ajax
-                                    render="@form selectionBox:selectionBox"
-                                    onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                    render="@form selectionBox:selectionBox" />
                                 <h:outputText value="#{msgs.abbrechen}" />
                             </h:commandLink>
                             <label class="btn btn-blank">
@@ -244,7 +240,7 @@
                                     <f:ajax
                                         execute="@this"
                                         render="uploadFileButtonGroup"
-                                        onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); displayFileName(data);}" />
+                                        onevent="(data) => {displayFileName(data);}" />
                                 </h:inputFile>
                             </label>
                             <!-- GROUP OF TWO VERSIONS OF THE UPLOAD BUTTON -->
@@ -370,8 +366,6 @@
                                                                 execute="@this"
                                                                 render=":hierarchy:hierarchy"
                                                                 onevent="(data) => {
-                                                                    gwHandleTooltip.init(data);
-                                                                    gwInitTooltips.init();
                                                                     scrollToClickedElement(data)}" />
                                                         </h:commandLink>
                                                     </div>
@@ -419,8 +413,6 @@
                                                                 execute="ead-details"
                                                                 render="hierarchy ead-details globalMessage"
                                                                 onevent="(data) => {
-                                                                    gwHandleTooltip.init(data);
-                                                                    gwInitTooltips.init();
                                                                     scrollToClickedElement(data);
                                                                 }" />
                                                         </h:commandLink>
@@ -451,7 +443,7 @@
                                             <f:ajax
                                                 execute="@this"
                                                 render="hierarchy:hierarchy nodeBox:nodeContentArea"
-                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
+                                                onevent="(data) => {scrollToCurrentNode(data);}" />
                                         </h:commandLink>
                                         <h:commandLink
                                             styleClass="btn btn-neutral-600"
@@ -475,7 +467,7 @@
                                             <f:ajax
                                                 execute="@this"
                                                 render="hierarchy:hierarchy createNodesModalContent"
-                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
+                                                onevent="(data) => {scrollToCurrentNode(data);}" />
                                         </h:commandLink>
                                         <h:commandLink
                                             styleClass="btn btn-blank"
@@ -488,7 +480,7 @@
                                             <f:ajax
                                                 execute="@this"
                                                 render="hierarchy:hierarchy"
-                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
+                                                onevent="(data) => {scrollToCurrentNode(data);}" />
                                         </h:commandLink>
                                         <div
                                             class="d-inline dropdown"
@@ -535,7 +527,7 @@
                                             <f:ajax
                                                 execute="@this"
                                                 render="hierarchy:hierarchy ead-details"
-                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
+                                                onevent="(data) => {scrollToCurrentNode(data);}" />
                                         </h:commandLink>
                                         <h:commandLink
                                             styleClass="btn btn-success"
@@ -558,7 +550,7 @@
                                             <f:ajax
                                                 execute="@this"
                                                 render="hierarchy:hierarchy globalMessage"
-                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
+                                                onevent="(data) => {scrollToCurrentNode(data);}" />
                                         </h:commandLink>
                                         <h:commandLink
                                             styleClass="btn btn-neutral-600"
@@ -571,7 +563,7 @@
                                             <f:ajax
                                                 execute="@this"
                                                 render="hierarchy:hierarchy globalMessage"
-                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
+                                                onevent="(data) => {scrollToCurrentNode(data);}" />
                                         </h:commandLink>
                                         <h:commandLink
                                             styleClass="btn btn-neutral-600"
@@ -584,7 +576,7 @@
                                             <f:ajax
                                                 execute="@this"
                                                 render="hierarchy:hierarchy globalMessage"
-                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
+                                                onevent="(data) => {scrollToCurrentNode(data);}" />
                                         </h:commandLink>
                                         <h:commandLink
                                             styleClass="btn btn-neutral-600"
@@ -597,7 +589,7 @@
                                             <f:ajax
                                                 execute="@this"
                                                 render="hierarchy:hierarchy globalMessage"
-                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
+                                                onevent="(data) => {scrollToCurrentNode(data);}" />
                                         </h:commandLink>
                                         <!-- move node to another position in separate view -->
                                         <h:commandLink
@@ -624,7 +616,7 @@
                                             <f:ajax
                                                 execute="@this"
                                                 render="hierarchy:hierarchy globalMessage"
-                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
+                                                onevent="(data) => {scrollToCurrentNode(data);}" />
                                         </h:commandLink>
                                     </fieldSet>
                                 </div>
@@ -726,8 +718,7 @@
                                             <span
                                                 class="fa #{AdministrationForm.administrationPlugin.displayAllFields ? 'fa-chevron-up' : 'fa-chevron-down'}" />
                                             <f:ajax
-                                                render="nodeBox:nodeContentArea @this"
-                                                onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                render="nodeBox:nodeContentArea @this" />
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
@@ -928,7 +919,7 @@
                                                                     target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
                                                                 <f:ajax
                                                                     render="nodeBox:node-type hierarchy:hierarchy"
-                                                                    onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init(); scrollToCurrentNode(data);}" />
+                                                                    onevent="(data) => {scrollToCurrentNode(data);}" />
                                                                 <f:passThroughAttribute
                                                                     name="data-bs-toggle"
                                                                     value="tooltip" />
@@ -977,8 +968,7 @@
                                                         target="#{AdministrationForm.administrationPlugin.displayIdentityStatementArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayIdentityStatementArea}" />
                                                     <f:ajax
-                                                        render="identity-statement-area"
-                                                        onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                        render="identity-statement-area" />
                                                     <f:passThroughAttribute
                                                         name="data-bs-toggle"
                                                         value="tooltip" />
@@ -1010,8 +1000,7 @@
                                                         target="#{AdministrationForm.administrationPlugin.displayContextArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayContextArea}" />
                                                     <f:ajax
-                                                        render="context-area"
-                                                        onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                        render="context-area" />
                                                 </h:commandLink>
                                                 <goobiio:area
                                                     itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.contextAreaList}"
@@ -1040,8 +1029,7 @@
                                                         target="#{AdministrationForm.administrationPlugin.displayContentArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayContentArea}" />
                                                     <f:ajax
-                                                        render="content-area"
-                                                        onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                        render="content-area" />
                                                 </h:commandLink>
                                                 <goobiio:area
                                                     itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.contentAndStructureAreaAreaList}"
@@ -1070,8 +1058,7 @@
                                                         target="#{AdministrationForm.administrationPlugin.displayAccessArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayAccessArea}" />
                                                     <f:ajax
-                                                        render="access-area"
-                                                        onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                        render="access-area" />
                                                 </h:commandLink>
                                                 <goobiio:area
                                                     itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.accessAndUseAreaList}"
@@ -1100,8 +1087,7 @@
                                                         target="#{AdministrationForm.administrationPlugin.displayMaterialsArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayMaterialsArea}" />
                                                     <f:ajax
-                                                        render="materials-area"
-                                                        onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                        render="materials-area" />
                                                 </h:commandLink>
                                                 <goobiio:area
                                                     itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.alliedMaterialsAreaList}"
@@ -1130,8 +1116,7 @@
                                                         target="#{AdministrationForm.administrationPlugin.displayNotesArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayNotesArea}" />
                                                     <f:ajax
-                                                        render="notes-area"
-                                                        onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                        render="notes-area" />
                                                 </h:commandLink>
                                                 <goobiio:area
                                                     itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.notesAreaList}"
@@ -1160,8 +1145,7 @@
                                                         target="#{AdministrationForm.administrationPlugin.displayControlArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayControlArea}" />
                                                     <f:ajax
-                                                        render="control-area"
-                                                        onevent="(data) => {gwHandleTooltip.init(data); gwInitTooltips.init();}" />
+                                                        render="control-area" />
                                                 </h:commandLink>
                                                 <goobiio:area
                                                     itemlist="#{AdministrationForm.administrationPlugin.selectedEntry.descriptionControlAreaList}"
