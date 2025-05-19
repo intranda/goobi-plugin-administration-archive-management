@@ -918,7 +918,7 @@
                                                                     value="#{nodeType}"
                                                                     target="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType}" />
                                                                 <f:ajax
-                                                                    render="nodeBox:node-type hierarchy:hierarchy"
+                                                                    render="nodeBox:node-type hierarchy:hierarchy nodeBox:creationArea"
                                                                     onevent="(data) => {scrollToCurrentNode(data);}" />
                                                                 <f:passThroughAttribute
                                                                     name="data-bs-toggle"
