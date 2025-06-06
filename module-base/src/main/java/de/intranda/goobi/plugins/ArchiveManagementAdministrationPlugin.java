@@ -818,14 +818,15 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
 
             // remove the current node from parent
-            parentNode.getSubEntryList().remove(selectedEntry);
-            parentNode.reOrderElements();
+            parentNode.removeSubEntry(selectedEntry);
 
             // get the current node and all of its children
             List<IEadEntry> nodesToDelete = selectedEntry.getAllNodes();
 
             // delete elements in the database
             ArchiveManagementManager.deleteNodes(nodesToDelete);
+
+            ArchiveManagementManager.updateNodeHierarchy(recordGroup.getId(), parentNode.getAllNodes());
             selectedEntry = null;
             // select the parent node
             setSelectedEntry(parentNode);
