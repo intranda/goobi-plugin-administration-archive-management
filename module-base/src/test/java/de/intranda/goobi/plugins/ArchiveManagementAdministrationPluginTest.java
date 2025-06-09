@@ -248,6 +248,9 @@ public class ArchiveManagementAdministrationPluginTest {
         EasyMock.expect(copyNode.getAlliedMaterialsAreaList()).andReturn(new ArrayList<>()).anyTimes();
         EasyMock.expect(copyNode.getNotesAreaList()).andReturn(new ArrayList<>()).anyTimes();
         EasyMock.expect(copyNode.getDescriptionControlAreaList()).andReturn(new ArrayList<>()).anyTimes();
+        EasyMock.expect(copyNode.getSubEntryList()).andReturn(new ArrayList<>()).anyTimes();
+        copyNode.calculateFingerprint();
+
         copyNode.calculateFingerprint();
         copyNode.setSelected(EasyMock.anyBoolean());
         EasyMock.expect(copyNode.getAllNodes()).andReturn(Collections.emptyList()).anyTimes();

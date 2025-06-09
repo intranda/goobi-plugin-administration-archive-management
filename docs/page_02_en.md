@@ -191,6 +191,36 @@ In the default setting, the individual sections 1 `Identification`, 2 `Context`,
 ## Configuration of the XML namespace
 The two elements `<eadNamespaceRead>` and `<eadNamespaceWrite>` define which XML namespaces are to be used for reading and writing EAD documents. Usually both contain the same value. However, EAD2 documents can also be read and exported as EAD3 documents. In this case, the corresponding namespaces must be defined and care must be taken in the xpath expressions of the individual metadata to ensure that both variants are specified. It is therefore easier to use the enclosed converter and convert from EAD2 to EAD3 before importing the documents.
 
-- Namespace for ead2 (deprecated): urn:isbn:1-931666-22-9
+- Namespace for ead2 (current): urn:isbn:1-931666-22-9
 - Namespace for ead3 (current): http://ead3.archivists.org/schema/
 - Namespace for ead4 (in draft status): https://archivists.org/ns/ead/v4
+
+
+## Configuration of the different node types
+
+The node types are defined using the `<node>` element.
+
+```xml
+        <node name="archive" icon="fa fa-archive" rootNode="true" allowProcessCreation="false">
+            <child>folder</child>
+        </node>
+
+        <node name="folder" icon="fa fa-folder-open-o" allowProcessCreation="false">
+            <child>folder</child>
+            <child>file</child>
+            <child>image</child>
+            <child>audio</child>
+            <child>video</child>
+            <child>other</child>
+        </node>
+
+        <node name="file" ruleset="File" icon="fa fa-file-text-o" allowProcessCreation="true" />
+        <node name="image" ruleset="Picture" icon="fa fa-file-image-o" allowProcessCreation="true" />
+        <node name="audio" ruleset="Audio" icon="fa fa-file-audio-o" allowProcessCreation="true" />
+        <node name="video" ruleset="Video" icon="fa fa-file-video-o" allowProcessCreation="true" />
+        <node name="other" ruleset="Other" icon="fa fa-file-o"  allowProcessCreation="true" />
+```
+
+The `name` attribute must contain a unique value, which is used to identify the type internally. The `ruleset` contains the name of the structure element in the ruleset that is to be used when a process is created for this node. This function is only available if the attribute `allowProcessCreation` is set with the value `true`. The icon to be displayed in the interface for this node type is configured in `icon`.
+
+Use `rootNode="true|false"` to define whether the node may be used as the top element of the archive tree. All node types that are permitted below a type must be specified in the `<child>` element.

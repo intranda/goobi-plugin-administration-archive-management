@@ -818,14 +818,15 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
 
             // remove the current node from parent
-            parentNode.getSubEntryList().remove(selectedEntry);
-            parentNode.reOrderElements();
+            parentNode.removeSubEntry(selectedEntry);
 
             // get the current node and all of its children
             List<IEadEntry> nodesToDelete = selectedEntry.getAllNodes();
 
             // delete elements in the database
             ArchiveManagementManager.deleteNodes(nodesToDelete);
+
+            ArchiveManagementManager.updateNodeHierarchy(recordGroup.getId(), parentNode.getAllNodes());
             selectedEntry = null;
             // select the parent node
             setSelectedEntry(parentNode);
@@ -2605,22 +2606,23 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         if (copy != null) {
             // add new field at the last position
             copy.setOrderNumber(selectedEntry.getParentNode().getSubEntryList().size() + 1);
-
             selectedEntry.getParentNode().addSubEntry(copy);
-            // update node history, if node was changed
-            String oldFingerPrint = selectedEntry.getFingerprint();
-            selectedEntry.calculateFingerprint();
-            String newFingerPrint = selectedEntry.getFingerprint();
 
-            if (StringUtils.isNotBlank(oldFingerPrint) && StringUtils.isNotBlank(newFingerPrint) && !oldFingerPrint.equals(newFingerPrint)) {
-                updateChangeHistory(selectedEntry);
-            }
-            ArchiveManagementManager.saveNode(recordGroup.getId(), copy);
+            saveNodeAndChildren(copy);
 
             setSelectedEntry(copy);
 
             resetFlatList();
         }
+    }
+
+    private void saveNodeAndChildren(IEadEntry copy) {
+        copy.calculateFingerprint();
+        ArchiveManagementManager.saveNode(recordGroup.getId(), copy);
+        for (IEadEntry child : copy.getSubEntryList()) {
+            saveNodeAndChildren(child);
+        }
+
     }
 
     public void duplicateEadFile() {
@@ -2929,9 +2931,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                         NodeInitializer.addFieldToNode(entry, toAdd);
                     }
                 }
-                entry.calculateFingerprint();
-                // save new node
-                ArchiveManagementManager.saveNode(recordGroup.getId(), entry);
+                saveNodeAndChildren(entry);
             }
 
             selectedEntry.setDisplayChildren(true);

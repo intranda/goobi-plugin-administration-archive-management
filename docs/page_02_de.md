@@ -192,6 +192,38 @@ In der Standardeinstellung sind die einzelnen Bereiche 1. `Identifikation`, 2. `
 ## Konfiguration des XML Namensraums
 Die beiden Elemente `<eadNamespaceRead>` und `<eadNamespaceWrite>` legen fest, welche XML Namespaces zum lesen und schreiben von EAD Dokumenten verwendet werden sollen. Üblicherweise enthalten beide den gleichen Wert. Es können jedoch auch EAD2 Dokumente gelesen und als EAD3 Dokumente exportiert werden. Dann müssen die entsprechenden Namespaces definiert werden und bei den xpath Ausdrücken der einzelnen Metadaten darauf geachtet werden, dass beide Varianten angeggeben sind. Daher ist es einfacher, den beigelegten Konverter zu nutzen und die Konvertierung von EAD2 nach EAD3 vor dem einspielen der Dokumente zu machen.
 
-- Namespace für ead2 (deprecated): urn:isbn:1-931666-22-9
+- Namespace für ead2 (aktuell): urn:isbn:1-931666-22-9
 - Namespace für ead3 (aktuell): http://ead3.archivists.org/schema/
 - Namespace für ead4 (im draft Status): https://archivists.org/ns/ead/v4
+
+
+## Konfiguration der verschiedenen Knotentypen
+
+Die Knotentypen werden mit Hilfe des `<node>` Elements definiert.
+
+```xml
+        <node name="archive" icon="fa fa-archive" rootNode="true" allowProcessCreation="false">
+            <child>folder</child>
+        </node>
+
+        <node name="folder" icon="fa fa-folder-open-o" allowProcessCreation="false">
+            <child>folder</child>
+            <child>file</child>
+            <child>image</child>
+            <child>audio</child>
+            <child>video</child>
+            <child>other</child>
+        </node>
+
+        <!-- item level nodes -->
+        <node name="file" ruleset="File" icon="fa fa-file-text-o" allowProcessCreation="true" />
+        <node name="image" ruleset="Picture" icon="fa fa-file-image-o" allowProcessCreation="true" />
+        <node name="audio" ruleset="Audio" icon="fa fa-file-audio-o" allowProcessCreation="true" />
+        <node name="video" ruleset="Video" icon="fa fa-file-video-o" allowProcessCreation="true" />
+        <node name="other" ruleset="Other" icon="fa fa-file-o"  allowProcessCreation="true" />
+```
+
+Das Attribut `name` muss einen eindeutigen Wert enthalten, hierüber wird der Typ intern identifiziert. In `ruleset` steht der Name des Strukturelements im Regelsatz, der verwendet werden soll, wenn für diesen Knoten ein Vorgang erzeugt wird. Diese Funktion steht nur zur Verfügung, wenn das Attribut `allowProcessCreation` mit dem Wert `true` gesetzt ist. In `icon` wird das Symbol konfiguriert, dass in der Oberfläche für diesen Knotentyp angezeigt werden soll.
+
+Mittels `rootNode="true|false"` wird definiert, ob der Knoten als oberstes Element des Archivbaums verwendet werden darf. In `<child>` können alle Knotentypen angegeben werden, die unterhalb des jeweiligen Typs erlaubt sind.
+
