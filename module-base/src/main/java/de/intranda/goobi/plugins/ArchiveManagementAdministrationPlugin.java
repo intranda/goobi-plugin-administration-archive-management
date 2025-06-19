@@ -1413,13 +1413,16 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
 
         // remove element from old parent list
-        selectedEntry.getParentNode().getSubEntryList().remove(selectedEntry);
+        IEadEntry oldParent = selectedEntry.getParentNode();
+        oldParent.removeSubEntry(selectedEntry);
+        oldParent.updateHierarchy();
 
         selectedEntry.setParentNode(destinationEntry);
         destinationEntry.addSubEntry(selectedEntry);
         destinationEntry.reOrderElements();
         selectedEntry.updateHierarchy();
         List<IEadEntry> nodesToUpdate = selectedEntry.getAllNodes();
+        nodesToUpdate.addAll(oldParent.getAllNodes());
 
         ArchiveManagementManager.updateNodeHierarchy(recordGroup.getId(), nodesToUpdate);
 

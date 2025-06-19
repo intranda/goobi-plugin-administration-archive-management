@@ -203,6 +203,10 @@ public class EadEntry implements IEadEntry {
             return false;
         }
         EadEntry other = (EadEntry) obj;
+        if (id != null && other.id != null) {
+            return id.equals(other.id);
+        }
+
         if (hierarchy == null) {
             if (other.hierarchy != null) {
                 return false;
