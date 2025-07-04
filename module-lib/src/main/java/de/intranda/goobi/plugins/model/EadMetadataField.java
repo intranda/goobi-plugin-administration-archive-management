@@ -2,6 +2,7 @@ package de.intranda.goobi.plugins.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.goobi.interfaces.IEadEntry;
@@ -92,6 +93,8 @@ public class EadMetadataField implements IMetadataField {
     private boolean group;
     private List<IMetadataGroup> groups = new ArrayList<>();
 
+    private Map<String, String> subfieldMap;
+
     public EadMetadataField(String name, Integer level, String xpath, String xpathType, boolean repeatable, boolean visible, boolean showField, //NOSONAR
             String fieldType, String metadataName, boolean importMetadataInChild, String validationType, String regularExpression,
             boolean searchable, String viafSearchFields, String viafDisplayFields, boolean group, String vocabularyName) {
@@ -129,6 +132,7 @@ public class EadMetadataField implements IMetadataField {
             return false;
         }
         for (IFieldValue val : values) {
+
             if (StringUtils.isNotBlank(val.getValue())) {
                 return true;
             }
@@ -141,6 +145,7 @@ public class EadMetadataField implements IMetadataField {
         if (values == null) {
             values = new ArrayList<>();
         }
+        // TODO: person corp
         if (values.isEmpty() || repeatable) {
             values.add(value);
         }
@@ -151,6 +156,7 @@ public class EadMetadataField implements IMetadataField {
         if (values == null) {
             values = new ArrayList<>();
         }
+        // TODO: person corp
         if (values.isEmpty() || repeatable) {
             values.add(new FieldValue(this));
         }
@@ -160,6 +166,7 @@ public class EadMetadataField implements IMetadataField {
     public void deleteValue(IFieldValue value) {
         IFieldValue valueToDelete = null;
         for (IFieldValue fv : values) {
+            // TODO: person corp
             if ((fv.getValue() == null && value.getValue() == null) || (fv.getValue() != null && fv.getValue().equals(value.getValue()))) {
                 valueToDelete = fv;
                 break;
@@ -196,6 +203,7 @@ public class EadMetadataField implements IMetadataField {
             }
         } else if (copyValue) {
             for (IFieldValue val : values) {
+                // TODO: person corp
                 IFieldValue newValue = new FieldValue(field);
                 if (val.getValue() != null) {
                     newValue.setValue(prefix + val.getValue() + suffix);

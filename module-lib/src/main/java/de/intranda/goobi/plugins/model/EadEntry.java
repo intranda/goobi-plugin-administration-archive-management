@@ -655,6 +655,7 @@ public class EadEntry implements IEadEntry {
                 for (IMetadataField subfield : group.getFields()) {
                     if (subfield.getValues() != null) {
                         for (IFieldValue val : subfield.getValues()) {
+                            //TODO person, corp
                             if (StringUtils.isNotBlank(val.getValue())) {
                                 xml.append("<field name='").append(subfield.getName()).append("'");
                                 if (StringUtils.isNotBlank(val.getAuthorityValue()) && StringUtils.isNotBlank(val.getAuthorityType())) {
@@ -688,6 +689,7 @@ public class EadEntry implements IEadEntry {
             }
         } else {
             for (IFieldValue val : field.getValues()) {
+                //TODO person, corp
                 if (StringUtils.isNotBlank(val.getValue())) {
                     xml.append("<").append(field.getName());
                     // save authority data

@@ -175,33 +175,14 @@ public class ArchiveManagementConfiguration {
 
         // configurations for metadata
         for (HierarchicalConfiguration fieldConfig : config.configurationsAt("/metadata")) {
-            IMetadataField field = new EadMetadataField(fieldConfig.getString("@name"), fieldConfig.getInt("@level"), fieldConfig.getString("@xpath"),
-                    fieldConfig.getString("@xpathType", "element"), fieldConfig.getBoolean("@repeatable", false),
-                    fieldConfig.getBoolean("@visible", true),
-                    fieldConfig.getBoolean("@showField", false), fieldConfig.getString("@fieldType", "input"),
-                    fieldConfig.getString("@rulesetName", null),
-                    fieldConfig.getBoolean("@importMetadataInChild", false), fieldConfig.getString("@validationType", null),
-                    fieldConfig.getString("@regularExpression"),
-                    fieldConfig.getBoolean("@searchable", false), fieldConfig.getString("@searchFields", null),
-                    fieldConfig.getString("@displayFields", null),
-                    fieldConfig.getBoolean("@group", false),
-                    fieldConfig.getString("/vocabulary"));
-            configureField(fieldConfig, field);
+            //TODO
+
+            IMetadataField field = createField(fieldConfig);
             configuredFields.add(field);
             // groups
             if (field.isGroup()) {
                 for (HierarchicalConfiguration subfieldConfig : fieldConfig.configurationsAt("/metadata")) {
-                    IMetadataField subfield = new EadMetadataField(subfieldConfig.getString("@name"), subfieldConfig.getInt("@level"),
-                            subfieldConfig.getString("@xpath"),
-                            subfieldConfig.getString("@xpathType", "element"), subfieldConfig.getBoolean("@repeatable", false),
-                            subfieldConfig.getBoolean("@visible", true),
-                            subfieldConfig.getBoolean("@showField", false), subfieldConfig.getString("@fieldType", "input"),
-                            subfieldConfig.getString("@rulesetName", null),
-                            subfieldConfig.getBoolean("@importMetadataInChild", false), subfieldConfig.getString("@validationType", null),
-                            subfieldConfig.getString("@regularExpression"),
-                            subfieldConfig.getBoolean("@searchable", false), subfieldConfig.getString("@searchFields", null),
-                            subfieldConfig.getString("@displayFields", null),
-                            false, subfieldConfig.getString("/vocabulary"));
+                    IMetadataField subfield = createField(subfieldConfig);
                     configureField(subfieldConfig, subfield);
                     field.addSubfield(subfield);
                 }
@@ -212,6 +193,45 @@ public class ArchiveManagementConfiguration {
 
         }
         ArchiveManagementManager.setConfiguredNodes(configuredNodes);
+    }
+
+    public IMetadataField createField(HierarchicalConfiguration fieldConfig) {
+        IMetadataField field = new EadMetadataField(fieldConfig.getString("@name"), fieldConfig.getInt("@level"), fieldConfig.getString("@xpath"),
+                fieldConfig.getString("@xpathType", "element"), fieldConfig.getBoolean("@repeatable", false),
+                fieldConfig.getBoolean("@visible", true),
+                fieldConfig.getBoolean("@showField", false), fieldConfig.getString("@fieldType", "input"),
+                fieldConfig.getString("@rulesetName", null),
+                fieldConfig.getBoolean("@importMetadataInChild", false), fieldConfig.getString("@validationType", null),
+                fieldConfig.getString("@regularExpression"),
+                fieldConfig.getBoolean("@searchable", false), fieldConfig.getString("@searchFields", null),
+                fieldConfig.getString("@displayFields", null),
+                fieldConfig.getBoolean("@group", false),
+                fieldConfig.getString("/vocabulary"));
+        if ("person".equalsIgnoreCase(field.getFieldType())) {
+
+        } else if ("corporate".equalsIgnoreCase(field.getFieldType())) {
+            String mainValueXpath = fieldConfig.getString("/value/@xpath");
+            String mainValueXpathType = fieldConfig.getString("/value/@xpathType", "element");
+
+            String subValueXpath = fieldConfig.getString("/subvalue/@xpath");
+            String subValueXpathType = fieldConfig.getString("/subvalue/@xpathType", "element");
+
+            String authorityValueXpath = fieldConfig.getString("/authorityValue/@xpath");
+            String authorityValueXpathType = fieldConfig.getString("/authorityValue/@xpathType", "element");
+
+            Map<String, String> subElementMap = new HashMap<>();
+            subElementMap.put("mainValueXpath", mainValueXpath);
+            subElementMap.put("mainValueXpathType", mainValueXpathType);
+            subElementMap.put("subValueXpath", subValueXpath);
+            subElementMap.put("subValueXpathType", subValueXpathType);
+            subElementMap.put("authorityValueXpath", authorityValueXpath);
+            subElementMap.put("authorityValueXpathType", authorityValueXpathType);
+            field.setSubfieldMap(subElementMap);
+
+        }
+
+        configureField(fieldConfig, field);
+        return field;
     }
 
     private void configureField(HierarchicalConfiguration fieldConfig, IMetadataField field) {

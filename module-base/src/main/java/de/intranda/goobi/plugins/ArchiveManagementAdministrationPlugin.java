@@ -659,6 +659,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     private List<IValue> getValuesFromXml(Element element, IMetadataField emf) {
         List<IValue> valueList = new ArrayList<>();
+        // TODO person,corp
         if ("text".equalsIgnoreCase(emf.getXpathType())) {
             XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, config.getNameSpaceRead());
             List<Text> values = engine.evaluate(element);
@@ -1170,6 +1171,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             // don't export internal fields
             return;
         }
+        //TODO person, corp
 
         Element currentElement = xmlElement;
         String xpath = getXpath(isMainElement, emf);
@@ -1919,7 +1921,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                         MetadataGroup mg = new MetadataGroup(prefs.getMetadataGroupTypeByName(emf.getMetadataName()));
 
                         for (IMetadataField subfield : group.getFields()) {
-
+                            //TODO person, corp
                             for (IFieldValue fv : subfield.getValues()) {
                                 Metadata metadata = null;
                                 for (Metadata md : mg.getMetadataList()) {
@@ -1943,6 +1945,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             } else {
                 // regular metadata
                 for (IFieldValue fv : emf.getValues()) {
+                    //TODO person, corp
                     if (!fv.getMultiselectSelectedValues().isEmpty()) {
                         for (String value : fv.getMultiselectSelectedValues()) {
                             try {
@@ -2553,6 +2556,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
         if (config.getIdentifierNodeName().equals(field.getName())) {
             for (IFieldValue fv : field.getValues()) {
+                //TODO person, corp
                 if (strNodeId.equals(fv.getValue())) {
                     return true;
                 }
@@ -2743,7 +2747,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 List<IValue> values = metadata.get(emf.getName());
                 if (emf.isGroup()) {
                     NodeInitializer.loadGroupMetadata(entry, emf, values);
-
                 } else {
                     IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, values);
                     NodeInitializer.addFieldToNode(entry, toAdd);
@@ -2927,6 +2930,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                                     break;
                             }
                             IValue val = new ExtendendValue(emf.getName(), value, null, null);
+                            // TODO person,corp
                             metadataValues.add(val);
                         }
 
