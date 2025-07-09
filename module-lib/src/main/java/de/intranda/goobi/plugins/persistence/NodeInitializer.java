@@ -11,6 +11,7 @@ import org.goobi.interfaces.IMetadataGroup;
 import org.goobi.interfaces.IValue;
 import org.goobi.model.ExtendendValue;
 import org.goobi.model.GroupValue;
+import org.goobi.model.PersonValue;
 
 import de.intranda.goobi.plugins.model.EadMetadataField;
 import de.intranda.goobi.plugins.model.FieldValue;
@@ -86,21 +87,34 @@ public class NodeInitializer {
             // split single value into multiple fields
             for (IValue value : values) {
                 // TODO person,corp
-                ExtendendValue val = (ExtendendValue) value;
-                IFieldValue fv = new FieldValue(toAdd);
-                String stringValue = val.getValue();
-                fv.setAuthorityType(val.getAuthorityType());
-                fv.setAuthorityValue(val.getAuthorityValue());
+                if (value instanceof ExtendendValue) {
 
-                if ("multiselect".equals(toAdd.getFieldType()) && StringUtils.isNotBlank(stringValue)) {
-                    String[] splittedValues = stringValue.split("; ");
-                    for (String s : splittedValues) {
-                        fv.setMultiselectValue(s);
+                    ExtendendValue val = (ExtendendValue) value;
+
+                    IFieldValue fv = new FieldValue(toAdd);
+                    String stringValue = val.getValue();
+                    fv.setAuthorityType(val.getAuthorityType());
+                    fv.setAuthorityValue(val.getAuthorityValue());
+
+                    if ("multiselect".equals(toAdd.getFieldType()) && StringUtils.isNotBlank(stringValue)) {
+                        String[] splittedValues = stringValue.split("; ");
+                        for (String s : splittedValues) {
+                            fv.setMultiselectValue(s);
+                        }
+                    } else {
+                        fv.setValue(stringValue);
                     }
-                } else {
-                    fv.setValue(stringValue);
+                    toAdd.addFieldValue(fv);
+                } else if (value instanceof PersonValue) {
+                    PersonValue pv = (PersonValue) value;
+
+                    IFieldValue fv = new FieldValue(toAdd);
+                    fv.setFirstname(pv.getFirstname());
+                    fv.setLastname(pv.getLastname());
+                    fv.setAuthorityType(pv.getAuthorityType());
+                    fv.setAuthorityValue(pv.getAuthorityValue());
+                    toAdd.addFieldValue(fv);
                 }
-                toAdd.addFieldValue(fv);
             }
         } else {
             IFieldValue fv = new FieldValue(toAdd);

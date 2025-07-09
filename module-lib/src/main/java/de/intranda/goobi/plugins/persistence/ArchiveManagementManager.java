@@ -50,8 +50,7 @@ public class ArchiveManagementManager implements Serializable {
 
     // $1 = metadata name, $2= firstname, $3=lastname, $4=authority type, $5 = authority value
     private static final Pattern personPattern =
-            Pattern.compile("<person name=\'(.*)\' firstname=\'(.*)\' lastname=\'(.*)\'(?: source=\'(.+)\' value=\'(.+)\')? \\/>");
-    // <person name='Author' firstname='John' lastname='Doe' source='gnd' value='http://gnd.info/1234' />
+            Pattern.compile("<person name=\'(.*?)\' firstname=\'(.*?)\' lastname=\'(.*?)\'(?: source=\'(.+)\' value=\'(.+)\')? \\/>");
 
     public static void setConfiguredNodes(List<INodeType> configuredNodes) {
         ArchiveManagementManager.configuredNodes = configuredNodes;
@@ -406,7 +405,7 @@ public class ArchiveManagementManager implements Serializable {
                 metadataMap.put(metadata, values);
             }
 
-            // TODO person, corporate
+            // TODO corporate
             for (Matcher m = personPattern.matcher(data); m.find();) {
                 MatchResult mr = m.toMatchResult();
                 String metadata = mr.group(1);
@@ -417,6 +416,7 @@ public class ArchiveManagementManager implements Serializable {
                 List<IValue> values = metadataMap.getOrDefault(metadata, new ArrayList<>());
                 values.add(new PersonValue(metadata, firstname.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&").replace("''", "'"),
                         lastname.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&").replace("''", "'"), authorityType, authorityValue));
+                metadataMap.put(metadata, values);
             }
 
             for (Matcher m = groupPattern.matcher(data); m.find();) {
@@ -435,7 +435,7 @@ public class ArchiveManagementManager implements Serializable {
                     String authorityType = sub.group(2);
                     String authorityValue = sub.group(3);
                     String value = sub.group(4);
-
+                    // TODO person, corporate
                     List<IValue> subvalues = gv.getSubfields().getOrDefault(metadata, new ArrayList<>());
                     subvalues.add(new ExtendendValue(metadata,
                             value.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&").replace("''", "'"), authorityType,

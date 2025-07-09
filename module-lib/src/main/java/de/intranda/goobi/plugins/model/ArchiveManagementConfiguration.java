@@ -208,7 +208,21 @@ public class ArchiveManagementConfiguration {
                 fieldConfig.getBoolean("@group", false),
                 fieldConfig.getString("/vocabulary"));
         if ("person".equalsIgnoreCase(field.getFieldType())) {
+            String lastnameXpath = fieldConfig.getString("/lastname/@xpath");
+            String lastnameXpathType = fieldConfig.getString("/lastname/@xpathType", "element");
+            String firstnameXpath = fieldConfig.getString("/firstname/@xpath");
+            String firstnameXpathType = fieldConfig.getString("/firstname/@xpathType", "element");
+            String authorityValueXpath = fieldConfig.getString("/authorityValue/@xpath");
+            String authorityValueXpathType = fieldConfig.getString("/authorityValue/@xpathType", "element");
 
+            Map<String, String> subElementMap = new HashMap<>();
+            subElementMap.put("lastnameXpath", lastnameXpath);
+            subElementMap.put("lastnameXpathType", lastnameXpathType);
+            subElementMap.put("firstnameXpath", firstnameXpath);
+            subElementMap.put("firstnameXpathType", firstnameXpathType);
+            subElementMap.put("authorityValueXpath", authorityValueXpath);
+            subElementMap.put("authorityValueXpathType", authorityValueXpathType);
+            field.setSubfieldMap(subElementMap);
         } else if ("corporate".equalsIgnoreCase(field.getFieldType())) {
             String mainValueXpath = fieldConfig.getString("/value/@xpath");
             String mainValueXpathType = fieldConfig.getString("/value/@xpathType", "element");

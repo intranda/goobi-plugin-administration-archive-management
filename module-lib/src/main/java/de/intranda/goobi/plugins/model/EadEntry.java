@@ -685,7 +685,10 @@ public class EadEntry implements IEadEntry {
                     String lastname = escapeString(val.getLastname());
                     xml.append("<person name='").append(field.getName()).append("' firstname='");
                     xml.append(firstname).append("' lastname='").append(lastname);
-                    xml.append("' source='").append(val.getAuthorityType()).append("' value='").append(val.getAuthorityValue()).append("' />");
+                    if (StringUtils.isNotBlank(val.getAuthorityValue()) && StringUtils.isNotBlank(val.getAuthorityType())) {
+                        xml.append("' source='").append(val.getAuthorityType()).append("' value='").append(val.getAuthorityValue());
+                    }
+                    xml.append("' />");
                 } else if (StringUtils.isNotBlank(val.getValue())) {
                     xml.append("<").append(field.getName());
                     // save authority data

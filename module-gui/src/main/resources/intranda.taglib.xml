@@ -42,6 +42,11 @@
         <tag-name>readonly</tag-name>
         <source>tags/io/goobi/readonly.xhtml</source>
     </tag>
+      <tag>
+        <tag-name>person</tag-name>
+        <source>tags/io/goobi/person.xhtml</source>
+    </tag>  
+    
     <tag>
         <tag-name>nodelink</tag-name>
         <source>tags/io/goobi/nodelink.xhtml</source>

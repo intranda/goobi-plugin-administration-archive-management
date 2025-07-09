@@ -40,6 +40,7 @@ import org.goobi.interfaces.IRecordGroup;
 import org.goobi.interfaces.IValue;
 import org.goobi.model.ExtendendValue;
 import org.goobi.model.GroupValue;
+import org.goobi.model.PersonValue;
 import org.goobi.production.cli.helper.StringPair;
 import org.goobi.production.enums.PluginType;
 import org.jdom2.Attribute;
@@ -2929,8 +2930,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                                 default:
                                     break;
                             }
-                            IValue val = new ExtendendValue(emf.getName(), value, null, null);
-                            // TODO person,corp
+                            // TODO corp
+                            IValue val = null;
+                            if ("person".equalsIgnoreCase(emf.getFieldType())) {
+                                val = new PersonValue(emf.getName(), value, "", null, null);
+                            } else {
+                                val = new ExtendendValue(emf.getName(), value, null, null);
+                            }
                             metadataValues.add(val);
                         }
 

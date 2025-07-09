@@ -132,8 +132,7 @@ public class EadMetadataField implements IMetadataField {
             return false;
         }
         for (IFieldValue val : values) {
-
-            if (StringUtils.isNotBlank(val.getValue())) {
+            if (StringUtils.isNotBlank(val.getValue()) || StringUtils.isNotBlank(val.getFirstname()) || StringUtils.isNotBlank(val.getLastname())) {
                 return true;
             }
         }

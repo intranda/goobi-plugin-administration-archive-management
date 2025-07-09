@@ -25,7 +25,7 @@
                 </ui:repeat>
             </span>
             <div class="border-top w-100">
-            
+
                 <ui:repeat
                     var="item"
                     value="#{itemlist}"
@@ -154,15 +154,24 @@
                                     </h:commandLink>
                                 </div>
                             </ui:fragment>
-
-
-                                    <ui:fragment rendered="#{item.fieldType=='checkbox'}">
-            <goobiio:checkbox
-                fieldid="#{item.name}checkbox"
-                fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
-                fieldvalue="#{field.booleanValue}"
-                deletable="true" />
-        </ui:fragment>
+                            <ui:fragment rendered="#{item.fieldType=='checkbox'}">
+                                <goobiio:checkbox
+                                    fieldid="#{item.name}checkbox"
+                                    fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
+                                    fieldvalue="#{field.booleanValue}"
+                                    deletable="true" />
+                            </ui:fragment>
+                            <ui:fragment rendered="#{item.fieldType=='person'}">
+                          <goobiio:person
+                                    fieldid="#{item.name}person"
+                                    fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
+                                    firstname="#{field.firstname}"
+                                    lastname="#{field.lastname}"
+                                    deletable="true" />
+                            </ui:fragment> 
+                            
+                            
+                            
                         </ui:repeat>
                         <ui:fragment rendered="#{item.fieldType=='group'}">
                             <goobiio:group fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}" />
