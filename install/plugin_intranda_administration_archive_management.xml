@@ -114,8 +114,6 @@
         
         <metadata xpath="./ead:control/ead:filedesc/ead:titlestmt/ead:titleproper" xpathType="element" name="titleproper" level="1" repeatable="false" visible="true" />
 
-        <metadata xpath="./ead:control/ead:eadid" xpathType="element" name="eadid" level="1" repeatable="false" showField="false" fieldType="input" rulesetName="EADID" />
-
         <metadata xpath="(./ead:archdesc/ead:did/ead:unitid[not(@type)] | ./ead:did/ead:unitid[not(@type)])[1]" xpathType="element" name="unitid" level="1" repeatable="false" showField="false" fieldType="input" rulesetName="UnitID" />
 
         <metadata xpath="./ead:did/ead:unitid[@type='shelfmark']" xpathType="element" name="Shelfmark" level="1" repeatable="true" rulesetName="shelfmarksource" validationType="unique">
@@ -146,19 +144,19 @@
             <value>otherlevel</value>
         </metadata>
 
-        <metadata xpath="(./ead:archdesc/ead:did/ead:physdescstructured|./ead:did/ead:physdescstructured)" xpathType="element" name="physdescstructured" level="1" repeatable="true"
+        <metadata xpath="(./ead:archdesc/ead:did/ead:physdescstructured | ./ead:did/ead:physdescstructured)" xpathType="element" name="physdescstructured" level="1" repeatable="true"
             rulesetName="physdesc" group="true" fieldType="group" visible="true">
             <metadata xpath="ead:quantity" xpathType="element" name="physdescquantity" level="1" repeatable="false" rulesetName="Quantity" visible="true" />
             <metadata xpath="ead:unittype" xpathType="element" name="physdescunittype" level="1" repeatable="false" rulesetName="Unittype" visible="true" />
         </metadata>
 
-        <metadata xpath="(./ead:archdesc/ead:did/ead:physdesc/ead:extent|./ead:did/ead:physdesc/ead:extent)" xpathType="element" name="physdesc" level="1" repeatable="false"
+        <metadata xpath="(./ead:archdesc/ead:did/ead:physdesc/ead:extent | ./ead:did/ead:physdesc/ead:extent)" xpathType="element" name="physdesc" level="1" repeatable="false"
             rulesetName="physicalDescriptionExtent" />
 
         <!-- Context Area -->
-        <metadata xpath="(./ead:archdesc/ead:did/ead:origination[@label='Creator']/ead:persname|./ead:did/ead:origination[@label='Creator']/ead:persname)[1]" xpathType="element" name="origination" level="2" repeatable="true" rulesetName="Provenience" />
+        <metadata xpath="(./ead:archdesc/ead:did/ead:origination[@label='Creator']/ead:persname | ./ead:did/ead:origination[@label='Creator']/ead:persname)" xpathType="element" name="origination" level="2" repeatable="true" rulesetName="Provenience" />
         
-        <metadata xpath="(./ead:archdesc/ead:did/ead:origination[@label='Creator']/ead:corpname|./ead:did/ead:origination[@label='Creator']/ead:corpname)[1]" xpathType="element" name="originationcorpname" level="2" repeatable="true" rulesetName="Provenience" />
+        <metadata xpath="(./ead:archdesc/ead:did/ead:origination[@label='Creator']/ead:corpname | ./ead:did/ead:origination[@label='Creator']/ead:corpname)" xpathType="element" name="originationcorpname" level="2" repeatable="true" rulesetName="Provenience" />
 
         <metadata xpath="(./ead:archdesc/ead:odd|./ead:odd)" xpathType="element" name="oddnote" level="2" repeatable="true" visible="true" group="true" fieldType="group">
             <metadata xpath="ead:head" xpathType="element" name="role" level="2" repeatable="false" visible="true" fieldType="input" />
@@ -167,7 +165,7 @@
 
         <metadata xpath="(./ead:archdesc/ead:bioghist/ead:p | ./ead:bioghist/ead:p)[1]" xpathType="element" name="bioghist" level="2" repeatable="true" fieldType="textarea" rulesetName="BiographicalInformation" />
 
-        <metadata xpath="(./ead:archdesc/ead:custodhist/ead:p|./ead:custodhist/ead:p)" group="true" name="custodhist" level="2" repeatable="true" visible="true" fieldType="group" rulesetName="InventoryHistoryGroup">
+        <metadata xpath="(./ead:archdesc/ead:custodhist/ead:p | ./ead:custodhist/ead:p)" group="true" name="custodhist" level="2" repeatable="true" visible="true" fieldType="group" rulesetName="InventoryHistoryGroup">
             <metadata xpath="ead:head" xpathType="element" name="AcquisitionMethod" level="2" repeatable="false" visible="false" fieldType="input" rulesetName="AcquisitionMethod" />
             <metadata xpath="ead:list/ead:item" xpathType="element" name="AcquisitionAgent" level="2" repeatable="false" visible="false" fieldType="input" rulesetName="AcquisitionAgent" />
             <metadata xpath="ead:p" xpathType="element" name="AcquisitionNotes" level="2" repeatable="false" visible="false" fieldType="textarea" rulesetName="AcquisitionNotes" />
@@ -181,14 +179,14 @@
         <metadata xpath="(./ead:archdesc/ead:arrangement/ead:p | ./ead:arrangement/ead:p)[1]" xpathType="element" name="arrangement" level="3" repeatable="false" fieldType="textarea" rulesetName="Arrangement" />
 
         <!-- accruals group-->
-        <metadata xpath="(./ead:archdesc/ead:accruals|./ead:accruals)" group="true" name="accruals" level="3" repeatable="true" visible="true" fieldType="group" rulesetName="AccrualsGroup">
+        <metadata xpath="(./ead:archdesc/ead:accruals | ./ead:accruals)" group="true" name="accruals" level="3" repeatable="true" visible="true" fieldType="group" rulesetName="AccrualsGroup">
             <metadata xpath="ead:head" xpathType="element" name="accruals_head" level="3" repeatable="false" visible="true" rulesetName="Title" />
             <metadata xpath="ead:p" xpathType="element" name="accruals_p" level="3" repeatable="false" visible="true" rulesetName="Description" />
             <metadata xpath="ead:chronlist/ead:chronitem/ead:datesingle" xpathType="element" name="accruals_date" level="3" repeatable="false" visible="true" rulesetName="Date" validationType="date" />
         </metadata>
 
         <!-- Condition of Access and Use Area -->
-        <metadata xpath="(./ead:archdesc/ead:accessrestrict|./ead:accessrestrict)" group="true" name="accessrestrict" level="4" repeatable="true" visible="true" fieldType="group" rulesetName="AccessRestrictGroup">
+        <metadata xpath="(./ead:archdesc/ead:accessrestrict | ./ead:accessrestrict)" group="true" name="accessrestrict" level="4" repeatable="true" visible="true" fieldType="group" rulesetName="AccessRestrictGroup">
             <metadata xpath="(ead:p|ead:p)" xpathType="element" name="accessrestrict_value" level="4" repeatable="false" fieldType="dropdown" rulesetName="RestrictionOnAccessLicense" importMetadataInChild="true">
                 <value>open access</value>
                 <value>restricted</value>
@@ -227,7 +225,7 @@
 
         <metadata xpath="(./ead:archdesc/ead:phystech/ead:p | ./ead:phystech/ead:p)" xpathType="element" name="phystech" level="4" repeatable="false" fieldType="textarea" rulesetName="PhysTech" />
         
-        <metadata xpath="(./ead:archdesc/ead:otherfindaid|./ead:otherfindaid)" group="true" name="otherfindaid" level="4" repeatable="true" visible="true" fieldType="group" rulesetName="OtherFindAidGroup">
+        <metadata xpath="(./ead:archdesc/ead:otherfindaid | ./ead:otherfindaid)" group="true" name="otherfindaid" level="4" repeatable="true" visible="true" fieldType="group" rulesetName="OtherFindAidGroup">
             <metadata xpath="(ead:head|ead:head)" xpathType="element" name="otherfindaid_type" level="4" repeatable="false" fieldType="input" rulesetName="Type" />
             <metadata xpath="ead:p/ead:ref" xpathType="element" name="otherfindaid_link" level="4" repeatable="false" fieldType="input" rulesetName="OtherFindAid" />
             <metadata xpath="ead:p/ead:ptr" xpathType="element" name="otherfindaid_node" level="4" repeatable="false" fieldType="nodelink" rulesetName="OtherFindAid" />
@@ -236,25 +234,25 @@
         <!-- Allied Materials Area -->
 
         <!-- Location of Originals group-->
-        <metadata xpath="(./ead:archdesc/ead:originalsloc|./ead:originalsloc)" group="true" name="originalsloc" level="5" repeatable="true" visible="true" fieldType="group" rulesetName="OriginalsLocationGroup">
+        <metadata xpath="(./ead:archdesc/ead:originalsloc | ./ead:originalsloc)" group="true" name="originalsloc" level="5" repeatable="true" visible="true" fieldType="group" rulesetName="OriginalsLocationGroup">
             <metadata xpath="ead:p/ead:name" xpathType="element" name="originalsloc_person" level="5" repeatable="false" visible="true" rulesetName="Person" fieldType="input" />
             <metadata xpath="ead:p/ead:subject" xpathType="element" name="originalsloc_shelfmark" level="5" repeatable="false" visible="true" rulesetName="shelfmarksource" />
             <metadata xpath="ead:p/ead:ref" xpathType="element" name="originalsloc_link" level="4" repeatable="false" fieldType="input" rulesetName="RepositoryLink" />
         </metadata>
 
         <!-- Alternative Form Available group-->
-        <metadata xpath="(./ead:archdesc/ead:relatedmaterial|./ead:relatedmaterial)" group="true" name="altformavail" level="5" repeatable="true" visible="true" fieldType="group" rulesetName="CopyLocationGroup">
+        <metadata xpath="(./ead:archdesc/ead:relatedmaterial | ./ead:relatedmaterial)" group="true" name="altformavail" level="5" repeatable="true" visible="true" fieldType="group" rulesetName="CopyLocationGroup">
             <metadata xpath="ead:p/ead:name" xpathType="element" name="altformavail_person" level="5" repeatable="false" visible="true" rulesetName="Person" fieldType="input" />
             <metadata xpath="ead:p/ead:subject" xpathType="element" name="altformavail_shelfmark" level="5" repeatable="false" visible="true" rulesetName="shelfmarksource" />
             <metadata xpath="ead:p/ead:ref" xpathType="element" name="altformavail_link" level="4" repeatable="false" fieldType="input" rulesetName="RepositoryLink" />
         </metadata>
 
-        <metadata xpath="(./ead:archdesc/ead:separatedmaterial/ead:p|./ead:separatedmaterial/ead:p)[1]" xpathType="element" name="separatedmaterial" level="5" repeatable="true" rulesetName="SeparatedMaterial" fieldType="nodelink" />
+        <metadata xpath="(./ead:archdesc/ead:separatedmaterial/ead:p | ./ead:separatedmaterial/ead:p)[1]" xpathType="element" name="separatedmaterial" level="5" repeatable="true" rulesetName="SeparatedMaterial" fieldType="nodelink" />
         
-        <metadata xpath="(./ead:archdesc/ead:bibliography|./ead:bibliography)[1]" xpathType="element" name="bibliography" level="5" repeatable="false" rulesetName="BibliographicCitation" />
+        <metadata xpath="(./ead:archdesc/ead:bibliography | ./ead:bibliography)[1]" xpathType="element" name="bibliography" level="5" repeatable="false" rulesetName="BibliographicCitation" />
 
         <!-- Note Area -->
-        <metadata xpath="(./ead:archdesc/ead:note/ead:p|./ead:note/ead:p)[1]" xpathType="element" name="didnote" level="6" repeatable="true" fieldType="textarea" rulesetName="DidNote" />
+        <metadata xpath="(./ead:archdesc/ead:note/ead:p | ./ead:note/ead:p)" xpathType="element" name="didnote" level="6" repeatable="true" fieldType="textarea" rulesetName="DidNote" />
        
         <metadata xpath="./ead:control/ead:localtypedeclaration" xpathType="element" name="Conventions" level="6" repeatable="false" fieldType="textarea" rulesetName="ConventionDeclaration" />
         
@@ -291,6 +289,13 @@
         <!-- gnd sample
         <metadata xpath="./ead:archdesc/ead:index/ead:indexentry/ead:persname/ead:part" xpathType="element" name="Person" level="7" repeatable="true" fieldType="gnd" visible="true" />
         -->
+        
+        <!-- person sample
+        <metadata xpath="(./ead:archdesc/ead:indexentry/ead:persname[@relator='aut'] | ./ead:indexentry/ead:persname[@relator='aut'])" name="Author"  level="2" repeatable="true" visible="true"  fieldType="person" rulesetName="Author">
+            <lastname xpath="ead:part[@localtype='surname']" xpathType="element" />
+            <firstname xpath="ead:part[@localtype='givenname']" xpathType="element" />
+            <authorityValue xpath="@identifier" xpathType="attribute" />
+        </metadata> -->
 
         <!-- extend configured areas -->
         <showGroup level="1" />
