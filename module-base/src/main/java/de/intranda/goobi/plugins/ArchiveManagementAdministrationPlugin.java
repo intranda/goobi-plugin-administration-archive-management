@@ -660,7 +660,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     private List<IValue> getValuesFromXml(Element element, IMetadataField emf) {
         List<IValue> valueList = new ArrayList<>();
-        // TODO person,corp
+        // TODO corp
         if ("text".equalsIgnoreCase(emf.getXpathType())) {
             XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, config.getNameSpaceRead());
             List<Text> values = engine.evaluate(element);
@@ -688,6 +688,23 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 String stringValue = value.getValue();
                 valueList.add(new ExtendendValue(emf.getName(), stringValue, null, null));
             }
+        } else if ("person".equals(emf.getFieldType())) {
+            XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, config.getNameSpaceRead());
+            List<Element> values = engine.evaluate(element);
+            if (emf.isRepeatable()) {
+                for (Element value : values) {
+                    PersonValue pv = getPersonFromElement(emf, value);
+                    if (pv != null) {
+                        valueList.add(pv);
+                    }
+                }
+            } else {
+                Element value = values.get(0);
+                PersonValue pv = getPersonFromElement(emf, value);
+                if (pv != null) {
+                    valueList.add(pv);
+                }
+            }
         } else {
             XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, config.getNameSpaceRead());
             List<Element> values = engine.evaluate(element);
@@ -707,6 +724,69 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
         }
         return valueList;
+    }
+
+    private PersonValue getPersonFromElement(IMetadataField field, Element element) {
+        List<String> lastnameValues =
+                getValuesFromElement(field.getSubfieldMap().get("lastnameXpathType"), field.getSubfieldMap().get("lastnameXpath"), element);
+        List<String> firstnameValues =
+                getValuesFromElement(field.getSubfieldMap().get("firstnameXpathType"), field.getSubfieldMap().get("firstnameXpath"), element);
+        List<String> idValues = getValuesFromElement(field.getSubfieldMap().get("authorityValueXpathType"),
+                field.getSubfieldMap().get("authorityValueXpath"), element);
+        String lastname = null;
+        String firstname = null;
+        String id = null;
+        if (!lastnameValues.isEmpty()) {
+            lastname = lastnameValues.get(0);
+        }
+        if (!firstnameValues.isEmpty()) {
+            firstname = firstnameValues.get(0);
+        }
+        String idType = "";
+        if (!idValues.isEmpty()) {
+            id = idValues.get(0);
+            if (id.contains("gnd")) {
+                idType = "gnd";
+            } else if (id.contains("viaf")) {
+                idType = "viaf";
+            } else {
+                idType = "-";
+            }
+        }
+        if (StringUtils.isNotBlank(firstname) || StringUtils.isNotBlank(lastname)) {
+            return new PersonValue(field.getName(), firstname, lastname, idType, id);
+        }
+        return null;
+    }
+
+    private List<String> getValuesFromElement(String xpathType, String xpath, Element element) {
+        List<String> answer = new ArrayList<>();
+
+        if ("text".equalsIgnoreCase(xpathType)) {
+            XPathExpression<Text> engine =
+                    xFactory.compile(xpath, Filters.text(), null, config.getNameSpaceRead());
+            List<Text> values = engine.evaluate(element);
+            for (Text value : values) {
+                String stringValue = value.getValue();
+                answer.add(stringValue);
+            }
+        } else if ("attribute".equalsIgnoreCase(xpathType)) {
+            XPathExpression<Attribute> engine =
+                    xFactory.compile(xpath, Filters.attribute(), null, config.getNameSpaceRead());
+            List<Attribute> values = engine.evaluate(element);
+            for (Attribute val : values) {
+                String stringValue = val.getValue();
+                answer.add(stringValue);
+            }
+        } else {
+            XPathExpression<Element> engine = xFactory.compile(xpath, Filters.element(), null, config.getNameSpaceRead());
+            List<Element> values = engine.evaluate(element);
+            for (Element val : values) {
+                String stringValue = val.getValue();
+                answer.add(stringValue);
+            }
+        }
+        return answer;
     }
 
     public void resetFlatList() {

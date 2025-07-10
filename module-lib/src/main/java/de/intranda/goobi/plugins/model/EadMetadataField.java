@@ -144,7 +144,6 @@ public class EadMetadataField implements IMetadataField {
         if (values == null) {
             values = new ArrayList<>();
         }
-        // TODO: person corp
         if (values.isEmpty() || repeatable) {
             values.add(value);
         }
@@ -155,7 +154,6 @@ public class EadMetadataField implements IMetadataField {
         if (values == null) {
             values = new ArrayList<>();
         }
-        // TODO: person corp
         if (values.isEmpty() || repeatable) {
             values.add(new FieldValue(this));
         }
@@ -165,8 +163,16 @@ public class EadMetadataField implements IMetadataField {
     public void deleteValue(IFieldValue value) {
         IFieldValue valueToDelete = null;
         for (IFieldValue fv : values) {
-            // TODO: person corp
-            if ((fv.getValue() == null && value.getValue() == null) || (fv.getValue() != null && fv.getValue().equals(value.getValue()))) {
+            // TODO: corp
+            if ("person".equals(fieldType)) {
+                if (((fv.getLastname() == null && value.getLastname() == null)
+                        || fv.getLastname() != null && fv.getLastname().equals(value.getLastname()))
+                        && ((fv.getFirstname() == null && value.getFirstname() == null)
+                                || fv.getFirstname() != null && fv.getFirstname().equals(value.getFirstname()))) {
+                    valueToDelete = fv;
+                    break;
+                }
+            } else if ((fv.getValue() == null && value.getValue() == null) || (fv.getValue() != null && fv.getValue().equals(value.getValue()))) {
                 valueToDelete = fv;
                 break;
             }
@@ -202,9 +208,12 @@ public class EadMetadataField implements IMetadataField {
             }
         } else if (copyValue) {
             for (IFieldValue val : values) {
-                // TODO: person corp
+                // TODO: corp
                 IFieldValue newValue = new FieldValue(field);
-                if (val.getValue() != null) {
+                if ("person".equals(fieldType)) {
+                    newValue.setFirstname(val.getFirstname());
+                    newValue.setLastname(val.getLastname());
+                } else if (val.getValue() != null) {
                     newValue.setValue(prefix + val.getValue() + suffix);
                 } else {
                     newValue.setValue(prefix + suffix);
