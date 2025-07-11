@@ -114,6 +114,7 @@ public class FieldValue implements IFieldValue {
             }
             return sb.toString();
         } else {
+            // TODO person, corporate
             return value;
         }
     }

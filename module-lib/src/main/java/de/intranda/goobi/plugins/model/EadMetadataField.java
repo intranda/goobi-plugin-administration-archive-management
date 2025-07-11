@@ -197,6 +197,7 @@ public class EadMetadataField implements IMetadataField {
                 group, vocabularyName);
         field.setSelectItemList(selectItemList);
         field.setSearchParameter(searchParameter);
+        field.setSubfieldMap(subfieldMap);
         if (isGroup()) {
             for (IMetadataGroup grp : groups) {
                 IMetadataGroup newGroup = new EadMetadataGroup(this);
@@ -255,6 +256,7 @@ public class EadMetadataField implements IMetadataField {
                     f.getVocabularyName());
             field.setSelectItemList(f.getSelectItemList());
             field.setSearchParameter(f.getSearchParameter());
+            field.setSubfieldMap(subfieldMap);
             field.addValue();
 
             newGroup.getFields().add(field);

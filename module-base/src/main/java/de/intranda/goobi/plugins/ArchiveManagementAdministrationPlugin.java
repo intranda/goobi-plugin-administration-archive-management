@@ -100,8 +100,10 @@ import ugh.dl.Fileformat;
 import ugh.dl.Metadata;
 import ugh.dl.MetadataGroup;
 import ugh.dl.MetadataType;
+import ugh.dl.Person;
 import ugh.dl.Prefs;
 import ugh.exceptions.DocStructHasNoTypeException;
+import ugh.exceptions.MetadataTypeNotAllowedException;
 import ugh.exceptions.UGHException;
 import ugh.fileformats.mets.MetsMods;
 
@@ -1131,9 +1133,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             createEadGroupField(xmlElement, emf, isMainElement, xmlRootElement);
         } else {
             for (IFieldValue fv : emf.getValues()) {
-                if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
+                if ("person".equals(emf.getFieldType())) {
+                    createEadXmlPersonField(xmlElement, isMainElement, emf, fv, xmlRootElement);
+                } else if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
                     createEadXmlField(xmlElement, isMainElement, emf, fv, xmlRootElement);
-
                 }
             }
         }
@@ -1239,7 +1242,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
             for (IMetadataField subfield : group.getFields()) {
                 for (IFieldValue fv : subfield.getValues()) {
-                    if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
+                    if ("person".equals(subfield.getFieldType())) {
+                        createEadXmlPersonField(groupElement, isMainElement, subfield, fv, xmlRootElement);
+                    }
+
+                    else if (StringUtils.isNotBlank(fv.getValuesForXmlExport())) {
                         createEadXmlField(groupElement, isMainElement, subfield, fv, xmlRootElement);
                     }
                 }
@@ -1247,12 +1254,78 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
     }
 
-    private void createEadXmlField(Element xmlElement, boolean isMainElement, IMetadataField emf, IFieldValue metadataValue, Element xmlRootElement) {
+    private void createEadXmlPersonField(Element xmlElement, boolean isMainElement, IMetadataField emf, IFieldValue metadataValue,
+            Element xmlRootElement) {
         if (StringUtils.isBlank(emf.getXpath())) {
             // don't export internal fields
             return;
         }
-        //TODO person, corp
+
+        if (StringUtils.isBlank(metadataValue.getFirstname()) && StringUtils.isBlank(metadataValue.getLastname())) {
+            // don't export empty fields
+            return;
+        }
+        // create person root element
+        Element currentElement = xmlElement;
+        String xpath = getXpath(isMainElement, emf);
+        String strRegex = "/(?=[^\\]]*(?:\\[|$))";
+        String[] fields = xpath.split(strRegex);
+        for (String field : fields) {
+            field = field.trim();
+            if (".".equals(field)) {
+                // do nothing
+            }
+            // check if its an element or attribute
+            else if (field.startsWith("@")) {
+                field = field.substring(1);
+                // create attribute on current element
+                // duplicate current element if attribute is not empty
+                if (currentElement.getAttribute(field) != null) {
+                    Element duplicate = new Element(currentElement.getName(), config.getNameSpaceWrite());
+                    for (Attribute attr : currentElement.getAttributes()) {
+                        if (!attr.getName().equals(field)) {
+                            duplicate.setAttribute(attr.getName(), attr.getValue());
+                        }
+                    }
+                    currentElement.getParent().addContent(duplicate);
+                    currentElement = duplicate;
+                }
+            } else {
+                currentElement = findElement(field, currentElement);
+            }
+        }
+
+        // sub element for firstname
+        if (StringUtils.isNotBlank(metadataValue.getFirstname())) {
+            String firstnameXpath = emf.getSubfieldMap().get("firstnameXpath");
+            Element firstnameElement = currentElement;
+            fields = firstnameXpath.split(strRegex);
+            createElement(firstnameElement, firstnameXpath, metadataValue.getFirstname());
+        }
+
+        // sub element for lastname
+        if (StringUtils.isNotBlank(metadataValue.getLastname())) {
+            Element lastnameElement = currentElement;
+            String lastnameXpath = emf.getSubfieldMap().get("lastnameXpath");
+            fields = lastnameXpath.split(strRegex);
+            createElement(lastnameElement, lastnameXpath, metadataValue.getLastname());
+
+        }
+
+        // get element for id
+        if (StringUtils.isNotBlank(metadataValue.getAuthorityValue()) && !"null".equals(metadataValue.getAuthorityValue())) {
+            Element idElement = currentElement;
+            String idXpath = emf.getSubfieldMap().get("authorityValueXpath");
+            createElement(idElement, idXpath, metadataValue.getAuthorityValue());
+        }
+    }
+
+    private void createEadXmlField(Element xmlElement, boolean isMainElement, IMetadataField emf, IFieldValue metadataValue,
+            Element xmlRootElement) {
+        if (StringUtils.isBlank(emf.getXpath())) {
+            // don't export internal fields
+            return;
+        }
 
         Element currentElement = xmlElement;
         String xpath = getXpath(isMainElement, emf);
@@ -1260,6 +1333,16 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         if (xpath.contains("ead:control/")) {
             currentElement = xmlRootElement;
         }
+        String value = metadataValue.getValuesForXmlExport();
+        currentElement = createElement(currentElement, xpath, value);
+        if (StringUtils.isNotBlank(metadataValue.getAuthorityType())
+                && StringUtils.isNotBlank(metadataValue.getAuthorityValue())) {
+            currentElement.setAttribute("SOURCE", metadataValue.getAuthorityType());
+            currentElement.setAttribute("AUTHFILENUMBER", metadataValue.getAuthorityValue());
+        }
+    }
+
+    public Element createElement(Element currentElement, String xpath, String value) {
 
         // split xpath on URL_SEPARATOR, unless within square brackets
         String strRegex = "/(?=[^\\]]*(?:\\[|$))";
@@ -1288,7 +1371,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     currentElement = duplicate;
                 }
 
-                currentElement.setAttribute(field, metadataValue.getValuesForXmlExport());
+                currentElement.setAttribute(field, value);
                 written = true;
             } else {
                 currentElement = findElement(field, currentElement);
@@ -1314,13 +1397,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 currentElement = duplicate;
             }
 
-            currentElement.setText(metadataValue.getValuesForXmlExport());
+            currentElement.setText(value);
 
-            if (StringUtils.isNotBlank(metadataValue.getAuthorityType()) && StringUtils.isNotBlank(metadataValue.getAuthorityValue())) {
-                currentElement.setAttribute("SOURCE", metadataValue.getAuthorityType());
-                currentElement.setAttribute("AUTHFILENUMBER", metadataValue.getAuthorityValue());
-            }
         }
+        return currentElement;
     }
 
     private Element findElement(String field, Element currentElement) {
@@ -2026,8 +2106,19 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             } else {
                 // regular metadata
                 for (IFieldValue fv : emf.getValues()) {
-                    //TODO person, corp
-                    if (!fv.getMultiselectSelectedValues().isEmpty()) {
+                    //TODO corp
+                    if ("person".equals(emf.getFieldType())) {
+                        try {
+                            Person p = new Person(prefs.getMetadataTypeByName(emf.getMetadataName()));
+                            p.setFirstname(fv.getFirstname());
+                            p.setLastname(fv.getLastname());
+                            p.setAuthorityValue(fv.getAuthorityValue());
+                            logical.addPerson(p);
+                        } catch (MetadataTypeNotAllowedException e) {
+                            log.error(e);
+                        }
+
+                    } else if (!fv.getMultiselectSelectedValues().isEmpty()) {
                         for (String value : fv.getMultiselectSelectedValues()) {
                             try {
                                 Metadata md = new Metadata(prefs.getMetadataTypeByName(emf.getMetadataName()));

@@ -45,6 +45,7 @@ public class NodeInitializer {
                 template.getValidationType(),
                 template.getRegularExpression(), template.isSearchable(), template.getViafSearchFields(), template.getViafDisplayFields(),
                 template.isGroup(), template.getVocabularyName());
+        instance.setSubfieldMap(template.getSubfieldMap());
         instance.setValidationError(template.getValidationError());
         instance.setSelectItemList(template.getSelectItemList());
         instance.setSearchParameter(template.getSearchParameter());
@@ -70,6 +71,8 @@ public class NodeInitializer {
                 emf.isVisible(), emf.isShowField(), emf.getFieldType(), emf.getMetadataName(), emf.isImportMetadataInChild(), emf.getValidationType(),
                 emf.getRegularExpression(), emf.isSearchable(), emf.getViafSearchFields(), emf.getViafDisplayFields(), emf.isGroup(),
                 emf.getVocabularyName());
+
+        toAdd.setSubfieldMap(emf.getSubfieldMap());
         toAdd.setValidationError(emf.getValidationError());
         toAdd.setSelectItemList(emf.getSelectItemList());
         toAdd.setSearchParameter(emf.getSearchParameter());

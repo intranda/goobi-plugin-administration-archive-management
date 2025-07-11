@@ -11,7 +11,7 @@
 <h:body>
     <ui:composition>
         <ui:fragment id="#{area}">
-            <span class="p-2 flex-grow-1 d-flex justify-content-end flex-wrap flex-basis-75">
+            <h:panelGroup styleClass="p-2 flex-grow-1 d-flex justify-content-end flex-wrap flex-basis-75" id="#{area}badges">
                 <ui:repeat
                     var="item"
                     value="#{itemlist}">
@@ -23,7 +23,7 @@
                             showfield="#{item.showField}" />
                     </ui:fragment>
                 </ui:repeat>
-            </span>
+            </h:panelGroup>
             <div class="border-top w-100">
 
                 <ui:repeat
@@ -163,11 +163,10 @@
                             </ui:fragment>
                             <ui:fragment rendered="#{item.fieldType=='person'}">
                           <goobiio:person
+                                    area="#{area}"
                                     fieldid="#{item.name}person"
+                                    person="#{field}"
                                     fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
-                                    firstname="#{field.firstname}"
-                                    lastname="#{field.lastname}"
-                                    authorityValue="#{field.authorityValue}"
                                     deletable="true" />
                             </ui:fragment> 
                             

@@ -26,12 +26,12 @@
                         <h:inputText
                             id="#{fieldid}firstname"
                             styleClass="form-control #{item.valid ? '' : 'invalid'}"
-                            value="#{firstname}"
+                            value="#{person.firstname}"
                             required="false"
                             readonly="false">
                             <f:ajax
                                 execute="@this"
-                                render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                                render=":nodeBox:#{ajaxid}"
                                 onevent="(data) => {scrollToCurrentNode(data);}"
                                 event="blur" />
                         </h:inputText>
@@ -47,12 +47,12 @@
                         <h:inputText
                             id="#{fieldid}lastname"
                             styleClass="form-control #{item.valid ? '' : 'invalid'}"
-                            value="#{lastname}"
+                            value="#{person.lastname}"
                             required="false"
                             readonly="false">
                             <f:ajax
                                 execute="@this"
-                                render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                                render=":nodeBox:#{ajaxid}"
                                 onevent="(data) => {scrollToCurrentNode(data);}"
                                 event="blur" />
                         </h:inputText>
@@ -68,12 +68,12 @@
                         <h:inputText
                             id="#{fieldid}id"
                             styleClass="form-control #{item.valid ? '' : 'invalid'}"
-                            value="#{authorityValue}"
+                            value="#{person.authorityValue}"
                             required="false"
                             readonly="false">
                             <f:ajax
                                 execute="@this"
-                                render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                                render=":nodeBox:#{ajaxid}"
                                 onevent="(data) => {scrollToCurrentNode(data);}"
                                 event="blur" />
                         </h:inputText>
@@ -90,7 +90,7 @@
                     <span class="fa fa-trash" />
                     <f:ajax
                         execute="@this"
-                        render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
+                        render=":nodeBox:#{ajaxid}"
                         onevent="(data) => {scrollToCurrentNode(data);}" />
                 </h:commandLink>
             </div>
