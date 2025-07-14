@@ -399,6 +399,7 @@ public class ArchiveManagementManager implements Serializable {
                         authorityValue));
                 metadataMap.put(metadata, values);
             }
+            // TODO person, corporate
 
             for (Matcher m = groupPattern.matcher(data); m.find();) {
 

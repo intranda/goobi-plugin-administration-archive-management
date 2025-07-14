@@ -125,17 +125,17 @@ public class EadMetadataFieldTest {
 
     @Test
     public void testHashCode() {
-        assertEquals(-1972651278, eadMetadataField.hashCode());
+        assertEquals(-422308367, eadMetadataField.hashCode());
         eadMetadataField.setFieldType("other");
-        assertEquals(1107188692, eadMetadataField.hashCode());
+        assertEquals(899623431, eadMetadataField.hashCode());
         eadMetadataField.setMetadataName("metadata");
-        assertEquals(-592626653, eadMetadataField.hashCode());
+        assertEquals(-605234116, eadMetadataField.hashCode());
     }
 
     @Test
     public void testToString() {
         assertEquals(
-                "EadMetadataField(name=name, level=1, xpath=xpath, xpathType=text, repeatable=false, values=null, visible=true, showField=true, selectItemList=null, vocabularyName=null, searchParameter=null, fieldType=input, metadataName=metadataName, importMetadataInChild=false, validationType=required, regularExpression=regex, valid=true, validationError=null, searchable=true, viafSearchFields=viafSearchFields, viafDisplayFields=viafDisplayFields, subfields=[], group=false, groups=[])",
+                "EadMetadataField(name=name, level=1, xpath=xpath, xpathType=text, repeatable=false, values=null, visible=true, showField=true, selectItemList=null, vocabularyName=null, searchParameter=null, fieldType=input, metadataName=metadataName, importMetadataInChild=false, validationType=required, regularExpression=regex, valid=true, validationError=null, searchable=true, viafSearchFields=viafSearchFields, viafDisplayFields=viafDisplayFields, subfields=[], group=false, groups=[], subfieldMap=null)",
                 eadMetadataField.toString());
     }
 

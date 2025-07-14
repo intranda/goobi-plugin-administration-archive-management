@@ -20,7 +20,7 @@ public class NodeInitializer {
     public static IEadEntry initEadNodeWithMetadata(IEadEntry entry, List<IMetadataField> configuredFields) {
         if (entry != null) {
             Map<String, List<IValue>> metadata = ArchiveManagementManager.loadMetadataForNode(entry.getDatabaseId());
-
+            // TODO person,corp
             for (IMetadataField emf : configuredFields) {
                 if (emf.isGroup()) {
                     List<IValue> groups = metadata.get(emf.getName());
@@ -48,7 +48,7 @@ public class NodeInitializer {
         instance.setSelectItemList(template.getSelectItemList());
         instance.setSearchParameter(template.getSearchParameter());
         instance.setEadEntry(entry);
-
+        // TODO person,corp
         // sub fields
         for (IMetadataField sub : template.getSubfields()) {
             IMetadataField toAdd = addFieldToEntry(entry, sub, null);
@@ -85,6 +85,7 @@ public class NodeInitializer {
 
             // split single value into multiple fields
             for (IValue value : values) {
+                // TODO person,corp
                 ExtendendValue val = (ExtendendValue) value;
                 IFieldValue fv = new FieldValue(toAdd);
                 String stringValue = val.getValue();
@@ -151,6 +152,7 @@ public class NodeInitializer {
 
                         // split single value into multiple fields
                         for (IValue value : values) {
+                            // TODO person,corp
                             ExtendendValue val = (ExtendendValue) value;
                             String stringValue = val.getValue();
                             IFieldValue fv = null;

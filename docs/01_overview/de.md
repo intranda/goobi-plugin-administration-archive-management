@@ -1,5 +1,5 @@
 ---
-title: Archiv-Management
+title: Übersicht
 identifier: intranda_administration_archive_management
 description: Goobi Administration Plugin für die Verwaltung von Archivbeständen
 published: true  
@@ -67,11 +67,11 @@ Berechtigung | Erläuterung
 
 Eine detaillierte Erläuterung über die Bedienung des Plugins bzw. dessen Funktionen findet sich auf dieser Seite:
 
-[Bedienung des Plugins](page_01_de.md)
+[Bedienung des Plugins](../02_usage/de.md)
 
 
 ## Konfiguration
 Nach erfolgter Installation erfolgt die Konfiguration des Plugins und der zugehörigen Oberfäche innerhalb der Konfigurationsdatei `plugin_intranda_administration_archive_management.xml`. Diese ist auf der folgenden Seite detailliert beschrieben:
 
-[Konfiguration des Plugins](page_02_de.md)
+[Konfiguration des Plugins](../03_config/de.md)
 

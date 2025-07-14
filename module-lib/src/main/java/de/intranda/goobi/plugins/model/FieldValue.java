@@ -48,6 +48,15 @@ public class FieldValue implements IFieldValue {
     private List<NormData> currentData;
     private boolean showNoHits;
 
+    // can be metadata, corporate or person
+    private String fieldType = "metadata";
+    // fields for person
+    private String firstname;
+    private String lastname;
+    // fields for corporations
+    private String mainname;
+    private String subname;
+
     // geonames search fields
     @ToString.Exclude
     private Toponym currentToponym;
@@ -232,7 +241,7 @@ public class FieldValue implements IFieldValue {
     public void importViafData() {
         if (viafSearch.getCurrentDatabase() != null) {
             MarcRecord recordToImport = NormDataImporter.getSingleMarcRecord(viafSearch.getCurrentDatabase().getMarcRecordUrl());
-
+            // TODO: person corp
             List<String> names = new ArrayList<>();
             for (TagDescription tag : viafSearch.getMainTagList()) {
                 if (tag.getSubfieldCode() == null) {

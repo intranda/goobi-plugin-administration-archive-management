@@ -1,6 +1,7 @@
 package org.goobi.interfaces;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IMetadataField {
 
@@ -118,5 +119,9 @@ public interface IMetadataField {
     public void setSearchParameter(List<String> parameter);
 
     public List<String> getSearchParameter();
+
+    public void setSubfieldMap(Map<String, String> map);
+
+    public Map<String, String> getSubfieldMap();
 
 }
