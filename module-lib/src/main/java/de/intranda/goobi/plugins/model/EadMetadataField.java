@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.IFieldValue;
 import org.goobi.interfaces.IMetadataField;
@@ -132,7 +132,8 @@ public class EadMetadataField implements IMetadataField {
             return false;
         }
         for (IFieldValue val : values) {
-            if (StringUtils.isNotBlank(val.getValue()) || StringUtils.isNotBlank(val.getFirstname()) || StringUtils.isNotBlank(val.getLastname())) {
+            if (StringUtils.isNotBlank(val.getValue()) || StringUtils.isNotBlank(val.getFirstname()) || StringUtils.isNotBlank(val.getLastname())
+                    || StringUtils.isNotBlank(val.getMainName())) {
                 return true;
             }
         }
@@ -163,7 +164,6 @@ public class EadMetadataField implements IMetadataField {
     public void deleteValue(IFieldValue value) {
         IFieldValue valueToDelete = null;
         for (IFieldValue fv : values) {
-            // TODO: corp
             if ("person".equals(fieldType)) {
                 if (((fv.getLastname() == null && value.getLastname() == null)
                         || fv.getLastname() != null && fv.getLastname().equals(value.getLastname()))
@@ -172,6 +172,17 @@ public class EadMetadataField implements IMetadataField {
                     valueToDelete = fv;
                     break;
                 }
+            } else if ("corporate".equals(fieldType)) {
+                if (((fv.getMainName() == null && value.getMainName() == null)
+                        || (fv.getMainName() != null && fv.getMainName().equals(value.getMainName())))
+                        && ((fv.getSubName() == null && value.getSubName() == null)
+                                || (fv.getSubName() != null && fv.getSubName().equals(value.getSubName())))
+                        && ((fv.getPartName() == null && value.getPartName() == null)
+                                || (fv.getPartName() != null && fv.getPartName().equals(value.getPartName())))) {
+                    valueToDelete = fv;
+                    break;
+                }
+
             } else if ((fv.getValue() == null && value.getValue() == null) || (fv.getValue() != null && fv.getValue().equals(value.getValue()))) {
                 valueToDelete = fv;
                 break;
@@ -209,11 +220,15 @@ public class EadMetadataField implements IMetadataField {
             }
         } else if (copyValue) {
             for (IFieldValue val : values) {
-                // TODO: corp
+
                 IFieldValue newValue = new FieldValue(field);
                 if ("person".equals(fieldType)) {
                     newValue.setFirstname(val.getFirstname());
                     newValue.setLastname(val.getLastname());
+                } else if ("corporate".equals(fieldType)) {
+                    newValue.setMainName(val.getMainName());
+                    newValue.setSubName(val.getSubName());
+                    newValue.setPartName(val.getPartName());
                 } else if (val.getValue() != null) {
                     newValue.setValue(prefix + val.getValue() + suffix);
                 } else {

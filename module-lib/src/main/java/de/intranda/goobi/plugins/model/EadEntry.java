@@ -679,16 +679,33 @@ public class EadEntry implements IEadEntry {
             }
         } else {
             for (IFieldValue val : field.getValues()) {
-                //TODO  corp
+
                 if (StringUtils.isNotBlank(val.getFirstname()) || StringUtils.isNotBlank(val.getLastname())) {
                     String firstname = escapeString(val.getFirstname());
                     String lastname = escapeString(val.getLastname());
                     xml.append("<person name='").append(field.getName()).append("' firstname='");
                     xml.append(firstname).append("' lastname='").append(lastname);
-                    if (StringUtils.isNotBlank(val.getAuthorityValue()) && StringUtils.isNotBlank(val.getAuthorityType())) {
-                        xml.append("' source='").append(val.getAuthorityType()).append("' value='").append(val.getAuthorityValue());
+                    if (StringUtils.isNotBlank(val.getAuthorityValue())) {
+                        xml.append("' source='")
+                                .append(val.getAuthorityType() == null ? "" : val.getAuthorityType())
+                                .append("' value='")
+                                .append(val.getAuthorityValue());
                     }
                     xml.append("' />");
+                } else if (StringUtils.isNotBlank(val.getMainName())) {
+                    String mainname = escapeString(val.getMainName());
+                    String subname = escapeString(val.getSubName());
+                    String numberValue = escapeString(val.getPartName());
+                    xml.append("<corporate name='").append(field.getName()).append("' value='");
+                    xml.append(mainname).append("' subvalue='").append(subname).append("' number='").append(numberValue);
+                    if (StringUtils.isNotBlank(val.getAuthorityValue())) {
+                        xml.append("' source='")
+                                .append(val.getAuthorityType() == null ? "" : val.getAuthorityType())
+                                .append("' value='")
+                                .append(val.getAuthorityValue());
+                    }
+                    xml.append("' />");
+
                 } else if (StringUtils.isNotBlank(val.getValue())) {
                     xml.append("<").append(field.getName());
                     // save authority data

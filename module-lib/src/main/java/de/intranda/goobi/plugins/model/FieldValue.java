@@ -54,8 +54,9 @@ public class FieldValue implements IFieldValue {
     private String firstname;
     private String lastname;
     // fields for corporations
-    private String mainname;
-    private String subname;
+    private String mainName;
+    private String subName;
+    private String partName;
 
     // geonames search fields
     @ToString.Exclude
@@ -114,7 +115,6 @@ public class FieldValue implements IFieldValue {
             }
             return sb.toString();
         } else {
-            // TODO person, corporate
             return value;
         }
     }

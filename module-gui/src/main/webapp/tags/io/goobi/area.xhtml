@@ -162,16 +162,21 @@
                                     deletable="true" />
                             </ui:fragment>
                             <ui:fragment rendered="#{item.fieldType=='person'}">
-                          <goobiio:person
+                                <goobiio:person
                                     area="#{area}"
                                     fieldid="#{item.name}person"
                                     person="#{field}"
                                     fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
                                     deletable="true" />
                             </ui:fragment> 
-                            
-                            
-                            
+                            <ui:fragment rendered="#{item.fieldType=='corporate'}">
+                                <goobiio:corporate
+                                    area="#{area}"
+                                    fieldid="#{item.name}corporate"
+                                    corporate="#{field}"
+                                    fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}"
+                                    deletable="true" />
+                            </ui:fragment> 
                         </ui:repeat>
                         <ui:fragment rendered="#{item.fieldType=='group'}">
                             <goobiio:group fieldname="#{msgs['plugin_administration_archive_'.concat(item.name)]}" />

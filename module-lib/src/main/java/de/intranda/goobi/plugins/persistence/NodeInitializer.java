@@ -9,6 +9,7 @@ import org.goobi.interfaces.IFieldValue;
 import org.goobi.interfaces.IMetadataField;
 import org.goobi.interfaces.IMetadataGroup;
 import org.goobi.interfaces.IValue;
+import org.goobi.model.CorporateValue;
 import org.goobi.model.ExtendendValue;
 import org.goobi.model.GroupValue;
 import org.goobi.model.PersonValue;
@@ -21,7 +22,6 @@ public class NodeInitializer {
     public static IEadEntry initEadNodeWithMetadata(IEadEntry entry, List<IMetadataField> configuredFields) {
         if (entry != null) {
             Map<String, List<IValue>> metadata = ArchiveManagementManager.loadMetadataForNode(entry.getDatabaseId());
-            // TODO person,corp
             for (IMetadataField emf : configuredFields) {
                 if (emf.isGroup()) {
                     List<IValue> groups = metadata.get(emf.getName());
@@ -50,7 +50,7 @@ public class NodeInitializer {
         instance.setSelectItemList(template.getSelectItemList());
         instance.setSearchParameter(template.getSearchParameter());
         instance.setEadEntry(entry);
-        // TODO person,corp
+
         // sub fields
         for (IMetadataField sub : template.getSubfields()) {
             IMetadataField toAdd = addFieldToEntry(entry, sub, null);
@@ -89,7 +89,6 @@ public class NodeInitializer {
 
             // split single value into multiple fields
             for (IValue value : values) {
-                // TODO person,corp
                 if (value instanceof ExtendendValue) {
 
                     ExtendendValue val = (ExtendendValue) value;
@@ -116,6 +115,15 @@ public class NodeInitializer {
                     fv.setLastname(pv.getLastname());
                     fv.setAuthorityType(pv.getAuthorityType());
                     fv.setAuthorityValue(pv.getAuthorityValue());
+                    toAdd.addFieldValue(fv);
+                } else if (value instanceof CorporateValue) {
+                    CorporateValue cv = (CorporateValue) value;
+                    IFieldValue fv = new FieldValue(toAdd);
+                    fv.setMainName(cv.getMainValue());
+                    fv.setSubName(cv.getSubValue());
+                    fv.setPartName(cv.getPartValue());
+                    fv.setAuthorityType(cv.getAuthorityType());
+                    fv.setAuthorityValue(cv.getAuthorityValue());
                     toAdd.addFieldValue(fv);
                 }
             }

@@ -48,15 +48,19 @@ public interface IFieldValue extends GndSearchProperty, GeonamesSearchProperty, 
 
     public String getLastname();
 
-    public String getMainname();
+    public String getMainName();
 
-    public String getSubname();
+    public String getSubName();
+
+    public String getPartName();
 
     public void setFirstname(String value);
 
     public void setLastname(String value);
 
-    public void setMainname(String value);
+    public void setMainName(String value);
 
-    public void setSubname(String value);
+    public void setSubName(String value);
+
+    public void setPartName(String value);
 }
