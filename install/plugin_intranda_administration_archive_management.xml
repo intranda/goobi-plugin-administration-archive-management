@@ -296,6 +296,16 @@
             <firstname xpath="ead:part[@localtype='givenname']" xpathType="element" />
             <authorityValue xpath="@identifier" xpathType="attribute" />
         </metadata> -->
+        
+        <!-- corporate sample
+        <metadata xpath="(./ead:archdesc/ead:indexentry/ead:corpname[@relator='his'] | ./ead:indexentry/ead:corpname[@relator='his'])" name="HostInstitution"  level="2" repeatable="true" visible="true"  fieldType="corporate" rulesetName="HostInstitution">
+            <value xpath="ead:part[@localtype='corporate name']" xpathType="element" />
+            <subvalue xpath="ead:part[@localtype='subordinate unit']" xpathType="element" />
+            <partvalue xpath="ead:part[@localtype='part/section/meeting']" xpathType="element" />
+            <authorityValue xpath="@identifier" xpathType="attribute" />
+        </metadata>
+        
+         -->
 
         <!-- extend configured areas -->
         <showGroup level="1" />
