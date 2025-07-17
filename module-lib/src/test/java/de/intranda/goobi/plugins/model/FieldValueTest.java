@@ -145,15 +145,15 @@ public class FieldValueTest {
 
     @Test
     public void testHashCode() {
-        assertEquals(-1919486655, fieldValue.hashCode());
+        assertEquals(-1580562906, fieldValue.hashCode());
         fieldValue.setValue("value");
-        assertEquals(-1038419209, fieldValue.hashCode());
+        assertEquals(-1137191144, fieldValue.hashCode());
     }
 
     @Test
     public void testToString() {
         assertEquals(
-                "FieldValue(value=null, multiselectSelectedValues=[], authorityType=null, authorityValue=null, searchValue=null, searchOption=null, showNoHits=false, fieldType=metadata, firstname=null, lastname=null, mainname=null, subname=null, totalResults=0)",
+                "FieldValue(value=null, multiselectSelectedValues=[], authorityType=null, authorityValue=null, searchValue=null, searchOption=null, showNoHits=false, fieldType=metadata, firstname=null, lastname=null, mainName=null, subName=null, partName=null, totalResults=0)",
                 fieldValue.toString());
 
     }
