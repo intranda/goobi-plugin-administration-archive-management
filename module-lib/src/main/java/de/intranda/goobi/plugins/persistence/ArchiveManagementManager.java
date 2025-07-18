@@ -41,21 +41,22 @@ public class ArchiveManagementManager implements Serializable {
     private static List<INodeType> configuredNodes;
 
     // $1 = metadata name, $2=authority type, $3 = authority value, $4 = metadata value
-    private static final Pattern metadataPattern = Pattern.compile("<([^<\\/ ]+?)(?: source=\'(.+)\' value=\'(.+)\')?>([^<]+)<\\/[^<]+?>");
+    private static final Pattern metadataPattern = Pattern.compile("<([^<\\/ ]+?)(?: source=\'(.*)\' value=\'(.+?)\')?>([^<]+)<\\/[^<]+?>");
 
     // $1 = group name
     private static final Pattern groupPattern = Pattern.compile("<group name=\'(.*?)\'>[\\w\\W]*?<\\/group>"); //NOSONAR \w\W is needed because '.' does not include newline
 
     // $1 = metadata name, $2=authority type, $3 = authority value, $4 = metadata value
-    private static final Pattern subfieldPattern = Pattern.compile("<field name=\'(.*?)\'(?: source=\'(.+)\' value=\'(.+)\')?>([^<]*)<\\/field>");
+    private static final Pattern subfieldPattern = Pattern.compile("<field name=\'(.*?)\'(?: source=\'(.*)\' value=\'(.+?)\')?>([^<]*)<\\/field>");
 
     // $1 = metadata name, $2= firstname, $3=lastname, $4=authority type, $5 = authority value
     private static final Pattern personPattern =
-            Pattern.compile("<person name=\'(.*?)\' firstname=\'(.*?)\' lastname=\'(.*?)\'(?: source=\'(.+)\' value=\'(.+)\')? \\/>");
+            Pattern.compile("<person name=\'(.*?)\' firstname=\'(.*?)\' lastname=\'(.*?)\'(?: source=\'(.*)\' value=\'(.+?)\')? \\/>");
 
     // $1=metadata name, $2=main value, $3=sub value, $4=number, order $5=authority type, $6=authority value
     private static final Pattern corporatePattern =
-            Pattern.compile("<corporate name=\'(.*?)\' value=\'(.*?)\' subvalue=\'(.*?)\' number=\'(.*?)\'(?: source=\'(.+)\' value=\'(.+)\')? \\/>");
+            Pattern.compile(
+                    "<corporate name=\'(.*?)\' value=\'(.*?)\' subvalue=\'(.*?)\' number=\'(.*?)\'(?: source=\'(.+)\' value=\'(.+?)\')? \\/>");
 
     public static void setConfiguredNodes(List<INodeType> configuredNodes) {
         ArchiveManagementManager.configuredNodes = configuredNodes;

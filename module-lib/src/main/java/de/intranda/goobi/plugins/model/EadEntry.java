@@ -687,7 +687,7 @@ public class EadEntry implements IEadEntry {
                     xml.append(firstname).append("' lastname='").append(lastname);
                     if (StringUtils.isNotBlank(val.getAuthorityValue())) {
                         xml.append("' source='")
-                                .append(val.getAuthorityType() == null ? "" : val.getAuthorityType())
+                                .append(val.getAuthorityType() == null ? "-" : val.getAuthorityType())
                                 .append("' value='")
                                 .append(val.getAuthorityValue());
                     }
@@ -700,7 +700,7 @@ public class EadEntry implements IEadEntry {
                     xml.append(mainname).append("' subvalue='").append(subname).append("' number='").append(numberValue);
                     if (StringUtils.isNotBlank(val.getAuthorityValue())) {
                         xml.append("' source='")
-                                .append(val.getAuthorityType() == null ? "" : val.getAuthorityType())
+                                .append(val.getAuthorityType() == null ? "-" : val.getAuthorityType())
                                 .append("' value='")
                                 .append(val.getAuthorityValue());
                     }
