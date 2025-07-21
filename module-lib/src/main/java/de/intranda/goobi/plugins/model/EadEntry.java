@@ -696,7 +696,7 @@ public class EadEntry implements IEadEntry {
                     String mainname = escapeString(val.getMainName());
                     String subname = escapeString(val.getSubName());
                     String numberValue = escapeString(val.getPartName());
-                    xml.append("<corporate name='").append(field.getName()).append("' value='");
+                    xml.append("<corporate name='").append(field.getName()).append("' mainvalue='");
                     xml.append(mainname).append("' subvalue='").append(subname).append("' number='").append(numberValue);
                     if (StringUtils.isNotBlank(val.getAuthorityValue())) {
                         xml.append("' source='")

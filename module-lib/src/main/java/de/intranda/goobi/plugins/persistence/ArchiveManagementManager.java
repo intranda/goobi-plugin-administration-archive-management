@@ -56,7 +56,7 @@ public class ArchiveManagementManager implements Serializable {
     // $1=metadata name, $2=main value, $3=sub value, $4=number, order $5=authority type, $6=authority value
     private static final Pattern corporatePattern =
             Pattern.compile(
-                    "<corporate name=\'(.*?)\' value=\'(.*?)\' subvalue=\'(.*?)\' number=\'(.*?)\'(?: source=\'(.+)\' value=\'(.+?)\')? \\/>");
+                    "<corporate name=\'(.*?)\' mainvalue=\'(.*?)\' subvalue=\'(.*?)\' number=\'(.*?)\'(?: source=\'(.+)\' value=\'(.+?)\')? \\/>");
 
     public static void setConfiguredNodes(List<INodeType> configuredNodes) {
         ArchiveManagementManager.configuredNodes = configuredNodes;
