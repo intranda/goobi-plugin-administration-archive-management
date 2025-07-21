@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites">
+<h:body>
+    <ui:composition>
+        <fieldset class="field-set">
+            <legend class="field-set-legend d-flex justify-content-between">
+                <h:outputText value="#{fieldname}" />
+            </legend>
+            <div class="field-set-content">
+
+
+                <div class="form-row">
+                    <div class="form-label d-flex justify-content-between">
+                        <intranda:formLabel
+                            labelFor="#{fieldid}firstname"
+                            label="#{msgs.firstname}" />
+                    </div>
+                    <div class="form-input">
+                        <h:inputText
+                            id="#{fieldid}firstname"
+                            styleClass="form-control #{item.valid ? '' : 'invalid'}"
+                            value="#{person.firstname}"
+                            required="false"
+                            readonly="false">
+                            <f:ajax
+                                execute="@this"
+                                render=":nodeBox:#{ajaxid}"
+                                onevent="(data) => {scrollToCurrentNode(data);}"
+                                event="blur" />
+                        </h:inputText>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label d-flex justify-content-between">
+                        <intranda:formLabel
+                            labelFor="#{fieldid}lastname"
+                            label="#{msgs.nachname}" />
+                    </div>
+                    <div class="form-input">
+                        <h:inputText
+                            id="#{fieldid}lastname"
+                            styleClass="form-control #{item.valid ? '' : 'invalid'}"
+                            value="#{person.lastname}"
+                            required="false"
+                            readonly="false">
+                            <f:ajax
+                                execute="@this"
+                                render=":nodeBox:#{ajaxid}"
+                                onevent="(data) => {scrollToCurrentNode(data);}"
+                                event="blur" />
+                        </h:inputText>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label d-flex justify-content-between">
+                        <intranda:formLabel
+                            labelFor="#{fieldid}id"
+                            label="#{msgs.mets_authority_data}" />
+                    </div>
+                    <div class="form-input">
+                        <h:inputText
+                            id="#{fieldid}id"
+                            styleClass="form-control #{item.valid ? '' : 'invalid'}"
+                            value="#{person.authorityValue}"
+                            required="false"
+                            readonly="false">
+                            <f:ajax
+                                execute="@this"
+                                render=":nodeBox:#{ajaxid}"
+                                onevent="(data) => {scrollToCurrentNode(data);}"
+                                event="blur" />
+                        </h:inputText>
+                        <h:outputText
+                            styleClass="help-inline color-F"
+                            rendered="#{!item.valid}"
+                            value="#{msgs[item.validationError]}" />
+                    </div>
+                </div>
+                <h:commandLink
+                    styleClass="btn btn-blank font-light fs-500"
+                    action="#{item.deleteValue(field)}"
+                    rendered="#{deletable}">
+                    <span class="fa fa-trash" />
+                    <f:ajax
+                        execute="@this"
+                        render=":nodeBox:#{ajaxid}"
+                        onevent="(data) => {scrollToCurrentNode(data);}" />
+                </h:commandLink>
+            </div>
+        </fieldset>
+    </ui:composition>
+</h:body>
+</html>

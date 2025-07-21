@@ -667,18 +667,8 @@ public class EadEntry implements IEadEntry {
                                 }
                                 xml.append(">");
                                 if (StringUtils.isNotBlank(val.getValue())) {
-                                    // mask ending backslash
-                                    String actualValue = val.getValue();
-                                    if (actualValue.endsWith("\\")) {
-                                        actualValue = val.getValue() + "\\";
-                                    }
-                                    xml.append(
-                                            MySQLHelper
-                                                    .escapeSql(
-                                                            actualValue.replaceAll("&(?!amp;|gt;|lt;)", "&amp;")
-                                                                    .replace("<", "&lt;")
-                                                                    .replace("\"", "\\\"")
-                                                                    .replace(">", "&gt;")));
+                                    String actualValue = escapeString(val.getValue());
+                                    xml.append(actualValue);
                                 }
                                 xml.append("</field>");
                             }
@@ -689,29 +679,57 @@ public class EadEntry implements IEadEntry {
             }
         } else {
             for (IFieldValue val : field.getValues()) {
-                //TODO person, corp
-                if (StringUtils.isNotBlank(val.getValue())) {
+
+                if (StringUtils.isNotBlank(val.getFirstname()) || StringUtils.isNotBlank(val.getLastname())) {
+                    String firstname = escapeString(val.getFirstname());
+                    String lastname = escapeString(val.getLastname());
+                    xml.append("<person name='").append(field.getName()).append("' firstname='");
+                    xml.append(firstname).append("' lastname='").append(lastname);
+                    if (StringUtils.isNotBlank(val.getAuthorityValue())) {
+                        xml.append("' source='")
+                                .append(val.getAuthorityType() == null ? "-" : val.getAuthorityType())
+                                .append("' value='")
+                                .append(val.getAuthorityValue());
+                    }
+                    xml.append("' />");
+                } else if (StringUtils.isNotBlank(val.getMainName())) {
+                    String mainname = escapeString(val.getMainName());
+                    String subname = escapeString(val.getSubName());
+                    String numberValue = escapeString(val.getPartName());
+                    xml.append("<corporate name='").append(field.getName()).append("' value='");
+                    xml.append(mainname).append("' subvalue='").append(subname).append("' number='").append(numberValue);
+                    if (StringUtils.isNotBlank(val.getAuthorityValue())) {
+                        xml.append("' source='")
+                                .append(val.getAuthorityType() == null ? "-" : val.getAuthorityType())
+                                .append("' value='")
+                                .append(val.getAuthorityValue());
+                    }
+                    xml.append("' />");
+
+                } else if (StringUtils.isNotBlank(val.getValue())) {
                     xml.append("<").append(field.getName());
                     // save authority data
                     if (StringUtils.isNotBlank(val.getAuthorityValue()) && StringUtils.isNotBlank(val.getAuthorityType())) {
                         xml.append(" source='").append(val.getAuthorityType()).append("' value='").append(val.getAuthorityValue()).append("'");
                     }
                     xml.append(">");
-                    // mask ending backslash
-                    // TODO mask ' and "
-                    String actualValue = val.getValue();
-                    if (actualValue.endsWith("\\")) {
-                        actualValue = val.getValue() + "\\";
-                    }
-                    xml.append(
-                            MySQLHelper.escapeSql(actualValue.replace("&", "&amp;")
-                                    .replace("<", "&lt;")
-                                    .replace(">", "&gt;")
-                                    .replace("\"", "\\\"")));
+                    String actualValue = escapeString(val.getValue());
+                    xml.append(actualValue);
                     xml.append("</").append(field.getName()).append(">");
                 }
             }
         }
+    }
+
+    public String escapeString(String value) {
+        if (value.endsWith("\\")) {
+            value = value + "\\";
+        }
+        MySQLHelper.escapeSql(value.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "\\\""));
+        return value;
     }
 
     public void deleteGroup(IMetadataGroup group) {
