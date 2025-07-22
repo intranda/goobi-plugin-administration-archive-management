@@ -722,6 +722,9 @@ public class EadEntry implements IEadEntry {
     }
 
     public String escapeString(String value) {
+        if (value == null) {
+            return "";
+        }
         if (value.endsWith("\\")) {
             value = value + "\\";
         }
