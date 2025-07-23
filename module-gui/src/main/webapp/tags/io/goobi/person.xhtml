@@ -19,12 +19,12 @@
                 <div class="form-row">
                     <div class="form-label d-flex justify-content-between">
                         <intranda:formLabel
-                            labelFor="#{fieldid}firstname"
+                            labelFor="firstname"
                             label="#{msgs.firstname}" />
                     </div>
                     <div class="form-input">
                         <h:inputText
-                            id="#{fieldid}firstname"
+                            id="firstname"
                             styleClass="form-control #{item.valid ? '' : 'invalid'}"
                             value="#{person.firstname}"
                             required="false"
@@ -33,19 +33,19 @@
                                 execute="@this"
                                 render=":nodeBox:#{ajaxid}"
                                 onevent="(data) => {scrollToCurrentNode(data);}"
-                                event="blur" />
+                                event="change" />
                         </h:inputText>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-label d-flex justify-content-between">
                         <intranda:formLabel
-                            labelFor="#{fieldid}lastname"
+                            labelFor="lastname"
                             label="#{msgs.nachname}" />
                     </div>
                     <div class="form-input">
                         <h:inputText
-                            id="#{fieldid}lastname"
+                            id="lastname"
                             styleClass="form-control #{item.valid ? '' : 'invalid'}"
                             value="#{person.lastname}"
                             required="false"
@@ -54,19 +54,19 @@
                                 execute="@this"
                                 render=":nodeBox:#{ajaxid}"
                                 onevent="(data) => {scrollToCurrentNode(data);}"
-                                event="blur" />
+                                event="change" />
                         </h:inputText>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-label d-flex justify-content-between">
                         <intranda:formLabel
-                            labelFor="#{fieldid}id"
+                            labelFor="personid"
                             label="#{msgs.mets_authority_data}" />
                     </div>
                     <div class="form-input">
                         <h:inputText
-                            id="#{fieldid}id"
+                            id="personid"
                             styleClass="form-control #{item.valid ? '' : 'invalid'}"
                             value="#{person.authorityValue}"
                             required="false"
@@ -75,7 +75,7 @@
                                 execute="@this"
                                 render=":nodeBox:#{ajaxid}"
                                 onevent="(data) => {scrollToCurrentNode(data);}"
-                                event="blur" />
+                                event="change" />
                         </h:inputText>
                         <h:outputText
                             styleClass="help-inline color-F"
