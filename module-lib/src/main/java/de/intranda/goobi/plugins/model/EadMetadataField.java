@@ -193,6 +193,13 @@ public class EadMetadataField implements IMetadataField {
                 values.remove(valueToDelete);
             } else {
                 valueToDelete.setValue("");
+                valueToDelete.setMainName("");
+                valueToDelete.setSubName("");
+                valueToDelete.setPartName("");
+
+                valueToDelete.setLastname("");
+                valueToDelete.setFirstname("");
+
                 valueToDelete.setAuthorityValue("");
                 valueToDelete.setAuthorityType("");
                 showField = false;
