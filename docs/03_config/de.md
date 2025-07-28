@@ -60,7 +60,7 @@ Des weiteren gibt es noch eine Reihe weiterer optionaler Angaben:
 | `@showField` | Definiert, ob das Feld in der Detailanzeige geöffnet angezeigt wird, auch wenn noch kein Wert vohanden ist. Das Feld darf die beiden Werte `true` und `false` \(default\) enthalten. |
 | `@rulesetName` | Hier kann ein Metadatum aus dem Regelsatz angegeben werden. Wenn für den Knoten ein Goobi-Vorgang erstellt wird, wird das konfigurierte Metadatum erstellt. |
 | `@importMetadataInChild` | Hierüber kann gesteuert werden, ob das Metadatum auch in Goobi-Vorgängen von Kind-Knoten erstellt werden soll. Das Feld darf die beiden Werte `true` und `false` \(default\) enthalten. |
-| `@fieldType` | Steuert das Verhalten des Feldes. Möglich sind `input` \(default\) ,  `textarea`,  `dropdown`, `multiselect`, `vocabulary`, `nodelink`, `gnd`, `geonames`, `viaf` |
+| `@fieldType` | Steuert das Verhalten des Feldes. Möglich sind `input` \(default\) ,  `textarea`,  `dropdown`, `multiselect`, `vocabulary`, `nodelink`, `gnd`, `geonames`, `viaf`, `group`, `person`, `corporate` |
 | `value` | Dieses Unterelement wird nur bei den beiden Typen `dropdown` und  `multiselect` genutzt und enthält die möglichen Werte, die zur Auswahl stehen sollen. |
 | `vocabulary` | Dieses Unterelement enthält den Namen des zu verwendenden Vokabulars. Es wird nur ausgewertet, wenn `vocabulary`, `dropdown` oder `multiselect` im Typ des Feldes gesetzt ist und keine `<value>` Elemente konfiguriert wurden. Die Auswahlliste enthält jeweils den Hauptwert der Records. |
 | `searchParameter` | Mit diesem wiederholbaren Unterfeld können Suchparameter definiert werden, mit denen das Vokabular gefiltert wird, die Syntax ist `fieldname=value`. |
@@ -183,6 +183,44 @@ Es können auch mehrere Validierungsregeln kombiniert werden, zum Beispiel `uniq
 ```
 
 ![VIAF Feld](screen20_de.png)
+
+
+## Gruppierte Felder
+```xml
+        <metadata xpath="./ead:archdesc/ead:did/ead:repository" group="true" name="repository" level="1" repeatable="true" visible="false" fieldType="group" rulesetName="Repository">
+            <metadata xpath="@label" xpathType="attribute" name="repositoryLabel" level="1" repeatable="false" visible="true" rulesetName="RepositoryLabel" />
+            <metadata xpath="ead:address/ead:addressline" xpathType="element" name="repositoryaddressline" level="1" repeatable="true" visible="true" rulesetName="RepositoryAddress" />
+            <metadata xpath="ead:extref/@href" xpathType="attribute" name="extrefhref" level="1" repeatable="true" visible="true" rulesetName="RepositoryLink" />
+            <metadata xpath="ead:extref" xpathType="element" name="extref" level="1" repeatable="true" visible="true" rulesetName="RepositoryLinkName" />
+        </metadata>
+```
+
+![Gruppiertes Feld](screen21_de.png)
+
+
+## Personen
+```xml
+        <metadata xpath="(./ead:archdesc/ead:indexentry/ead:persname[@relator='aut'] | ./ead:indexentry/ead:persname[@relator='aut'])" name="Author"  level="2" repeatable="true" visible="true"  fieldType="person" rulesetName="Author">
+            <lastname xpath="ead:part[@localtype='surname']" xpathType="element" />
+            <firstname xpath="ead:part[@localtype='givenname']" xpathType="element" />
+            <authorityValue xpath="@identifier" xpathType="attribute" />
+        </metadata>
+```
+
+![Person](screen22_de.png)
+
+
+## Körperschaften
+```xml
+        <metadata xpath="(./ead:archdesc/ead:indexentry/ead:corpname[@relator='his'] | ./ead:indexentry/ead:corpname[@relator='his'])" name="HostInstitution"  level="2" repeatable="true" visible="true"  fieldType="corporate" rulesetName="HostInstitution">
+            <value xpath="ead:part[@localtype='corporate name']" xpathType="element" />
+            <subvalue xpath="ead:part[@localtype='subordinate unit']" xpathType="element" />
+            <partvalue xpath="ead:part[@localtype='part/section/meeting']" xpathType="element" />
+            <authorityValue xpath="@identifier" xpathType="attribute" />
+        </metadata>
+```
+
+![Körperschaft](screen23_de.png)
 
 
 ## Konfiguration der Anzeige der Bereiche
