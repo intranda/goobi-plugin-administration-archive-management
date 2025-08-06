@@ -90,6 +90,11 @@ public class EadMetadataFieldTest {
     public void testDeleteValue() {
         eadMetadataField.addFieldValue(fieldValueMock);
         fieldValueMock.setValue(EasyMock.anyString());
+        fieldValueMock.setMainName(EasyMock.anyString());
+        fieldValueMock.setSubName(EasyMock.anyString());
+        fieldValueMock.setPartName(EasyMock.anyString());
+        fieldValueMock.setLastname(EasyMock.anyString());
+        fieldValueMock.setFirstname(EasyMock.anyString());
         fieldValueMock.setAuthorityValue(EasyMock.anyString());
         fieldValueMock.setAuthorityType(EasyMock.anyString());
         expect(fieldValueMock.getValue()).andReturn("").anyTimes();

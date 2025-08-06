@@ -22,8 +22,10 @@ import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.INodeType;
 import org.goobi.interfaces.IRecordGroup;
 import org.goobi.interfaces.IValue;
+import org.goobi.model.CorporateValue;
 import org.goobi.model.ExtendendValue;
 import org.goobi.model.GroupValue;
+import org.goobi.model.PersonValue;
 
 import de.intranda.goobi.plugins.model.EadEntry;
 import de.intranda.goobi.plugins.model.RecordGroup;
@@ -39,13 +41,22 @@ public class ArchiveManagementManager implements Serializable {
     private static List<INodeType> configuredNodes;
 
     // $1 = metadata name, $2=authority type, $3 = authority value, $4 = metadata value
-    private static Pattern metadataPattern = Pattern.compile("<([^<\\/ ]+?)(?: source=\'(.+)\' value=\'(.+)\')?>([^<]+)<\\/[^<]+?>");
+    private static final Pattern metadataPattern = Pattern.compile("<([^<\\/ ]+?)(?: source=\'(.*)\' value=\'(.+?)\')?>([^<]+)<\\/[^<]+?>");
 
     // $1 = group name
-    private static Pattern groupPattern = Pattern.compile("<group name=\'(.*?)\'>[\\w\\W]*?<\\/group>"); //NOSONAR \w\W is needed because '.' does not include newline
+    private static final Pattern groupPattern = Pattern.compile("<group name=\'(.*?)\'>[\\w\\W]*?<\\/group>"); //NOSONAR \w\W is needed because '.' does not include newline
 
     // $1 = metadata name, $2=authority type, $3 = authority value, $4 = metadata value
-    private static Pattern subfieldPattern = Pattern.compile("<field name=\'(.*?)\'(?: source=\'(.+)\' value=\'(.+)\')?>([^<]*)<\\/field>");
+    private static final Pattern subfieldPattern = Pattern.compile("<field name=\'(.*?)\'(?: source=\'(.*)\' value=\'(.+?)\')?>([^<]*)<\\/field>");
+
+    // $1 = metadata name, $2= firstname, $3=lastname, $4=authority type, $5 = authority value
+    private static final Pattern personPattern =
+            Pattern.compile("<person name=\'(.*?)\' firstname=\'(.*?)\' lastname=\'(.*?)\'(?: source=\'(.*?)\' value=\'(.+?)\')? \\/>");
+
+    // $1=metadata name, $2=main value, $3=sub value, $4=number, order $5=authority type, $6=authority value
+    private static final Pattern corporatePattern =
+            Pattern.compile(
+                    "<corporate name=\'(.*?)\' mainvalue=\'(.*?)\' subvalue=\'(.*?)\' number=\'(.*?)\'(?: source=\'(.+?)\' value=\'(.+?)\')? \\/>");
 
     public static void setConfiguredNodes(List<INodeType> configuredNodes) {
         ArchiveManagementManager.configuredNodes = configuredNodes;
@@ -399,7 +410,36 @@ public class ArchiveManagementManager implements Serializable {
                         authorityValue));
                 metadataMap.put(metadata, values);
             }
-            // TODO person, corporate
+
+            for (Matcher m = personPattern.matcher(data); m.find();) {
+                MatchResult mr = m.toMatchResult();
+                String metadata = mr.group(1);
+                String firstname = mr.group(2);
+                String lastname = mr.group(3);
+                String authorityType = mr.group(4);
+                String authorityValue = mr.group(5);
+                List<IValue> values = metadataMap.getOrDefault(metadata, new ArrayList<>());
+                values.add(new PersonValue(metadata, firstname.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&").replace("''", "'"),
+                        lastname.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&").replace("''", "'"), authorityType, authorityValue));
+                metadataMap.put(metadata, values);
+            }
+
+            for (Matcher m = corporatePattern.matcher(data); m.find();) {
+                MatchResult mr = m.toMatchResult();
+                String metadata = mr.group(1);
+                String mainValue = mr.group(2);
+                String subValue = mr.group(3);
+                String orderValue = mr.group(4);
+                String authorityType = mr.group(5);
+                String authorityValue = mr.group(6);
+                List<IValue> values = metadataMap.getOrDefault(metadata, new ArrayList<>());
+
+                values.add(new CorporateValue(metadata, mainValue.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&").replace("''", "'"),
+                        subValue.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&").replace("''", "'"),
+                        orderValue.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&").replace("''", "'"), authorityType,
+                        authorityValue));
+                metadataMap.put(metadata, values);
+            }
 
             for (Matcher m = groupPattern.matcher(data); m.find();) {
 
@@ -417,7 +457,7 @@ public class ArchiveManagementManager implements Serializable {
                     String authorityType = sub.group(2);
                     String authorityValue = sub.group(3);
                     String value = sub.group(4);
-
+                    // TODO person, corporate
                     List<IValue> subvalues = gv.getSubfields().getOrDefault(metadata, new ArrayList<>());
                     subvalues.add(new ExtendendValue(metadata,
                             value.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&").replace("''", "'"), authorityType,

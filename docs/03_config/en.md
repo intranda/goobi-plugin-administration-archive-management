@@ -59,7 +59,7 @@ There are also a number of other optional details:
 | `@showField` | Defines whether the field is displayed open in the detail display, even if no value is yet available. The field may contain the two values `true` and `false` \(default\). |
 | `@rulesetName` | A metadata from the rule set can be specified here. When a Goobi process is created for the node, the configured metadata is created. |
 | `@importMetadataInChild` | This can be used to control whether the metadata should also be created in Goobi processes of child nodes. The field may contain the two values `true` and `false` \(default\). |
-| `@fieldType` | Controls the behaviour of the field. Possible are `input` \(default\) , `textarea`, `dropdown`, `multiselect`, `vocabulary`, `nodelink`, `gnd`, `geonames`, `viaf` |
+| `@fieldType` | Controls the behaviour of the field. Possible are `input` \(default\) , `textarea`, `dropdown`, `multiselect`, `vocabulary`, `nodelink`, `gnd`, `geonames`, `viaf`, `group`, `person`, `corporate` |
 | `value` | This sub-element is only used for the two types ‘dropdown’ and ‘multiselect’ and contains the possible values that are to be available for selection. |
 | `vocabulary` | This sub-element contains the name of the vocabulary to be used. It is only evaluated if `vocabulary`, `dropdown` or `multiselect` is set in the field type and no `<value>` elements have been configured. The selection list contains the main value of each record. |
 | `searchParameter` | This repeatable subfield can be used to define search parameters with which the vocabulary is filtered, the syntax is `fieldname=value`. |
@@ -182,6 +182,44 @@ Several validation rules can also be combined, for example `unique+required`, `r
 ```
 
 ![VIAF field](screen20_en.png)
+
+
+## Grouped fields
+```xml
+        <metadata xpath="./ead:archdesc/ead:did/ead:repository" group="true" name="repository" level="1" repeatable="true" visible="false" fieldType="group" rulesetName="Repository">
+            <metadata xpath="@label" xpathType="attribute" name="repositoryLabel" level="1" repeatable="false" visible="true" rulesetName="RepositoryLabel" />
+            <metadata xpath="ead:address/ead:addressline" xpathType="element" name="repositoryaddressline" level="1" repeatable="true" visible="true" rulesetName="RepositoryAddress" />
+            <metadata xpath="ead:extref/@href" xpathType="attribute" name="extrefhref" level="1" repeatable="true" visible="true" rulesetName="RepositoryLink" />
+            <metadata xpath="ead:extref" xpathType="element" name="extref" level="1" repeatable="true" visible="true" rulesetName="RepositoryLinkName" />
+        </metadata>
+```
+
+![Grouped field](screen21_en.png)
+
+
+## Persons
+```xml
+        <metadata xpath="(./ead:archdesc/ead:indexentry/ead:persname[@relator='aut'] | ./ead:indexentry/ead:persname[@relator='aut'])" name="Author"  level="2" repeatable="true" visible="true"  fieldType="person" rulesetName="Author">
+            <lastname xpath="ead:part[@localtype='surname']" xpathType="element" />
+            <firstname xpath="ead:part[@localtype='givenname']" xpathType="element" />
+            <authorityValue xpath="@identifier" xpathType="attribute" />
+        </metadata>
+```
+
+![Person](screen22_en.png)
+
+
+## Corporates
+```xml
+        <metadata xpath="(./ead:archdesc/ead:indexentry/ead:corpname[@relator='his'] | ./ead:indexentry/ead:corpname[@relator='his'])" name="HostInstitution"  level="2" repeatable="true" visible="true"  fieldType="corporate" rulesetName="HostInstitution">
+            <value xpath="ead:part[@localtype='corporate name']" xpathType="element" />
+            <subvalue xpath="ead:part[@localtype='subordinate unit']" xpathType="element" />
+            <partvalue xpath="ead:part[@localtype='part/section/meeting']" xpathType="element" />
+            <authorityValue xpath="@identifier" xpathType="attribute" />
+        </metadata>
+```
+
+![Corporate](screen23_en.png)
 
 
 ## Configuration of the display of the areas
