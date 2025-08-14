@@ -183,11 +183,6 @@ public class ArchiveManagementManager implements Serializable {
                 parentId = entry.getParentNode().getDatabaseId();
             }
 
-            String label = MySQLHelper.escapeSql(entry.getLabel());
-            if (label != null && label.endsWith("\\") && !label.endsWith("\\\\")) {
-                label = label + "\\";
-            }
-
             values.append("(");
             values.append(entry.getDatabaseId());
             values.append(", '");
@@ -210,12 +205,9 @@ public class ArchiveManagementManager implements Serializable {
                 values.append("', ");
             }
             values.append(parentId);
-            values.append(", '");
-            values.append(label);
-            values.append("', \"");
-            values.append(entry.getDataAsXml());
-            values.append("\"");
-            values.append(")");
+            values.append(", ?, ? )");
+            String metadata = entry.getDataAsXml();
+
             // save every 50 records or when we reached the last one
             if (i % 50 == 49 || i + 1 == nodes.size()) {
                 StringBuilder sql = new StringBuilder(insertSql);
@@ -225,7 +217,7 @@ public class ArchiveManagementManager implements Serializable {
                         + "processtitle = VALUES(processtitle), parent_id = VALUES(parent_id), label = VALUES(label), data = VALUES(data)");
                 try (Connection connection = MySQLHelper.getInstance().getConnection()) {
                     QueryRunner run = new QueryRunner();
-                    run.update(connection, sql.toString());
+                    run.update(connection, sql.toString(), entry.getLabel(), metadata);
                 } catch (SQLException e) {
                     log.error(e);
                 }
