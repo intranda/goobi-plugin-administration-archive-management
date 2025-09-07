@@ -2,6 +2,11 @@
 title: Configuration of the plugin
 identifier: intranda_administration_archive_management
 published: true
+keywords:
+    - Plugin
+    - Administration
+    - Archive Management
+    - EAD
 ---
 
 After installing the plugin and the associated database, the plugin must also be configured. This takes place within the configuration file `plugin_intranda_administration_archive_management.xml` and is structured as follows as an example:

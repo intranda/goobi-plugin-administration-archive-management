@@ -2,6 +2,11 @@
 title: Using the plugin
 identifier: intranda_administration_archive_management
 published: true
+keywords:
+    - Plugin
+    - Administration
+    - Archive Management
+    - EAD
 ---
 
 The following functions are available within the plugin for archive management:
