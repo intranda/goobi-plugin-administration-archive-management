@@ -3,6 +3,7 @@ title: Konfiguration des Plugins
 identifier: intranda_administration_archive_management
 published: true
 keywords:
+    - Goobi workflow
     - Plugin
     - Administration Plugin
     - Archivemanagement

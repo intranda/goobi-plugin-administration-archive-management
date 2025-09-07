@@ -3,6 +3,7 @@ title: Using the plugin
 identifier: intranda_administration_archive_management
 published: true
 keywords:
+    - Goobi workflow
     - Plugin
     - Administration Plugin
     - Archive Management
