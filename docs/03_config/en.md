@@ -4,7 +4,7 @@ identifier: intranda_administration_archive_management
 published: true
 keywords:
     - Plugin
-    - Administration
+    - Administration Plugin
     - Archive Management
     - EAD
 ---

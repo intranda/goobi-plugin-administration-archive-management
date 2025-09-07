@@ -5,7 +5,7 @@ description: Goobi Administration Plugin für die Verwaltung von Archivbestände
 published: true
 keywords:
     - Plugin
-    - Administration
+    - Administration Plugin
     - Archivmanagement
     - EAD
 ---
