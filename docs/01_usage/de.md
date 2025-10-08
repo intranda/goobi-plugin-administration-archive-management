@@ -2,6 +2,12 @@
 title: Bedienung des Plugins
 identifier: intranda_administration_archive_management
 published: true
+keywords:
+    - Goobi workflow
+    - Plugin
+    - Administration Plugin
+    - Archivmanagement
+    - EAD
 ---
 
 Die folgenden Funktionen stehen innerhalb des Plugins für das Archive-Management zur Verfügung:
@@ -10,21 +16,21 @@ Die folgenden Funktionen stehen innerhalb des Plugins für das Archive-Managemen
 ## Auswahl von vorhandenen Beständen
 Nachdem das Plugin geöffnet wurde, wird zunächst eine Liste der zur Verfügung stehenden Archivbestände angezeigt. Hier kann der Nutzer einen Archivbestand auswählen und mit der Bearbeitung beginnen.
 
-![Öffnen eines vorhandenen Archivbestandes](screen05_de.png)
+![Öffnen eines vorhandenen Archivbestandes](screen04_de.png)
 
 Alternativ dazu kann ebenfalls ein neuer Archivbestand erzeugt werden. In diesem Fall muss zunächst ein Name für den Bestand vergeben werden. Der Name muss eindeutig sein, da darüber die Identifikation erfolgt. Außerdem sollten keine Sonderzeichen wie `:/\` genutzt werden, da der Name auch Grundlage für den Dateiname des EAD-Exports ist.
 
-![Anlegen eines neuen Archivbestandes](screen04_de.png)
+![Anlegen eines neuen Archivbestandes](screen05_de.png)
 
 Als dritte Möglichkeit kann eine vorhandene Datei importiert werden. Hier kann eine EAD-Datei ausgewählt und hochgeladen werden. Wenn noch kein Bestand mit dem Namen der Datei existiert, wird die Datei als neuer Bestand importiert und direkt geöffnet. Falls der Name schon in Verwendung ist, kann nach einer Rückfrage der bestehende Bestand mit dem Inhalt der EAD-XML Datei überschrieben werden.
 
-![Import einer EAD-Datei](screen08_de.png)
+![Import einer EAD-Datei](screen06_de.png)
 
 Sofern der Nutzer über die Berechtigung zur Erstellung neuer Bestände verfügt, kann mit dem entsprechenden Button ebenfalls eine Kopie eines Bestandes erstellt werden. Dabei wird ein neuer Bestand erstellt und alle Knoten mit all ihren Metadaten kopiert. Einzige Ausnahme ist hierbei die ID der Knoten. Diese werden automatisch neue erstellt und den Knoten zugewiesen. 
 
 Nach der Auswahl des zu bearbeitenden Archivbestandes wird der Nutzer in die Bearbeitungsmaske weitergeleitet. Hier läßt sich nun im linken Bereich der Strukturbaum bearbeiten. Im rechten Bereich können die Details des jeweils ausgewählten Knoten bearbeitet werden.
 
-![Bearbeitungsmaske für den Archivbestand](screen06_de.png)
+![Bearbeitungsmaske für den Archivbestand](screen08_de.png)
 
 Durch einen Klick auf die Buttons `Abbrechen` (Leserechte) oder `Archivbestand speichern und verlassen` (Schreibrechte) wird man wieder auf die Seite zur Auswahl eines Archivbestandes geleitet.
 

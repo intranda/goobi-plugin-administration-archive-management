@@ -2,6 +2,12 @@
 title: Konfiguration des Plugins
 identifier: intranda_administration_archive_management
 published: true
+keywords:
+    - Goobi workflow
+    - Plugin
+    - Administration Plugin
+    - Archivemanagement
+    - EAD
 ---
 
 Nach der Durchführung der Installation des Plugins und der zugehörigen Datenbank muss ebenfalls noch eine Konfiguration des Plugins erfolgen. Diese findet innerhalb der Konfigurationsdatei `plugin_intranda_administration_archive_management.xml` statt und ist beispielhaft wie folgt aufgebaut:
