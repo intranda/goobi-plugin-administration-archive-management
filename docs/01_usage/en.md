@@ -6,8 +6,6 @@ keywords:
     - Goobi workflow
     - Plugin
     - Administration Plugin
-    - Archive Management
-    - EAD
 ---
 
 The following functions are available within the plugin for archive management:
