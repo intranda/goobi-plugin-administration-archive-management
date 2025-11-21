@@ -1,6 +1,5 @@
 package de.intranda.goobi.plugins.model;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -169,20 +168,13 @@ public class FieldValue implements IFieldValue {
         } else {
             val = searchValue + " and BBG=" + searchOption;
         }
-        URL url = convertToURLEscapingIllegalCharacters("http://normdata.intranda.com/normdata/gnd/woe/" + val);
-        String string = url.toString()
-                .replace("Ä", "%C3%84")
-                .replace("Ö", "%C3%96")
-                .replace("Ü", "%C3%9C")
-                .replace("ä", "%C3%A4")
-                .replace("ö", "%C3%B6")
-                .replace("ü", "%C3%BC")
-                .replace("ß", "%C3%9F");
+
         if (ConfigurationHelper.getInstance().isUseProxy()) {
-            setDataList(NormDataImporter.importNormDataList(string, 3, ConfigurationHelper.getInstance().getProxyUrl(),
+            setDataList(NormDataImporter.getGndRecords("http://services.dnb.de/sru/authorities", val, ConfigurationHelper.getInstance().getProxyUrl(),
                     ConfigurationHelper.getInstance().getProxyPort()));
         } else {
-            setDataList(NormDataImporter.importNormDataList(string, 3, null, 0));
+            setDataList(NormDataImporter.getGndRecords("http://services.dnb.de/sru/authorities", val, null,
+                    null));
         }
         setShowNoHits(getDataList() == null || getDataList().isEmpty());
     }
