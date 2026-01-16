@@ -802,7 +802,47 @@ public class EadEntry implements IEadEntry {
             }
         }
         return false;
+    }
 
+    @Override
+    public IMetadataField getFieldByName(String name) {
+
+        for (IMetadataField emf : getIdentityStatementAreaList()) {
+            if (emf.getName().equals(name)) {
+                return emf;
+            }
+        }
+        for (IMetadataField emf : getContextAreaList()) {
+            if (emf.getName().equals(name)) {
+                return emf;
+            }
+        }
+        for (IMetadataField emf : getContentAndStructureAreaAreaList()) {
+            if (emf.getName().equals(name)) {
+                return emf;
+            }
+        }
+        for (IMetadataField emf : getAccessAndUseAreaList()) {
+            if (emf.getName().equals(name)) {
+                return emf;
+            }
+        }
+        for (IMetadataField emf : getAlliedMaterialsAreaList()) {
+            if (emf.getName().equals(name)) {
+                return emf;
+            }
+        }
+        for (IMetadataField emf : getNotesAreaList()) {
+            if (emf.getName().equals(name)) {
+                return emf;
+            }
+        }
+        for (IMetadataField emf : getDescriptionControlAreaList()) {
+            if (emf.getName().equals(name)) {
+                return emf;
+            }
+        }
+        return null;
     }
 
 }
