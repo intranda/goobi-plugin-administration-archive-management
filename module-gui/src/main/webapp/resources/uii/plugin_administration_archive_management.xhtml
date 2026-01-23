@@ -372,7 +372,7 @@
                                                         <h:commandLink
                                                             id="link2"
                                                             immediate="true"
-                                                            styleClass="ps-1 #{entry.selected ? 'fw-700 current-node scroll-target' : ''} #{entry.searchFound ? 'tree-highlight' : ''} #{entry.valid ? '' : 'bg-hot text-white p-1'} #{entry.valid and !entry.selected ? 'text-black' : '' }">
+                                                            styleClass="d-inline-flex align-items-center gap-1 ps-1 #{entry.selected ? 'fw-700 current-node scroll-target' : ''} #{entry.searchFound ? 'tree-highlight' : ''} #{entry.valid ? '' : 'bg-hot text-white p-1'} #{entry.valid and !entry.selected ? 'text-black' : '' }">
                                                             <util:icon icon="#{entry.nodeType.icon}" />
                                                             <span>
                                                                 <h:outputText
