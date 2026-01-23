@@ -75,7 +75,7 @@
                                                     <div class="gw-table__actions__container">
                                                         <ui:fragment>
                                                             <h:commandLink
-                                                                styleClass="btn btn-blank"
+                                                                styleClass="btn btn-icon btn-blank"
                                                                 id="absenden"
                                                                 action="#{AdministrationForm.administrationPlugin.loadSelectedDatabase}">
                                                                 <f:passThroughAttribute
@@ -91,7 +91,7 @@
                                                             </h:commandLink>
                                                         </ui:fragment>
                                                         <h:commandLink
-                                                            styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowCreation ? '' : 'disabled'}"
+                                                            styleClass="btn btn-icon btn-blank #{AdministrationForm.administrationPlugin.allowCreation ? '' : 'disabled'}"
                                                             action="#{AdministrationForm.administrationPlugin.duplicateEadFileFromOverview}"
                                                             disabled="#{!AdministrationForm.administrationPlugin.allowCreation}">
                                                             <f:passThroughAttribute
@@ -110,7 +110,7 @@
                                                                       or AdministrationForm.administrationPlugin.config.getExportConfiguration().get('*') != null}">
                                                             <h:commandLink
                                                                 rendered="#{!AdministrationForm.administrationPlugin.readOnlyModus}"
-                                                                styleClass="btn btn-blank"
+                                                                styleClass="btn btn-icon btn-blank"
                                                                 type="submit"
                                                                 action="#{AdministrationForm.administrationPlugin.eadExportFromOverview}">
                                                                 <f:passThroughAttribute
@@ -126,7 +126,7 @@
                                                             </h:commandLink>
                                                         </ui:fragment>
                                                         <h:commandLink
-                                                            styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowDeletion ? '' : 'disabled'}"
+                                                            styleClass="btn btn-icon btn-blank #{AdministrationForm.administrationPlugin.allowDeletion ? '' : 'disabled'}"
                                                             disabled="#{!AdministrationForm.administrationPlugin.allowDeletion}"
                                                             action="#{AdministrationForm.administrationPlugin.deleteSelectedDatabase}"
                                                             onclick="if (!confirm('#{msgs.sollDieserEintragWirklichGeloeschtWerden}')) return false">

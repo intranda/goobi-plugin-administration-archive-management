@@ -15,7 +15,7 @@
                     action="#{item.addValue}"
                     rendered="#{item.repeatable and item.showField and not item.group}"
                     styleClass="d-inline-flex align-items-center gap-1 #{item.filled ? 'text-white' : 'text-neutral-600'}">
-                    <util:icon icon="circle-plus" />
+                    <util:icon icon="circle-plus" styleClass="icon--b4" />
                     <span>
                         <h:outputText value="#{fieldname}" />
                     </span>
@@ -32,7 +32,7 @@
                     action="#{AdministrationForm.administrationPlugin.addGroup}"
                     rendered="#{item.repeatable and item.showField and item.group}"
                     styleClass="d-inline-flex align-items-center gap-1 #{item.filled ? 'text-white' : 'text-neutral-600'}">
-                    <util:icon icon="circle-plus" />
+                    <util:icon icon="circle-plus" styleClass="icon--b4" />
                     <span>
                         <h:outputText value="#{fieldname}" />
                     </span>
@@ -52,7 +52,7 @@
                     rendered="#{!item.repeatable or (item.repeatable and !item.showField)}"
                     styleClass="d-inline-flex align-items-center gap-1 #{item.filled ? 'text-white' : 'text-neutral-600'}">
                     <ui:fragment rendered="#{item.repeatable}">
-                        <util:icon icon="circle-plus" />
+                        <util:icon icon="circle-plus" styleClass="icon--b4" />
                     </ui:fragment>
                     <span>
                         <h:outputText value="#{fieldname}" />
