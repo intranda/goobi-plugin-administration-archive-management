@@ -6,7 +6,8 @@
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites">
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites"
+    xmlns:util="http://goobi.io/util">
 <h:body>
     <ui:composition>
         <fieldset class="field-set">
@@ -87,7 +88,7 @@
                     styleClass="btn btn-blank font-light fs-500"
                     action="#{item.deleteValue(field)}"
                     rendered="#{deletable}">
-                    <span class="fa fa-trash" />
+                    <util:icon icon="trash" />
                     <f:ajax
                         execute="@this"
                         render=":nodeBox:#{ajaxid}"

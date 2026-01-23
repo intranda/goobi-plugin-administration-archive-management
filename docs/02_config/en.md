@@ -243,11 +243,11 @@ The two elements `<eadNamespaceRead>` and `<eadNamespaceWrite>` define which XML
 The node types are defined using the `<node>` element.
 
 ```xml
-        <node name="archive" icon="fa fa-archive" rootNode="true" allowProcessCreation="false">
+        <node name="archive" icon="archive" rootNode="true" allowProcessCreation="false">
             <child>folder</child>
         </node>
 
-        <node name="folder" icon="fa fa-folder-open-o" allowProcessCreation="false">
+        <node name="folder" icon="folder-open" allowProcessCreation="false">
             <child>folder</child>
             <child>file</child>
             <child>image</child>
@@ -256,11 +256,11 @@ The node types are defined using the `<node>` element.
             <child>other</child>
         </node>
 
-        <node name="file" ruleset="File" icon="fa fa-file-text-o" allowProcessCreation="true" />
-        <node name="image" ruleset="Picture" icon="fa fa-file-image-o" allowProcessCreation="true" />
-        <node name="audio" ruleset="Audio" icon="fa fa-file-audio-o" allowProcessCreation="true" />
-        <node name="video" ruleset="Video" icon="fa fa-file-video-o" allowProcessCreation="true" />
-        <node name="other" ruleset="Other" icon="fa fa-file-o"  allowProcessCreation="true" />
+        <node name="file" ruleset="File" icon="file-text" allowProcessCreation="true" />
+        <node name="image" ruleset="Picture" icon="photo" allowProcessCreation="true" />
+        <node name="audio" ruleset="Audio" icon="music" allowProcessCreation="true" />
+        <node name="video" ruleset="Video" icon="video" allowProcessCreation="true" />
+        <node name="other" ruleset="Other" icon="file" allowProcessCreation="true" />
 ```
 
 The `name` attribute must contain a unique value, which is used to identify the type internally. The `ruleset` contains the name of the structure element in the ruleset that is to be used when a process is created for this node. This function is only available if the attribute `allowProcessCreation` is set with the value `true`. The icon to be displayed in the interface for this node type is configured in `icon`.

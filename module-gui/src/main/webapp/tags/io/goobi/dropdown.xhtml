@@ -6,7 +6,8 @@
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites">
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites"
+    xmlns:util="http://goobi.io/util">
 <h:body>
     <ui:composition>
         <div class="form-row">
@@ -20,7 +21,7 @@
                     onclick="$('#vocabularyModal').modal('show');"
                     action="#{AdministrationForm.administrationPlugin.initializeRecord}"
                     title="#{msgs.plugin_administration_archive_addEntry}">
-                    <span class="fa fa-plus-circle" />
+                    <util:icon icon="circle-plus" />
                     <f:passThroughAttribute
                         name="data-bs-toggle"
                         value="tooltip" />
@@ -65,7 +66,7 @@
                 action="#{item.deleteValue(field)}"
                 styleClass="btn btn-blank font-light fs-500"
                 rendered="#{deletable}">
-                <span class="fa fa-trash" />
+                <util:icon icon="trash" />
                 <f:ajax
                     execute="@this"
                     render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"

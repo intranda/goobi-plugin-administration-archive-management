@@ -244,11 +244,11 @@ Die beiden Elemente `<eadNamespaceRead>` und `<eadNamespaceWrite>` legen fest, w
 Die Knotentypen werden mit Hilfe des `<node>` Elements definiert.
 
 ```xml
-        <node name="archive" icon="fa fa-archive" rootNode="true" allowProcessCreation="false">
+        <node name="archive" icon="archive" rootNode="true" allowProcessCreation="false">
             <child>folder</child>
         </node>
 
-        <node name="folder" icon="fa fa-folder-open-o" allowProcessCreation="false">
+        <node name="folder" icon="folder-open" allowProcessCreation="false">
             <child>folder</child>
             <child>file</child>
             <child>image</child>
@@ -258,11 +258,11 @@ Die Knotentypen werden mit Hilfe des `<node>` Elements definiert.
         </node>
 
         <!-- item level nodes -->
-        <node name="file" ruleset="File" icon="fa fa-file-text-o" allowProcessCreation="true" />
-        <node name="image" ruleset="Picture" icon="fa fa-file-image-o" allowProcessCreation="true" />
-        <node name="audio" ruleset="Audio" icon="fa fa-file-audio-o" allowProcessCreation="true" />
-        <node name="video" ruleset="Video" icon="fa fa-file-video-o" allowProcessCreation="true" />
-        <node name="other" ruleset="Other" icon="fa fa-file-o"  allowProcessCreation="true" />
+        <node name="file" ruleset="File" icon="file-text" allowProcessCreation="true" />
+        <node name="image" ruleset="Picture" icon="photo" allowProcessCreation="true" />
+        <node name="audio" ruleset="Audio" icon="music" allowProcessCreation="true" />
+        <node name="video" ruleset="Video" icon="video" allowProcessCreation="true" />
+        <node name="other" ruleset="Other" icon="file" allowProcessCreation="true" />
 ```
 
 Das Attribut `name` muss einen eindeutigen Wert enthalten, hierüber wird der Typ intern identifiziert. In `ruleset` steht der Name des Strukturelements im Regelsatz, der verwendet werden soll, wenn für diesen Knoten ein Vorgang erzeugt wird. Diese Funktion steht nur zur Verfügung, wenn das Attribut `allowProcessCreation` mit dem Wert `true` gesetzt ist. In `icon` wird das Symbol konfiguriert, dass in der Oberfläche für diesen Knotentyp angezeigt werden soll.
