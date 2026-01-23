@@ -352,12 +352,7 @@
                                                             action="#{AdministrationForm.administrationPlugin.resetFlatList}"
                                                             class="#{entry.displayChildren ? 'expand' : 'expanded'} text-black"
                                                             rendered="#{entry.hasChildren and !entry.displaySearch}">
-                                                            <h:panelGroup rendered="#{entry.displayChildren}">
-                                                                <util:icon icon="caret-down-filled" />
-                                                            </h:panelGroup>
-                                                            <h:panelGroup rendered="#{!entry.displayChildren}">
-                                                                <util:icon icon="caret-right-filled" />
-                                                            </h:panelGroup>
+                                                            <util:icon icon="#{entry.displayChildren ? 'caret-down-filled' : 'caret-right-filled'}" />
                                                             <f:setPropertyActionListener
                                                                 target="#{entry.displayChildren}"
                                                                 value="#{not entry.displayChildren}" />
@@ -372,7 +367,7 @@
                                                         <h:commandLink
                                                             id="link2"
                                                             immediate="true"
-                                                            styleClass="d-inline-flex align-items-center gap-1 ps-1 #{entry.selected ? 'fw-700 current-node scroll-target' : ''} #{entry.searchFound ? 'tree-highlight' : ''} #{entry.valid ? '' : 'bg-hot text-white p-1'} #{entry.valid and !entry.selected ? 'text-black' : '' }">
+                                                            styleClass="d-inline-flex align-items-center gap-2 ps-1 #{entry.selected ? 'fw-700 current-node scroll-target' : ''} #{entry.searchFound ? 'tree-highlight' : ''} #{entry.valid ? '' : 'bg-hot text-white p-1'} #{entry.valid and !entry.selected ? 'text-black' : '' }">
                                                             <util:icon icon="#{entry.nodeType.icon}" />
                                                             <span>
                                                                 <h:outputText
@@ -422,7 +417,7 @@
                                             styleClass="btn btn-icon btn-neutral-600"
                                             action="#{AdministrationForm.administrationPlugin.addNode}"
                                             title="#{msgs.plugin_administration_archive_newNode}">
-                                            <util:icon icon="square-plus" />
+                                            <util:icon icon="square-plus" styleClass="icon--lg" />
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
@@ -436,7 +431,7 @@
                                             onclick="$('#createNodesModal').modal('show');"
                                             disabled="#{AdministrationForm.administrationPlugin.selectedEntry == null}"
                                             title="#{msgs.plugin_administration_archive_addMultipleNodes}">
-                                            <util:icon icon="copy-plus" />
+                                            <util:icon icon="copy-plus" styleClass="icon--lg" />
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
@@ -452,7 +447,7 @@
                                             styleClass="btn btn-icon btn-blank"
                                             action="#{AdministrationForm.administrationPlugin.updateGoobiIds}"
                                             title="#{msgs.plugin_administration_archive_removeInvalidProcessIds}">
-                                            <util:icon icon="refresh" />
+                                            <util:icon icon="refresh" styleClass="icon--lg" />
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
@@ -471,7 +466,7 @@
                                                 class="btn btn-icon btn-primary dropdown-toggle"
                                                 data-bs-toggle="dropdown"
                                                 type="button">
-                                                <util:icon icon="files" />
+                                                <util:icon icon="files" styleClass="icon--lg" />
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end">
                                                 <ui:repeat
@@ -512,7 +507,7 @@
                                             styleClass="btn btn-icon btn-success"
                                             action="#{AdministrationForm.administrationPlugin.validateArchive}"
                                             title="#{msgs.plugin_administration_archive_validate}">
-                                            <util:icon icon="check" />
+                                            <util:icon icon="check" styleClass="icon--lg" />
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
@@ -522,7 +517,7 @@
                                             styleClass="btn btn-icon btn-neutral-600"
                                             action="#{AdministrationForm.administrationPlugin.moveNodeUp}"
                                             title="#{msgs.plugin_administration_archive_moveNodeUp}">
-                                            <util:icon icon="chevron-up" />
+                                            <util:icon icon="chevron-up" styleClass="icon--lg" />
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
@@ -535,7 +530,7 @@
                                             styleClass="btn btn-icon btn-neutral-600"
                                             action="#{AdministrationForm.administrationPlugin.moveNodeDown}"
                                             title="#{msgs.plugin_administration_archive_moveNodeDown}">
-                                            <util:icon icon="chevron-down" />
+                                            <util:icon icon="chevron-down" styleClass="icon--lg" />
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
@@ -548,7 +543,7 @@
                                             styleClass="btn btn-icon btn-neutral-600"
                                             action="#{AdministrationForm.administrationPlugin.moveHierarchyDown}"
                                             title="#{msgs.plugin_administration_archive_moveHierarchyDown}">
-                                            <util:icon icon="chevron-right" />
+                                            <util:icon icon="chevron-right" styleClass="icon--lg" />
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
@@ -561,7 +556,7 @@
                                             styleClass="btn btn-icon btn-neutral-600"
                                             action="#{AdministrationForm.administrationPlugin.moveHierarchyUp}"
                                             title="#{msgs.plugin_administration_archive_moveHierarchyUp}">
-                                            <util:icon icon="chevron-left" />
+                                            <util:icon icon="chevron-left" styleClass="icon--lg" />
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
@@ -575,7 +570,7 @@
                                             styleClass="btn btn-icon btn-neutral-600"
                                             action="#{AdministrationForm.administrationPlugin.prepareMoveNode}"
                                             title="#{msgs.plugin_administration_archive_moveNode}">
-                                            <util:icon icon="arrows-move" />
+                                            <util:icon icon="arrows-move" styleClass="icon--lg" />
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
@@ -588,7 +583,7 @@
                                             styleClass="btn btn-icon btn-neutral-600"
                                             onclick="$('#duplicationBox').modal('show');"
                                             title="#{msgs.plugin_administration_archive_duplicateNode}">
-                                            <util:icon icon="clipboard" />
+                                            <util:icon icon="clipboard" styleClass="icon--lg" />
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
                                                 value="tooltip" />
@@ -948,12 +943,11 @@
                                                 <h:commandLink
                                                     styleClass="p-2"
                                                     title="#{msgs.plugin_administration_archive_show_details}">
-                                                    <span class="d-inline-flex align-items-center gap-1">
-                                                        <util:icon icon="#{AdministrationForm.administrationPlugin.displayIdentityStatementArea ? 'chevron-down' : 'chevron-right'}" styleClass="icon--b4" />
-                                                        <span class="text-black">
-                                                            <h:outputText value="#{msgs.plugin_administration_archive_area_identity}" />
-                                                        </span>
-                                                    </span>
+                                                    <util:icon-text
+                                                        icon="#{AdministrationForm.administrationPlugin.displayIdentityStatementArea ? 'chevron-down' : 'chevron-right'}"
+                                                        iconClass="icon--b4"
+                                                        text="#{msgs.plugin_administration_archive_area_identity}"
+                                                        textClass="text-black" />
                                                     <f:setPropertyActionListener
                                                         target="#{AdministrationForm.administrationPlugin.displayIdentityStatementArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayIdentityStatementArea}" />
@@ -979,12 +973,11 @@
                                                 <h:commandLink
                                                     styleClass="p-2"
                                                     title="#{msgs.plugin_administration_archive_show_details}">
-                                                    <span class="d-inline-flex align-items-center gap-1">
-                                                        <util:icon icon="#{AdministrationForm.administrationPlugin.displayContextArea ? 'chevron-down' : 'chevron-right'}" styleClass="icon--b4" />
-                                                        <span class="text-black">
-                                                            <h:outputText value="#{msgs.plugin_administration_archive_area_context}" />
-                                                        </span>
-                                                    </span>
+                                                    <util:icon-text
+                                                        icon="#{AdministrationForm.administrationPlugin.displayContextArea ? 'chevron-down' : 'chevron-right'}"
+                                                        iconClass="icon--b4"
+                                                        text="#{msgs.plugin_administration_archive_area_context}"
+                                                        textClass="text-black" />
                                                     <f:setPropertyActionListener
                                                         target="#{AdministrationForm.administrationPlugin.displayContextArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayContextArea}" />
@@ -1007,12 +1000,11 @@
                                                 <h:commandLink
                                                     styleClass="p-2"
                                                     title="#{msgs.plugin_administration_archive_show_details}">
-                                                    <span class="d-inline-flex align-items-center gap-1">
-                                                        <util:icon icon="#{AdministrationForm.administrationPlugin.displayContentArea ? 'chevron-down' : 'chevron-right'}" styleClass="icon--b4" />
-                                                        <span class="text-black">
-                                                            <h:outputText value="#{msgs.plugin_administration_archive_area_content}" />
-                                                        </span>
-                                                    </span>
+                                                    <util:icon-text
+                                                        icon="#{AdministrationForm.administrationPlugin.displayContentArea ? 'chevron-down' : 'chevron-right'}"
+                                                        iconClass="icon--b4"
+                                                        text="#{msgs.plugin_administration_archive_area_content}"
+                                                        textClass="text-black" />
                                                     <f:setPropertyActionListener
                                                         target="#{AdministrationForm.administrationPlugin.displayContentArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayContentArea}" />
@@ -1035,12 +1027,11 @@
                                                 <h:commandLink
                                                     styleClass="p-2"
                                                     title="#{msgs.plugin_administration_archive_show_details}">
-                                                    <span class="d-inline-flex align-items-center gap-1">
-                                                        <util:icon icon="#{AdministrationForm.administrationPlugin.displayAccessArea ? 'chevron-down' : 'chevron-right'}" styleClass="icon--b4" />
-                                                        <span class="text-black">
-                                                            <h:outputText value="#{msgs.plugin_administration_archive_area_access}" />
-                                                        </span>
-                                                    </span>
+                                                    <util:icon-text
+                                                        icon="#{AdministrationForm.administrationPlugin.displayAccessArea ? 'chevron-down' : 'chevron-right'}"
+                                                        iconClass="icon--b4"
+                                                        text="#{msgs.plugin_administration_archive_area_access}"
+                                                        textClass="text-black" />
                                                     <f:setPropertyActionListener
                                                         target="#{AdministrationForm.administrationPlugin.displayAccessArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayAccessArea}" />
@@ -1063,12 +1054,11 @@
                                                 <h:commandLink
                                                     styleClass="p-2"
                                                     title="#{msgs.plugin_administration_archive_show_details}">
-                                                    <span class="d-inline-flex align-items-center gap-1">
-                                                        <util:icon icon="#{AdministrationForm.administrationPlugin.displayMaterialsArea ? 'chevron-down' : 'chevron-right'}" styleClass="icon--b4" />
-                                                        <span class="text-black">
-                                                            <h:outputText value="#{msgs.plugin_administration_archive_area_materials}" />
-                                                        </span>
-                                                    </span>
+                                                    <util:icon-text
+                                                        icon="#{AdministrationForm.administrationPlugin.displayMaterialsArea ? 'chevron-down' : 'chevron-right'}"
+                                                        iconClass="icon--b4"
+                                                        text="#{msgs.plugin_administration_archive_area_materials}"
+                                                        textClass="text-black" />
                                                     <f:setPropertyActionListener
                                                         target="#{AdministrationForm.administrationPlugin.displayMaterialsArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayMaterialsArea}" />
@@ -1091,12 +1081,11 @@
                                                 <h:commandLink
                                                     styleClass="p-2"
                                                     title="#{msgs.plugin_administration_archive_show_details}">
-                                                    <span class="d-inline-flex align-items-center gap-1">
-                                                        <util:icon icon="#{AdministrationForm.administrationPlugin.displayNotesArea ? 'chevron-down' : 'chevron-right'}" styleClass="icon--b4" />
-                                                        <span class="text-black">
-                                                            <h:outputText value="#{msgs.plugin_administration_archive_area_notes}" />
-                                                        </span>
-                                                    </span>
+                                                    <util:icon-text
+                                                        icon="#{AdministrationForm.administrationPlugin.displayNotesArea ? 'chevron-down' : 'chevron-right'}"
+                                                        iconClass="icon--b4"
+                                                        text="#{msgs.plugin_administration_archive_area_notes}"
+                                                        textClass="text-black" />
                                                     <f:setPropertyActionListener
                                                         target="#{AdministrationForm.administrationPlugin.displayNotesArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayNotesArea}" />
@@ -1119,12 +1108,11 @@
                                                 <h:commandLink
                                                     styleClass="p-2"
                                                     title="#{msgs.plugin_administration_archive_show_details}">
-                                                    <span class="d-inline-flex align-items-center gap-1">
-                                                        <util:icon icon="#{AdministrationForm.administrationPlugin.displayControlArea ? 'chevron-down' : 'chevron-right'}" styleClass="icon--b4" />
-                                                        <span class="text-black">
-                                                            <h:outputText value="#{msgs.plugin_administration_archive_area_descriptionControl}" />
-                                                        </span>
-                                                    </span>
+                                                    <util:icon-text
+                                                        icon="#{AdministrationForm.administrationPlugin.displayControlArea ? 'chevron-down' : 'chevron-right'}"
+                                                        iconClass="icon--b4"
+                                                        text="#{msgs.plugin_administration_archive_area_descriptionControl}"
+                                                        textClass="text-black" />
                                                     <f:setPropertyActionListener
                                                         target="#{AdministrationForm.administrationPlugin.displayControlArea}"
                                                         value="#{not AdministrationForm.administrationPlugin.displayControlArea}" />
