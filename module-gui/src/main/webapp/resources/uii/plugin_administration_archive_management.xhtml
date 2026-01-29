@@ -747,11 +747,12 @@
                                                                     : AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle}
                                                             </span>
                                                             <!-- no process exists, so allow creation of a process here -->
+
                                                             <ui:fragment
                                                                 rendered="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType.allowProcessCreation and AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
                                                                 <!-- No process exists: show create button -->
                                                                 <ui:fragment
-                                                                    rendered="#{!AdministrationForm.administrationPlugin.config.showProjectSelection}">
+                                                                    rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null and !AdministrationForm.administrationPlugin.config.showProjectSelection}">
                                                                     <button
                                                                         aria-expanded="false"
                                                                         aria-haspopup="true"
@@ -787,7 +788,7 @@
 
                                                                 <h:panelGroup
                                                                     layout="block"
-                                                                    rendered="#{AdministrationForm.administrationPlugin.config.showProjectSelection}"
+                                                                    rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null and AdministrationForm.administrationPlugin.config.showProjectSelection}"
                                                                     styleClass="input-group my-auto">
 
                                                                     <!-- select process template -->
@@ -839,19 +840,21 @@
                                                                 styleClass="btn-group"
                                                                 rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null}">
                                                                 <button
+                                                                    jsf:rendered="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType.allowProcessCreation}"
                                                                     jsf:action="#{AdministrationForm.administrationPlugin.selectedEntry.updateNodeWithProcessMetadata}"
                                                                     title="#{msgs.plugin_administration_archive_updateNodeWithProcessMetadata}"
                                                                     class="btn btn-blank"
                                                                     data-bs-toggle="tooltip">
-                                                                    <span class="fa fa-upload" aria-hidden="true"></span>
+                                                                    <util:icon icon="package-export" />
                                                                     <span class="visually-hidden">#{msgs.plugin_administration_archive_updateNodeWithProcessMetadata}</span>
                                                                 </button>
                                                                 <button
+                                                                    jsf:rendered="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType.allowProcessCreation}"
                                                                     jsf:action="#{AdministrationForm.administrationPlugin.selectedEntry.updateProcessWithNodeMetadata}"
                                                                     title="#{msgs.plugin_administration_archive_updateProcessWithNodeMetadata}"
                                                                     class="btn btn-blank"
                                                                     data-bs-toggle="tooltip">
-                                                                    <span class="fa fa-download" aria-hidden="true"></span>
+                                                                    <util:icon icon="package-import" />
                                                                     <span class="visually-hidden">#{msgs.plugin_administration_archive_updateProcessWithNodeMetadata}</span>
                                                                 </button>
                                                                 <h:commandLink
