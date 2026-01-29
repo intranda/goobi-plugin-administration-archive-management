@@ -775,26 +775,8 @@
                                                             </span>
                                                             <!-- no process exists, so allow creation of a process here -->
                                                             <ui:fragment
-                                                                rendered="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType.allowProcessCreation}">
-
-
-                                                                <button
-                                                                    jsf:rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management_Sync')}"
-                                                                    jsf:action="#{AdministrationForm.administrationPlugin.selectedEntry.updateNodeWithProcessMetadata}"
-                                                                    aria-label="#{msgs.plugin_administration_archive_updateNodeWithProcessMetadata}"
-                                                                    class="btn btn-blank float-end">
-                                                                    <i class="fa fa-upload"></i>
-                                                                </button>
-
-                                                                <button
-                                                                    jsf:rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management_Sync')}"
-                                                                    jsf:action="#{AdministrationForm.administrationPlugin.selectedEntry.updateProcessWithNodeMetadata}"
-                                                                    aria-label="#{msgs.plugin_administration_archive_updateProcessWithNodeMetadata}"
-                                                                    class="btn btn-blank float-end">
-                                                                    <i class="fa fa-download"></i>
-                                                                </button>
-
-
+                                                                rendered="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType.allowProcessCreation and AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle == null}">
+                                                                <!-- No process exists: show create button -->
                                                                 <ui:fragment
                                                                     rendered="#{!AdministrationForm.administrationPlugin.config.showProjectSelection}">
                                                                     <button
@@ -881,8 +863,26 @@
                                                             </ui:fragment>
                                                             <!-- // no process exists, so allow creation of a process here -->
                                                             <!-- process exists -->
-                                                            <ui:fragment
+                                                            <h:panelGroup
+                                                                layout="block"
+                                                                styleClass="btn-group"
                                                                 rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null}">
+                                                                <button
+                                                                    jsf:action="#{AdministrationForm.administrationPlugin.selectedEntry.updateNodeWithProcessMetadata}"
+                                                                    title="#{msgs.plugin_administration_archive_updateNodeWithProcessMetadata}"
+                                                                    class="btn btn-blank"
+                                                                    data-bs-toggle="tooltip">
+                                                                    <span class="fa fa-upload" aria-hidden="true"></span>
+                                                                    <span class="visually-hidden">#{msgs.plugin_administration_archive_updateNodeWithProcessMetadata}</span>
+                                                                </button>
+                                                                <button
+                                                                    jsf:action="#{AdministrationForm.administrationPlugin.selectedEntry.updateProcessWithNodeMetadata}"
+                                                                    title="#{msgs.plugin_administration_archive_updateProcessWithNodeMetadata}"
+                                                                    class="btn btn-blank"
+                                                                    data-bs-toggle="tooltip">
+                                                                    <span class="fa fa-download" aria-hidden="true"></span>
+                                                                    <span class="visually-hidden">#{msgs.plugin_administration_archive_updateProcessWithNodeMetadata}</span>
+                                                                </button>
                                                                 <h:commandLink
                                                                     styleClass="btn btn-blank"
                                                                     action="#{AdministrationForm.administrationPlugin.downloadDocket}"
@@ -895,7 +895,7 @@
                                                                         name="data-bs-title"
                                                                         value="#{msgs.process_generateDocket}" />
                                                                 </h:commandLink>
-                                                            </ui:fragment>
+                                                            </h:panelGroup>
                                                             <!-- // process exists -->
                                                         </div>
                                                     </div>
