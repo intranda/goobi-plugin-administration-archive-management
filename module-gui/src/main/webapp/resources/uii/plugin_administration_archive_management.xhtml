@@ -776,6 +776,23 @@
                                                             <!-- no process exists, so allow creation of a process here -->
                                                             <ui:fragment
                                                                 rendered="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType.allowProcessCreation}">
+
+
+                                                                <button
+                                                                    jsf:action="#{AdministrationForm.administrationPlugin.selectedEntry.updateNodeWithProcessMetadata}"
+                                                                    aria-label="#{msgs.plugin_administration_archive_updateNodeWithProcessMetadata}"
+                                                                    class="btn btn-blank float-end">
+                                                                    <i class="fa fa-upload"></i>
+                                                                </button>
+
+                                                                <button
+                                                                    jsf:action="#{AdministrationForm.administrationPlugin.selectedEntry.updateProcessWithNodeMetadata}"
+                                                                    aria-label="#{msgs.plugin_administration_archive_updateProcessWithNodeMetadata}"
+                                                                    class="btn btn-blank float-end">
+                                                                    <i class="fa fa-download"></i>
+                                                                </button>
+
+
                                                                 <ui:fragment
                                                                     rendered="#{!AdministrationForm.administrationPlugin.config.showProjectSelection}">
                                                                     <button
