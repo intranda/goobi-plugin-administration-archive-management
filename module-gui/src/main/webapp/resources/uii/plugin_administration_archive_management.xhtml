@@ -779,6 +779,7 @@
 
 
                                                                 <button
+                                                                    jsf:rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management_Sync')}"
                                                                     jsf:action="#{AdministrationForm.administrationPlugin.selectedEntry.updateNodeWithProcessMetadata}"
                                                                     aria-label="#{msgs.plugin_administration_archive_updateNodeWithProcessMetadata}"
                                                                     class="btn btn-blank float-end">
@@ -786,6 +787,7 @@
                                                                 </button>
 
                                                                 <button
+                                                                    jsf:rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management_Sync')}"
                                                                     jsf:action="#{AdministrationForm.administrationPlugin.selectedEntry.updateProcessWithNodeMetadata}"
                                                                     aria-label="#{msgs.plugin_administration_archive_updateProcessWithNodeMetadata}"
                                                                     class="btn btn-blank float-end">
