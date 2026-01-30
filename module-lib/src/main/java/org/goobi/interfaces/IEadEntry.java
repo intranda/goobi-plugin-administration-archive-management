@@ -150,4 +150,10 @@ public interface IEadEntry extends Comparable<IEadEntry> {
 
     public boolean isChildrenHaveProcesses();
 
+    public IMetadataField getFieldByName(String fieldName);
+
+    public void updateNodeWithProcessMetadata();
+
+    public void updateProcessWithNodeMetadata();
+
 }

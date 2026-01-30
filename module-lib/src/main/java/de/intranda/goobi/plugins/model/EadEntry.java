@@ -1,5 +1,6 @@
 package de.intranda.goobi.plugins.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -7,6 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
+import org.goobi.beans.Process;
 import org.goobi.interfaces.IConfiguration;
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.IFieldValue;
@@ -15,12 +17,27 @@ import org.goobi.interfaces.IMetadataGroup;
 import org.goobi.interfaces.INodeType;
 import org.goobi.interfaces.IParameter;
 
+import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.MySQLHelper;
+import de.sub.goobi.persistence.managers.ProcessManager;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+import ugh.dl.Corporate;
+import ugh.dl.DocStruct;
+import ugh.dl.Fileformat;
+import ugh.dl.Metadata;
+import ugh.dl.MetadataGroup;
+import ugh.dl.MetadataGroupType;
+import ugh.dl.MetadataType;
+import ugh.dl.NamePart;
+import ugh.dl.Person;
+import ugh.dl.Prefs;
+import ugh.exceptions.UGHException;
 
 @Getter
 @Setter
+@Log4j2
 public class EadEntry implements IEadEntry {
 
     // table auto increment key
@@ -802,7 +819,370 @@ public class EadEntry implements IEadEntry {
             }
         }
         return false;
-
     }
 
+    @Override
+    public IMetadataField getFieldByName(String name) {
+
+        for (IMetadataField emf : getIdentityStatementAreaList()) {
+            if (emf.getName().equals(name)) {
+                return emf;
+            }
+        }
+        for (IMetadataField emf : getContextAreaList()) {
+            if (emf.getName().equals(name)) {
+                return emf;
+            }
+        }
+        for (IMetadataField emf : getContentAndStructureAreaAreaList()) {
+            if (emf.getName().equals(name)) {
+                return emf;
+            }
+        }
+        for (IMetadataField emf : getAccessAndUseAreaList()) {
+            if (emf.getName().equals(name)) {
+                return emf;
+            }
+        }
+        for (IMetadataField emf : getAlliedMaterialsAreaList()) {
+            if (emf.getName().equals(name)) {
+                return emf;
+            }
+        }
+        for (IMetadataField emf : getNotesAreaList()) {
+            if (emf.getName().equals(name)) {
+                return emf;
+            }
+        }
+        for (IMetadataField emf : getDescriptionControlAreaList()) {
+            if (emf.getName().equals(name)) {
+                return emf;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void updateProcessWithNodeMetadata() {
+        Process process = loadProcess();
+        if (process == null) {
+            return;
+        }
+
+        // load metadata
+        try {
+            Fileformat ff = process.readMetadataFile();
+            Prefs prefs = process.getRegelsatz().getPreferences();
+            DocStruct ds = ff.getDigitalDocument().getLogicalDocStruct();
+
+            for (IMetadataField emf : identityStatementAreaList) {
+                updateProcessMetadata(prefs, ds, emf);
+            }
+            for (IMetadataField emf : contextAreaList) {
+                updateProcessMetadata(prefs, ds, emf);
+            }
+
+            for (IMetadataField emf : contentAndStructureAreaAreaList) {
+                updateProcessMetadata(prefs, ds, emf);
+            }
+
+            for (IMetadataField emf : accessAndUseAreaList) {
+                updateProcessMetadata(prefs, ds, emf);
+            }
+
+            for (IMetadataField emf : alliedMaterialsAreaList) {
+                updateProcessMetadata(prefs, ds, emf);
+            }
+
+            for (IMetadataField emf : notesAreaList) {
+                updateProcessMetadata(prefs, ds, emf);
+            }
+
+            for (IMetadataField emf : descriptionControlAreaList) {
+                updateProcessMetadata(prefs, ds, emf);
+            }
+
+            process.writeMetadataFile(ff);
+        } catch (IOException | SwapException | UGHException e) {
+            log.error(e);
+        }
+    }
+
+    private void updateProcessMetadata(Prefs prefs, DocStruct ds, IMetadataField emf) {
+        if (emf.isGroup()) {
+            MetadataGroupType mgt = prefs.getMetadataGroupTypeByName(emf.getMetadataName());
+            if (mgt != null) {
+                List<MetadataGroup> lst = ds.getAllMetadataGroupsByType(mgt);
+                if (lst != null) {
+                    for (MetadataGroup md : lst) {
+                        ds.removeMetadataGroup(md, true);
+                    }
+                }
+                for (IMetadataGroup group : emf.getGroups()) {
+                    try {
+                        MetadataGroup mg = new MetadataGroup(prefs.getMetadataGroupTypeByName(emf.getMetadataName()));
+
+                        for (IMetadataField subfield : group.getFields()) {
+                            for (IFieldValue fv : subfield.getValues()) {
+                                Metadata metadata = null;
+                                for (Metadata md : mg.getMetadataList()) {
+                                    if (md.getType().getName().equals(subfield.getMetadataName())) {
+                                        metadata = md;
+                                    }
+                                }
+                                if (metadata == null || (StringUtils.isNotBlank(metadata.getValue()))) {
+                                    metadata = new Metadata(prefs.getMetadataTypeByName(subfield.getMetadataName()));
+                                    mg.addMetadata(metadata);
+                                }
+                                metadata.setValue(fv.getValue());
+                            }
+                        }
+
+                        ds.addMetadataGroup(mg);
+                    } catch (UGHException e) {
+                        log.error(e);
+                    }
+                }
+            }
+        } else {
+            MetadataType mdt = prefs.getMetadataTypeByName(emf.getMetadataName());
+            if (mdt != null) {
+                if ("person".equals(emf.getFieldType())) {
+                    // replace old metadata of the given type
+                    List<? extends Person> lst = ds.getAllPersonsByType(mdt);
+                    if (lst != null) {
+                        for (Person md : lst) {
+                            ds.removePerson(md, false);
+                        }
+                    }
+                    for (IFieldValue fv : emf.getValues()) {
+                        if (StringUtils.isNotBlank(fv.getFirstname()) || StringUtils.isNotBlank(fv.getLastname())) {
+
+                            try {
+                                Person p = new Person(prefs.getMetadataTypeByName(emf.getMetadataName()));
+                                p.setFirstname(fv.getFirstname());
+                                p.setLastname(fv.getLastname());
+                                p.setAuthorityValue(fv.getAuthorityValue());
+                                ds.addPerson(p);
+                            } catch (UGHException e) {
+                                log.error(e);
+                            }
+                        }
+                    }
+                } else if ("corporate".equals(emf.getFieldType())) {
+                    List<? extends Corporate> lst = ds.getAllCorporatesByType(mdt);
+                    if (lst != null) {
+                        for (Corporate md : lst) {
+                            ds.removeCorporate(md, true);
+                        }
+                    }
+                    for (IFieldValue fv : emf.getValues()) {
+                        if (StringUtils.isNotBlank(fv.getMainName())) {
+                            try {
+                                Corporate c = new Corporate(prefs.getMetadataTypeByName(emf.getMetadataName()));
+                                c.setMainName(fv.getMainName());
+                                if (StringUtils.isBlank(fv.getSubName())) {
+                                    c.addSubName(new NamePart("subname", fv.getSubName()));
+                                }
+                                c.setPartName(fv.getPartName());
+                                c.setAuthorityValue(fv.getAuthorityValue());
+                                ds.addCorporate(c);
+                            } catch (UGHException e) {
+                                log.error(e);
+                            }
+                        }
+                    }
+                } else {
+                    List<? extends Metadata> lst = ds.getAllMetadataByType(mdt);
+                    if (lst != null) {
+                        for (Metadata md : lst) {
+                            ds.removeMetadata(md, true);
+                        }
+                    }
+                    for (IFieldValue fv : emf.getValues()) {
+                        try {
+                            if (StringUtils.isNotBlank(fv.getValue())) {
+                                Metadata md = new Metadata(mdt);
+                                md.setValue(fv.getValue());
+                                md.setAuthorityFile(fv.getAuthorityType(), "", fv.getAuthorityValue());
+                                ds.addMetadata(md);
+                            }
+                        } catch (UGHException e) {
+                            log.error(e);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void updateNodeWithProcessMetadata() {
+
+        Process process = loadProcess();
+        if (process == null) {
+            return;
+        }
+
+        // load metadata
+        try {
+            Fileformat ff = process.readMetadataFile();
+            Prefs prefs = process.getRegelsatz().getPreferences();
+            DocStruct logical = ff.getDigitalDocument().getLogicalDocStruct();
+
+            // check for each field, if the mets file contains metadata
+            // if yes, replace node metadata with mets values
+            for (IMetadataField emf : identityStatementAreaList) {
+                if (emf.isGroup()) {
+                    importGroupData(prefs, logical, emf);
+                } else if (StringUtils.isNotBlank(emf.getMetadataName())) {
+                    importMetadata(prefs, logical, emf);
+                }
+            }
+
+            for (IMetadataField emf : contextAreaList) {
+                if (emf.isGroup()) {
+                    importGroupData(prefs, logical, emf);
+                } else if (StringUtils.isNotBlank(emf.getMetadataName())) {
+                    importMetadata(prefs, logical, emf);
+                }
+            }
+
+            for (IMetadataField emf : contentAndStructureAreaAreaList) {
+                if (emf.isGroup()) {
+                    importGroupData(prefs, logical, emf);
+                } else if (StringUtils.isNotBlank(emf.getMetadataName())) {
+                    importMetadata(prefs, logical, emf);
+                }
+            }
+
+            for (IMetadataField emf : accessAndUseAreaList) {
+                if (emf.isGroup()) {
+                    importGroupData(prefs, logical, emf);
+                } else if (StringUtils.isNotBlank(emf.getMetadataName())) {
+                    importMetadata(prefs, logical, emf);
+                }
+            }
+
+            for (IMetadataField emf : alliedMaterialsAreaList) {
+                if (emf.isGroup()) {
+                    importGroupData(prefs, logical, emf);
+                } else if (StringUtils.isNotBlank(emf.getMetadataName())) {
+                    importMetadata(prefs, logical, emf);
+                }
+            }
+
+            for (IMetadataField emf : notesAreaList) {
+                if (emf.isGroup()) {
+                    importGroupData(prefs, logical, emf);
+                } else if (StringUtils.isNotBlank(emf.getMetadataName())) {
+                    importMetadata(prefs, logical, emf);
+                }
+            }
+
+            for (IMetadataField emf : descriptionControlAreaList) {
+                if (emf.isGroup()) {
+                    importGroupData(prefs, logical, emf);
+                } else if (StringUtils.isNotBlank(emf.getMetadataName())) {
+                    importMetadata(prefs, logical, emf);
+                }
+            }
+        } catch (UGHException | IOException | SwapException e) {
+            log.error(e);
+        }
+    }
+
+    private Process loadProcess() {
+        if (StringUtils.isBlank(goobiProcessTitle)) {
+            return null;
+        }
+
+        // load process
+        Process process = ProcessManager.getProcessByExactTitle(goobiProcessTitle);
+
+        if (process == null) {
+            // process doesn't exist anymore, remove link and continue
+            setGoobiProcessTitle("");
+            return null;
+        }
+        return process;
+    }
+
+    public void importGroupData(Prefs prefs, DocStruct logical, IMetadataField emf) {
+        MetadataGroupType mgt = prefs.getMetadataGroupTypeByName(emf.getMetadataName());
+        List<MetadataGroup> grps = logical.getAllMetadataGroupsByType(mgt);
+        if (grps != null && !grps.isEmpty()) {
+            // clear existing groups
+
+            for (MetadataGroup grp : grps) {
+
+                IMetadataGroup eadGroup = emf.createGroup();
+
+                for (IMetadataField sub : eadGroup.getFields()) {
+
+                    List<Metadata> meta = grp.getMetadataByType(sub.getMetadataName());
+
+                    if (meta != null) {
+                        List<IFieldValue> list = new ArrayList<>();
+
+                        sub.setValues(list);
+                        for (Metadata md : meta) {
+                            IFieldValue val = new FieldValue(emf);
+                            val.setValue(md.getValue());
+                            val.setAuthorityValue(md.getAuthorityValue());
+                            sub.addFieldValue(val);
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+
+    public void importMetadata(Prefs prefs, DocStruct logical, IMetadataField emf) {
+        MetadataType mdt = prefs.getMetadataTypeByName(emf.getMetadataName());
+
+        // clear all fields
+        List<IFieldValue> list = new ArrayList<>();
+        // emf.setValues(list);
+        if ("person".equals(emf.getFieldType())) {
+            List<Person> persons = logical.getAllPersonsByType(mdt);
+            if (persons != null && !persons.isEmpty()) {
+                emf.setValues(list);
+                for (Person p : persons) {
+                    IFieldValue val = new FieldValue(emf);
+                    val.setFirstname(p.getFirstname());
+                    val.setLastname(p.getLastname());
+                    val.setAuthorityValue(p.getAuthorityValue());
+                    emf.addFieldValue(val);
+                }
+            }
+        } else if ("corporate".equals(emf.getFieldType())) {
+            List<Corporate> corporates = logical.getAllCorporatesByType(mdt);
+            if (corporates != null && !corporates.isEmpty()) {
+                emf.setValues(list);
+                for (Corporate c : corporates) {
+                    IFieldValue val = new FieldValue(emf);
+                    val.setMainName(c.getMainName());
+                    if (!c.getSubNames().isEmpty()) {
+                        val.setSubName(c.getSubNames().get(0).getValue());
+                    }
+                    val.setPartName(c.getPartName());
+                    val.setAuthorityValue(c.getAuthorityValue());
+                    emf.addFieldValue(val);
+                }
+            }
+        } else {
+            List<? extends Metadata> metadataList = logical.getAllMetadataByType(mdt);
+            if (metadataList != null && !metadataList.isEmpty()) {
+                emf.setValues(list);
+                for (Metadata md : metadataList) {
+                    IFieldValue val = new FieldValue(emf);
+                    val.setValue(md.getValue());
+                    val.setAuthorityValue(md.getAuthorityValue());
+                    emf.addFieldValue(val);
+                }
+            }
+        }
+    }
 }
