@@ -23,6 +23,11 @@
         <password></password>
     </backup>
 
+    <!-- Configuration of archives in which the metadata of the processes is to be updated regularly. -->
+    <updateProcessMetadataJob>
+        <file>TMS</file>
+    </updateProcessMetadataJob>
+
 
     <config>
         <!-- define the name(s) of all archives for the plugin -->
