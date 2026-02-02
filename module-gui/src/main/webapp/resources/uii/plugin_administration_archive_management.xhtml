@@ -32,7 +32,7 @@
                 boxForm="true"
                 boxPadding="#{AdministrationForm.administrationPlugin.displayMode == '' ? 'true' : 'false'}"
                 boxType="primary"
-                tablerIcon="archive"
+                icon="archive"
                 id="selectionBox"
                 title="#{AdministrationForm.administrationPlugin.displayMode == 'createArchive'
                     ? msgs.plugin_administration_archive_createNewArchive
@@ -157,6 +157,16 @@
                         </h:panelGroup>
                         <div class="box__actions">
                             <h:commandLink
+                                styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowFileUpload ? '' : 'disabled'}"
+                                disabled="#{!AdministrationForm.administrationPlugin.allowFileUpload}">
+                                <h:outputText value="#{msgs.plugin_administration_archive_uploadEadFile}" />
+                                <f:setPropertyActionListener
+                                    value="uploadFile"
+                                    target="#{AdministrationForm.administrationPlugin.displayMode}" />
+                                <f:ajax
+                                    render="@form selectionBox:selectionBox" />
+                            </h:commandLink>
+                            <h:commandLink
                                 styleClass="btn btn-primary #{AdministrationForm.administrationPlugin.allowCreation ? '' : 'disabled'}"
                                 disabled="#{!AdministrationForm.administrationPlugin.allowCreation}">
                                 <util:icon icon="plus" />
@@ -169,17 +179,6 @@
                                 <f:ajax
                                     render="@form selectionBox:selectionBox" />
                             </h:commandLink>
-                            <h:commandLink
-                                styleClass="btn btn-blank #{AdministrationForm.administrationPlugin.allowFileUpload ? '' : 'disabled'} me-auto"
-                                disabled="#{!AdministrationForm.administrationPlugin.allowFileUpload}">
-                                <h:outputText value="#{msgs.plugin_administration_archive_uploadEadFile}" />
-                                <f:setPropertyActionListener
-                                    value="uploadFile"
-                                    target="#{AdministrationForm.administrationPlugin.displayMode}" />
-                                <f:ajax
-                                    render="@form selectionBox:selectionBox" />
-                            </h:commandLink>
-
                         </div>
                     </h:panelGroup>
                     <h:panelGroup
