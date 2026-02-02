@@ -7,6 +7,7 @@
     <version>26.01</version>
     <relativePath/>
   </parent>
+  <version>26.01.1</version>
   <groupId>io.goobi.workflow.plugin</groupId>
   <artifactId>plugin-administration-archive-management</artifactId>
   <packaging>pom</packaging>
