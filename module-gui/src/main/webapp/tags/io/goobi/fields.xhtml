@@ -7,7 +7,8 @@
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:goobiio="http://goobi.io/facelets"
-    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites">
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites"
+    xmlns:util="http://goobi.io/util">
 <h:body>
     <ui:composition>
         <ui:fragment rendered="#{subfield.fieldType=='input' or subfield.fieldType=='date'}">
@@ -73,7 +74,7 @@
                 <h:commandLink
                     styleClass="btn ms-auto"
                     action="#{subfield.deleteValue(field)}">
-                    <span class="fa fa-trash" />
+                    <util:icon icon="trash" />
                     <f:ajax
                         execute="@this"
                         render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
@@ -97,7 +98,7 @@
                 <h:commandLink
                     styleClass="btn ms-auto"
                     action="#{subfield.deleteValue(field)}">
-                    <span class="fa fa-trash" />
+                    <util:icon icon="trash" />
                     <f:ajax
                         execute="@this"
                         render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
@@ -120,7 +121,7 @@
                 <h:commandLink
                     styleClass="btn ms-auto"
                     action="#{subfield.deleteValue(field)}">
-                    <span class="fa fa-trash" />
+                    <util:icon icon="trash" />
                     <f:ajax
                         execute="@this"
                         render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"

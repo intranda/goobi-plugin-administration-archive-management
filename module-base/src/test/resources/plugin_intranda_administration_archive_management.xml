@@ -251,11 +251,11 @@
 
         <!-- ============================= Structure types and Icons ================================ -->
 
-    	<node name="file" ruleset="File" icon="fa fa-file-text-o" processTemplateId="309544" />
-    	<node name="folder" ruleset="Folder" icon="fa fa-folder-open-o" processTemplateId="309544"/>
-    	<node name="image" ruleset="Picture" icon="fa fa-file-image-o" processTemplateId="309544" />
-    	<node name="audio" ruleset="Audio" icon="fa fa-file-audio-o" processTemplateId="309544"/>
-    	<node name="video" ruleset="Video" icon="fa fa-file-video-o" processTemplateId="309544"/>
-    	<node name="other" ruleset="Other" icon="fa fa-file-o" processTemplateId="309544" />
+    	<node name="file" ruleset="File" icon="file-text" processTemplateId="309544" />
+    	<node name="folder" ruleset="Folder" icon="folder-open" processTemplateId="309544"/>
+    	<node name="image" ruleset="Picture" icon="photo" processTemplateId="309544" />
+    	<node name="audio" ruleset="Audio" icon="music" processTemplateId="309544"/>
+    	<node name="video" ruleset="Video" icon="video" processTemplateId="309544"/>
+    	<node name="other" ruleset="Other" icon="file" processTemplateId="309544" />
     </config>
 </config_plugin>

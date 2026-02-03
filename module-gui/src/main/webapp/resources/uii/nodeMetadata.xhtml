@@ -6,7 +6,8 @@
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
     xmlns:jsf="http://xmlns.jcp.org/jsf"
-    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites">
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites"
+    xmlns:util="http://goobi.io/util">
     <composite:interface>
     </composite:interface>
     <composite:implementation>
@@ -98,9 +99,7 @@
                         aria-label="#{msgs.conditionAdd}"
                         jsf:id="addCondition"
                         class="btn btn-primary">
-                        <span
-                            aria-hidden="true"
-                            class="fa fa-plus" />
+                        <util:icon icon="plus" />
                         <f:passThroughAttribute
                             name="data-toggle"
                             value="tooltip" />
@@ -115,9 +114,7 @@
                         jsf:rendered="#{AdministrationForm.administrationPlugin.metadataToAdd.size() > 1}"
                         jsf:id="removeCondition"
                         class="btn btn-primary">
-                        <span
-                            aria-hidden="true"
-                            class="fa fa-minus" />
+                        <util:icon icon="minus" />
                         <f:ajax
                             execute="@this"
                             render="@form" />

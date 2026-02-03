@@ -5,7 +5,8 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:ui="http://java.sun.com/jsf/facelets"
-    xmlns:f="http://xmlns.jcp.org/jsf/core">
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:util="http://goobi.io/util">
 <h:body>
     <ui:composition>
         <div class="form-row">
@@ -37,7 +38,7 @@
                 styleClass="btn btn-blank font-light fs-500"
                 action="#{item.deleteValue(field)}"
                 rendered="#{deletable}">
-                <span class="fa fa-trash" />
+                <util:icon icon="trash" />
                 <f:ajax
                     execute="#{fieldid}"
                     render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"

@@ -6,7 +6,8 @@
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:jsf="http://xmlns.jcp.org/jsf">
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
+    xmlns:util="http://goobi.io/util">
 <h:body>
     <ui:composition>
         <div class="form-row">
@@ -39,7 +40,7 @@
                     onfocus="#{cc.attrs.onfocus}"
                     type="button"
                     data-toggle="tooltip">
-                    <span class="fa fa-search" />
+                    <util:icon icon="search" />
                     <f:ajax
                         execute="@this"
                         render="linkNodeModalContent" />
@@ -59,7 +60,7 @@
             <h:commandLink
                 styleClass="btn btn-blank font-light fs-500"
                 action="#{item.deleteValue(field)}">
-                <span class="fa fa-trash" />
+                <util:icon icon="trash" />
                 <f:ajax
                     execute="@this"
                     render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
