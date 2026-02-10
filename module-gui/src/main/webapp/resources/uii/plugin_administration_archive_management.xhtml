@@ -351,7 +351,7 @@
                                                             action="#{AdministrationForm.administrationPlugin.resetFlatList}"
                                                             class="#{entry.displayChildren ? 'expand' : 'expanded'} text-black"
                                                             rendered="#{entry.hasChildren and !entry.displaySearch}">
-                                                            <util:icon icon="#{entry.displayChildren ? 'caret-down-filled' : 'caret-right-filled'}" />
+                                                            <util:icon icon="#{entry.displayChildren ? 'chevron-down' : 'chevron-right'}" />
                                                             <f:setPropertyActionListener
                                                                 target="#{entry.displayChildren}"
                                                                 value="#{not entry.displayChildren}" />
