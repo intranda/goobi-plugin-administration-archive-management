@@ -24,6 +24,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import ugh.dl.Corporate;
+import ugh.dl.DigitalDocument;
 import ugh.dl.DocStruct;
 import ugh.dl.Fileformat;
 import ugh.dl.Metadata;
@@ -33,7 +34,9 @@ import ugh.dl.MetadataType;
 import ugh.dl.NamePart;
 import ugh.dl.Person;
 import ugh.dl.Prefs;
+import ugh.exceptions.MetadataTypeNotAllowedException;
 import ugh.exceptions.UGHException;
+import ugh.fileformats.mets.MetsMods;
 
 @Getter
 @Setter
@@ -1185,4 +1188,185 @@ public class EadEntry implements IEadEntry {
             }
         }
     }
+
+    public Fileformat createFileformat(Prefs prefs) {
+        Fileformat fileformat = null;
+        DigitalDocument digDoc = null;
+        try {
+            fileformat = new MetsMods(prefs);
+            digDoc = new DigitalDocument();
+            // create mets file based on selected node type
+            fileformat.setDigitalDocument(digDoc);
+            DocStruct logical = digDoc.createDocStruct(prefs.getDocStrctTypeByName(getNodeType().getDocumentType()));
+            digDoc.setLogicalDocStruct(logical);
+            Metadata identifier = new Metadata(prefs.getMetadataTypeByName("CatalogIDDigital"));
+            identifier.setValue(getId());
+            logical.addMetadata(identifier);
+            addNoteId(prefs, logical);
+
+            // import configured metadata
+            for (IMetadataField emf : getIdentityStatementAreaList()) {
+                createModsMetadata(prefs, emf, logical);
+            }
+            for (IMetadataField emf : getContextAreaList()) {
+                createModsMetadata(prefs, emf, logical);
+            }
+            for (IMetadataField emf : getContentAndStructureAreaAreaList()) {
+                createModsMetadata(prefs, emf, logical);
+            }
+            for (IMetadataField emf : getAccessAndUseAreaList()) {
+                createModsMetadata(prefs, emf, logical);
+            }
+            for (IMetadataField emf : getAlliedMaterialsAreaList()) {
+                createModsMetadata(prefs, emf, logical);
+            }
+            for (IMetadataField emf : getNotesAreaList()) {
+                createModsMetadata(prefs, emf, logical);
+            }
+            for (IMetadataField emf : getDescriptionControlAreaList()) {
+                createModsMetadata(prefs, emf, logical);
+            }
+
+            IEadEntry parent = getParentNode();
+            while (parent != null) {
+                for (IMetadataField emf : parent.getIdentityStatementAreaList()) {
+                    if (emf.isImportMetadataInChild()) {
+                        createModsMetadata(prefs, emf, logical);
+                    }
+                }
+                for (IMetadataField emf : parent.getContextAreaList()) {
+                    if (emf.isImportMetadataInChild()) {
+                        createModsMetadata(prefs, emf, logical);
+                    }
+                }
+                for (IMetadataField emf : parent.getContentAndStructureAreaAreaList()) {
+                    if (emf.isImportMetadataInChild()) {
+                        createModsMetadata(prefs, emf, logical);
+                    }
+                }
+                for (IMetadataField emf : parent.getAccessAndUseAreaList()) {
+                    if (emf.isImportMetadataInChild()) {
+                        createModsMetadata(prefs, emf, logical);
+                    }
+                }
+                for (IMetadataField emf : parent.getAlliedMaterialsAreaList()) {
+                    if (emf.isImportMetadataInChild()) {
+                        createModsMetadata(prefs, emf, logical);
+                    }
+                }
+                for (IMetadataField emf : parent.getNotesAreaList()) {
+                    if (emf.isImportMetadataInChild()) {
+                        createModsMetadata(prefs, emf, logical);
+                    }
+                }
+                for (IMetadataField emf : parent.getDescriptionControlAreaList()) {
+                    if (emf.isImportMetadataInChild()) {
+                        createModsMetadata(prefs, emf, logical);
+                    }
+                }
+
+                parent = parent.getParentNode();
+            }
+
+        } catch (UGHException e) {
+            log.error(e);
+        }
+        return fileformat;
+    }
+
+    private void addNoteId(Prefs prefs, DocStruct logical) {
+        try {
+            MetadataType eadIdType = prefs.getMetadataTypeByName("NodeId");
+            if (eadIdType != null) {
+                Metadata eadid = new Metadata(eadIdType);
+                eadid.setValue(getId());
+                logical.addMetadata(eadid);
+            }
+        } catch (UGHException e) {
+            log.error(e);
+        }
+    }
+
+    //  create metadata, add it to logical element
+    private void createModsMetadata(Prefs prefs, IMetadataField emf, DocStruct logical) {
+        if (StringUtils.isNotBlank(emf.getMetadataName())) {
+            //  groups
+            if (emf.isGroup()) {
+                for (IMetadataGroup group : emf.getGroups()) {
+                    try {
+                        MetadataGroup mg = new MetadataGroup(prefs.getMetadataGroupTypeByName(emf.getMetadataName()));
+                        for (IMetadataField subfield : group.getFields()) {
+                            for (IFieldValue fv : subfield.getValues()) {
+                                Metadata metadata = null;
+                                for (Metadata md : mg.getMetadataList()) {
+                                    if (md.getType().getName().equals(subfield.getMetadataName())) {
+                                        metadata = md;
+                                    }
+                                }
+                                if (metadata == null || (StringUtils.isNotBlank(metadata.getValue()))) {
+                                    metadata = new Metadata(prefs.getMetadataTypeByName(subfield.getMetadataName()));
+                                    mg.addMetadata(metadata);
+                                }
+                                metadata.setValue(fv.getValue());
+                            }
+                        }
+                        logical.addMetadataGroup(mg);
+                    } catch (UGHException e) {
+                        log.error(e);
+                    }
+                }
+            } else {
+                // regular metadata
+                for (IFieldValue fv : emf.getValues()) {
+                    if ("person".equals(emf.getFieldType())) {
+                        try {
+                            Person p = new Person(prefs.getMetadataTypeByName(emf.getMetadataName()));
+                            p.setFirstname(fv.getFirstname());
+                            p.setLastname(fv.getLastname());
+                            p.setAuthorityValue(fv.getAuthorityValue());
+                            logical.addPerson(p);
+                        } catch (MetadataTypeNotAllowedException e) {
+                            log.error(e);
+                        }
+                    } else if ("corporate".equals(emf.getFieldType())) {
+                        try {
+                            Corporate c = new Corporate(prefs.getMetadataTypeByName(emf.getMetadataName()));
+                            c.setMainName(fv.getMainName());
+                            if (StringUtils.isBlank(fv.getSubName())) {
+                                c.addSubName(new NamePart("subname", fv.getSubName()));
+                            }
+                            c.setPartName(fv.getPartName());
+                            c.setAuthorityValue(fv.getAuthorityValue());
+                            logical.addCorporate(c);
+                        } catch (MetadataTypeNotAllowedException e) {
+                            log.error(e);
+                        }
+                    } else if (!fv.getMultiselectSelectedValues().isEmpty()) {
+                        for (String value : fv.getMultiselectSelectedValues()) {
+                            try {
+                                Metadata md = new Metadata(prefs.getMetadataTypeByName(emf.getMetadataName()));
+                                md.setValue(value);
+                                logical.addMetadata(md);
+                            } catch (UGHException e) {
+                                log.error(e);
+                            }
+                        }
+                    } else if (StringUtils.isNotBlank(fv.getValue())) {
+                        try {
+
+                            Metadata md = new Metadata(prefs.getMetadataTypeByName(emf.getMetadataName()));
+                            md.setValue(fv.getValue());
+                            if (StringUtils.isNotBlank(fv.getAuthorityValue())) {
+                                md.setAuthorityFile(fv.getAuthorityType(), "", fv.getAuthorityValue());
+                            }
+                            logical.addMetadata(md);
+                        } catch (UGHException e) {
+                            log.error(e);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 }

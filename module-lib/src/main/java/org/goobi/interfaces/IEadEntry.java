@@ -2,6 +2,9 @@ package org.goobi.interfaces;
 
 import java.util.List;
 
+import ugh.dl.Fileformat;
+import ugh.dl.Prefs;
+
 public interface IEadEntry extends Comparable<IEadEntry> {
 
     public IEadEntry getParentNode();
@@ -155,5 +158,7 @@ public interface IEadEntry extends Comparable<IEadEntry> {
     public void updateNodeWithProcessMetadata();
 
     public void updateProcessWithNodeMetadata();
+
+    public Fileformat createFileformat(Prefs prefs);
 
 }
