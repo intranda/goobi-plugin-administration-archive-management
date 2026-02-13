@@ -839,7 +839,7 @@
                                                                 styleClass="btn-group"
                                                                 rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null}">
                                                                 <button
-                                                                    jsf:rendered="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType.allowProcessCreation}"
+                                                                    jsf:rendered="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType.allowProcessCreation and LoginForm.hasRole('Plugin_Administration_Archive_Management_Sync_Metadata')}"
                                                                     jsf:action="#{AdministrationForm.administrationPlugin.selectedEntry.updateNodeWithProcessMetadata}"
                                                                     title="#{msgs.plugin_administration_archive_updateNodeWithProcessMetadata}"
                                                                     class="btn btn-blank"
@@ -848,7 +848,7 @@
                                                                     <span class="visually-hidden">#{msgs.plugin_administration_archive_updateNodeWithProcessMetadata}</span>
                                                                 </button>
                                                                 <button
-                                                                    jsf:rendered="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType.allowProcessCreation}"
+                                                                    jsf:rendered="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType.allowProcessCreation and LoginForm.hasRole('Plugin_Administration_Archive_Management_Sync_Metadata')}"
                                                                     jsf:action="#{AdministrationForm.administrationPlugin.selectedEntry.updateProcessWithNodeMetadata}"
                                                                     title="#{msgs.plugin_administration_archive_updateProcessWithNodeMetadata}"
                                                                     class="btn btn-blank"

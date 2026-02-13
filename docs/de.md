@@ -67,7 +67,7 @@ Berechtigung | Erläuterung
 `Plugin_Administration_Archive_Management_All_Inventories` | Zugriff auf alle Bestände
 `Plugin_Administration_Archive_Management_Delete` | Löschen des ausgewählten Bestandes
 `Plugin_Administration_Archive_Management_Process` | Erstellen von Vorgängen
-
+`Plugin_Administration_Archive_Management_Sync_Metadata` | Metadaten zwischen Knoten und Vorgang synchronisieren
 
 Eine detaillierte Erläuterung über die Bedienung des Plugins bzw. dessen Funktionen findet sich auf dieser Seite:
 
