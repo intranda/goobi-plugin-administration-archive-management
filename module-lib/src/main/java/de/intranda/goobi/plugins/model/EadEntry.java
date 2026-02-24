@@ -223,10 +223,12 @@ public class EadEntry implements IEadEntry {
             return false;
         }
         EadEntry other = (EadEntry) obj;
+        if (databaseId != null && other.databaseId != null) {
+            return databaseId.equals(other.databaseId);
+        }
         if (id != null && other.id != null) {
             return id.equals(other.id);
         }
-
         if (hierarchy == null) {
             if (other.hierarchy != null) {
                 return false;
@@ -1189,6 +1191,7 @@ public class EadEntry implements IEadEntry {
         }
     }
 
+    @Override
     public Fileformat createFileformat(Prefs prefs) {
         Fileformat fileformat = null;
         DigitalDocument digDoc = null;
@@ -1369,4 +1372,12 @@ public class EadEntry implements IEadEntry {
         }
     }
 
+    @Override
+    public void setId(String id) {
+        if (id != null && "null".equals(id)) {
+            this.id = null;
+        } else {
+            this.id = id;
+        }
+    }
 }
