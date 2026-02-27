@@ -6,7 +6,8 @@
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
     xmlns:jsf="http://xmlns.jcp.org/jsf"
-    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites">
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites"
+    xmlns:util="http://goobi.io/util">
     <composite:interface>
     </composite:interface>
     <composite:implementation>
@@ -33,9 +34,7 @@
                                 class="btn text-white"
                                 data-bs-dismiss="modal"
                                 aria-label="Close">
-                                <span
-                                    aria-hidden="true"
-                                    class="fa fa-times" />
+                                <util:icon icon="x" />
                                 <f:setPropertyActionListener
                                     target="#{AdministrationForm.administrationPlugin.displayLinkedModal}"
                                     value="false" />
@@ -62,9 +61,7 @@
                                                 styleClass="ps-1 #{entry.selected ? 'fw-700' : 'text-black'} #{entry.selected ? 'table__structure-link-active' : 'table__structure-link'}"
                                                 action="#{AdministrationForm.administrationPlugin.linkNode}"
                                                 disabled="#{entry.selected}">
-                                                <span
-                                                    class="fa fa-file-o"
-                                                    aria-hidden="true" />
+                                                <util:icon icon="file" />
                                                 <span>
                                                     <h:outputText
                                                         value="#{entry.label}"

@@ -7,7 +7,8 @@
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:goobiio="http://goobi.io/facelets"
-    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites">
+    xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites"
+    xmlns:util="http://goobi.io/util">
 <h:body>
     <ui:composition>
         <ui:fragment id="#{area}">
@@ -97,7 +98,7 @@
                                     <h:commandLink
                                         action="#{item.deleteValue(field)}"
                                         styleClass="btn btn-blank font-light fs-500">
-                                        <span class="fa fa-trash" />
+                                        <util:icon icon="trash" />
                                         <f:ajax
                                             execute="@this"
                                             render="nodeBox::nodeBox:#{ajaxid} :hierarchy:hierarchy"
@@ -122,7 +123,7 @@
                                     <h:commandLink
                                         action="#{item.deleteValue(field)}"
                                         styleClass="btn btn-blank font-light fs-500">
-                                        <span class="fa fa-trash" />
+                                        <util:icon icon="trash" />
                                         <f:ajax
                                             execute="@this"
                                             render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"
@@ -146,7 +147,7 @@
                                     <h:commandLink
                                         action="#{item.deleteValue(field)}"
                                         styleClass="btn btn-blank font-light fs-500">
-                                        <span class="fa fa-trash" />
+                                        <util:icon icon="trash" />
                                         <f:ajax
                                             execute="@this"
                                             render=":nodeBox:#{ajaxid} :hierarchy:hierarchy"

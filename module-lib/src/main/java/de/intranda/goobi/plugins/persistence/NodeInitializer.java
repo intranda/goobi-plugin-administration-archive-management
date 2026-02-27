@@ -162,6 +162,16 @@ public class NodeInitializer {
         }
     }
 
+    public static void clearNode(IEadEntry entry) {
+        entry.getIdentityStatementAreaList().clear();
+        entry.getContextAreaList().clear();
+        entry.getContentAndStructureAreaAreaList().clear();
+        entry.getAccessAndUseAreaList().clear();
+        entry.getAlliedMaterialsAreaList().clear();
+        entry.getNotesAreaList().clear();
+        entry.getDescriptionControlAreaList().clear();
+    }
+
     public static void addGroupData(IMetadataField instance, List<IValue> groups) {
         if (groups != null) {
             for (IValue groupData : groups) {

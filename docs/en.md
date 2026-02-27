@@ -67,6 +67,8 @@ Authorisation | Explanation
 `Plugin_Administration_Archive_Management_All_Inventories` | Access to all inventories
 `Plugin_Administration_Archive_Management_Delete` | Delete the selected inventory
 `Plugin_Administration_Archive_Management_Process` | Create processes
+`Plugin_Administration_Archive_Management_Sync_Metadata` | Synchronise metadata between node and processes
+
 
 A detailed explanation of how to use the plugin and its functions can be found on this page:
 
