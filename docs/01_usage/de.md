@@ -24,7 +24,7 @@ Als dritte Möglichkeit kann eine vorhandene Datei importiert werden. Hier kann 
 
 ![Import einer EAD-Datei](screen06_de.png)
 
-Sofern der Nutzer über die Berechtigung zur Erstellung neuer Bestände verfügt, kann mit dem entsprechenden Button ebenfalls eine Kopie eines Bestandes erstellt werden. Dabei wird ein neuer Bestand erstellt und alle Knoten mit all ihren Metadaten kopiert. Einzige Ausnahme ist hierbei die ID der Knoten. Diese werden automatisch neue erstellt und den Knoten zugewiesen. 
+Sofern der Nutzer über die Berechtigung zur Erstellung neuer Bestände verfügt, kann mit dem entsprechenden Button ebenfalls eine Kopie eines Bestandes erstellt werden. Dabei wird ein neuer Bestand erstellt und alle Knoten mit all ihren Metadaten kopiert. Einzige Ausnahme ist hierbei die ID der Knoten. Diese werden automatisch neu erstellt und den Knoten zugewiesen. 
 
 Nach der Auswahl des zu bearbeitenden Archivbestandes wird der Nutzer in die Bearbeitungsmaske weitergeleitet. Hier läßt sich nun im linken Bereich der Strukturbaum bearbeiten. Im rechten Bereich können die Details des jeweils ausgewählten Knoten bearbeitet werden.
 
@@ -34,7 +34,7 @@ Durch einen Klick auf die Buttons `Abbrechen` (Leserechte) oder `Archivbestand s
 
 
 ## Strukturbaum bearbeiten
-Im linken Bereich der Bearbeitungsmaske lässt sich die Struktur des Archivbestandes bearbeiten. Hier lassen sich alle Knoten inklusive ihrer Hierarchie auf einen Blick einsehen. Vor jedem Element befindet sich ein Icon, mit dem sich die Unterelemente des Knotens anzeigen oder ausblenden lassen. Um einen Knoten auszuwählen, kann er angeklickt werden. Er wird dann farbig hervorgehoben und die Details des ausgewählten Knotens werden auf der rechten Seite angezeigt. Wenn ein Knoten im linken Bereich der Bearbeitungsmaske ausgewählt wurde, können ausserdem die Buttons am rechten Rand der linken Box genutzt werden, um den Knoten zu ändern. Folgende Optionen sind hierbei möglich:
+Im linken Bereich der Bearbeitungsmaske lässt sich die Struktur des Archivbestandes bearbeiten. Hier lassen sich alle Knoten inklusive ihrer Hierarchie auf einen Blick einsehen. Vor jedem Element befindet sich ein Icon, mit dem sich die Unterelemente des Knotens anzeigen oder ausblenden lassen. Um einen Knoten auszuwählen, kann er angeklickt werden. Er wird dann farbig hervorgehoben und die Details des ausgewählten Knotens werden auf der rechten Seite angezeigt. Wenn ein Knoten im linken Bereich der Bearbeitungsmaske ausgewählt wurde, können außerdem die Buttons am rechten Rand der linken Box genutzt werden, um den Knoten zu ändern. Folgende Optionen sind hierbei möglich:
 
 | Funktion | Erläuterung |
 | :--- | :--- |
@@ -67,7 +67,7 @@ Rechts neben dem Feld kann die erweiterte Suche genutzt werden. Hier kann geziel
 ## Bearbeitung eines ausgewählten Knotens
 Sofern im linken Bereich ein Knoten ausgewählt wurde, werden im rechten Bereich die Details des ausgewählten Knotens angezeigt.
 
-Der rechte Bereich ist dabei in mehrere Kategorien aufgeteilt. Im obersten Teil des rechten Bereichs wird der dazugehörige Goobi-Vorgang angezeigt, sowie eine Möglichkeit zum Erzeugen des Laufzettels. Wenn für den Knoten noch kein Goobi-Vorgang erzeugt wurde, kann ein neuer Vorgang auf der Basis der konfigurierten Produktionsvorlage erstellt werden. Als Dokumententyp wird entprechend der Konfiguration der ausgewählte Knotentyp verwendet. Abhängig von der Konfiguration und dem verwendeten Regelsatz stehen bespielsweise folgende Optionen zur Verfügung:
+Der rechte Bereich ist dabei in mehrere Kategorien aufgeteilt. Im obersten Teil des rechten Bereichs wird der dazugehörige Goobi-Vorgang angezeigt, sowie eine Möglichkeit zum Erzeugen des Laufzettels. Wenn für den Knoten noch kein Goobi-Vorgang erzeugt wurde, kann ein neuer Vorgang auf der Basis der konfigurierten Produktionsvorlage erstellt werden. Als Dokumententyp wird entsprechend der Konfiguration der ausgewählte Knotentyp verwendet. Abhängig von der Konfiguration und dem verwendeten Regelsatz stehen beispielsweise folgende Optionen zur Verfügung:
 
 * Folder / Ordner
 * File / Akte
@@ -86,7 +86,7 @@ Unterhalb des Dokumententyps werden die einzelnen Metadaten des Knotens aufgelis
 * Anmerkungen
 * Verzeichnungskontrolle
 
-Jeder dieser Bereiche lässt sich einzeln auf- und zuklappen. Auch wenn hierbei ein Bereich zugeklappt ist, läßt sich sehr einfach erkennen, welche Metadaten pro Bereich möglich und welche bereits ausgefüllt sind. Die einzelnen Metadaten werden dabei als verschieden hervorgehobene Badges angezeigt. Ein dunkler Hintergrund zeigt an, dass für diese Metadatum bereits ein Wert erfasst wurde. Ein heller Hintergrund hingeben bedeutet, dass dieses Feld noch ohne Inhalt ist. Sofern ein Feld wiederholbar angelegt werden kann, enthält der Badge ein Plus-Icon.
+Jeder dieser Bereiche lässt sich einzeln auf- und zuklappen. Auch wenn hierbei ein Bereich zugeklappt ist, läßt sich sehr einfach erkennen, welche Metadaten pro Bereich möglich und welche bereits ausgefüllt sind. Die einzelnen Metadaten werden dabei als verschieden hervorgehobene Badges angezeigt. Ein dunkler Hintergrund zeigt an, dass für diese Metadatum bereits ein Wert erfasst wurde. Ein heller Hintergrund hingegen bedeutet, dass dieses Feld noch ohne Inhalt ist. Sofern ein Feld wiederholbar angelegt werden kann, enthält der Badge ein Plus-Icon.
 
 Wenn die Details eines Bereiches ausgeklappt werden, erfolgt eine Anzeige der einzelnen Metadaten. Standardmäßig werden dabei nur diejenigen Felder angezeigt, die bereits über einen Wert verfügen. Weitere Felder lassen sich durch einen Klick auf eines der Badges hinzufügen. Über das Minus-Icon lassen sich Felder wieder entfernen.
 
@@ -100,12 +100,12 @@ Eine fehlgeschlagene Validierung verhindert nicht das Speichern des Archivbestan
 
 
 ## Speichern der Daten
-Sofern die Bearbeitung nicht nur im `read-only` Modus erfolgt, werden Daten immer automatsich gespeichert, wenn man Knoten einfügt oder löscht, zu einem anderen Knoten wechselt, den Bestand exportiert, eine Kopie davon erstellt oder Verweise erstellt oder die Bearbeitung mittels `Speichern und verlassen` beendet.
+Sofern die Bearbeitung nicht nur im `read-only` Modus erfolgt, werden Daten immer automatisch gespeichert, wenn man Knoten einfügt oder löscht, zu einem anderen Knoten wechselt, den Bestand exportiert, eine Kopie davon erstellt oder Verweise erstellt oder die Bearbeitung mittels `Speichern und verlassen` beendet.
 
 
 ## Export und Download
-Die beiden Buttons zum `Download als EAD Datei` und `Viewer export` erzeugen eine neue EAD auf Basis des aktuellen Zustandes der Knoten. Dabei wird mit Ausnahme des obersten Knoten jeder Knoten als eigentständiges `<c>`-Element dargestellt. Die Daten des obersten Knoten werden innerhalb von `<archdesc>` unterhalb des `<ead>` Elements geschrieben. 
+Die beiden Buttons zum `Download als EAD Datei` und `Viewer export` erzeugen eine neue EAD auf Basis des aktuellen Zustandes der Knoten. Dabei wird mit Ausnahme des obersten Knoten jeder Knoten als eigenständiges `<c>`-Element dargestellt. Die Daten des obersten Knoten werden innerhalb von `<archdesc>` unterhalb des `<ead>` Elements geschrieben. 
 
 Beim Viewer export wird die erzeugte Datei in den Hotfolder des Goobi viewers geschrieben, beim Download hingegen kann sie lokal gespeichert werden. 
 
-Die erzeugte Datei enthält dabei alle Metadaten in der Form, in der sie in der Konfigurationsdatei angegeben wurden. Dabei wird der Inhalt des `xpath` Attributs der Metadaten genutzt. Wenn für ein Feld keine Angabe existiert, handelt es sich um ein intenes Metadatum, das nicht als EAD exportiert wird.
+Die erzeugte Datei enthält dabei alle Metadaten in der Form, in der sie in der Konfigurationsdatei angegeben wurden. Dabei wird der Inhalt des `xpath` Attributs der Metadaten genutzt. Wenn für ein Feld keine Angabe existiert, handelt es sich um ein internes Metadatum, das nicht als EAD exportiert wird.

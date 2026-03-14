@@ -45,7 +45,7 @@ Das Plugin für die Bearbeitung von Archivbeständen findet sich unterhalb des M
 
 ![Betreten des Plugins](screen03_de.png)
  
-Zur Nutzung des Plugins ist zunächst notwendig, dass der Nutzer über das Recht `Plugin_Administration_Archive_Management` verfügt. Sollte dieses Recht noch noch nicht zugewiesen worden sein, erhält der Nutzer folgenden Hinweis:
+Zur Nutzung des Plugins ist zunächst notwendig, dass der Nutzer über das Recht `Plugin_Administration_Archive_Management` verfügt. Sollte dieses Recht noch nicht zugewiesen worden sein, erhält der Nutzer folgenden Hinweis:
 
 ![Hinweis auf fehlende Nutzerrechte](screen01_de.png)
 
@@ -55,12 +55,12 @@ Die entsprechenden Rechte müssen den jeweiligen Benutzergruppen daher zunächst
 
 Nachdem die benötigten Rechte zugewiesen wurden und ggf. ein neuer Login erfolgte, kann die Nutzung des Plugins erfolgen.
 
-Dabei hat der Nutzer erst einmal nur lesenden Zugriff. Um auch Daten ändern zu können, stehen folgende weitere Rechte zur Verfügung, die ggf. zusätzlich zugeweisen werden können:
+Dabei hat der Nutzer erst einmal nur lesenden Zugriff. Um auch Daten ändern zu können, stehen folgende weitere Rechte zur Verfügung, die ggf. zusätzlich zugewiesen werden können:
 
 Berechtigung | Erläuterung
 -------------|-----------
 `Plugin_Administration_Archive_Management_Write` | Schreibender Zugriff auf die Daten
-`Plugin_Administration_Archive_Management_Upload`| Hochladen bzw. Einspielen vonb (neuen) EAD-Dateien
+`Plugin_Administration_Archive_Management_Upload`| Hochladen bzw. Einspielen von (neuen) EAD-Dateien
 `Plugin_Administration_Archive_Management_New` | Erstellung von neuen Beständen
 `Plugin_Administration_Archive_Management_Vocabulary` | Berechtigung zur Erweiterung von Auswahllisten aus Vokabularen
 `Plugin_Administration_Archive_Management_Inventory_NAME` | Zugriff auf einzelne ausgewählte Bestände, wobei der Suffix NAME durch den Namen des Bestands zu ersetzen ist
@@ -75,7 +75,7 @@ Eine detaillierte Erläuterung über die Bedienung des Plugins bzw. dessen Funkt
 
 
 ## Konfiguration
-Nach erfolgter Installation erfolgt die Konfiguration des Plugins und der zugehörigen Oberfäche innerhalb der Konfigurationsdatei `plugin_intranda_administration_archive_management.xml`. Diese ist auf der folgenden Seite detailliert beschrieben:
+Nach erfolgter Installation erfolgt die Konfiguration des Plugins und der zugehörigen Oberfläche innerhalb der Konfigurationsdatei `plugin_intranda_administration_archive_management.xml`. Diese ist auf der folgenden Seite detailliert beschrieben:
 
 [Konfiguration des Plugins](02_config/de.md)
 
