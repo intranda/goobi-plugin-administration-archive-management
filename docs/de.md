@@ -71,11 +71,11 @@ Berechtigung | Erläuterung
 
 Eine detaillierte Erläuterung über die Bedienung des Plugins bzw. dessen Funktionen findet sich auf dieser Seite:
 
-[Bedienung des Plugins](01_usage/de.md)
+[Bedienung des Plugins](./usage)
 
 
 ## Konfiguration
 Nach erfolgter Installation erfolgt die Konfiguration des Plugins und der zugehörigen Oberfläche innerhalb der Konfigurationsdatei `plugin_intranda_administration_archive_management.xml`. Diese ist auf der folgenden Seite detailliert beschrieben:
 
-[Konfiguration des Plugins](02_config/de.md)
+[Konfiguration des Plugins](./config)
 

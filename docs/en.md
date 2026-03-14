@@ -72,11 +72,11 @@ Authorisation | Explanation
 
 A detailed explanation of how to use the plugin and its functions can be found on this page:
 
-[Using the plugin](../02_usage/en.md)
+[Using the plugin](./usage)
 
 
 ## Configuration
 After installation, the plugin and the associated interface are configured in the configuration file `plugin_intranda_administration_archive_management.xml`. This is described in detail on the following page:
 
-[Configuration of the plugin](../03_config/en.md)
+[Configuration of the plugin](./config)
 
