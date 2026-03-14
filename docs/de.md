@@ -71,11 +71,11 @@ Berechtigung | Erläuterung
 
 Eine detaillierte Erläuterung über die Bedienung des Plugins bzw. dessen Funktionen findet sich auf dieser Seite:
 
-[Bedienung des Plugins](../usage)
+[Bedienung des Plugins](/de/workflow/plugins/administration/goobi-plugin-administration-archive-management/usage)
 
 
 ## Konfiguration
 Nach erfolgter Installation erfolgt die Konfiguration des Plugins und der zugehörigen Oberfläche innerhalb der Konfigurationsdatei `plugin_intranda_administration_archive_management.xml`. Diese ist auf der folgenden Seite detailliert beschrieben:
 
-[Konfiguration des Plugins](../config)
+[Konfiguration des Plugins](/de/workflow/plugins/administration/goobi-plugin-administration-archive-management/config)
 

@@ -72,11 +72,11 @@ Authorisation | Explanation
 
 A detailed explanation of how to use the plugin and its functions can be found on this page:
 
-[Using the plugin](../usage)
+[Using the plugin](/en/workflow/plugins/administration/goobi-plugin-administration-archive-management/usage)
 
 
 ## Configuration
 After installation, the plugin and the associated interface are configured in the configuration file `plugin_intranda_administration_archive_management.xml`. This is described in detail on the following page:
 
-[Configuration of the plugin](../config)
+[Configuration of the plugin](/en/workflow/plugins/administration/goobi-plugin-administration-archive-management/config)
 
