@@ -67,7 +67,16 @@ The advanced search can be used to the right of the field. Individual fields can
 ## Editing a selected node
 If a node has been selected in the left-hand area, the details of the selected node are displayed in the right-hand area.
 
-The right-hand area is divided into several categories. The corresponding Goobi process is displayed at the top of the right-hand section, along with an option to create the docket. If no Goobi process has yet been created for the node, a new process can be created on the basis of the configured production template. The selected node type is used as the document type in accordance with the configuration. Depending on the configuration and the rule set used, the following options are available, for example:
+The right-hand area is divided into several categories. The corresponding Goobi process is displayed at the top of the right-hand section, along with an option to create the docket. If no Goobi process has yet been created for the node, a new process can be created on the basis of the configured production template.
+
+If a node is already linked to a Goobi process and the user has the `Plugin_Administration_Archive_Management_Sync_Metadata` permission, two additional buttons are available for manual synchronisation:
+
+| Function | Explanation |
+| :--- | :--- |
+| `Update node with process metadata` | Transfers the metadata from the linked Goobi process into the current node, overwriting the existing node metadata. |
+| `Overwrite process metadata with node data` | Writes the metadata of the currently selected node into the `meta.xml` of the linked Goobi process, overwriting the metadata stored there. |
+
+The selected node type is used as the document type in accordance with the configuration. Depending on the configuration and the rule set used, the following options are available, for example:
 
 * Folder
 * File

@@ -18,6 +18,21 @@ The connection to the Goobi viewer is configured in the `<export>` area. The loc
 
 In the second area `<backup>` an automatic backup of the individual inventories can be configured. A separate file is created for each inventory. You can define how many backups should be kept and which tool should be used to create the backups. If a password is required for database access, this can also be configured here.
 
+The third area `<updateProcessMetadataJob>` configures for which archive inventories the Quartz job `intranda_quartz_updateProcessMetadata` should regularly synchronise metadata from nodes to their linked Goobi processes. Each inventory to be included is specified with a `<file>` element containing the exact inventory name. For each node in the inventory that has an associated process, the job reads the current node metadata and writes it into the `meta.xml` of that process — equivalent to using the manual `Overwrite process metadata with node data` button.
+
+```xml
+<updateProcessMetadataJob>
+    <file>Inventory name 1</file>
+    <file>Inventory name 2</file>
+</updateProcessMetadataJob>
+```
+
+The Quartz job must additionally be activated and scheduled via the standard Goobi workflow configuration. To start the job at 2 a.m. every day, the following can be set in `goobi_config.properties`:
+
+```
+intranda_quartz_updateProcessMetadata=0 2 * * * ?
+```
+
 This is followed by a repeatable `<config>` block. The repeatable `<archive>` element can be used to specify which files the `<config>` block should apply to. If there is to be a default block that applies to all documents, `*` can be used.
 
 The `<processTemplateId>` is used to specify the production template on the basis of which the Goobi processes are to be created.

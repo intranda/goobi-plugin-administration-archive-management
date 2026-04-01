@@ -18,6 +18,21 @@ Im Bereich `<export>` wird die Anbindung an den Goobi viewer konfiguriert. Hier 
 
 Im zweiten Bereich `<backup>` kann ein automatisches Backup der einzelnen Bestände konfiguriert werden. Dabei wird für jeden Bestand eine eigene Datei erzeugt. Es kann definiert werden, wie viele Backups vorgehalten werden sollen und welches Tool zum Erzeugen der Backups genutzt werden soll. Falls ein Passwort für den Datenbank-Zugriff benötigt wird, kann dies hier ebenfalls konfiguriert werden.
 
+Im dritten Bereich `<updateProcessMetadataJob>` wird konfiguriert, für welche Archivbestände der Quartz-Job `intranda_quartz_updateProcessMetadata` regelmäßig die Metadaten der verknüpften Goobi-Vorgänge aktualisieren soll. Für jeden zu berücksichtigenden Bestand wird ein `<file>`-Element mit dem exakten Bestandsnamen eingetragen. Der Job liest für alle Knoten des Bestands, denen ein Vorgang zugeordnet ist, die aktuellen Knotenmetadaten und überträgt diese in die `meta.xml` des jeweiligen Vorgangs. Das Verhalten entspricht damit dem manuellen Button `Vorgang mit Daten des Knotens überschreiben`.
+
+```xml
+<updateProcessMetadataJob>
+    <file>Bestandsname 1</file>
+    <file>Bestandsname 2</file>
+</updateProcessMetadataJob>
+```
+
+Der Quartz-Job muss in Goobi workflow zusätzlich über die übliche Konfiguration aktiviert und zeitgesteuert werden. Um die Ausführung täglich um 2 Uhr nachts zu starten, kann in der `goobi_config.properties` folgendes gesetzt werden:
+
+```
+intranda_quartz_updateProcessMetadata=0 2 * * * ?
+```
+
 Anschließend folgt ein wiederholbarer `<config>` Block. Über das wiederholbare Element `<archive>` kann festgelegt werden, für welche Dateien der `<config>`-Block gelten soll. Soll es einen Default-Block geben, der für alle Dokumente gelten soll, kann `*` genutzt werden.
 
 Mittels `<processTemplateId>` wird festgelegt, auf Basis welcher Produktionsvorlage die Goobi-Vorgänge erstellt werden sollen.

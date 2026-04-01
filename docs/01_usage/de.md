@@ -67,7 +67,16 @@ Rechts neben dem Feld kann die erweiterte Suche genutzt werden. Hier kann geziel
 ## Bearbeitung eines ausgewählten Knotens
 Sofern im linken Bereich ein Knoten ausgewählt wurde, werden im rechten Bereich die Details des ausgewählten Knotens angezeigt.
 
-Der rechte Bereich ist dabei in mehrere Kategorien aufgeteilt. Im obersten Teil des rechten Bereichs wird der dazugehörige Goobi-Vorgang angezeigt, sowie eine Möglichkeit zum Erzeugen des Laufzettels. Wenn für den Knoten noch kein Goobi-Vorgang erzeugt wurde, kann ein neuer Vorgang auf der Basis der konfigurierten Produktionsvorlage erstellt werden. Als Dokumententyp wird entsprechend der Konfiguration der ausgewählte Knotentyp verwendet. Abhängig von der Konfiguration und dem verwendeten Regelsatz stehen beispielsweise folgende Optionen zur Verfügung:
+Der rechte Bereich ist dabei in mehrere Kategorien aufgeteilt. Im obersten Teil des rechten Bereichs wird der dazugehörige Goobi-Vorgang angezeigt, sowie eine Möglichkeit zum Erzeugen des Laufzettels. Wenn für den Knoten noch kein Goobi-Vorgang erzeugt wurde, kann ein neuer Vorgang auf der Basis der konfigurierten Produktionsvorlage erstellt werden.
+
+Ist ein Knoten bereits mit einem Goobi-Vorgang verknüpft und verfügt der Nutzer über das Recht `Plugin_Administration_Archive_Management_Sync_Metadata`, stehen zwei zusätzliche Buttons für die manuelle Synchronisation bereit:
+
+| Funktion | Erläuterung |
+| :--- | :--- |
+| `Knoten mit Vorgangsdaten überschreiben` | Überträgt die Metadaten des verknüpften Goobi-Vorgangs in den aktuellen Knoten und überschreibt dabei die bestehenden Knotenmetadaten. |
+| `Vorgang mit Daten des Knotens überschreiben` | Schreibt die Metadaten des aktuell ausgewählten Knotens in die `meta.xml` des verknüpften Goobi-Vorgangs und überschreibt dabei die dort enthaltenen Metadaten. |
+
+Als Dokumententyp wird entsprechend der Konfiguration der ausgewählte Knotentyp verwendet. Abhängig von der Konfiguration und dem verwendeten Regelsatz stehen beispielsweise folgende Optionen zur Verfügung:
 
 * Folder / Ordner
 * File / Akte
