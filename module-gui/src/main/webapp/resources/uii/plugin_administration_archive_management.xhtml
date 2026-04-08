@@ -460,11 +460,13 @@
                                             title="#{msgs.plugin_administration_archive_createProcesses}"
                                             data-bs-toggle="tooltip">
                                             <button
+                                                jsf:rendered="#{AdministrationForm.administrationPlugin.allowProcessCreation}"
                                                 aria-haspopup="true"
                                                 aria-expanded="false"
                                                 class="btn btn-icon btn-primary dropdown-toggle"
                                                 data-bs-toggle="dropdown"
-                                                type="button">
+                                                type="button"
+                                                jsf:id="mass-creation">
                                                 <util:icon icon="files" styleClass="icon--lg" />
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end">
