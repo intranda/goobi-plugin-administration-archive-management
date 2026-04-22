@@ -601,6 +601,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         } else {
             String nodeTypeName = element.getAttributeValue("otherlevel");
+            if (StringUtils.isBlank(nodeTypeName)) {
+                nodeTypeName = element.getAttributeValue("level");
+            }
             for (INodeType nt : config.getConfiguredNodes()) {
                 if (nt.getNodeName().equals(nodeTypeName)) {
                     entry.setNodeType(nt);
