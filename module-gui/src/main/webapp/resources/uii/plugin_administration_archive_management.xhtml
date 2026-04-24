@@ -298,6 +298,32 @@
                                     <!-- search box -->
                                     <div class="actions d-flex">
                                         <h:commandLink
+                                            styleClass="btn d-flex align-items-center btn--title-action"
+                                            id="expandAll"
+                                            action="#{AdministrationForm.administrationPlugin.expandAll}"
+                                            title="#{msgs.plugin_administration_archive_expandAll}">
+                                            <util:icon icon="arrows-maximize" />
+                                            <f:passThroughAttribute
+                                                name="data-bs-toggle"
+                                                value="tooltip" />
+                                            <f:ajax
+                                                execute="@this"
+                                                render=":hierarchy:hierarchy" />
+                                        </h:commandLink>
+                                        <h:commandLink
+                                            styleClass="btn d-flex align-items-center btn--title-action"
+                                            id="collapseAll"
+                                            action="#{AdministrationForm.administrationPlugin.collapseAll}"
+                                            title="#{msgs.plugin_administration_archive_collapseAll}">
+                                            <util:icon icon="arrows-minimize" />
+                                            <f:passThroughAttribute
+                                                name="data-bs-toggle"
+                                                value="tooltip" />
+                                            <f:ajax
+                                                execute="@this"
+                                                render=":hierarchy:hierarchy" />
+                                        </h:commandLink>
+                                        <h:commandLink
                                             styleClass="btn d-flex align-items-center btn--title-action search-btn"
                                             id="resetSearch"
                                             action="#{AdministrationForm.administrationPlugin.resetSearch}"

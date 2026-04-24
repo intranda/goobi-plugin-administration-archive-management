@@ -854,9 +854,32 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         flatEntryList = null;
     }
 
+    public void expandAll() {
+        if (rootElement != null) {
+            for (IEadEntry node : rootElement.getAllNodes()) {
+                if (node.isHasChildren()) {
+                    node.setDisplayChildren(true);
+                }
+            }
+            flatEntryList = null;
+        }
+    }
+
+    public void collapseAll() {
+        if (rootElement != null) {
+            rootElement.setDisplayChildren(true);
+            for (IEadEntry child : rootElement.getSubEntryList()) {
+                for (IEadEntry node : child.getAllNodes()) {
+                    node.setDisplayChildren(false);
+                }
+            }
+            flatEntryList = null;
+        }
+    }
+
     /**
      * Get the hierarchical tree as a flat list
-     * 
+     *
      * @return
      */
 
