@@ -2734,17 +2734,17 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         List<Integer> processIds = new ArrayList<>();
 
-        StringBuilder strSQLNodes = new StringBuilder("('").append(lstNodesWithoutIds.get(0)).append("'");
+        StringBuilder strSQLNodes = new StringBuilder("('").append(lstNodesWithoutIds.get(0).replace("'", "''")).append("'");
 
         for (int i = 1; i < lstNodesWithoutIds.size(); i++) {
 
-            strSQLNodes.append(", ").append("'").append(lstNodesWithoutIds.get(i)).append("'");
+            strSQLNodes.append(", ").append("'").append(lstNodesWithoutIds.get(i).replace("'", "''")).append("'");
         }
         strSQLNodes.append(")");
 
         StringBuilder sql = new StringBuilder();
 
-        sql.append("SELECT processid FROM metadata WHERE name = '" + config.getIdentifierMetadataName() + "' and value in ");
+        sql.append("SELECT processid FROM metadata WHERE name = '" + config.getIdentifierMetadataName().replace("'", "''") + "' and value in ");
         sql.append(strSQLNodes.toString());
         sql.append(" order by processid;");
         @SuppressWarnings("unchecked")
