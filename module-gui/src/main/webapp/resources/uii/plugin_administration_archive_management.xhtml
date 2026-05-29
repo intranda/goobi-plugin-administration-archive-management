@@ -1270,7 +1270,7 @@
                 const input = document.querySelector('[id$="fileUpload"]');
                 if (data.status === 'success' &amp;&amp; input.value != "") {
                     const fileNameDisplay = document.querySelector('.upload-file-name');
-                    fileNameDisplay.innerHTML = input.value.split(/(\\|\/)/g).pop();
+                    fileNameDisplay.textContent = input.value.split(/(\\|\/)/g).pop();
                 }
             };
 
