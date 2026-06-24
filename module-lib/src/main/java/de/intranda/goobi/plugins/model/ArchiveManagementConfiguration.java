@@ -172,7 +172,7 @@ public class ArchiveManagementConfiguration {
             TitleComponent comp = new TitleComponent(name, manipulationType, value);
             titleParts.add(comp);
         }
-        advancedSearchFields = new ArrayList<>();
+        advancedSearchFields.clear();
         metadataFieldNames.clear();
         // configurations for metadata
         for (HierarchicalConfiguration fieldConfig : config.configurationsAt("/metadata")) {

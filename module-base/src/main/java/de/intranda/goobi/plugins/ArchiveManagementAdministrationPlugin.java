@@ -295,7 +295,6 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         } catch (APIException e) {
             // api is not running
         }
-        advancedSearch = new ArrayList<>();
         advancedSearch.add(new StringPair());
         advancedSearch.add(new StringPair());
         advancedSearch.add(new StringPair());
@@ -429,6 +428,11 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 recordGroup = ArchiveManagementManager.getRecordGroupByTitle(databaseName);
                 // get field definitions from config file
                 config.readConfiguration(databaseName);
+                // discard state and caches that belong to a previously loaded archive
+                duplicationConfiguration = null;
+                linkNodeList = null;
+                searchValue = null;
+                flatEntryList = null;
                 rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
                 loadMetadataForNode(rootElement);
                 rootElement.setDisplayChildren(true);

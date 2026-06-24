@@ -303,7 +303,8 @@ public class EadMetadataField implements IMetadataField {
             // otherwise clear all fields
             for (IMetadataField f : group.getFields()) {
                 if (f.getValues() != null) {
-                    for (IFieldValue val : f.getValues()) {
+                    // iterate over a copy because deleteValue removes from the underlying list
+                    for (IFieldValue val : new ArrayList<>(f.getValues())) {
                         f.deleteValue(val);
                     }
                 }

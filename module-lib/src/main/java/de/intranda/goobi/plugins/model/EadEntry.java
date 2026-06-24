@@ -223,11 +223,13 @@ public class EadEntry implements IEadEntry {
             return false;
         }
         EadEntry other = (EadEntry) obj;
-        if (databaseId != null && other.databaseId != null) {
-            return databaseId.equals(other.databaseId);
+        // identity is the persistent key, then the (uuid) id; only fall back to a structural
+        // comparison for transient nodes that have neither, so equals stays consistent with hashCode
+        if (databaseId != null || other.databaseId != null) {
+            return java.util.Objects.equals(databaseId, other.databaseId);
         }
-        if (id != null && other.id != null) {
-            return id.equals(other.id);
+        if (id != null || other.id != null) {
+            return java.util.Objects.equals(id, other.id);
         }
         if (hierarchy == null) {
             if (other.hierarchy != null) {
@@ -266,12 +268,19 @@ public class EadEntry implements IEadEntry {
 
     @Override
     public int hashCode() {
+        // keep consistent with equals: identical identifier -> identical hash
+        if (databaseId != null) {
+            return databaseId.hashCode();
+        }
+        if (id != null) {
+            return id.hashCode();
+        }
         final int prime = 31;
         int result = 1;
         result = prime * result + ((hierarchy == null) ? 0 : hierarchy.hashCode());
         result = prime * result + ((orderNumber == null) ? 0 : orderNumber.hashCode());
-        result = prime * result + ((parentNode == null) ? 0 : parentNode.getHierarchy().hashCode());
-        result = prime * result + ((parentNode == null) ? 0 : parentNode.getOrderNumber().hashCode());
+        result = prime * result + ((parentNode == null || parentNode.getHierarchy() == null) ? 0 : parentNode.getHierarchy().hashCode());
+        result = prime * result + ((parentNode == null || parentNode.getOrderNumber() == null) ? 0 : parentNode.getOrderNumber().hashCode());
         return result;
     }
 
@@ -750,7 +759,7 @@ public class EadEntry implements IEadEntry {
         if (value.endsWith("\\")) {
             value = value + "\\";
         }
-        MySQLHelper.escapeSql(value.replace("&", "&amp;")
+        value = MySQLHelper.escapeSql(value.replace("&", "&amp;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
                 .replace("\"", "\\\""));

@@ -300,6 +300,29 @@ public class EadEntryTest {
     }
 
     @Test
+    public void testEqualsHashCodeContractWithDatabaseId() {
+        // two nodes that are equal by databaseId, but differ in position
+        EadEntry a = new EadEntry(0, 0);
+        a.setDatabaseId(5);
+        EadEntry b = new EadEntry(3, 2);
+        b.setDatabaseId(5);
+
+        assertEquals(a, b);
+        // equal objects must have equal hash codes
+        assertEquals(a.hashCode(), b.hashCode());
+    }
+
+    @Test
+    public void testHashCodeWithParentWithoutOrder() {
+        EadEntry parent = new EadEntry(null, null);
+        EadEntry child = new EadEntry(0, 1);
+        child.setParentNode(parent);
+
+        // must not throw a NullPointerException when the parent has no order/hierarchy yet
+        child.hashCode();
+    }
+
+    @Test
     public void testUpdateHierarchy() {
         EadEntry entry = new EadEntry(2, 2);
         EadEntry sub = new EadEntry(2, 2);
@@ -522,6 +545,45 @@ public class EadEntryTest {
         grp.deleteGroup(group);
         assertFalse(grp.isFilled());
 
+    }
+
+    @Test
+    public void testEscapeString() {
+        EadEntry entry = new EadEntry(0, 0);
+        // XML special characters must actually be escaped in the returned value
+        assertEquals("&lt;value&gt;", entry.escapeString("<value>"));
+        assertEquals("a &amp; b", entry.escapeString("a & b"));
+    }
+
+    @Test
+    public void testDeleteGroupWithMultipleValues() {
+        EadEntry entry = new EadEntry(4, 4);
+
+        IMetadataField grp = new EadMetadataField("group", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required", "regex",
+                true, "viafSearchFields", "viafDisplayFields", true, null);
+        // repeatable subfield so the group field may hold more than one value
+        IMetadataField sub = new EadMetadataField("name", 1, "xpath", "text", true, true, true, "input", "metadataName", false, "required", "regex",
+                true, "viafSearchFields", "viafDisplayFields", false, null);
+        grp.addSubfield(sub);
+
+        List<IMetadataField> list = new ArrayList<>();
+        list.add(grp);
+        entry.setIdentityStatementAreaList(list);
+
+        IMetadataGroup group = grp.createGroup();
+        IMetadataField groupField = group.getFields().get(0);
+        // createGroup already added one value, add two more (>2 triggers the CME)
+        groupField.addValue();
+        groupField.addValue();
+        groupField.getValues().get(0).setValue("a");
+        groupField.getValues().get(1).setValue("b");
+        groupField.getValues().get(2).setValue("c");
+        assertEquals(3, groupField.getValues().size());
+
+        // clearing the last group must not throw a ConcurrentModificationException
+        // and must clear every value, so the group is no longer filled
+        grp.deleteGroup(group);
+        assertFalse(grp.isFilled());
     }
 
     @Test

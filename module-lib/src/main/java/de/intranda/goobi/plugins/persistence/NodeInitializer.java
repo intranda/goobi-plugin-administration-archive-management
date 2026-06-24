@@ -213,10 +213,8 @@ public class NodeInitializer {
                             }
 
                         }
-                    } else {
-                        IFieldValue fv = new FieldValue(sub);
-                        sub.addFieldValue(fv);
                     }
+                    // no else branch: createGroup() already added an empty value for every subfield
                 }
             }
         } else {

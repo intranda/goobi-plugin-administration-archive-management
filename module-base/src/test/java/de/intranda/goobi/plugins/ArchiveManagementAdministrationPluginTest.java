@@ -3,6 +3,7 @@ package de.intranda.goobi.plugins;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -1463,6 +1464,54 @@ public class ArchiveManagementAdministrationPluginTest {
 
         fixture = plugin.getLinkNodeList();
         assertEquals(7, fixture.size());
+    }
+
+    @Test
+    public void testLinkNodeListResetOnReload() {
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.getPossibleDatabases();
+        plugin.setDatabaseName("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+        plugin.setDisplayLinkedModal(true);
+
+        List<IEadEntry> first = plugin.getLinkNodeList();
+        assertEquals(7, first.size());
+
+        // loading a database again builds a fresh tree, so the cached link list must be rebuilt
+        plugin.loadSelectedDatabase();
+        List<IEadEntry> second = plugin.getLinkNodeList();
+        assertNotSame(first, second);
+    }
+
+    @Test
+    public void testSearchStateResetOnReload() {
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.getPossibleDatabases();
+        plugin.setDatabaseName("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+
+        // leftover search state from previous work
+        plugin.setSearchValue("Milzbrand");
+
+        // loading a database again must clear stale search state
+        plugin.loadSelectedDatabase();
+        assertNull(plugin.getSearchValue());
+    }
+
+    @Test
+    public void testDuplicationConfigurationResetOnReload() {
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.getPossibleDatabases();
+        plugin.setDatabaseName("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+
+        org.goobi.interfaces.IConfiguration first = plugin.getDuplicationConfiguration();
+        assertNotNull(first);
+
+        // after reloading, the duplication configuration must reflect the freshly loaded tree
+        plugin.loadSelectedDatabase();
+        org.goobi.interfaces.IConfiguration second = plugin.getDuplicationConfiguration();
+        assertNotSame(first, second);
     }
 
     @Test
