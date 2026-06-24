@@ -419,6 +419,18 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * open the selected database and load the file
      */
 
+    /**
+     * Discard state and lazily-cached objects that belong to a previously loaded archive, so they are rebuilt against the archive that is loaded
+     * next. Must be called from every entry point that switches the active archive ({@link #loadSelectedDatabase()}, {@link #createNewDatabase()},
+     * {@link #cancelEdition()}).
+     */
+    private void resetLoadedArchiveState() {
+        duplicationConfiguration = null;
+        linkNodeList = null;
+        searchValue = null;
+        flatEntryList = null;
+    }
+
     @Override
     public void loadSelectedDatabase() {
 
@@ -429,10 +441,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 // get field definitions from config file
                 config.readConfiguration(databaseName);
                 // discard state and caches that belong to a previously loaded archive
-                duplicationConfiguration = null;
-                linkNodeList = null;
-                searchValue = null;
-                flatEntryList = null;
+                resetLoadedArchiveState();
                 rootElement = ArchiveManagementManager.loadRecordGroup(recordGroup.getId());
                 loadMetadataForNode(rootElement);
                 rootElement.setDisplayChildren(true);
@@ -467,6 +476,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 displayMode = "createArchive";
                 return;
             }
+
+            // discard state and caches that belong to a previously loaded archive
+            resetLoadedArchiveState();
 
             recordGroup = new RecordGroup();
             recordGroup.setTitle(databaseName);
@@ -2289,8 +2301,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         selectedEntry = null;
         rootElement = null;
         displayMode = "";
-        flatEntryList = null;
-        searchValue = null;
+        resetLoadedArchiveState();
         config.setConfiguredFields(null);
         displayIdentityStatementArea = false;
         displayContextArea = false;

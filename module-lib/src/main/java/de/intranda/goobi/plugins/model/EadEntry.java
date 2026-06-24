@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -226,10 +227,10 @@ public class EadEntry implements IEadEntry {
         // identity is the persistent key, then the (uuid) id; only fall back to a structural
         // comparison for transient nodes that have neither, so equals stays consistent with hashCode
         if (databaseId != null || other.databaseId != null) {
-            return java.util.Objects.equals(databaseId, other.databaseId);
+            return Objects.equals(databaseId, other.databaseId);
         }
         if (id != null || other.id != null) {
-            return java.util.Objects.equals(id, other.id);
+            return Objects.equals(id, other.id);
         }
         if (hierarchy == null) {
             if (other.hierarchy != null) {
@@ -255,10 +256,10 @@ public class EadEntry implements IEadEntry {
             return false;
         }
         if (parentNode != null && other.parentNode != null) {
-            if (!parentNode.getOrderNumber().equals(other.parentNode.getOrderNumber())) {
+            if (!Objects.equals(parentNode.getOrderNumber(), other.parentNode.getOrderNumber())) {
                 return false;
             }
-            if (!parentNode.getHierarchy().equals(other.parentNode.getHierarchy())) {
+            if (!Objects.equals(parentNode.getHierarchy(), other.parentNode.getHierarchy())) {
                 return false;
             }
         }
@@ -761,8 +762,7 @@ public class EadEntry implements IEadEntry {
         }
         value = MySQLHelper.escapeSql(value.replace("&", "&amp;")
                 .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "\\\""));
+                .replace(">", "&gt;"));
         return value;
     }
 

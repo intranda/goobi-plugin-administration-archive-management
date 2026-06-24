@@ -1484,6 +1484,29 @@ public class ArchiveManagementAdministrationPluginTest {
     }
 
     @Test
+    public void testStateResetOnCreateNewDatabase() {
+        LockingBean.resetAllLocks();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.getPossibleDatabases();
+        plugin.setDatabaseName("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+
+        // build the lazy caches from the loaded archive
+        plugin.setDisplayLinkedModal(true);
+        List<IEadEntry> linkA = plugin.getLinkNodeList();
+        org.goobi.interfaces.IConfiguration dupA = plugin.getDuplicationConfiguration();
+        assertNotNull(linkA);
+        assertNotNull(dupA);
+
+        // creating a new archive must not serve caches built from the previous one
+        plugin.setDatabaseName("db");
+        plugin.createNewDatabase();
+
+        assertNotSame(dupA, plugin.getDuplicationConfiguration());
+        assertNotSame(linkA, plugin.getLinkNodeList());
+    }
+
+    @Test
     public void testSearchStateResetOnReload() {
         ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
         plugin.getPossibleDatabases();

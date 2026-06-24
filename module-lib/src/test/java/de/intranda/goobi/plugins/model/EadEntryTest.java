@@ -556,6 +556,27 @@ public class EadEntryTest {
     }
 
     @Test
+    public void testEscapeStringKeepsDoubleQuote() {
+        EadEntry entry = new EadEntry(0, 0);
+        // a double quote must round-trip unchanged (the reader does not unescape \"),
+        // so escapeString must not turn it into \"
+        assertEquals("a \"b\" c", entry.escapeString("a \"b\" c"));
+    }
+
+    @Test
+    public void testEqualsWithParentWithoutOrder() {
+        EadEntry parent1 = new EadEntry(null, null);
+        EadEntry parent2 = new EadEntry(null, null);
+        EadEntry a = new EadEntry(0, 1);
+        EadEntry b = new EadEntry(0, 1);
+        a.setParentNode(parent1);
+        b.setParentNode(parent2);
+
+        // structural fallback must not throw a NullPointerException on parents without order/hierarchy
+        a.equals(b);
+    }
+
+    @Test
     public void testDeleteGroupWithMultipleValues() {
         EadEntry entry = new EadEntry(4, 4);
 
