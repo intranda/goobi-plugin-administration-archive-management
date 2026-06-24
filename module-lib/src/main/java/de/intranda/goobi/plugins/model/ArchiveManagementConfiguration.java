@@ -13,6 +13,7 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
+import org.apache.commons.lang3.StringUtils;
 import org.goobi.interfaces.IMetadataField;
 import org.goobi.interfaces.INodeType;
 import org.jdom2.Namespace;
@@ -182,7 +183,6 @@ public class ArchiveManagementConfiguration {
             if (field.isGroup()) {
                 for (HierarchicalConfiguration subfieldConfig : fieldConfig.configurationsAt("/metadata")) {
                     IMetadataField subfield = createField(subfieldConfig);
-                    configureField(subfieldConfig, subfield);
                     field.addSubfield(subfield);
                 }
             }
@@ -274,7 +274,7 @@ public class ArchiveManagementConfiguration {
 
     public void loadVocabulary(IMetadataField field) {
         List<String> iFieldValueList = Collections.emptyList();
-        if (vocabularyAPI != null) {
+        if (vocabularyAPI != null && StringUtils.isNotBlank(field.getVocabularyName())) {
             try {
                 ExtendedVocabulary vocabulary = vocabularyAPI.vocabularies().findByName(field.getVocabularyName());
                 if (field.getSearchParameter().isEmpty()) {
@@ -312,7 +312,7 @@ public class ArchiveManagementConfiguration {
                                     .search(searchField.get().getId() + ":" + searchFieldValue));
                 }
             } catch (APIException e) {
-                log.error(e);
+                log.error(e.getMessage(), e);
                 field.setVocabularyName(null);
             }
         } else {
