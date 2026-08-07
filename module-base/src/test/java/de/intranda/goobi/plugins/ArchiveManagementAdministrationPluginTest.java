@@ -32,6 +32,7 @@ import org.goobi.interfaces.IValue;
 import org.goobi.model.ExtendendValue;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.input.sax.XMLReaders;
 import org.junit.Before;
@@ -47,6 +48,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import de.intranda.goobi.plugins.model.EadEntry;
+import de.intranda.goobi.plugins.model.EadMetadataField;
 import de.intranda.goobi.plugins.model.RecordGroup;
 import de.intranda.goobi.plugins.persistence.ArchiveManagementManager;
 import de.sub.goobi.config.ConfigurationHelper;
@@ -1555,6 +1557,71 @@ public class ArchiveManagementAdministrationPluginTest {
         plugin.setSelectedEntry(plugin.getRootElement());
         plugin.showAllFields();
         assertTrue(plugin.isDisplayControlArea());
+    }
+
+    @Test
+    public void testNamespacesFromRootElement() throws Exception {
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.getConfig().readConfiguration("sample");
+
+        List<IMetadataField> fields = new ArrayList<>();
+        // attribute in the xlink namespace, prefix is declared in the document only
+        fields.add(new EadMetadataField("uri", 1, "./ead:archdesc/ead:did/ead:repository/ead:extref/@xlink:href", "attribute", false, true, true,
+                "input", null, false, null, null, false, null, null, false, null));
+        // element in the default namespace, addressed via the configured prefix
+        fields.add(new EadMetadataField("extref", 1, "./ead:archdesc/ead:did/ead:repository/ead:extref", "element", false, true, true, "input", null,
+                false, null, null, false, null, null, false, null));
+        plugin.getConfig().setConfiguredFields(fields);
+
+        String ead = "<ead xmlns=\"urn:isbn:1-931666-22-9\" xmlns:xlink=\"http://www.w3.org/1999/xlink\""
+                + " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
+                + "<archdesc level=\"collection\"><did><repository>"
+                + "<extref xlink:role=\"url_archive\" xlink:href=\"https://www.uni-kassel.de/ub/uniarchiv\">UniArchiv Kassel</extref>"
+                + "</repository></did></archdesc></ead>";
+        Document document = new SAXBuilder(XMLReaders.NONVALIDATING).build(new java.io.StringReader(ead));
+
+        plugin.parseEadFile(document);
+
+        Map<String, String> values = new HashMap<>();
+        for (IMetadataField emf : plugin.getRootElement().getIdentityStatementAreaList()) {
+            if (!emf.getValues().isEmpty()) {
+                values.put(emf.getName(), emf.getValues().get(0).getValue());
+            }
+        }
+        assertEquals("https://www.uni-kassel.de/ub/uniarchiv", values.get("uri"));
+        assertEquals("UniArchiv Kassel", values.get("extref"));
+    }
+
+    @Test
+    public void testExportPrefixedAttribute() throws Exception {
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.getConfig().readConfiguration("sample");
+        Namespace xlink = Namespace.getNamespace("xlink", "http://www.w3.org/1999/xlink");
+
+        Element repository = new Element("repository", plugin.getConfig().getNameSpaceWrite());
+        plugin.createElement(repository, "ead:extref/@xlink:href", "https://www.uni-kassel.de/ub/uniarchiv");
+        plugin.createElement(repository, "ead:extref/@xlink:role", "url_archive");
+        plugin.createElement(repository, "ead:extref", "UniArchiv Kassel");
+
+        Element extref = repository.getChild("extref", plugin.getConfig().getNameSpaceWrite());
+        assertNotNull(extref);
+        assertEquals("https://www.uni-kassel.de/ub/uniarchiv", extref.getAttributeValue("href", xlink));
+        assertEquals("url_archive", extref.getAttributeValue("role", xlink));
+        assertEquals("UniArchiv Kassel", extref.getText());
+        // the attribute must not end up in the default namespace
+        assertNull(extref.getAttributeValue("href"));
+
+        // unprefixed attributes keep working
+        Element c = new Element("c", plugin.getConfig().getNameSpaceWrite());
+        plugin.createElement(c, "ead:altformavail/@localtype", "goobi_process");
+        assertEquals("goobi_process",
+                c.getChild("altformavail", plugin.getConfig().getNameSpaceWrite()).getAttributeValue("localtype"));
+
+        // the serialized file has to declare the prefix, otherwise it cannot be read back
+        String xml = new org.jdom2.output.XMLOutputter(org.jdom2.output.Format.getPrettyFormat()).outputString(repository);
+        assertTrue(xml.contains("xmlns:xlink=\"http://www.w3.org/1999/xlink\""));
+        assertTrue(xml.contains("xlink:href=\"https://www.uni-kassel.de/ub/uniarchiv\""));
+        assertTrue(xml.contains("xlink:role=\"url_archive\""));
     }
 
 }

@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,7 @@ import org.goobi.production.enums.PluginType;
 import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.jdom2.Text;
 import org.jdom2.filter.Filters;
 import org.jdom2.output.Format;
@@ -151,6 +153,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private transient IEadEntry destinationEntry;
 
     private static XPathFactory xFactory = XPathFactory.instance();
+
+    /* namespaces used to compile the configured xpaths, collected from the root element of the parsed ead file */
+    private transient Namespace[] xPathNamespaces;
+
+    /* namespaces ead uses next to its own, needed to write prefixed attributes when no ead file was parsed before */
+    private static final Map<String, Namespace> EAD_COMPANION_NAMESPACES = Map.of(
+            "xlink", Namespace.getNamespace("xlink", "http://www.w3.org/1999/xlink"),
+            "xsi", Namespace.getNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance"));
 
     @Getter
     @Setter
@@ -523,6 +533,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         } else {
             eadElement = collection;
         }
+        xPathNamespaces = collectNamespaces(eadElement);
         rootElement = parseElement(0, 0, eadElement, recordGroupId, null);
         for (INodeType type : config.getConfiguredNodes()) {
             if (type.isRootNode()) {
@@ -543,6 +554,97 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     /**
+     * Collect all namespaces that can be used within the configured xpaths: the namespace configured in eadNamespaceRead plus every prefixed namespace
+     * that is declared on the root element of the ead file. This way xpaths can address namespaces like xlink without configuring them separately.
+     *
+     * The configured namespace always wins, as its prefix is the one used in the configured xpaths. Namespaces without a prefix are skipped, xpath
+     * always resolves an unprefixed name against the empty namespace and jdom rejects any attempt to redefine it.
+     */
+    private Namespace[] collectNamespaces(Element eadElement) {
+        Map<String, Namespace> namespaces = new LinkedHashMap<>();
+        Namespace configured = config.getNameSpaceRead();
+        namespaces.put(configured.getPrefix(), configured);
+        if (eadElement != null) {
+            for (Namespace ns : eadElement.getNamespacesInScope()) {
+                if (StringUtils.isBlank(ns.getPrefix())) {
+                    continue;
+                }
+                namespaces.putIfAbsent(ns.getPrefix(), ns);
+            }
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("using namespaces {} for xpath evaluation", namespaces.keySet());
+        }
+        return namespaces.values().toArray(new Namespace[0]);
+    }
+
+    /**
+     * namespaces to use when compiling the configured xpaths, initialized from the ead file in {@link #parseEadFile(Document, Integer)}
+     */
+    private Namespace[] getXPathNamespaces() {
+        if (xPathNamespaces == null) {
+            return new Namespace[] { config.getNameSpaceRead() };
+        }
+        return xPathNamespaces;
+    }
+
+    /**
+     * Resolve the prefix of an attribute name taken from a configured xpath, for instance the xlink of xlink:href.
+     *
+     * A prefix that is already declared within the document being written wins, afterwards the namespaces of the last parsed ead file are used. The
+     * standard companion namespaces of ead are the last resort, as an export does not necessarily parse a file beforehand: it usually builds the
+     * document from the database.
+     */
+    private Namespace resolveNamespace(Element element, String prefix) {
+        Namespace ns = element.getNamespace(prefix);
+        if (ns != null) {
+            return ns;
+        }
+        for (Namespace known : getXPathNamespaces()) {
+            if (prefix.equals(known.getPrefix())) {
+                return known;
+            }
+        }
+        return EAD_COMPANION_NAMESPACES.get(prefix);
+    }
+
+    /**
+     * Set an attribute that may be given as a prefixed name like xlink:href. Jdom does not allow a colon within an attribute name, so the prefix has
+     * to be turned into a namespace.
+     */
+    private void setXmlAttribute(Element element, String name, String value) {
+        int colon = name.indexOf(':');
+        if (colon < 0) {
+            element.setAttribute(name, value);
+            return;
+        }
+        String prefix = name.substring(0, colon);
+        String localName = name.substring(colon + 1);
+        Namespace ns = resolveNamespace(element, prefix);
+        if (ns == null) {
+            log.error("Cannot write attribute {}, the namespace prefix {} is unknown. Declare it in the ead file or use an unprefixed name.", name,
+                    prefix);
+            return;
+        }
+        element.setAttribute(localName, value, ns);
+    }
+
+    /**
+     * Read an attribute that may be given as a prefixed name like xlink:href, used to check xpath conditions.
+     */
+    private String getXmlAttributeValue(Element element, String name) {
+        int colon = name.indexOf(':');
+        if (colon < 0) {
+            return element.getAttributeValue(name);
+        }
+        Namespace ns = resolveNamespace(element, name.substring(0, colon));
+        if (ns == null) {
+            return null;
+        }
+        return element.getAttributeValue(name.substring(colon + 1), ns);
+    }
+
+    /**
      * read the metadata for the current xml node. - create an {@link EadEntry} - execute the configured xpaths on the current node - add the metadata
      * to one of the 7 levels - check if the node has sub nodes - call the method recursively for all sub nodes
      */
@@ -552,7 +654,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         for (IMetadataField emf : config.getConfiguredFields()) {
             if (emf.isGroup()) {
                 // find group root element
-                XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, config.getNameSpaceRead());
+                XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, getXPathNamespaces());
                 List<IValue> groups = new ArrayList<>();
                 List<Element> values = engine.evaluate(element);
                 for (Element groupElement : values) {
@@ -679,7 +781,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private List<IValue> getValuesFromXml(Element element, IMetadataField emf) {
         List<IValue> valueList = new ArrayList<>();
         if ("text".equalsIgnoreCase(emf.getXpathType())) {
-            XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, config.getNameSpaceRead());
+            XPathExpression<Text> engine = xFactory.compile(emf.getXpath(), Filters.text(), null, getXPathNamespaces());
             List<Text> values = engine.evaluate(element);
             if (emf.isRepeatable()) {
                 for (Text value : values) {
@@ -692,7 +794,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 valueList.add(new ExtendendValue(emf.getName(), stringValue, null, null));
             }
         } else if ("attribute".equalsIgnoreCase(emf.getXpathType())) {
-            XPathExpression<Attribute> engine = xFactory.compile(emf.getXpath(), Filters.attribute(), null, config.getNameSpaceRead());
+            XPathExpression<Attribute> engine = xFactory.compile(emf.getXpath(), Filters.attribute(), null, getXPathNamespaces());
             List<Attribute> values = engine.evaluate(element);
 
             if (emf.isRepeatable()) {
@@ -706,7 +808,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 valueList.add(new ExtendendValue(emf.getName(), stringValue, null, null));
             }
         } else if ("person".equals(emf.getFieldType())) {
-            XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, config.getNameSpaceRead());
+            XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, getXPathNamespaces());
             List<Element> values = engine.evaluate(element);
             if (emf.isRepeatable()) {
                 for (Element value : values) {
@@ -723,7 +825,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 }
             }
         } else if ("corporate".equals(emf.getFieldType())) {
-            XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, config.getNameSpaceRead());
+            XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, getXPathNamespaces());
             List<Element> values = engine.evaluate(element);
             if (emf.isRepeatable()) {
                 for (Element value : values) {
@@ -740,7 +842,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 }
             }
         } else {
-            XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, config.getNameSpaceRead());
+            XPathExpression<Element> engine = xFactory.compile(emf.getXpath(), Filters.element(), null, getXPathNamespaces());
             List<Element> values = engine.evaluate(element);
             if (emf.isRepeatable()) {
                 for (Element value : values) {
@@ -841,7 +943,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         if ("text".equalsIgnoreCase(xpathType)) {
             XPathExpression<Text> engine =
-                    xFactory.compile(xpath, Filters.text(), null, config.getNameSpaceRead());
+                    xFactory.compile(xpath, Filters.text(), null, getXPathNamespaces());
             List<Text> values = engine.evaluate(element);
             for (Text value : values) {
                 String stringValue = value.getValue();
@@ -849,14 +951,14 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
         } else if ("attribute".equalsIgnoreCase(xpathType)) {
             XPathExpression<Attribute> engine =
-                    xFactory.compile(xpath, Filters.attribute(), null, config.getNameSpaceRead());
+                    xFactory.compile(xpath, Filters.attribute(), null, getXPathNamespaces());
             List<Attribute> values = engine.evaluate(element);
             for (Attribute val : values) {
                 String stringValue = val.getValue();
                 answer.add(stringValue);
             }
         } else {
-            XPathExpression<Element> engine = xFactory.compile(xpath, Filters.element(), null, config.getNameSpaceRead());
+            XPathExpression<Element> engine = xFactory.compile(xpath, Filters.element(), null, getXPathNamespaces());
             List<Element> values = engine.evaluate(element);
             for (Element val : values) {
                 String stringValue = val.getValue();
@@ -1380,11 +1482,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 field = field.substring(1);
                 // create attribute on current element
                 // duplicate current element if attribute is not empty
-                if (currentElement.getAttribute(field) != null) {
+                if (getXmlAttributeValue(currentElement, field) != null) {
                     Element duplicate = new Element(currentElement.getName(), config.getNameSpaceWrite());
                     for (Attribute attr : currentElement.getAttributes()) {
-                        if (!attr.getName().equals(field)) {
-                            duplicate.setAttribute(attr.getName(), attr.getValue());
+                        // field may be a prefixed name like xlink:href, compare against both spellings
+                        if (!attr.getQualifiedName().equals(field) && !attr.getName().equals(field)) {
+                            duplicate.setAttribute(attr.getName(), attr.getValue(), attr.getNamespace());
                         }
                     }
                     currentElement.getParent().addContent(duplicate);
@@ -1451,11 +1554,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 field = field.substring(1);
                 // create attribute on current element
                 // duplicate current element if attribute is not empty
-                if (currentElement.getAttribute(field) != null) {
+                if (getXmlAttributeValue(currentElement, field) != null) {
                     Element duplicate = new Element(currentElement.getName(), config.getNameSpaceWrite());
                     for (Attribute attr : currentElement.getAttributes()) {
-                        if (!attr.getName().equals(field)) {
-                            duplicate.setAttribute(attr.getName(), attr.getValue());
+                        // field may be a prefixed name like xlink:href, compare against both spellings
+                        if (!attr.getQualifiedName().equals(field) && !attr.getName().equals(field)) {
+                            duplicate.setAttribute(attr.getName(), attr.getValue(), attr.getNamespace());
                         }
                     }
                     currentElement.getParent().addContent(duplicate);
@@ -1531,18 +1635,19 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 field = field.substring(1);
                 // create attribute on current element
                 // duplicate current element if attribute is not empty
-                if (currentElement.getAttribute(field) != null) {
+                if (getXmlAttributeValue(currentElement, field) != null) {
                     Element duplicate = new Element(currentElement.getName(), config.getNameSpaceWrite());
                     for (Attribute attr : currentElement.getAttributes()) {
-                        if (!attr.getName().equals(field)) {
-                            duplicate.setAttribute(attr.getName(), attr.getValue());
+                        // field may be a prefixed name like xlink:href, compare against both spellings
+                        if (!attr.getQualifiedName().equals(field) && !attr.getName().equals(field)) {
+                            duplicate.setAttribute(attr.getName(), attr.getValue(), attr.getNamespace());
                         }
                     }
                     currentElement.getParent().addContent(duplicate);
                     currentElement = duplicate;
                 }
 
-                currentElement.setAttribute(field, value);
+                setXmlAttribute(currentElement, field, value);
                 written = true;
             } else {
                 currentElement = findElement(field, currentElement);
@@ -1553,7 +1658,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             if (StringUtils.isNotBlank(currentElement.getText()) || !currentElement.getChildren().isEmpty()) {
                 Element duplicate = new Element(currentElement.getName(), config.getNameSpaceWrite());
                 for (Attribute attr : currentElement.getAttributes()) {
-                    duplicate.setAttribute(attr.getName(), attr.getValue());
+                    duplicate.setAttribute(attr.getName(), attr.getValue(), attr.getNamespace());
                 }
 
                 if (!currentElement.getChildren().isEmpty()) {
@@ -1603,13 +1708,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                     condition = condition.substring(start + 2, end);
                     if (condition.contains("=")) {
                         // [not(@type='abc')]
-                        String value = element.getAttributeValue(condition.substring(0, condition.indexOf("=")));
+                        String value = getXmlAttributeValue(element, condition.substring(0, condition.indexOf("=")));
                         if (StringUtils.isNotBlank(value) && value.equals(condition.substring(condition.indexOf("=") + 1).replace("'", ""))) {
                             conditionsMatch = false;
                         }
                     } else {
                         // [not(@type)]
-                        String value = element.getAttributeValue(condition);
+                        String value = getXmlAttributeValue(element, condition);
                         if (StringUtils.isNotBlank(value)) {
                             conditionsMatch = false;
                         }
@@ -1622,12 +1727,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 }
                 condition = condition.trim();
                 if (condition.contains("=")) {
-                    String value = element.getAttributeValue(condition.substring(0, condition.indexOf("=")));
+                    String value = getXmlAttributeValue(element, condition.substring(0, condition.indexOf("=")));
                     if (StringUtils.isBlank(value) || !value.equals(condition.substring(condition.indexOf("=") + 1).replace("'", ""))) {
                         conditionsMatch = false;
                     }
                 } else {
-                    String value = element.getAttributeValue(condition);
+                    String value = getXmlAttributeValue(element, condition);
                     if (StringUtils.isBlank(value)) {
                         conditionsMatch = false;
                     }
@@ -1687,7 +1792,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
                     String[] attr = condition.split("=");
                     if (attr.length > 1) {
-                        element.setAttribute(attr[0], attr[1].replace("'", ""));
+                        setXmlAttribute(element, attr[0], attr[1].replace("'", ""));
                     }
 
                 } else {
