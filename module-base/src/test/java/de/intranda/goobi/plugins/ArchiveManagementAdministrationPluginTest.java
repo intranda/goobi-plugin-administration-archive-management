@@ -82,6 +82,10 @@ public class ArchiveManagementAdministrationPluginTest {
 
     private static String resourcesFolder;
 
+    // records what was written through the manager, so that the tests can tell single saves from bulk saves
+    private List<IEadEntry> savedNodes = new ArrayList<>();
+    private List<List<IEadEntry>> savedNodeBatches = new ArrayList<>();
+
     private IEadEntry selectedEntry;
     private IEadEntry parentNode;
     private IEadEntry copyNode;
@@ -112,9 +116,24 @@ public class ArchiveManagementAdministrationPluginTest {
                 .andReturn(new RecordGroup(1, "fixture - ead.xml"))
                 .anyTimes();
 
+        savedNodes.clear();
+        savedNodeBatches.clear();
+
+        ArchiveManagementManager.saveNode(EasyMock.anyInt(), EasyMock.anyObject());
+        EasyMock.expectLastCall().andAnswer(() -> {
+            savedNodes.add((IEadEntry) EasyMock.getCurrentArguments()[1]);
+            return null;
+        }).anyTimes();
+
+        ArchiveManagementManager.saveNodes(EasyMock.anyInt(), EasyMock.anyObject());
+        EasyMock.expectLastCall().andAnswer(() -> {
+            @SuppressWarnings("unchecked")
+            List<IEadEntry> batch = (List<IEadEntry>) EasyMock.getCurrentArguments()[1];
+            savedNodeBatches.add(new ArrayList<>(batch));
+            return null;
+        }).anyTimes();
+
         for (int i = 0; i < 10; i++) {
-            ArchiveManagementManager.saveNode(EasyMock.anyInt(), EasyMock.anyObject());
-            ArchiveManagementManager.saveNodes(EasyMock.anyInt(), EasyMock.anyObject());
             ArchiveManagementManager.updateNodeHierarchy(EasyMock.anyInt(), EasyMock.anyObject());
         }
         ArchiveManagementManager.saveRecordGroup(EasyMock.anyObject());
@@ -745,6 +764,58 @@ public class ArchiveManagementAdministrationPluginTest {
 
         IEadEntry fixture = plugin.getSelectedEntry();
         assertEquals(root, fixture.getParentNode());
+    }
+
+    /**
+     * a mass import creates hundreds of thousands of nodes. They are collected first and written in batches, so creating one must not store it.
+     */
+    @Test
+    public void testAddNodeWithoutSavingDoesNotStoreTheNode() {
+        LockingBean.resetAllLocks();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.setTestMode(true);
+        plugin.getPossibleDatabases();
+        plugin.setDatabaseName("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+
+        IEadEntry root = plugin.getRootElement();
+        int childrenBefore = root.getSubEntryList().size();
+        savedNodes.clear();
+
+        IEadEntry added = plugin.addNodeWithoutSaving(root);
+
+        assertEquals(root, added.getParentNode());
+        assertEquals(childrenBefore + 1, root.getSubEntryList().size());
+        assertTrue("the node must not be stored yet", savedNodes.isEmpty());
+        // selecting a node would store the previously selected one, so the selection must stay untouched
+        assertNull(plugin.getSelectedEntry());
+    }
+
+    /**
+     * the collected nodes are written with a single call, not one by one
+     */
+    @Test
+    public void testSaveNodesStoresAllNodesInOneBatch() {
+        LockingBean.resetAllLocks();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.setTestMode(true);
+        plugin.getPossibleDatabases();
+        plugin.setDatabaseName("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+
+        IEadEntry root = plugin.getRootElement();
+        List<IEadEntry> nodes = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            nodes.add(plugin.addNodeWithoutSaving(root));
+        }
+        savedNodes.clear();
+        savedNodeBatches.clear();
+
+        plugin.saveNodes(nodes);
+
+        assertTrue("no node may be stored on its own", savedNodes.isEmpty());
+        assertEquals(1, savedNodeBatches.size());
+        assertEquals(3, savedNodeBatches.get(0).size());
     }
 
     @Test

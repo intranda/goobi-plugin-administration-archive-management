@@ -58,6 +58,11 @@ public class ArchiveManagementManager implements Serializable {
             Pattern.compile(
                     "<corporate name=\'(.*?)\' mainvalue=\'(.*?)\' subvalue=\'(.*?)\' number=\'(.*?)\'(?: source=\'(.+?)\' value=\'(.+?)\')? \\/>");
 
+    /**
+     * number of nodes that are written with a single insert statement
+     */
+    private static final int SAVE_BATCH_SIZE = 50;
+
     public static void setConfiguredNodes(List<INodeType> configuredNodes) {
         ArchiveManagementManager.configuredNodes = configuredNodes;
     }
@@ -172,9 +177,34 @@ public class ArchiveManagementManager implements Serializable {
 
         log.debug("Save {} records", nodes.size());
 
+        for (int from = 0; from < nodes.size(); from += SAVE_BATCH_SIZE) {
+            List<IEadEntry> batch = nodes.subList(from, Math.min(from + SAVE_BATCH_SIZE, nodes.size()));
+            List<Object> parameters = new ArrayList<>();
+            String values = createNodeValues(archiveId, batch, parameters);
+
+            String sql = insertSql + values
+                    + "ON DUPLICATE KEY UPDATE  uuid = VALUES(uuid), hierarchy = VALUES(hierarchy), order_number = VALUES(order_number), "
+                    + "node_type =  VALUES(node_type), sequence = VALUES(sequence), processtitle = VALUES(processtitle), "
+                    + "processtitle = VALUES(processtitle), parent_id = VALUES(parent_id), label = VALUES(label), data = VALUES(data)";
+
+            try (Connection connection = MySQLHelper.getInstance().getConnection()) {
+                QueryRunner run = new QueryRunner();
+                run.update(connection, sql, parameters.toArray());
+            } catch (SQLException e) {
+                log.error(e);
+            }
+        }
+    }
+
+    /**
+     * create the values clause for the given nodes and collect the parameters that belong to it.
+     *
+     * Label and metadata of every node are passed as parameters, so each node contributes two placeholders and two parameters. They have to be
+     * collected for every node, not only for the last one of a batch, otherwise the statement is rejected because of a wrong parameter count.
+     */
+    static String createNodeValues(Integer archiveId, List<IEadEntry> nodes, List<Object> parameters) {
         StringBuilder values = new StringBuilder();
-        for (int i = 0; i < nodes.size(); i++) {
-            IEadEntry entry = nodes.get(i);
+        for (IEadEntry entry : nodes) {
             if (values.length() > 0) {
                 values.append(", ");
             }
@@ -206,25 +236,11 @@ public class ArchiveManagementManager implements Serializable {
             }
             values.append(parentId);
             values.append(", ?, ? )");
-            String metadata = entry.getDataAsXml();
 
-            // save every 50 records or when we reached the last one
-            if (i % 50 == 49 || i + 1 == nodes.size()) {
-                StringBuilder sql = new StringBuilder(insertSql);
-                sql.append(values.toString());
-                sql.append("ON DUPLICATE KEY UPDATE  uuid = VALUES(uuid), hierarchy = VALUES(hierarchy), order_number = VALUES(order_number), "
-                        + "node_type =  VALUES(node_type), sequence = VALUES(sequence), processtitle = VALUES(processtitle), "
-                        + "processtitle = VALUES(processtitle), parent_id = VALUES(parent_id), label = VALUES(label), data = VALUES(data)");
-                try (Connection connection = MySQLHelper.getInstance().getConnection()) {
-                    QueryRunner run = new QueryRunner();
-                    run.update(connection, sql.toString(), entry.getLabel(), metadata);
-                } catch (SQLException e) {
-                    log.error(e);
-                }
-                // reset values
-                values = new StringBuilder();
-            }
+            parameters.add(entry.getLabel());
+            parameters.add(entry.getDataAsXml());
         }
+        return values.toString();
     }
 
     public static void updateNodeHierarchy(Integer archiveId, List<IEadEntry> nodes) {

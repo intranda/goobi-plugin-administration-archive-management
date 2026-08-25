@@ -39,6 +39,20 @@ public interface IArchiveManagementAdministrationPlugin extends IAdministrationP
 
     public void addNode();
 
+    /**
+     * create a new node as last child of the given parent node and return it. The node is neither stored nor selected. Use {@link #saveNodes(List)}
+     * to store the created nodes in batches.
+     *
+     * Intended for mass imports: storing every single node causes one database round trip per node, and selecting a node stores the previously
+     * selected one and walks the whole subtree to lock it.
+     */
+    public IEadEntry addNodeWithoutSaving(IEadEntry parentNode);
+
+    /**
+     * store the given nodes with as few database statements as possible
+     */
+    public void saveNodes(List<IEadEntry> nodes);
+
     public void updateSingleNode();
 
     public List<IRecordGroup> getRecordGroups();

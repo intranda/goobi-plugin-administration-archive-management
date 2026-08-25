@@ -1061,35 +1061,57 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     @Override
     public void addNode() {
-        if (selectedEntry != null) {
-            EadEntry entry =
-                    new EadEntry(selectedEntry.isHasChildren() ? selectedEntry.getSubEntryList().size() : 0, selectedEntry.getHierarchy() + 1);
-            entry.setId("id_" + UUID.randomUUID());
-            // initial metadata values
-            List<IValue> titleData = new ArrayList<>();
-            if (StringUtils.isNotBlank(config.getNodeDefaultTitle())) {
-                titleData.add(new ExtendendValue(null, config.getNodeDefaultTitle(), null, null));
-                entry.setLabel(config.getNodeDefaultTitle());
-            }
-            for (IMetadataField emf : config.getConfiguredFields()) {
-                if (emf.isGroup()) {
-                    NodeInitializer.loadGroupMetadata(entry, emf, null);
-                } else if (emf.getXpath().contains("unittitle")) {
-                    IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, titleData);
-                    NodeInitializer.addFieldToNode(entry, toAdd);
-                } else {
-                    NodeInitializer.addFieldToEntry(entry, emf, null);
-                }
-            }
-            entry.setNodeType(selectedEntry.getNodeType());
-            selectedEntry.addSubEntry(entry);
-            selectedEntry.setDisplayChildren(true);
-            selectedEntry.calculateFingerprint();
+        IEadEntry entry = createNode(selectedEntry);
+        if (entry != null) {
             ArchiveManagementManager.saveNode(recordGroup.getId(), entry);
             setSelectedEntry(entry);
 
             resetFlatList();
         }
+    }
+
+    @Override
+    public IEadEntry addNodeWithoutSaving(IEadEntry parentNode) {
+        return createNode(parentNode);
+    }
+
+    @Override
+    public void saveNodes(List<IEadEntry> nodes) {
+        if (recordGroup != null && nodes != null && !nodes.isEmpty()) {
+            ArchiveManagementManager.saveNodes(recordGroup.getId(), nodes);
+        }
+    }
+
+    /**
+     * create a new node as last child of the given parent node. The node is neither stored nor selected, the caller decides about both.
+     */
+    private IEadEntry createNode(IEadEntry parentNode) {
+        if (parentNode == null) {
+            return null;
+        }
+        EadEntry entry = new EadEntry(parentNode.isHasChildren() ? parentNode.getSubEntryList().size() : 0, parentNode.getHierarchy() + 1);
+        entry.setId("id_" + UUID.randomUUID());
+        // initial metadata values
+        List<IValue> titleData = new ArrayList<>();
+        if (StringUtils.isNotBlank(config.getNodeDefaultTitle())) {
+            titleData.add(new ExtendendValue(null, config.getNodeDefaultTitle(), null, null));
+            entry.setLabel(config.getNodeDefaultTitle());
+        }
+        for (IMetadataField emf : config.getConfiguredFields()) {
+            if (emf.isGroup()) {
+                NodeInitializer.loadGroupMetadata(entry, emf, null);
+            } else if (emf.getXpath().contains("unittitle")) {
+                IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, titleData);
+                NodeInitializer.addFieldToNode(entry, toAdd);
+            } else {
+                NodeInitializer.addFieldToEntry(entry, emf, null);
+            }
+        }
+        entry.setNodeType(parentNode.getNodeType());
+        parentNode.addSubEntry(entry);
+        parentNode.setDisplayChildren(true);
+        parentNode.calculateFingerprint();
+        return entry;
     }
 
     @Override
