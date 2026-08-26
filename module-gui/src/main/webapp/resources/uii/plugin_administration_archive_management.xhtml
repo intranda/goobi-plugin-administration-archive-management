@@ -16,17 +16,7 @@
     <composite:interface>
     </composite:interface>
     <composite:implementation>
-
-        <h:panelGroup
-            rendered="#{!LoginForm.hasRole('Plugin_Administration_Archive_Management')}"
-            styleClass="color-box bg-hot text-white d-flex flex-row p-3">
-            <h:outputText
-                styleClass="fw-bold"
-                value="#{msgs.plugin_administration_missingPermission} Plugin_Administration_Archive_Management" />
-        </h:panelGroup>
-        <h:panelGroup
-            layout="block"
-            rendered="#{LoginForm.hasRole('Plugin_Administration_Archive_Management')}">
+        <util:missing-rights rights="Plugin_Administration_Archive_Management">
             <!-- Selection area for a record group to load -->
             <intranda:box
                 boxForm="true"
@@ -1239,7 +1229,7 @@
             <ui:include src="linkNodeModal.xhtml" />
             <ui:include src="createNodesModal.xhtml" />
             <ui:include src="vocabularyModal.xhtml" />
-        </h:panelGroup>
+        </util:missing-rights>
         <script>
             function submitSearch(e) {
                 e.stopPropagation();
