@@ -51,6 +51,8 @@ public interface IMetadataField {
 
     public boolean isImportMetadataInChild();
 
+    public boolean isInheritValueFromParent();
+
     public String getValidationType();
 
     public String getRegularExpression();
@@ -66,6 +68,8 @@ public interface IMetadataField {
     public void setMetadataName(String value);
 
     public void setImportMetadataInChild(boolean value);
+
+    public void setInheritValueFromParent(boolean value);
 
     public void setValidationType(String value);
 

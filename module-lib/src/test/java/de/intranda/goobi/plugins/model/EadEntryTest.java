@@ -631,4 +631,177 @@ public class EadEntryTest {
         assertTrue(entry.isChildrenHaveProcesses());
 
     }
+
+    /**
+     * Create a node with a single field named "origination" in the identity statement area.
+     */
+    private EadEntry createEntryWithOriginationField(int order, boolean inheritValueFromParent, String value) {
+        EadEntry entry = new EadEntry(order, order);
+        IMetadataField field = new EadMetadataField("origination", 1, "xpath", "text", false, true, true, "input", "Origination", false, null, null,
+                false, null, null, false, null);
+        field.setInheritValueFromParent(inheritValueFromParent);
+        field.setEadEntry(entry);
+        field.addValue();
+        if (value != null) {
+            field.getValues().get(0).setValue(value);
+        }
+        List<IMetadataField> list = new ArrayList<>();
+        list.add(field);
+        entry.setIdentityStatementAreaList(list);
+        return entry;
+    }
+
+    @Test
+    public void testResolveInheritedFieldIsNullWhenInheritanceIsDisabled() {
+        EadEntry parent = createEntryWithOriginationField(0, false, "parent value");
+        EadEntry child = createEntryWithOriginationField(1, false, null);
+        parent.addSubEntry(child);
+
+        assertNull(child.resolveInheritedField(child.getFieldByName("origination")));
+    }
+
+    @Test
+    public void testResolveInheritedFieldIsNullWhenFieldIsFilled() {
+        EadEntry parent = createEntryWithOriginationField(0, true, "parent value");
+        EadEntry child = createEntryWithOriginationField(1, true, "own value");
+        parent.addSubEntry(child);
+
+        assertNull(child.resolveInheritedField(child.getFieldByName("origination")));
+    }
+
+    @Test
+    public void testResolveInheritedFieldUsesParentValue() {
+        EadEntry parent = createEntryWithOriginationField(0, true, "parent value");
+        EadEntry child = createEntryWithOriginationField(1, true, null);
+        parent.addSubEntry(child);
+
+        IMetadataField resolved = child.resolveInheritedField(child.getFieldByName("origination"));
+        assertNotNull(resolved);
+        assertEquals("parent value", resolved.getValues().get(0).getValue());
+    }
+
+    @Test
+    public void testResolveInheritedFieldSkipsEmptyAncestors() {
+        EadEntry grandParent = createEntryWithOriginationField(0, true, "grand parent value");
+        EadEntry parent = createEntryWithOriginationField(1, true, null);
+        EadEntry child = createEntryWithOriginationField(2, true, null);
+        grandParent.addSubEntry(parent);
+        parent.addSubEntry(child);
+
+        IMetadataField resolved = child.resolveInheritedField(child.getFieldByName("origination"));
+        assertNotNull(resolved);
+        assertEquals("grand parent value", resolved.getValues().get(0).getValue());
+    }
+
+    @Test
+    public void testResolveInheritedFieldIsNullWhenNoAncestorIsFilled() {
+        EadEntry parent = createEntryWithOriginationField(0, true, null);
+        EadEntry child = createEntryWithOriginationField(1, true, null);
+        parent.addSubEntry(child);
+
+        assertNull(child.resolveInheritedField(child.getFieldByName("origination")));
+    }
+
+    @Test
+    public void testResolveInheritedFieldIsNullForRootNode() {
+        EadEntry root = createEntryWithOriginationField(0, true, null);
+
+        assertNull(root.resolveInheritedField(root.getFieldByName("origination")));
+    }
+
+    @Test
+    public void testResolveInheritedFieldAlsoWorksForFieldsImportedInChild() {
+        EadEntry parent = createEntryWithOriginationField(0, true, "parent value");
+        parent.getFieldByName("origination").setImportMetadataInChild(true);
+        EadEntry child = createEntryWithOriginationField(1, true, null);
+        parent.addSubEntry(child);
+
+        IMetadataField resolved = child.resolveInheritedField(child.getFieldByName("origination"));
+        assertNotNull(resolved);
+        assertEquals("parent value", resolved.getValues().get(0).getValue());
+    }
+
+    @Test
+    public void testCollectFieldsForProcessCreationAddsAnInheritedAncestorFieldOnlyOnce() {
+        EadEntry parent = createEntryWithOriginationField(0, true, "parent value");
+        parent.getFieldByName("origination").setImportMetadataInChild(true);
+        EadEntry child = createEntryWithOriginationField(1, true, null);
+        parent.addSubEntry(child);
+
+        // the field is both inherited and imported into the child, it must not end up twice in the mets file
+        List<IMetadataField> fields = child.collectFieldsForProcessCreation();
+        assertEquals(1, fields.size());
+        assertEquals("parent value", fields.get(0).getValues().get(0).getValue());
+    }
+
+    @Test
+    public void testCollectFieldsForProcessCreationContainsOwnFields() {
+        EadEntry entry = createEntryWithOriginationField(0, false, "own value");
+
+        List<IMetadataField> fields = entry.collectFieldsForProcessCreation();
+        assertEquals(1, fields.size());
+        assertEquals("own value", fields.get(0).getValues().get(0).getValue());
+    }
+
+    @Test
+    public void testCollectFieldsForProcessCreationUsesAncestorFieldForEmptyInheritingField() {
+        EadEntry parent = createEntryWithOriginationField(0, true, "parent value");
+        EadEntry child = createEntryWithOriginationField(1, true, null);
+        parent.addSubEntry(child);
+
+        List<IMetadataField> fields = child.collectFieldsForProcessCreation();
+        assertEquals(1, fields.size());
+        assertEquals("parent value", fields.get(0).getValues().get(0).getValue());
+    }
+
+    @Test
+    public void testCollectFieldsForProcessCreationKeepsAncestorFieldsImportedInChild() {
+        EadEntry parent = createEntryWithOriginationField(0, false, "parent value");
+        parent.getFieldByName("origination").setImportMetadataInChild(true);
+        EadEntry child = createEntryWithOriginationField(1, false, "own value");
+        parent.addSubEntry(child);
+
+        List<IMetadataField> fields = child.collectFieldsForProcessCreation();
+        assertEquals(2, fields.size());
+        assertEquals("own value", fields.get(0).getValues().get(0).getValue());
+        assertEquals("parent value", fields.get(1).getValues().get(0).getValue());
+    }
+
+    @Test
+    public void testCollectFieldsWithInheritedValuesUsesAncestorFieldForEmptyInheritingField() {
+        EadEntry parent = createEntryWithOriginationField(0, true, "parent value");
+        EadEntry child = createEntryWithOriginationField(1, true, null);
+        parent.addSubEntry(child);
+
+        List<IMetadataField> fields = child.collectFieldsWithInheritedValues();
+        assertEquals(1, fields.size());
+        assertEquals("parent value", fields.get(0).getValues().get(0).getValue());
+    }
+
+    @Test
+    public void testCollectFieldsWithInheritedValuesExcludesAncestorFieldsImportedInChild() {
+        EadEntry parent = createEntryWithOriginationField(0, false, "parent value");
+        parent.getFieldByName("origination").setImportMetadataInChild(true);
+        EadEntry child = createEntryWithOriginationField(1, false, "own value");
+        parent.addSubEntry(child);
+
+        // importMetadataInChild is only evaluated when a process is created, not when its metadata is updated
+        List<IMetadataField> fields = child.collectFieldsWithInheritedValues();
+        assertEquals(1, fields.size());
+        assertEquals("own value", fields.get(0).getValues().get(0).getValue());
+    }
+
+    @Test
+    public void testMetadataIsNotLoadedForNewNode() {
+        EadEntry entry = new EadEntry(0, 0);
+
+        assertFalse(entry.isMetadataLoaded());
+    }
+
+    @Test
+    public void testMetadataIsLoadedWhenAnAreaContainsFields() {
+        EadEntry entry = createEntryWithOriginationField(0, false, null);
+
+        assertTrue(entry.isMetadataLoaded());
+    }
 }

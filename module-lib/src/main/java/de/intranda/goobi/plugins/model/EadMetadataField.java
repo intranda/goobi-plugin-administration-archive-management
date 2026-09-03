@@ -70,6 +70,11 @@ public class EadMetadataField implements IMetadataField {
     /** defines if this field gets inherited when a child node is created */
     private boolean importMetadataInChild;
 
+    /**
+     * defines if the value of the closest ancestor node is used when creating a process and this field is empty in the current node
+     */
+    private boolean inheritValueFromParent;
+
     /** defines the validation type, possible values are unique, required, unique+required, regex, regex+required */
     private String validationType;
 
@@ -213,6 +218,7 @@ public class EadMetadataField implements IMetadataField {
         IMetadataField field = new EadMetadataField(name, level, xpath, xpathType, repeatable, visible, showField,
                 fieldType, metadataName, importMetadataInChild, validationType, regularExpression, searchable, viafSearchFields, viafDisplayFields,
                 group, vocabularyName);
+        field.setInheritValueFromParent(inheritValueFromParent);
         field.setSelectItemList(selectItemList);
         field.setSearchParameter(searchParameter);
         field.setSubfieldMap(subfieldMap);
@@ -276,6 +282,7 @@ public class EadMetadataField implements IMetadataField {
                     f.isVisible(), f.isShowField(), f.getFieldType(), f.getMetadataName(), f.isImportMetadataInChild(), f.getValidationType(),
                     f.getRegularExpression(), f.isSearchable(), f.getViafSearchFields(), f.getViafDisplayFields(), f.isGroup(),
                     f.getVocabularyName());
+            field.setInheritValueFromParent(f.isInheritValueFromParent());
             field.setSelectItemList(f.getSelectItemList());
             field.setSearchParameter(f.getSearchParameter());
             field.setSubfieldMap(subfieldMap);

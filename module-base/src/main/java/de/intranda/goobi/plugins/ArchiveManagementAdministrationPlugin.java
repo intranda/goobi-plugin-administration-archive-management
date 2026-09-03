@@ -1055,8 +1055,24 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private IEadEntry updateNode(IEadEntry entry) {
         if (!testMode) {
             loadMetadataForNode(entry);
+            loadMetadataForAncestors(entry);
         }
         return entry;
+    }
+
+    /**
+     * Initialize the metadata of all ancestors of the given node, as fields configured with {@code inheritValueFromParent} take their value from the
+     * closest ancestor holding a value. Nodes are created without their metadata, only the root node and the selected node are initialized when an
+     * archive is opened.
+     */
+    private void loadMetadataForAncestors(IEadEntry entry) {
+        IEadEntry ancestor = entry.getParentNode();
+        while (ancestor != null) {
+            if (!ancestor.isMetadataLoaded()) {
+                loadMetadataForNode(ancestor);
+            }
+            ancestor = ancestor.getParentNode();
+        }
     }
 
     @Override

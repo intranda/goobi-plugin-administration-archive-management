@@ -255,6 +255,8 @@ public class ArchiveManagementAdministrationPluginTest {
 
         // Setting up mocks for parentNode
         EasyMock.expect(parentNode.getSubEntryList()).andReturn(Collections.singletonList(selectedEntry)).anyTimes();
+        EasyMock.expect(parentNode.getParentNode()).andReturn(null).anyTimes();
+        EasyMock.expect(parentNode.isMetadataLoaded()).andReturn(true).anyTimes();
         parentNode.addSubEntry(copyNode);
         EasyMock.expectLastCall().once();
 
@@ -271,6 +273,7 @@ public class ArchiveManagementAdministrationPluginTest {
         EasyMock.expect(copyNode.getNotesAreaList()).andReturn(new ArrayList<>()).anyTimes();
         EasyMock.expect(copyNode.getDescriptionControlAreaList()).andReturn(new ArrayList<>()).anyTimes();
         EasyMock.expect(copyNode.getSubEntryList()).andReturn(new ArrayList<>()).anyTimes();
+        EasyMock.expect(copyNode.getParentNode()).andReturn(parentNode).anyTimes();
         copyNode.calculateFingerprint();
 
         copyNode.calculateFingerprint();
@@ -316,6 +319,61 @@ public class ArchiveManagementAdministrationPluginTest {
         flat = plugin.getFlatEntryList();
         // now flat list contains root element + first + second hierarchy
         assertEquals(5, flat.size());
+    }
+
+    @Test
+    public void testReadInheritValueFromParentConfiguration() {
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.getPossibleDatabases();
+        plugin.setDatabaseName("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+
+        IMetadataField origination = null;
+        IMetadataField unitid = null;
+        for (IMetadataField field : plugin.getConfig().getConfiguredFields()) {
+            if ("origination".equals(field.getName())) {
+                origination = field;
+            } else if ("unitid".equals(field.getName())) {
+                unitid = field;
+            }
+        }
+        assertNotNull(origination);
+        assertTrue(origination.isInheritValueFromParent());
+        // fields without the attribute don't inherit anything
+        assertNotNull(unitid);
+        assertFalse(unitid.isInheritValueFromParent());
+    }
+
+    @Test
+    public void testInheritValueFromParentIsAvailableOnLoadedNodes() {
+        LockingBean.resetAllLocks();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.getPossibleDatabases();
+        plugin.setDatabaseName("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+
+        assertTrue(plugin.getRootElement().getFieldByName("origination").isInheritValueFromParent());
+    }
+
+    @Test
+    public void testSelectingANodeLoadsTheMetadataOfItsAncestors() {
+        LockingBean.resetAllLocks();
+        ArchiveManagementAdministrationPlugin plugin = new ArchiveManagementAdministrationPlugin();
+        plugin.getPossibleDatabases();
+        plugin.setDatabaseName("fixture - ead.xml");
+        plugin.loadSelectedDatabase();
+
+        IEadEntry root = plugin.getRootElement();
+        IEadEntry child = root.getSubEntryList().get(0);
+        IEadEntry grandChild = child.getSubEntryList().get(0);
+        // opening an archive initializes the root node only
+        assertFalse(child.isMetadataLoaded());
+
+        plugin.setSelectedEntry(grandChild);
+
+        assertTrue(grandChild.isMetadataLoaded());
+        // a value can only be inherited from an ancestor whose metadata is available
+        assertTrue(child.isMetadataLoaded());
     }
 
     @Test

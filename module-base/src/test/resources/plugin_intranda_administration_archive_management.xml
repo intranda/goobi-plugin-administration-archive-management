@@ -114,7 +114,7 @@
         <!-- ============================== Context Area =============================== -->
 
 		<!-- Name der Provenienzstelle / Name of creator(s) -->
-        <metadata xpath="(./ead:archdesc/ead:did/ead:origination | ./ead:did/ead:origination)[1]" xpathType="element" name="origination" level="2" repeatable="true" rulesetName="Provenience"/>
+        <metadata xpath="(./ead:archdesc/ead:did/ead:origination | ./ead:did/ead:origination)[1]" xpathType="element" name="origination" level="2" repeatable="true" rulesetName="Provenience" inheritValueFromParent="true"/>
 
 		<!-- Rolle / Role -->
         <metadata xpath="(./ead:archdesc/ead:odd/ead:head | ./ead:odd/ead:head)[1]" xpathType="element" name="role" level="2" repeatable="false" fieldType="vocabulary">

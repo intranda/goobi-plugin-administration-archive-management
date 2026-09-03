@@ -3,7 +3,6 @@ package io.goobi.api.job;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -12,8 +11,6 @@ import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang3.StringUtils;
 import org.goobi.interfaces.IArchiveManagementAdministrationPlugin;
 import org.goobi.interfaces.IEadEntry;
-import org.goobi.interfaces.IMetadataField;
-import org.goobi.interfaces.IValue;
 import org.goobi.production.enums.PluginType;
 import org.goobi.production.flow.jobs.AbstractGoobiJob;
 import org.goobi.production.plugin.PluginLoader;
@@ -61,18 +58,9 @@ public class UpdateProcessJob extends AbstractGoobiJob {
             for (IEadEntry entry : nodes) {
                 if (StringUtils.isNotBlank(entry.getGoobiProcessTitle())) {
 
-                    // init metadata
-                    Map<String, List<IValue>> metadata = ArchiveManagementManager.loadMetadataForNode(entry.getDatabaseId());
-
-                    for (IMetadataField emf : archive.getConfig().getConfiguredFields()) {
-                        if (emf.isGroup()) {
-                            List<IValue> groups = metadata.get(emf.getName());
-                            NodeInitializer.loadGroupMetadata(entry, emf, groups);
-                        } else {
-                            List<IValue> values = metadata.get(emf.getName());
-                            IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, values);
-                            NodeInitializer.addFieldToNode(entry, toAdd);
-                        }
+                    // init metadata of the node and of its ancestors, values can be inherited from them
+                    for (IEadEntry nodeToInit : NodeInitializer.collectNodesToInitialize(entry)) {
+                        NodeInitializer.initEadNodeWithMetadata(nodeToInit, archive.getConfig().getConfiguredFields());
                     }
                     // copy metadata to process
                     entry.updateProcessWithNodeMetadata();

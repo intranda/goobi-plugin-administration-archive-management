@@ -248,6 +248,8 @@ public class ArchiveManagementConfiguration {
 
         }
 
+        field.setInheritValueFromParent(fieldConfig.getBoolean("@inheritValueFromParent", false));
+
         configureField(fieldConfig, field);
         return field;
     }

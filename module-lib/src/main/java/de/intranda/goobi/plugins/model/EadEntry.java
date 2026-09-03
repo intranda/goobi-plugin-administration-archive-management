@@ -889,30 +889,7 @@ public class EadEntry implements IEadEntry {
             Prefs prefs = process.getRegelsatz().getPreferences();
             DocStruct ds = ff.getDigitalDocument().getLogicalDocStruct();
 
-            for (IMetadataField emf : identityStatementAreaList) {
-                updateProcessMetadata(prefs, ds, emf);
-            }
-            for (IMetadataField emf : contextAreaList) {
-                updateProcessMetadata(prefs, ds, emf);
-            }
-
-            for (IMetadataField emf : contentAndStructureAreaAreaList) {
-                updateProcessMetadata(prefs, ds, emf);
-            }
-
-            for (IMetadataField emf : accessAndUseAreaList) {
-                updateProcessMetadata(prefs, ds, emf);
-            }
-
-            for (IMetadataField emf : alliedMaterialsAreaList) {
-                updateProcessMetadata(prefs, ds, emf);
-            }
-
-            for (IMetadataField emf : notesAreaList) {
-                updateProcessMetadata(prefs, ds, emf);
-            }
-
-            for (IMetadataField emf : descriptionControlAreaList) {
+            for (IMetadataField emf : collectFieldsWithInheritedValues()) {
                 updateProcessMetadata(prefs, ds, emf);
             }
 
@@ -1217,73 +1194,100 @@ public class EadEntry implements IEadEntry {
             addNoteId(prefs, logical);
 
             // import configured metadata
-            for (IMetadataField emf : getIdentityStatementAreaList()) {
+            for (IMetadataField emf : collectFieldsForProcessCreation()) {
                 createModsMetadata(prefs, emf, logical);
-            }
-            for (IMetadataField emf : getContextAreaList()) {
-                createModsMetadata(prefs, emf, logical);
-            }
-            for (IMetadataField emf : getContentAndStructureAreaAreaList()) {
-                createModsMetadata(prefs, emf, logical);
-            }
-            for (IMetadataField emf : getAccessAndUseAreaList()) {
-                createModsMetadata(prefs, emf, logical);
-            }
-            for (IMetadataField emf : getAlliedMaterialsAreaList()) {
-                createModsMetadata(prefs, emf, logical);
-            }
-            for (IMetadataField emf : getNotesAreaList()) {
-                createModsMetadata(prefs, emf, logical);
-            }
-            for (IMetadataField emf : getDescriptionControlAreaList()) {
-                createModsMetadata(prefs, emf, logical);
-            }
-
-            IEadEntry parent = getParentNode();
-            while (parent != null) {
-                for (IMetadataField emf : parent.getIdentityStatementAreaList()) {
-                    if (emf.isImportMetadataInChild()) {
-                        createModsMetadata(prefs, emf, logical);
-                    }
-                }
-                for (IMetadataField emf : parent.getContextAreaList()) {
-                    if (emf.isImportMetadataInChild()) {
-                        createModsMetadata(prefs, emf, logical);
-                    }
-                }
-                for (IMetadataField emf : parent.getContentAndStructureAreaAreaList()) {
-                    if (emf.isImportMetadataInChild()) {
-                        createModsMetadata(prefs, emf, logical);
-                    }
-                }
-                for (IMetadataField emf : parent.getAccessAndUseAreaList()) {
-                    if (emf.isImportMetadataInChild()) {
-                        createModsMetadata(prefs, emf, logical);
-                    }
-                }
-                for (IMetadataField emf : parent.getAlliedMaterialsAreaList()) {
-                    if (emf.isImportMetadataInChild()) {
-                        createModsMetadata(prefs, emf, logical);
-                    }
-                }
-                for (IMetadataField emf : parent.getNotesAreaList()) {
-                    if (emf.isImportMetadataInChild()) {
-                        createModsMetadata(prefs, emf, logical);
-                    }
-                }
-                for (IMetadataField emf : parent.getDescriptionControlAreaList()) {
-                    if (emf.isImportMetadataInChild()) {
-                        createModsMetadata(prefs, emf, logical);
-                    }
-                }
-
-                parent = parent.getParentNode();
             }
 
         } catch (UGHException e) {
             log.error(e);
         }
         return fileformat;
+    }
+
+    /**
+     * Collect all metadata fields that are written into the mets file of a newly created process. Contains the fields of the current node, whereby
+     * empty fields configured with {@code inheritValueFromParent} are replaced by the field of the closest ancestor node holding a value. Fields of
+     * ancestor nodes configured with {@code importMetadataInChild} are appended.
+     *
+     * @return list of fields to write, in the order they are added to the mets file
+     */
+    List<IMetadataField> collectFieldsForProcessCreation() {
+        List<IMetadataField> fields = collectFieldsWithInheritedValues();
+
+        IEadEntry ancestor = getParentNode();
+        while (ancestor != null) {
+            for (IMetadataField emf : getAllAreaFields(ancestor)) {
+                // a field that was inherited above is already part of the list, adding it again would duplicate the metadata
+                if (emf.isImportMetadataInChild() && fields.stream().noneMatch(field -> field == emf)) {
+                    fields.add(emf);
+                }
+            }
+            ancestor = ancestor.getParentNode();
+        }
+        return fields;
+    }
+
+    /**
+     * Check whether the metadata of this node was loaded from the database. Nodes are created from the node table alone, their metadata is added
+     * afterwards, so a node without any field in any of the seven areas was not initialized yet.
+     *
+     * @return true if the metadata of this node is available
+     */
+    @Override
+    public boolean isMetadataLoaded() {
+        return !getAllAreaFields(this).isEmpty();
+    }
+
+    /**
+     * Collect the metadata fields of the current node, whereby empty fields configured with {@code inheritValueFromParent} are replaced by the field
+     * of the closest ancestor node holding a value.
+     *
+     * @return list of fields of the current node, in display order
+     */
+    List<IMetadataField> collectFieldsWithInheritedValues() {
+        List<IMetadataField> fields = new ArrayList<>();
+        for (IMetadataField emf : getAllAreaFields(this)) {
+            IMetadataField inherited = resolveInheritedField(emf);
+            fields.add(inherited != null ? inherited : emf);
+        }
+        return fields;
+    }
+
+    /**
+     * Get the metadata fields of all seven areas of the given node in display order.
+     */
+    private static List<IMetadataField> getAllAreaFields(IEadEntry entry) {
+        List<IMetadataField> fields = new ArrayList<>();
+        fields.addAll(entry.getIdentityStatementAreaList());
+        fields.addAll(entry.getContextAreaList());
+        fields.addAll(entry.getContentAndStructureAreaAreaList());
+        fields.addAll(entry.getAccessAndUseAreaList());
+        fields.addAll(entry.getAlliedMaterialsAreaList());
+        fields.addAll(entry.getNotesAreaList());
+        fields.addAll(entry.getDescriptionControlAreaList());
+        return fields;
+    }
+
+    /**
+     * Find the field of the closest ancestor node that provides the value for the given field of this node.
+     *
+     * @param emf field of the current node
+     * @return the field of the closest ancestor node holding a value, {@code null} if the given field does not inherit values, is filled itself or if
+     *         no ancestor holds a value
+     */
+    IMetadataField resolveInheritedField(IMetadataField emf) {
+        if (emf == null || !emf.isInheritValueFromParent() || emf.isFilled()) {
+            return null;
+        }
+        IEadEntry ancestor = getParentNode();
+        while (ancestor != null) {
+            IMetadataField ancestorField = ancestor.getFieldByName(emf.getName());
+            if (ancestorField != null && ancestorField.isFilled()) {
+                return ancestorField;
+            }
+            ancestor = ancestor.getParentNode();
+        }
+        return null;
     }
 
     private void addNoteId(Prefs prefs, DocStruct logical) {

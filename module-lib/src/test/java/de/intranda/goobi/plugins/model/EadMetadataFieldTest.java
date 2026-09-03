@@ -130,18 +130,29 @@ public class EadMetadataFieldTest {
 
     @Test
     public void testHashCode() {
-        assertEquals(-422308367, eadMetadataField.hashCode());
+        assertEquals(-360040604, eadMetadataField.hashCode());
         eadMetadataField.setFieldType("other");
-        assertEquals(899623431, eadMetadataField.hashCode());
+        assertEquals(961891194, eadMetadataField.hashCode());
         eadMetadataField.setMetadataName("metadata");
-        assertEquals(-605234116, eadMetadataField.hashCode());
+        assertEquals(-542966353, eadMetadataField.hashCode());
     }
 
     @Test
     public void testToString() {
         assertEquals(
-                "EadMetadataField(name=name, level=1, xpath=xpath, xpathType=text, repeatable=false, values=null, visible=true, showField=true, selectItemList=null, vocabularyName=null, searchParameter=null, fieldType=input, metadataName=metadataName, importMetadataInChild=false, validationType=required, regularExpression=regex, valid=true, validationError=null, searchable=true, viafSearchFields=viafSearchFields, viafDisplayFields=viafDisplayFields, subfields=[], group=false, groups=[], subfieldMap=null)",
+                "EadMetadataField(name=name, level=1, xpath=xpath, xpathType=text, repeatable=false, values=null, visible=true, showField=true, selectItemList=null, vocabularyName=null, searchParameter=null, fieldType=input, metadataName=metadataName, importMetadataInChild=false, inheritValueFromParent=false, validationType=required, regularExpression=regex, valid=true, validationError=null, searchable=true, viafSearchFields=viafSearchFields, viafDisplayFields=viafDisplayFields, subfields=[], group=false, groups=[], subfieldMap=null)",
                 eadMetadataField.toString());
     }
 
+    @Test
+    public void testCopyKeepsInheritValueFromParent() {
+        EadMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required",
+                "regex", true, "viafSearchFields", "viafDisplayFields", false, null);
+        field.setInheritValueFromParent(true);
+        field.addValue();
+
+        IMetadataField copy = field.copy("", "", true);
+
+        assertTrue(copy.isInheritValueFromParent());
+    }
 }

@@ -1,5 +1,6 @@
 package de.intranda.goobi.plugins.persistence;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +39,26 @@ public class NodeInitializer {
         return entry;
     }
 
+    /**
+     * Collect the nodes whose metadata has to be loaded before the metadata of the given node can be written into its process. Contains the node
+     * itself and all of its ancestors, as fields configured with {@code inheritValueFromParent} take their value from the closest ancestor holding a
+     * value. Nodes that were initialized before are skipped, initializing a node twice would duplicate its fields.
+     *
+     * @param entry node whose metadata is used
+     * @return the nodes to initialize, ordered from the given node upwards
+     */
+    public static List<IEadEntry> collectNodesToInitialize(IEadEntry entry) {
+        List<IEadEntry> nodes = new ArrayList<>();
+        IEadEntry current = entry;
+        while (current != null) {
+            if (!current.isMetadataLoaded()) {
+                nodes.add(current);
+            }
+            current = current.getParentNode();
+        }
+        return nodes;
+    }
+
     public static void loadGroupMetadata(IEadEntry entry, IMetadataField template, List<IValue> groups) {
         IMetadataField instance = new EadMetadataField(template.getName(), template.getLevel(), template.getXpath(), template.getXpathType(),
                 template.isRepeatable(),
@@ -45,6 +66,7 @@ public class NodeInitializer {
                 template.getValidationType(),
                 template.getRegularExpression(), template.isSearchable(), template.getViafSearchFields(), template.getViafDisplayFields(),
                 template.isGroup(), template.getVocabularyName());
+        instance.setInheritValueFromParent(template.isInheritValueFromParent());
         instance.setSubfieldMap(template.getSubfieldMap());
         instance.setValidationError(template.getValidationError());
         instance.setSelectItemList(template.getSelectItemList());
@@ -72,6 +94,7 @@ public class NodeInitializer {
                 emf.getRegularExpression(), emf.isSearchable(), emf.getViafSearchFields(), emf.getViafDisplayFields(), emf.isGroup(),
                 emf.getVocabularyName());
 
+        toAdd.setInheritValueFromParent(emf.isInheritValueFromParent());
         toAdd.setSubfieldMap(emf.getSubfieldMap());
         toAdd.setValidationError(emf.getValidationError());
         toAdd.setSelectItemList(emf.getSelectItemList());
