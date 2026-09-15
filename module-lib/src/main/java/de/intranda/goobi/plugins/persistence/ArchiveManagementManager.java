@@ -638,15 +638,31 @@ public class ArchiveManagementManager implements Serializable {
     }
 
     public static Integer findNodeById(String metadataName, String metadataValue) {
+        return findNodeById(metadataName, metadataValue, null);
+    }
+
+    /**
+     * Find the database id of a node with the given metadata value. The search can be restricted to a single record group.
+     *
+     * @param metadataName name of the metadata field to search in
+     * @param metadataValue value to search for
+     * @param recordGroupId if not null, only nodes within this record group are taken into account
+     * @return database id of the first matching node or null, if no node was found
+     */
+    public static Integer findNodeById(String metadataName, String metadataValue, Integer recordGroupId) {
         StringBuilder sql = new StringBuilder();
         sql.append("select id from archive_record_node WHERE ExtractValue(data, '/xml/")
                 .append(metadataName)
-                .append("') = '")
-                .append(metadataValue)
-                .append("'");
+                .append("') = ?");
+        if (recordGroupId != null) {
+            sql.append(" AND archive_record_group_id = ?");
+        }
         try (Connection connection = MySQLHelper.getInstance().getConnection()) {
             QueryRunner run = new QueryRunner();
-            return run.query(connection, sql.toString(), MySQLHelper.resultSetToIntegerHandler);
+            if (recordGroupId != null) {
+                return run.query(connection, sql.toString(), MySQLHelper.resultSetToIntegerHandler, metadataValue, recordGroupId);
+            }
+            return run.query(connection, sql.toString(), MySQLHelper.resultSetToIntegerHandler, metadataValue);
         } catch (SQLException e) {
             log.error(e);
         }
