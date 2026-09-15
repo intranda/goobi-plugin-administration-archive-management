@@ -554,8 +554,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     /**
-     * Collect all namespaces that can be used within the configured xpaths: the namespace configured in eadNamespaceRead plus every prefixed namespace
-     * that is declared on the root element of the ead file. This way xpaths can address namespaces like xlink without configuring them separately.
+     * Collect all namespaces that can be used within the configured xpaths: the namespace configured in eadNamespaceRead plus every prefixed
+     * namespace that is declared on the root element of the ead file. This way xpaths can address namespaces like xlink without configuring them
+     * separately.
      *
      * The configured namespace always wins, as its prefix is the one used in the configured xpaths. Namespaces without a prefix are skipped, xpath
      * always resolves an unprefixed name against the empty namespace and jdom rejects any attempt to redefine it.
@@ -3306,7 +3307,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
             }
             try {
                 // export into temporary file, copy temp file to destination, remove temp file
-                Path downloadFile = Paths.get(exportFolder, databaseName.replace(" ", "_"));
+                String filename = databaseName.replace(" ", "_");
+                if (!filename.endsWith(".xml")) {
+                    filename = filename + ".xml";
+                }
+
+                Path downloadFile = Paths.get(exportFolder, filename);
                 Path tempFile = StorageProvider.getInstance().createTemporaryFile(databaseName.replace(" ", "_"), "xml");
                 outputter.output(document, Files.newOutputStream(tempFile));
                 StorageProvider.getInstance().copyFile(tempFile, downloadFile);
