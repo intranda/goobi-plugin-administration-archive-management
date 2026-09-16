@@ -355,7 +355,7 @@
             <child>tectonics</child>
             <child>inventory</child>
         </node>
-        <node name="tectonics" icon="archive" processTemplateId="456" rootNode="true" allowProcessCreation="false">
+        <node name="tectonics" icon="binary-tree" processTemplateId="456" rootNode="true" allowProcessCreation="false">
             <child>tectonics</child>
             <child>folder</child>
         </node>
