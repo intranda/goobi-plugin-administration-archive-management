@@ -381,7 +381,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     /**
      * fieldType Get the database names and file names from the basex databases
-     * 
+     *
      * @return
      */
 
@@ -406,7 +406,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     /**
      * Get the database names without file names from the basex databases
-     * 
+     *
      * @return
      */
 
@@ -1215,7 +1215,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     /**
      * check the existence of the selected file and save it to the private field fileToUploadExists
-     * 
+     *
      * @param ctx FacesContext
      * @param comp UIComponent
      * @param value Object
@@ -1234,7 +1234,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     /**
      * process the file name of the selected file in such way that the file name is assured to contain no white spaces as well as it has the correct
      * extension .xml
-     * 
+     *
      * @param file the selected file as a jakarta.servlet.http.Part object
      * @return the corrected file name as a string
      */
@@ -2233,7 +2233,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
      * prepare a ProcessTitleGenerator object suitable for this scenario
      *
      * @param fileformat
-     * 
+     *
      * @return ProcessTitleGenerator object
      */
     private ProcessTitleGenerator prepareTitleGenerator(DocStruct docstruct) {
@@ -2674,7 +2674,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     /**
      * Remove goobi ids for processes which have been deleted
-     * 
+     *
      * @return A list of all node ids which have no valid goobi Id
      */
     public List<String> removeInvalidProcessIds() {
@@ -2780,7 +2780,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     /**
      * For each node id in the list, find if there is a goobi process with that id as metadatum, and if so set the goobi id in the node.
-     * 
+     *
      * @param lstNodesWithoutIds
      * @return A list of labels for any nodes which have been given a new goobi id
      */
@@ -3004,9 +3004,9 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
     /**
      * Replace an existing node in the EAD document in <baseX with the selected node.
-     * 
+     *
      * The method searches for a node with the same id in the selected XML file and replaces the complete node and its children with the new content
-     * 
+     *
      */
 
     @Override
@@ -3030,6 +3030,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     private void loadMetadataForNode(IEadEntry entry) {
         // clear old, outdated metadata
         if (entry.getDatabaseId() != null) {
+            Map<String, IMetadataField> previousFieldsByName = collectFieldsByName(entry);
+
             entry.getIdentityStatementAreaList().clear();
             entry.getContextAreaList().clear();
             entry.getContentAndStructureAreaAreaList().clear();
@@ -3047,11 +3049,42 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
                 } else {
                     List<IValue> values = metadata.get(emf.getName());
                     IMetadataField toAdd = NodeInitializer.addFieldToEntry(entry, emf, values);
+                    IMetadataField previousField = previousFieldsByName.get(emf.getName());
+                    if (previousField != null) {
+                        toAdd.setValid(previousField.isValid());
+                        toAdd.setValidationError(previousField.getValidationError());
+                    }
                     NodeInitializer.addFieldToNode(entry, toAdd);
                 }
             }
             entry.calculateFingerprint();
         }
+    }
+
+    private Map<String, IMetadataField> collectFieldsByName(IEadEntry entry) {
+        Map<String, IMetadataField> fields = new HashMap<>();
+        for (IMetadataField emf : entry.getIdentityStatementAreaList()) {
+            fields.put(emf.getName(), emf);
+        }
+        for (IMetadataField emf : entry.getContextAreaList()) {
+            fields.put(emf.getName(), emf);
+        }
+        for (IMetadataField emf : entry.getContentAndStructureAreaAreaList()) {
+            fields.put(emf.getName(), emf);
+        }
+        for (IMetadataField emf : entry.getAccessAndUseAreaList()) {
+            fields.put(emf.getName(), emf);
+        }
+        for (IMetadataField emf : entry.getAlliedMaterialsAreaList()) {
+            fields.put(emf.getName(), emf);
+        }
+        for (IMetadataField emf : entry.getNotesAreaList()) {
+            fields.put(emf.getName(), emf);
+        }
+        for (IMetadataField emf : entry.getDescriptionControlAreaList()) {
+            fields.put(emf.getName(), emf);
+        }
+        return fields;
     }
 
     private void loadMetadataForAllNodes() {
