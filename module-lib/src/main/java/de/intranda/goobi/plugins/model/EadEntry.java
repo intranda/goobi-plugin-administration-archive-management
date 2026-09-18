@@ -19,6 +19,7 @@ import org.goobi.interfaces.INodeType;
 import org.goobi.interfaces.IParameter;
 
 import de.sub.goobi.helper.exceptions.SwapException;
+import de.sub.goobi.metadaten.MetadatenHelper;
 import de.sub.goobi.persistence.managers.MySQLHelper;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import lombok.Getter;
@@ -37,7 +38,6 @@ import ugh.dl.Person;
 import ugh.dl.Prefs;
 import ugh.exceptions.MetadataTypeNotAllowedException;
 import ugh.exceptions.UGHException;
-import ugh.fileformats.mets.MetsMods;
 
 @Getter
 @Setter
@@ -1183,11 +1183,12 @@ public class EadEntry implements IEadEntry {
     }
 
     @Override
-    public Fileformat createFileformat(Prefs prefs) {
+    public Fileformat createFileformat(Process processTemplate) {
         Fileformat fileformat = null;
         DigitalDocument digDoc = null;
+        Prefs prefs = processTemplate.getRegelsatz().getPreferences();
         try {
-            fileformat = new MetsMods(prefs);
+            fileformat = MetadatenHelper.getFileformatByName(processTemplate.getProjekt().getFileFormatInternal(), processTemplate.getRegelsatz());
             digDoc = new DigitalDocument();
             // create mets file based on selected node type
             fileformat.setDigitalDocument(digDoc);

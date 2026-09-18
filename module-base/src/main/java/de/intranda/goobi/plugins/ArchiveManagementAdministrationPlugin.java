@@ -2161,7 +2161,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         Prefs prefs = processTemplate.getRegelsatz().getPreferences();
 
-        Fileformat fileformat = selectedEntry.createFileformat(prefs);
+        Fileformat fileformat = selectedEntry.createFileformat(processTemplate);
         DigitalDocument digDoc = null;
         try {
             digDoc = fileformat.getDigitalDocument();
