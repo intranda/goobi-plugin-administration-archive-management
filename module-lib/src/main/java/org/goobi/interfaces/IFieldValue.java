@@ -38,6 +38,8 @@ public interface IFieldValue extends GndSearchProperty, GeonamesSearchProperty, 
 
     public void setAuthorityType(String type);
 
+    public String getAuthorityUri();
+
     public String getAuthorityValue();
 
     public void setAuthorityValue(String value);

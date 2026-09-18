@@ -926,6 +926,7 @@ public class EadEntry implements IEadEntry {
                                     mg.addMetadata(metadata);
                                 }
                                 metadata.setValue(fv.getValue());
+                                addAuthorityData(metadata, fv);
                             }
                         }
 
@@ -953,7 +954,7 @@ public class EadEntry implements IEadEntry {
                                 Person p = new Person(prefs.getMetadataTypeByName(emf.getMetadataName()));
                                 p.setFirstname(fv.getFirstname());
                                 p.setLastname(fv.getLastname());
-                                p.setAuthorityValue(fv.getAuthorityValue());
+                                addAuthorityData(p, fv);
                                 ds.addPerson(p);
                             } catch (UGHException e) {
                                 log.error(e);
@@ -976,7 +977,7 @@ public class EadEntry implements IEadEntry {
                                     c.addSubName(new NamePart("subname", fv.getSubName()));
                                 }
                                 c.setPartName(fv.getPartName());
-                                c.setAuthorityValue(fv.getAuthorityValue());
+                                addAuthorityData(c, fv);
                                 ds.addCorporate(c);
                             } catch (UGHException e) {
                                 log.error(e);
@@ -995,7 +996,7 @@ public class EadEntry implements IEadEntry {
                             if (StringUtils.isNotBlank(fv.getValue())) {
                                 Metadata md = new Metadata(mdt);
                                 md.setValue(fv.getValue());
-                                md.setAuthorityFile(fv.getAuthorityType(), "", fv.getAuthorityValue());
+                                addAuthorityData(md, fv);
                                 ds.addMetadata(md);
                             }
                         } catch (UGHException e) {
@@ -1120,6 +1121,7 @@ public class EadEntry implements IEadEntry {
                         for (Metadata md : meta) {
                             IFieldValue val = new FieldValue(emf);
                             val.setValue(md.getValue());
+                            val.setAuthorityType(md.getAuthorityID());
                             val.setAuthorityValue(md.getAuthorityValue());
                             sub.addFieldValue(val);
                         }
@@ -1144,6 +1146,7 @@ public class EadEntry implements IEadEntry {
                     IFieldValue val = new FieldValue(emf);
                     val.setFirstname(p.getFirstname());
                     val.setLastname(p.getLastname());
+                    val.setAuthorityType(p.getAuthorityID());
                     val.setAuthorityValue(p.getAuthorityValue());
                     emf.addFieldValue(val);
                 }
@@ -1159,6 +1162,7 @@ public class EadEntry implements IEadEntry {
                         val.setSubName(c.getSubNames().get(0).getValue());
                     }
                     val.setPartName(c.getPartName());
+                    val.setAuthorityType(c.getAuthorityID());
                     val.setAuthorityValue(c.getAuthorityValue());
                     emf.addFieldValue(val);
                 }
@@ -1170,6 +1174,7 @@ public class EadEntry implements IEadEntry {
                 for (Metadata md : metadataList) {
                     IFieldValue val = new FieldValue(emf);
                     val.setValue(md.getValue());
+                    val.setAuthorityType(md.getAuthorityID());
                     val.setAuthorityValue(md.getAuthorityValue());
                     emf.addFieldValue(val);
                 }
@@ -1290,6 +1295,20 @@ public class EadEntry implements IEadEntry {
         return null;
     }
 
+    /**
+     * Copy the authority data of a field value into the given metadata, person or corporate.
+     *
+     * Authority id, uri and value must all be set, otherwise ugh discards the authority data when the mets file gets written.
+     *
+     * @param md metadata, person or corporate to enrich
+     * @param fv field value containing the authority data
+     */
+    private void addAuthorityData(Metadata md, IFieldValue fv) {
+        if (StringUtils.isNotBlank(fv.getAuthorityValue())) {
+            md.setAuthorityFile(fv.getAuthorityType(), fv.getAuthorityUri(), fv.getAuthorityValue());
+        }
+    }
+
     private void addNoteId(Prefs prefs, DocStruct logical) {
         try {
             MetadataType eadIdType = prefs.getMetadataTypeByName("NodeId");
@@ -1324,6 +1343,7 @@ public class EadEntry implements IEadEntry {
                                     mg.addMetadata(metadata);
                                 }
                                 metadata.setValue(fv.getValue());
+                                addAuthorityData(metadata, fv);
                             }
                         }
                         logical.addMetadataGroup(mg);
@@ -1339,7 +1359,7 @@ public class EadEntry implements IEadEntry {
                             Person p = new Person(prefs.getMetadataTypeByName(emf.getMetadataName()));
                             p.setFirstname(fv.getFirstname());
                             p.setLastname(fv.getLastname());
-                            p.setAuthorityValue(fv.getAuthorityValue());
+                            addAuthorityData(p, fv);
                             logical.addPerson(p);
                         } catch (MetadataTypeNotAllowedException e) {
                             log.error(e);
@@ -1352,7 +1372,7 @@ public class EadEntry implements IEadEntry {
                                 c.addSubName(new NamePart("subname", fv.getSubName()));
                             }
                             c.setPartName(fv.getPartName());
-                            c.setAuthorityValue(fv.getAuthorityValue());
+                            addAuthorityData(c, fv);
                             logical.addCorporate(c);
                         } catch (MetadataTypeNotAllowedException e) {
                             log.error(e);
@@ -1372,9 +1392,7 @@ public class EadEntry implements IEadEntry {
 
                             Metadata md = new Metadata(prefs.getMetadataTypeByName(emf.getMetadataName()));
                             md.setValue(fv.getValue());
-                            if (StringUtils.isNotBlank(fv.getAuthorityValue())) {
-                                md.setAuthorityFile(fv.getAuthorityType(), "", fv.getAuthorityValue());
-                            }
+                            addAuthorityData(md, fv);
                             logical.addMetadata(md);
                         } catch (UGHException e) {
                             log.error(e);

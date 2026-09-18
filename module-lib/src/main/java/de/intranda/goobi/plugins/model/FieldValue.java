@@ -28,6 +28,10 @@ import lombok.ToString;
 @EqualsAndHashCode(exclude = { "field", "viafSearch" })
 public class FieldValue implements IFieldValue {
 
+    private static final String GND_URI = "http://d-nb.info/gnd/";
+    private static final String GEONAMES_URI = "http://www.geonames.org/";
+    private static final String VIAF_URI = "http://www.viaf.org/viaf/";
+
     private String value;
     /** contains the list of selected values in multiselect */
     private List<String> multiselectSelectedValues = new ArrayList<>();
@@ -132,6 +136,31 @@ public class FieldValue implements IFieldValue {
     }
 
     /* authority data */
+
+    /**
+     * Get the base uri of the authority database the current authority value belongs to.
+     *
+     * The uri is not stored within the ead file, it gets derived from the authority type. It is needed when the value is written into a mets file,
+     * because ugh discards authority data when authority id, uri or value is missing.
+     *
+     * @return the base uri of the authority database or an empty string, if the authority type is unknown
+     */
+    @Override
+    public String getAuthorityUri() {
+        if (StringUtils.isBlank(authorityType)) {
+            return "";
+        }
+        switch (authorityType.toLowerCase()) {
+            case "gnd":
+                return GND_URI;
+            case "geonames":
+                return GEONAMES_URI;
+            case "viaf":
+                return VIAF_URI;
+            default:
+                return "";
+        }
+    }
 
     @Override
     public String getGndNumber() {

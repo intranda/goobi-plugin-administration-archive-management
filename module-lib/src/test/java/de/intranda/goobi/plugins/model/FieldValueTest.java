@@ -93,6 +93,23 @@ public class FieldValueTest {
     }
 
     @Test
+    public void testGetAuthorityUri() {
+        assertEquals("", fieldValue.getAuthorityUri());
+
+        fieldValue.setAuthorityType("gnd");
+        assertEquals("http://d-nb.info/gnd/", fieldValue.getAuthorityUri());
+
+        fieldValue.setAuthorityType("geonames");
+        assertEquals("http://www.geonames.org/", fieldValue.getAuthorityUri());
+
+        fieldValue.setAuthorityType("viaf");
+        assertEquals("http://www.viaf.org/viaf/", fieldValue.getAuthorityUri());
+
+        fieldValue.setAuthorityType("unknown");
+        assertEquals("", fieldValue.getAuthorityUri());
+    }
+
+    @Test
     public void testAddAndRemoveSelectedValue() {
         fieldValue.setMultiselectValue("Value1");
         assertEquals(1, fieldValue.getMultiselectSelectedValues().size());
