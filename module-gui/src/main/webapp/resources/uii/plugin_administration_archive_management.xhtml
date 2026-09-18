@@ -381,8 +381,8 @@
                                                     <div class="content">
                                                         <h:commandLink
                                                             id="link2"
-                                                            styleClass="d-inline-flex align-items-center gap-2 ps-1 #{entry.selected ? 'fw-700 current-node scroll-target' : ''} #{entry.searchFound ? 'tree-highlight' : ''} #{entry.valid ? '' : 'bg-hot text-white p-1'} #{entry.valid and !entry.selected ? 'text-black' : '' }">
-                                                            <util:icon icon="#{entry.nodeType.icon}" />
+                                                            styleClass="d-inline-flex align-items-center gap-2 ps-1 #{entry.selected ? 'fw-700 current-node scroll-target' : ''} #{entry.searchFound ? 'tree-highlight' : ''} #{entry.valid ? '' : 'text-danger fw-bold'} #{entry.valid and !entry.selected ? 'text-black' : '' }">
+                                                            <util:icon icon="#{entry.valid ? entry.nodeType.icon : 'alert-triangle'}" filled="#{entry.valid ? false : true}" />
                                                             <span>
                                                                 <h:outputText
                                                                     value="#{entry.label}"
@@ -403,15 +403,12 @@
                                                             <ui:fragment rendered="#{entry.childrenHaveProcesses}">
                                                                 <util:icon icon="settings" styleClass="opacity-50 margin-left-5" />
                                                             </ui:fragment>
-                                                            <ui:fragment rendered="#{!entry.valid}">
-                                                                <util:icon icon="alert-triangle" styleClass="margin-left-5" />
-                                                            </ui:fragment>
                                                             <f:setPropertyActionListener
                                                                 target="#{AdministrationForm.administrationPlugin.selectedEntry}"
                                                                 value="#{entry}" />
                                                             <f:ajax
-                                                                execute="ead-details"
-                                                                render="hierarchy ead-details globalMessage"
+                                                                execute="@form"
+                                                                render="@form globalMessage"
                                                                 onevent="(data) => {
                                                                     scrollToClickedElement(data);
                                                                 }" />
@@ -524,6 +521,8 @@
                                             action="#{AdministrationForm.administrationPlugin.validateArchive}"
                                             title="#{msgs.plugin_administration_archive_validate}">
                                             <util:icon icon="check" styleClass="icon--lg" />
+                                            <f:ajax
+                                                render="@form" />
                                             <f:passThroughAttribute
                                                 name="data-bs-toggle"
                                                 value="tooltip" />

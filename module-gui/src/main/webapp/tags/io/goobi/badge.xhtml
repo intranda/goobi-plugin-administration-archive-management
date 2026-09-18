@@ -51,15 +51,15 @@
                 <h:commandLink
                     rendered="#{!item.repeatable or (item.repeatable and !item.showField)}"
                     styleClass="d-inline-flex align-items-center gap-1 #{item.filled ? 'text-white' : 'text-neutral-600'}">
-                    <ui:fragment rendered="#{item.repeatable}">
+                    <ui:fragment rendered="#{item.repeatable and item.valid}">
                         <util:icon icon="circle-plus" styleClass="icon--b4" />
+                    </ui:fragment>
+                    <ui:fragment rendered="#{!item.valid}">
+                        <util:icon icon="alert-triangle" />
                     </ui:fragment>
                     <span>
                         <h:outputText value="#{fieldname}" />
                     </span>
-                    <ui:fragment rendered="#{!item.valid}">
-                        <util:icon icon="alert-triangle" />
-                    </ui:fragment>
                     <f:actionListener binding="#{AdministrationForm.administrationPlugin.updateAreaDisplay(item.level)}" />
                     <f:setPropertyActionListener
                         target="#{item.showField}"
