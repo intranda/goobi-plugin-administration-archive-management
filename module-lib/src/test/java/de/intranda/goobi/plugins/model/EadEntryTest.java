@@ -501,6 +501,44 @@ public class EadEntryTest {
     }
 
     @Test
+    public void testMultiselectDataAsXml() {
+        EadEntry entry = new EadEntry(4, 4);
+        IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true, "multiselect", "metadataName", false, "required",
+                "regex", true, "viafSearchFields", "viafDisplayFields", false, null);
+        field.addValue();
+        field.getValues().get(0).setMultiselectValue("first value");
+        field.getValues().get(0).setMultiselectValue("second value");
+        List<IMetadataField> list = new ArrayList<>();
+        list.add(field);
+        entry.setIdentityStatementAreaList(list);
+        assertEquals("<xml><name>first value; second value</name></xml>", entry.getDataAsXml());
+    }
+
+    @Test
+    public void testMultiselectGroupDataAsXml() {
+        EadEntry entry = new EadEntry(4, 4);
+
+        IMetadataField grp = new EadMetadataField("group", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required",
+                "regex", true, "viafSearchFields", "viafDisplayFields", true, null);
+
+        IMetadataGroup group = grp.createGroup();
+
+        List<IMetadataField> list = new ArrayList<>();
+        list.add(grp);
+        entry.setIdentityStatementAreaList(list);
+
+        IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true,
+                "multiselect", "metadataName", false, "required",
+                "regex", true, "viafSearchFields", "viafDisplayFields", false, null);
+        field.addValue();
+        field.getValues().get(0).setMultiselectValue("first value");
+        field.getValues().get(0).setMultiselectValue("second value");
+        group.getFields().add(field);
+
+        assertEquals("<xml><group name='group'><field name='name'>first value; second value</field></group></xml>", entry.getDataAsXml());
+    }
+
+    @Test
     public void testFingerprint() {
         EadEntry entry = new EadEntry(4, 4);
         IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required",
@@ -521,6 +559,29 @@ public class EadEntryTest {
         assertNull(entry.getFingerprint());
         entry.calculateFingerprint();
         assertEquals("namevaluenamevalue", entry.getFingerprint());
+    }
+
+    @Test
+    public void testFingerprintWithMultiselectValues() {
+        EadEntry entry = new EadEntry(4, 4);
+        IMetadataField field = new EadMetadataField("name", 1, "xpath", "text", false, true, true, "multiselect", "metadataName", false, "required",
+                "regex", true, "viafSearchFields", "viafDisplayFields", false, null);
+        field.addValue();
+        field.getValues().get(0).setMultiselectValue("first value");
+        field.getValues().get(0).setMultiselectValue("second value");
+
+        IMetadataField grp = new EadMetadataField("group", 1, "xpath", "text", false, true, true, "input", "metadataName", false, "required", "regex",
+                true, "viafSearchFields", "viafDisplayFields", true, null);
+
+        IMetadataGroup group = grp.createGroup();
+        group.getFields().add(field);
+        List<IMetadataField> list = new ArrayList<>();
+        list.add(grp);
+
+        list.add(field);
+        entry.setIdentityStatementAreaList(list);
+        entry.calculateFingerprint();
+        assertEquals("namefirst value; second valuenamefirst value; second value", entry.getFingerprint());
     }
 
     @Test

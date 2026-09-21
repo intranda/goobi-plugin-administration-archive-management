@@ -688,7 +688,8 @@ public class EadEntry implements IEadEntry {
                     if (subfield.getValues() != null) {
                         for (IFieldValue val : subfield.getValues()) {
                             //TODO person, corp
-                            if (StringUtils.isNotBlank(val.getValue())) {
+                            String storedValue = getStoredValue(val);
+                            if (StringUtils.isNotBlank(storedValue)) {
                                 xml.append("<field name='").append(subfield.getName()).append("'");
                                 if (StringUtils.isNotBlank(val.getAuthorityValue()) && StringUtils.isNotBlank(val.getAuthorityType())) {
                                     xml.append(" source='")
@@ -698,10 +699,7 @@ public class EadEntry implements IEadEntry {
                                             .append("'");
                                 }
                                 xml.append(">");
-                                if (StringUtils.isNotBlank(val.getValue())) {
-                                    String actualValue = escapeString(val.getValue());
-                                    xml.append(actualValue);
-                                }
+                                xml.append(escapeString(storedValue));
                                 xml.append("</field>");
                             }
                         }
@@ -738,19 +736,30 @@ public class EadEntry implements IEadEntry {
                     }
                     xml.append("' />");
 
-                } else if (StringUtils.isNotBlank(val.getValue())) {
+                } else if (StringUtils.isNotBlank(getStoredValue(val))) {
                     xml.append("<").append(field.getName());
                     // save authority data
                     if (StringUtils.isNotBlank(val.getAuthorityValue()) && StringUtils.isNotBlank(val.getAuthorityType())) {
                         xml.append(" source='").append(val.getAuthorityType()).append("' value='").append(val.getAuthorityValue()).append("'");
                     }
                     xml.append(">");
-                    String actualValue = escapeString(val.getValue());
+                    String actualValue = escapeString(getStoredValue(val));
                     xml.append(actualValue);
                     xml.append("</").append(field.getName()).append(">");
                 }
             }
         }
+    }
+
+    /**
+     * Get the value to store in the database. Multiselect fields keep their selections in a separate list, they are stored as a single string
+     * separated by '; ', {@link de.intranda.goobi.plugins.persistence.NodeInitializer} splits them again when the node gets loaded.
+     */
+    private String getStoredValue(IFieldValue val) {
+        if (!val.getMultiselectSelectedValues().isEmpty()) {
+            return String.join("; ", val.getMultiselectSelectedValues());
+        }
+        return val.getValue();
     }
 
     public String escapeString(String value) {
@@ -804,7 +813,7 @@ public class EadEntry implements IEadEntry {
                     fingerprintBuilder.append(subfield.getName());
                     if (subfield.getValues() != null) {
                         for (IFieldValue val : subfield.getValues()) {
-                            fingerprintBuilder.append(val.getValue());
+                            fingerprintBuilder.append(getStoredValue(val));
                         }
                     }
                 }
@@ -812,7 +821,7 @@ public class EadEntry implements IEadEntry {
         } else {
             fingerprintBuilder.append(mf.getName());
             for (IFieldValue val : mf.getValues()) {
-                fingerprintBuilder.append(val.getValue());
+                fingerprintBuilder.append(getStoredValue(val));
             }
         }
     }

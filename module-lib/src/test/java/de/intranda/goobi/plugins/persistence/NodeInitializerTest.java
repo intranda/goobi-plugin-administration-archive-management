@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.goobi.interfaces.IEadEntry;
 import org.goobi.interfaces.IMetadataField;
@@ -39,6 +40,28 @@ public class NodeInitializerTest {
         IMetadataField createdSub = group.getGroups().get(0).getFields().get(0);
         // exactly one empty value, not a duplicated one
         assertEquals(1, createdSub.getValues().size());
+    }
+
+    @Test
+    public void testMultiselectValuesSurviveDatabaseRoundtrip() {
+        IMetadataField field = new EadMetadataField("field", 1, "xpath", "text", false, true, true, "multiselect", "metadataName", false, "required",
+                "regex", true, "viaf", "viaf", false, null);
+        field.addValue();
+        field.getValues().get(0).setMultiselectValue("first value");
+        field.getValues().get(0).setMultiselectValue("second value");
+        EadEntry entry = new EadEntry(0, 0);
+        List<IMetadataField> list = new ArrayList<>();
+        list.add(field);
+        entry.setIdentityStatementAreaList(list);
+
+        // store the node and load it again
+        Map<String, List<IValue>> storedData = ArchiveManagementManager.convertStringToMap(entry.getDataAsXml());
+        IMetadataField loaded = NodeInitializer.addFieldToEntry(new EadEntry(0, 0), field, storedData.get("field"));
+
+        assertEquals(1, loaded.getValues().size());
+        assertEquals(2, loaded.getValues().get(0).getMultiselectSelectedValues().size());
+        assertEquals("first value", loaded.getValues().get(0).getMultiselectSelectedValues().get(0));
+        assertEquals("second value", loaded.getValues().get(0).getMultiselectSelectedValues().get(1));
     }
 
     @Test
