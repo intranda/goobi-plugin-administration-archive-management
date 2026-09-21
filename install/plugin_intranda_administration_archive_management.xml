@@ -100,6 +100,18 @@
                 - searchParameter: distinct the vocabulary list by the given condition. Syntax is fieldname=value, field is repeatable
          -->
 
+        <!-- 
+            Checklist to change a multiselect field to a dropdown field:
+            - change the field configuration to - fieldType="dropdown", repeatable="true"
+            - check xpath, remove the "[1]", otherwise only the first value is read/written
+            - check for existing values (replace FIELDNAME with the name attribute: SELECT id, ExtractValue(data, '/xml/FIELDNAME') FROM archive_record_node WHERE data REGEXP '<FIELDNAME>[^<]*; [^<]*</FIELDNAME>';
+            - if the result set is empty, no multivalued fields are stored
+            - otherwise split the field into separate values:  
+                UPDATE archive_record_node SET data = REGEXP_REPLACE(data, '<FIELDNAME>([^<]*); ([^<]*)</FIELDNAME>',
+                   '<FIELDNAME>\\1</FIELDNAME><FIELDNAME>\\2</FIELDNAME>') WHERE data REGEXP '<FIELDNAME>[^<]*; [^<]*</FIELDNAME>';
+            repeat the query until the result set of the SELECT query is empty 
+         -->
+
         <!-- internal fields, not visible on the UI -->
 
         <metadata xpath="./ead:control/ead:maintenancestatus/@value" xpathType="attribute" name="maintenancestatus" level="1" repeatable="false" visible="false" />
