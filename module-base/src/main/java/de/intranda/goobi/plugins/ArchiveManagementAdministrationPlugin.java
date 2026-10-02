@@ -2146,9 +2146,30 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         if (selectedEntry.getNodeType() == null) {
             return null;
         }
+
+        // some node types create their process in the parent node
+        IEadEntry processEntry = getNodeForProcessCreation(selectedEntry);
+        if (StringUtils.isNotBlank(processEntry.getGoobiProcessTitle())) {
+            String message = "The node " + processEntry.getLabel() + " is already linked to the process " + processEntry.getGoobiProcessTitle() + ".";
+            log.error(message);
+            Helper.setFehlerMeldung(message);
+            return null;
+        }
+        if (!testMode) {
+            // the metadata of the parent node and of the imported child nodes may not be loaded yet
+            if (processEntry != selectedEntry) {
+                loadMetadataForNode(processEntry);
+            }
+            for (IEadEntry child : processEntry.getChildrenForProcessCreation()) {
+                if (child != selectedEntry) {
+                    loadMetadataForNode(child);
+                }
+            }
+        }
+
         Integer processTemplateId = null;
         if (StringUtils.isBlank(selectedTemplate)) {
-            processTemplateId = selectedEntry.getNodeType().getProcessTemplateId();
+            processTemplateId = processEntry.getNodeType().getProcessTemplateId();
         } else {
             processTemplateId = Integer.parseInt(selectedTemplate);
         }
@@ -2161,7 +2182,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         Prefs prefs = processTemplate.getRegelsatz().getPreferences();
 
-        Fileformat fileformat = selectedEntry.createFileformat(processTemplate);
+        Fileformat fileformat = processEntry.createFileformat(processTemplate);
         DigitalDocument digDoc = null;
         try {
             digDoc = fileformat.getDigitalDocument();
@@ -2170,7 +2191,7 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
 
         // generate process title via ProcessTitleGenerator
-        ProcessTitleGenerator titleGenerator = prepareTitleGenerator(digDoc.getLogicalDocStruct());
+        ProcessTitleGenerator titleGenerator = prepareTitleGenerator(digDoc.getLogicalDocStruct(), processEntry);
 
         // check if the generated process name is unique
         // if it is not unique, then get the full uuid version name from the generator
@@ -2216,8 +2237,13 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         Process process = bhelp.createAndSaveNewProcess(processTemplate, processTitle, fileformat);
 
         // save current node
-        selectedEntry.setGoobiProcessTitle(processTitle);
-        ArchiveManagementManager.saveNode(recordGroup.getId(), selectedEntry);
+        processEntry.setGoobiProcessTitle(processTitle);
+        ArchiveManagementManager.saveNode(recordGroup.getId(), processEntry);
+        // link the imported child nodes to the same process
+        for (IEadEntry child : processEntry.getChildrenForProcessCreation()) {
+            child.setGoobiProcessTitle(processTitle);
+            ArchiveManagementManager.updateProcessLink(child);
+        }
 
         // start any open automatic tasks
         for (Step s : process.getSchritteList()) {
@@ -2230,13 +2256,29 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
     }
 
     /**
+     * Get the node a process is created for. This is the given node itself or its parent node, if the node type of the given node is configured
+     * with {@code createProcessForParent}.
+     *
+     * @param entry selected node
+     * @return node to create the process for
+     */
+    IEadEntry getNodeForProcessCreation(IEadEntry entry) {
+        IEadEntry parent = entry.getParentNode();
+        if (entry.getNodeType().isCreateProcessForParent() && parent != null && parent.getNodeType() != null) {
+            return parent;
+        }
+        return entry;
+    }
+
+    /**
      * prepare a ProcessTitleGenerator object suitable for this scenario
      *
-     * @param fileformat
+     * @param docstruct logical element of the new process
+     * @param processEntry node the process is created for
      *
      * @return ProcessTitleGenerator object
      */
-    private ProcessTitleGenerator prepareTitleGenerator(DocStruct docstruct) {
+    private ProcessTitleGenerator prepareTitleGenerator(DocStruct docstruct, IEadEntry processEntry) {
 
         ProcessTitleGenerator titleGenerator = new ProcessTitleGenerator();
         titleGenerator.setSeparator(config.getSeparator());
@@ -2288,12 +2330,12 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
 
         if (StringUtils.isBlank(titleGenerator.generateTitle())) {
             // default title, if nothing is configured
-            IEadEntry idEntry = config.isUseIdFromParent() ? selectedEntry.getParentNode() : selectedEntry;
+            IEadEntry idEntry = config.isUseIdFromParent() ? processEntry.getParentNode() : processEntry;
             String valueOfFirstToken = idEntry.getId();
             titleGenerator.addToken(valueOfFirstToken, ManipulationType.BEFORE_FIRST_SEPARATOR);
 
             ManipulationType labelTokenType = config.getLengthLimit() > 0 ? ManipulationType.CAMEL_CASE_LENGTH_LIMITED : ManipulationType.CAMEL_CASE;
-            String label = selectedEntry.getLabel();
+            String label = processEntry.getLabel();
             titleGenerator.addToken(label, labelTokenType);
         }
         return titleGenerator;
@@ -2644,8 +2686,10 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         if (!currentEntry.isHasChildren() && currentEntry.getGoobiProcessTitle() == null) {
             try {
                 Process proc = createProcess();
-                processList.add(proc);
-                Helper.setMeldung("Created " + currentEntry.getGoobiProcessTitle() + " for " + currentEntry.getLabel());
+                if (proc != null) {
+                    processList.add(proc);
+                    Helper.setMeldung("Created " + currentEntry.getGoobiProcessTitle() + " for " + currentEntry.getLabel());
+                }
             } catch (Exception e) {
                 Helper.setFehlerMeldung(e.getMessage());
                 log.error(e);
@@ -2702,7 +2746,8 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         String goobiProcessTitle = currentEntry.getGoobiProcessTitle();
 
         // check if process exists, otherwise remove link
-        if (!currentEntry.isHasChildren() && goobiProcessTitle != null) {
+        // nodes with children can be linked too, if their children are configured with createProcessForParent
+        if (goobiProcessTitle != null) {
             try {
                 String strProcessTitle = currentEntry.getGoobiProcessTitle();
                 if (ProcessManager.countProcessTitle(strProcessTitle, null) == 0) {

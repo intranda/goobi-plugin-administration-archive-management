@@ -20,6 +20,8 @@ public class NodeType implements INodeType {
 
     private boolean allowProcessCreation;
 
+    private boolean createProcessForParent;
+
     private List<String> allowedChildren;
 
     @Override

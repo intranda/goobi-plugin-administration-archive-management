@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Preferences>
+    <MetadataType>
+        <Name>NodeId</Name>
+        <language name="de">Knoten-ID</language>
+        <language name="en">Node ID</language>
+    </MetadataType>
+    <MetadataType>
+        <Name>Origination</Name>
+        <language name="de">Provenienz</language>
+        <language name="en">Origination</language>
+    </MetadataType>
+    <DocStrctType topStruct="true">
+        <Name>File</Name>
+        <language name="de">Akte</language>
+        <language name="en">File</language>
+        <allowedchildtype>Other</allowedchildtype>
+        <metadata num="*">NodeId</metadata>
+        <metadata num="*">Origination</metadata>
+    </DocStrctType>
+    <DocStrctType>
+        <Name>Other</Name>
+        <language name="de">Sonstiges</language>
+        <language name="en">Other</language>
+        <metadata num="*">NodeId</metadata>
+        <metadata num="*">Origination</metadata>
+    </DocStrctType>
+</Preferences>

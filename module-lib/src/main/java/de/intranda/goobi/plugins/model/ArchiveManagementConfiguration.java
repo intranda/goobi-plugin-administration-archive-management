@@ -156,7 +156,8 @@ public class ArchiveManagementConfiguration {
         for (HierarchicalConfiguration hc : config.configurationsAt("/node")) {
             List<String> allowedChildren = Arrays.asList(hc.getStringArray("/child"));
             INodeType nt = new NodeType(hc.getString("@name"), hc.getString("@ruleset"), hc.getString("@icon"), hc.getInt("@processTemplateId"),
-                    hc.getBoolean("@rootNode", false), hc.getBoolean("@allowProcessCreation", false), allowedChildren);
+                    hc.getBoolean("@rootNode", false), hc.getBoolean("@allowProcessCreation", false),
+                    hc.getBoolean("@createProcessForParent", false), allowedChildren);
             configuredNodes.add(nt);
         }
 

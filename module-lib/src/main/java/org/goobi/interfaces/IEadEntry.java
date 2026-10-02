@@ -164,4 +164,19 @@ public interface IEadEntry extends Comparable<IEadEntry> {
 
     public Fileformat createFileformat(Process processTemplate);
 
+    /**
+     * Check if this node is imported as sub element into the process of its parent node. This is the case if the node type is configured with
+     * {@code createProcessForParent} and the node is linked to the same process as its parent node.
+     *
+     * @return true if the metadata of this node is stored in a sub element of the process of the parent node
+     */
+    public boolean isPartOfParentProcess();
+
+    /**
+     * Get the child nodes that are imported as sub elements into a process created for this node.
+     *
+     * @return list of all direct children whose node type is configured with {@code createProcessForParent}
+     */
+    public List<IEadEntry> getChildrenForProcessCreation();
+
 }

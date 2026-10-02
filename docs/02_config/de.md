@@ -284,3 +284,12 @@ Das Attribut `name` muss einen eindeutigen Wert enthalten, hierüber wird der Ty
 
 Mittels `rootNode="true|false"` wird definiert, ob der Knoten als oberstes Element des Archivbaums verwendet werden darf. In `<child>` können alle Knotentypen angegeben werden, die unterhalb des jeweiligen Typs erlaubt sind.
 
+Mit `createProcessForParent="true"` wird festgelegt, dass ein Vorgang, der für einen Knoten dieses Typs erstellt wird, stattdessen für den übergeordneten Knoten erzeugt wird. Dabei werden alle direkten Kind-Knoten des übergeordneten Knotens, deren Typ ebenfalls mit `createProcessForParent="true"` konfiguriert ist, mit ihren eigenen Metadaten als Unterstrukturelemente in den Vorgang übernommen. Als Strukturtyp des Unterelements wird der Wert aus `ruleset` des Kind-Knotens verwendet. Dieser Typ muss im Regelsatz als Kind des Strukturelements des übergeordneten Knotens erlaubt sein und sollte das Metadatum `NodeId` erlauben, damit die Metadaten später zwischen Knoten und Unterelement abgeglichen werden können. Der übergeordnete Knoten und die übernommenen Kind-Knoten werden mit demselben Vorgang verknüpft. Der Standardwert ist `false`.
+
+```xml
+        <node name="file" ruleset="File" icon="file-text" allowProcessCreation="true">
+            <child>other</child>
+        </node>
+        <node name="other" ruleset="Other" icon="file" allowProcessCreation="true" createProcessForParent="true" />
+```
+

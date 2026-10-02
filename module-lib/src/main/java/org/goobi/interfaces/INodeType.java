@@ -28,6 +28,16 @@ public interface INodeType {
 
     public void setAllowProcessCreation(boolean allowProcessCreation);
 
+    /**
+     * Check if a process for a node of this type is created for its parent node instead. The metadata of the node is then imported as sub element
+     * into the process of the parent node.
+     *
+     * @return true if the process is created for the parent node
+     */
+    public boolean isCreateProcessForParent();
+
+    public void setCreateProcessForParent(boolean createProcessForParent);
+
     public List<String> getAllowedChildren();
 
     public void setAllowedChildren(List<String> list);

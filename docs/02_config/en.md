@@ -281,3 +281,12 @@ The node types are defined using the `<node>` element.
 The `name` attribute must contain a unique value, which is used to identify the type internally. The `ruleset` contains the name of the structure element in the ruleset that is to be used when a process is created for this node. This function is only available if the attribute `allowProcessCreation` is set with the value `true`. The icon to be displayed in the interface for this node type is configured in `icon`.
 
 Use `rootNode="true|false"` to define whether the node may be used as the top element of the archive tree. All node types that are permitted below a type must be specified in the `<child>` element.
+
+With `createProcessForParent="true"`, a process that is created for a node of this type is created for its parent node instead. All direct child nodes of the parent node whose type is configured with `createProcessForParent="true"` as well are imported with their own metadata as sub elements into the process. The structure type of the sub element is taken from the `ruleset` attribute of the child node. This type must be allowed as child of the structure element of the parent node in the ruleset and should allow the metadata `NodeId`, so the metadata of the node and the sub element can be synchronised later. The parent node and the imported child nodes are linked to the same process. The default value is `false`.
+
+```xml
+        <node name="file" ruleset="File" icon="file-text" allowProcessCreation="true">
+            <child>other</child>
+        </node>
+        <node name="other" ruleset="Other" icon="file" allowProcessCreation="true" createProcessForParent="true" />
+```

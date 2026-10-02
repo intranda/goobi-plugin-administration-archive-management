@@ -16,6 +16,12 @@ import org.goobi.interfaces.IMetadataField;
 import org.goobi.interfaces.IMetadataGroup;
 import org.junit.Test;
 
+import ugh.dl.DigitalDocument;
+import ugh.dl.DocStruct;
+import ugh.dl.Metadata;
+import ugh.dl.Prefs;
+import ugh.exceptions.UGHException;
+
 public class EadEntryTest {
 
     @Test
@@ -96,7 +102,7 @@ public class EadEntryTest {
 
     @Test
     public void testNodeType() {
-        NodeType nt = new NodeType("fixture", "fixture", "fixture", 1, true, true, null);
+        NodeType nt = new NodeType("fixture", "fixture", "fixture", 1, true, true, false, null);
         EadEntry entry = new EadEntry(1, 1);
         entry.setNodeType(nt);
         assertEquals("fixture", entry.getNodeType().getNodeName());
@@ -864,5 +870,134 @@ public class EadEntryTest {
         EadEntry entry = createEntryWithOriginationField(0, false, null);
 
         assertTrue(entry.isMetadataLoaded());
+    }
+
+    private NodeType createNodeType(String name, String documentType, boolean createProcessForParent) {
+        return new NodeType(name, documentType, "icon", 1, false, true, createProcessForParent, null);
+    }
+
+    private EadEntry createParentWithImportedChild() {
+        EadEntry parent = createEntryWithOriginationField(0, false, "parent value");
+        parent.setId("parent");
+        parent.setNodeType(createNodeType("file", "File", false));
+        EadEntry child = createEntryWithOriginationField(1, false, "child value");
+        child.setId("child");
+        child.setNodeType(createNodeType("other", "Other", true));
+        parent.addSubEntry(child);
+        return parent;
+    }
+
+    private Prefs loadPrefs() throws UGHException {
+        Prefs prefs = new Prefs();
+        prefs.loadPrefs("src/test/resources/ruleset.xml");
+        return prefs;
+    }
+
+    private String getMetadataValue(DocStruct ds, String metadataName) {
+        for (Metadata md : ds.getAllMetadata()) {
+            if (md.getType().getName().equals(metadataName)) {
+                return md.getValue();
+            }
+        }
+        return null;
+    }
+
+    @Test
+    public void testGetChildrenForProcessCreationContainsOnlyConfiguredChildren() {
+        EadEntry parent = createParentWithImportedChild();
+        EadEntry otherChild = new EadEntry(2, 1);
+        otherChild.setNodeType(createNodeType("file", "File", false));
+        parent.addSubEntry(otherChild);
+        EadEntry childWithoutType = new EadEntry(3, 1);
+        parent.addSubEntry(childWithoutType);
+
+        List<IEadEntry> children = parent.getChildrenForProcessCreation();
+        assertEquals(1, children.size());
+        assertEquals("child", children.get(0).getId());
+    }
+
+    @Test
+    public void testIsPartOfParentProcessWhenLinkedToProcessOfParent() {
+        EadEntry parent = createParentWithImportedChild();
+        IEadEntry child = parent.getSubEntryList().get(0);
+        parent.setGoobiProcessTitle("process");
+        child.setGoobiProcessTitle("process");
+
+        assertTrue(child.isPartOfParentProcess());
+        assertFalse(parent.isPartOfParentProcess());
+    }
+
+    @Test
+    public void testIsNotPartOfParentProcessWhenLinkedToOwnProcess() {
+        EadEntry parent = createParentWithImportedChild();
+        IEadEntry child = parent.getSubEntryList().get(0);
+        parent.setGoobiProcessTitle("parent process");
+        child.setGoobiProcessTitle("child process");
+
+        assertFalse(child.isPartOfParentProcess());
+    }
+
+    @Test
+    public void testIsNotPartOfParentProcessWithoutConfiguration() {
+        EadEntry parent = createParentWithImportedChild();
+        IEadEntry child = parent.getSubEntryList().get(0);
+        child.getNodeType().setCreateProcessForParent(false);
+        parent.setGoobiProcessTitle("process");
+        child.setGoobiProcessTitle("process");
+
+        assertFalse(child.isPartOfParentProcess());
+    }
+
+    @Test
+    public void testCreateSubElementContainsOwnMetadataOfChild() throws UGHException {
+        Prefs prefs = loadPrefs();
+        EadEntry parent = createParentWithImportedChild();
+        IEadEntry child = parent.getSubEntryList().get(0);
+        DigitalDocument digDoc = new DigitalDocument();
+        DocStruct logical = digDoc.createDocStruct(prefs.getDocStrctTypeByName("File"));
+        digDoc.setLogicalDocStruct(logical);
+
+        parent.createSubElement(prefs, digDoc, logical, child);
+
+        assertEquals(1, logical.getAllChildren().size());
+        DocStruct subElement = logical.getAllChildren().get(0);
+        assertEquals("Other", subElement.getType().getName());
+        assertEquals("child", getMetadataValue(subElement, "NodeId"));
+        assertEquals("child value", getMetadataValue(subElement, "Origination"));
+        assertEquals(2, subElement.getAllMetadata().size());
+    }
+
+    @Test
+    public void testCreateSubElementSkipsUnknownStructureType() throws UGHException {
+        Prefs prefs = loadPrefs();
+        EadEntry parent = createParentWithImportedChild();
+        IEadEntry child = parent.getSubEntryList().get(0);
+        child.getNodeType().setDocumentType("Unknown");
+        DigitalDocument digDoc = new DigitalDocument();
+        DocStruct logical = digDoc.createDocStruct(prefs.getDocStrctTypeByName("File"));
+        digDoc.setLogicalDocStruct(logical);
+
+        parent.createSubElement(prefs, digDoc, logical, child);
+
+        assertNull(logical.getAllChildren());
+    }
+
+    @Test
+    public void testFindDocStructOfNode() throws UGHException {
+        Prefs prefs = loadPrefs();
+        EadEntry parent = createParentWithImportedChild();
+        EadEntry child = (EadEntry) parent.getSubEntryList().get(0);
+        parent.setGoobiProcessTitle("process");
+        child.setGoobiProcessTitle("process");
+        DigitalDocument digDoc = new DigitalDocument();
+        DocStruct logical = digDoc.createDocStruct(prefs.getDocStrctTypeByName("File"));
+        digDoc.setLogicalDocStruct(logical);
+
+        // without a sub element the metadata of the child must not be written into the logical element
+        assertNull(child.findDocStructOfNode(logical));
+
+        parent.createSubElement(prefs, digDoc, logical, child);
+        assertEquals(logical, parent.findDocStructOfNode(logical));
+        assertEquals(logical.getAllChildren().get(0), child.findDocStructOfNode(logical));
     }
 }

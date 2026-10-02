@@ -896,7 +896,11 @@ public class EadEntry implements IEadEntry {
         try {
             Fileformat ff = process.readMetadataFile();
             Prefs prefs = process.getRegelsatz().getPreferences();
-            DocStruct ds = ff.getDigitalDocument().getLogicalDocStruct();
+            DocStruct ds = findDocStructOfNode(ff.getDigitalDocument().getLogicalDocStruct());
+            if (ds == null) {
+                log.warn("No element with node id {} found in process {}", getId(), goobiProcessTitle);
+                return;
+            }
 
             for (IMetadataField emf : collectFieldsWithInheritedValues()) {
                 updateProcessMetadata(prefs, ds, emf);
@@ -1029,7 +1033,11 @@ public class EadEntry implements IEadEntry {
         try {
             Fileformat ff = process.readMetadataFile();
             Prefs prefs = process.getRegelsatz().getPreferences();
-            DocStruct logical = ff.getDigitalDocument().getLogicalDocStruct();
+            DocStruct logical = findDocStructOfNode(ff.getDigitalDocument().getLogicalDocStruct());
+            if (logical == null) {
+                log.warn("No element with node id {} found in process {}", getId(), goobiProcessTitle);
+                return;
+            }
 
             // check for each field, if the mets file contains metadata
             // if yes, replace node metadata with mets values
@@ -1206,17 +1214,93 @@ public class EadEntry implements IEadEntry {
             Metadata identifier = new Metadata(prefs.getMetadataTypeByName("CatalogIDDigital"));
             identifier.setValue(getId());
             logical.addMetadata(identifier);
-            addNoteId(prefs, logical);
+            addNoteId(prefs, logical, getId());
 
             // import configured metadata
             for (IMetadataField emf : collectFieldsForProcessCreation()) {
                 createModsMetadata(prefs, emf, logical);
             }
 
+            // import child nodes, which create their process in this node, as sub elements
+            for (IEadEntry child : getChildrenForProcessCreation()) {
+                createSubElement(prefs, digDoc, logical, child);
+            }
+
         } catch (UGHException e) {
             log.error(e);
         }
         return fileformat;
+    }
+
+    /**
+     * Get the child nodes that are imported as sub elements into a process created for this node. These are all direct children whose node type is
+     * configured with {@code createProcessForParent}.
+     *
+     * @return list of child nodes in their order
+     */
+    @Override
+    public List<IEadEntry> getChildrenForProcessCreation() {
+        List<IEadEntry> children = new ArrayList<>();
+        for (IEadEntry child : subEntryList) {
+            if (child.getNodeType() != null && child.getNodeType().isCreateProcessForParent()) {
+                children.add(child);
+            }
+        }
+        return children;
+    }
+
+    /**
+     * Create a sub element for the given child node and add it to the logical element. The sub element gets the metadata of the child node itself,
+     * metadata of ancestors is already part of the logical element.
+     */
+    void createSubElement(Prefs prefs, DigitalDocument digDoc, DocStruct logical, IEadEntry child) {
+        String documentType = child.getNodeType().getDocumentType();
+        if (prefs.getDocStrctTypeByName(documentType) == null) {
+            log.error("Structure type {} of node {} is not defined in the ruleset", documentType, child.getId());
+            return;
+        }
+        try {
+            DocStruct subElement = digDoc.createDocStruct(prefs.getDocStrctTypeByName(documentType));
+            logical.addChild(subElement);
+            addNoteId(prefs, subElement, child.getId());
+            for (IMetadataField emf : getAllAreaFields(child)) {
+                createModsMetadata(prefs, emf, subElement);
+            }
+        } catch (UGHException e) {
+            log.error(e);
+        }
+    }
+
+    @Override
+    public boolean isPartOfParentProcess() {
+        return nodeType != null && nodeType.isCreateProcessForParent() && parentNode != null && StringUtils.isNotBlank(goobiProcessTitle)
+                && goobiProcessTitle.equals(parentNode.getGoobiProcessTitle());
+    }
+
+    /**
+     * Find the element of the process holding the metadata of this node. This is the logical element itself, or the sub element with the id of this
+     * node, if the node was imported into the process of its parent node.
+     *
+     * @param logical logical element of the process
+     * @return the element of this node, {@code null} if no sub element with the id of this node exists
+     */
+    DocStruct findDocStructOfNode(DocStruct logical) {
+        if (!isPartOfParentProcess()) {
+            return logical;
+        }
+        if (logical.getAllChildren() == null) {
+            return null;
+        }
+        for (DocStruct child : logical.getAllChildren()) {
+            if (child.getAllMetadata() != null) {
+                for (Metadata md : child.getAllMetadata()) {
+                    if ("NodeId".equals(md.getType().getName()) && getId().equals(md.getValue())) {
+                        return child;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -1319,12 +1403,12 @@ public class EadEntry implements IEadEntry {
         }
     }
 
-    private void addNoteId(Prefs prefs, DocStruct logical) {
+    private void addNoteId(Prefs prefs, DocStruct logical, String nodeId) {
         try {
             MetadataType eadIdType = prefs.getMetadataTypeByName("NodeId");
             if (eadIdType != null) {
                 Metadata eadid = new Metadata(eadIdType);
-                eadid.setValue(getId());
+                eadid.setValue(nodeId);
                 logical.addMetadata(eadid);
             }
         } catch (UGHException e) {
