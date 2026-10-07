@@ -179,4 +179,11 @@ public interface IEadEntry extends Comparable<IEadEntry> {
      */
     public List<IEadEntry> getChildrenForProcessCreation();
 
+    /**
+     * Get the child nodes stored as sub elements in the process of this node. Only children with loaded metadata are returned.
+     *
+     * @return list of child nodes linked to the process of this node
+     */
+    public List<IEadEntry> getChildrenInSameProcess();
+
 }

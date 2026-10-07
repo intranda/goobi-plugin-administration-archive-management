@@ -856,7 +856,7 @@
                                                                 rendered="#{AdministrationForm.administrationPlugin.selectedEntry.goobiProcessTitle != null}">
                                                                 <button
                                                                     jsf:rendered="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType.allowProcessCreation and LoginForm.hasRole('Plugin_Administration_Archive_Management_Sync_Metadata')}"
-                                                                    jsf:action="#{AdministrationForm.administrationPlugin.selectedEntry.updateNodeWithProcessMetadata}"
+                                                                    jsf:action="#{AdministrationForm.administrationPlugin.updateNodeWithProcessMetadata}"
                                                                     title="#{msgs.plugin_administration_archive_updateNodeWithProcessMetadata}"
                                                                     class="btn btn-blank"
                                                                     data-bs-toggle="tooltip">
@@ -865,7 +865,7 @@
                                                                 </button>
                                                                 <button
                                                                     jsf:rendered="#{AdministrationForm.administrationPlugin.selectedEntry.nodeType.allowProcessCreation and LoginForm.hasRole('Plugin_Administration_Archive_Management_Sync_Metadata')}"
-                                                                    jsf:action="#{AdministrationForm.administrationPlugin.selectedEntry.updateProcessWithNodeMetadata}"
+                                                                    jsf:action="#{AdministrationForm.administrationPlugin.updateProcessWithNodeMetadata}"
                                                                     title="#{msgs.plugin_administration_archive_updateProcessWithNodeMetadata}"
                                                                     class="btn btn-blank"
                                                                     data-bs-toggle="tooltip">

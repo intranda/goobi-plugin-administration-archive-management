@@ -896,20 +896,62 @@ public class EadEntry implements IEadEntry {
         try {
             Fileformat ff = process.readMetadataFile();
             Prefs prefs = process.getRegelsatz().getPreferences();
-            DocStruct ds = findDocStructOfNode(ff.getDigitalDocument().getLogicalDocStruct());
-            if (ds == null) {
-                log.warn("No element with node id {} found in process {}", getId(), goobiProcessTitle);
-                return;
-            }
+            DigitalDocument digDoc = ff.getDigitalDocument();
+            DocStruct logical = digDoc.getLogicalDocStruct();
 
-            for (IMetadataField emf : collectFieldsWithInheritedValues()) {
-                updateProcessMetadata(prefs, ds, emf);
+            if (isPartOfParentProcess()) {
+                // the node is a sub element in the process of the parent node
+                writeSubElementMetadata(prefs, digDoc, logical, this);
+            } else {
+                for (IMetadataField emf : collectFieldsWithInheritedValues()) {
+                    updateProcessMetadata(prefs, logical, emf);
+                }
+                // the process can contain sub elements of child nodes
+                for (IEadEntry child : getChildrenInSameProcess()) {
+                    writeSubElementMetadata(prefs, digDoc, logical, child);
+                }
             }
 
             process.writeMetadataFile(ff);
         } catch (IOException | SwapException | UGHException e) {
             log.error(e);
         }
+    }
+
+    /**
+     * Write the metadata of a node into its sub element. The sub element is created, if it does not exist yet. Only the fields of the node itself are
+     * written, the fields of the ancestors are part of the logical element.
+     */
+    void writeSubElementMetadata(Prefs prefs, DigitalDocument digDoc, DocStruct logical, IEadEntry node) {
+        DocStruct subElement = findSubElement(logical, node.getId());
+        if (subElement == null) {
+            createSubElement(prefs, digDoc, logical, node);
+            return;
+        }
+        for (IMetadataField emf : getAllAreaFields(node)) {
+            updateProcessMetadata(prefs, subElement, emf);
+        }
+    }
+
+    /**
+     * Get the child nodes stored as sub elements in the process of this node. Only children with loaded metadata are returned, otherwise their empty
+     * fields would overwrite the metadata of the process.
+     *
+     * @return list of child nodes linked to the process of this node
+     */
+    @Override
+    public List<IEadEntry> getChildrenInSameProcess() {
+        List<IEadEntry> children = new ArrayList<>();
+        for (IEadEntry child : getChildrenForProcessCreation()) {
+            if (child.isPartOfParentProcess()) {
+                if (child.isMetadataLoaded()) {
+                    children.add(child);
+                } else {
+                    log.warn("Metadata of node {} is not loaded, skip synchronisation of its sub element", child.getId());
+                }
+            }
+        }
+        return children;
     }
 
     private void updateProcessMetadata(Prefs prefs, DocStruct ds, IMetadataField emf) {
@@ -1033,71 +1075,42 @@ public class EadEntry implements IEadEntry {
         try {
             Fileformat ff = process.readMetadataFile();
             Prefs prefs = process.getRegelsatz().getPreferences();
-            DocStruct logical = findDocStructOfNode(ff.getDigitalDocument().getLogicalDocStruct());
-            if (logical == null) {
-                log.warn("No element with node id {} found in process {}", getId(), goobiProcessTitle);
-                return;
-            }
+            DocStruct logical = ff.getDigitalDocument().getLogicalDocStruct();
 
-            // check for each field, if the mets file contains metadata
-            // if yes, replace node metadata with mets values
-            for (IMetadataField emf : identityStatementAreaList) {
-                if (emf.isGroup()) {
-                    importGroupData(prefs, logical, emf);
-                } else if (StringUtils.isNotBlank(emf.getMetadataName())) {
-                    importMetadata(prefs, logical, emf);
-                }
-            }
-
-            for (IMetadataField emf : contextAreaList) {
-                if (emf.isGroup()) {
-                    importGroupData(prefs, logical, emf);
-                } else if (StringUtils.isNotBlank(emf.getMetadataName())) {
-                    importMetadata(prefs, logical, emf);
-                }
-            }
-
-            for (IMetadataField emf : contentAndStructureAreaAreaList) {
-                if (emf.isGroup()) {
-                    importGroupData(prefs, logical, emf);
-                } else if (StringUtils.isNotBlank(emf.getMetadataName())) {
-                    importMetadata(prefs, logical, emf);
-                }
-            }
-
-            for (IMetadataField emf : accessAndUseAreaList) {
-                if (emf.isGroup()) {
-                    importGroupData(prefs, logical, emf);
-                } else if (StringUtils.isNotBlank(emf.getMetadataName())) {
-                    importMetadata(prefs, logical, emf);
-                }
-            }
-
-            for (IMetadataField emf : alliedMaterialsAreaList) {
-                if (emf.isGroup()) {
-                    importGroupData(prefs, logical, emf);
-                } else if (StringUtils.isNotBlank(emf.getMetadataName())) {
-                    importMetadata(prefs, logical, emf);
-                }
-            }
-
-            for (IMetadataField emf : notesAreaList) {
-                if (emf.isGroup()) {
-                    importGroupData(prefs, logical, emf);
-                } else if (StringUtils.isNotBlank(emf.getMetadataName())) {
-                    importMetadata(prefs, logical, emf);
-                }
-            }
-
-            for (IMetadataField emf : descriptionControlAreaList) {
-                if (emf.isGroup()) {
-                    importGroupData(prefs, logical, emf);
-                } else if (StringUtils.isNotBlank(emf.getMetadataName())) {
-                    importMetadata(prefs, logical, emf);
+            if (isPartOfParentProcess()) {
+                // the node is a sub element in the process of the parent node
+                importSubElementMetadata(prefs, logical, this);
+            } else {
+                importDocStructMetadata(prefs, logical, this);
+                // the process can contain sub elements of child nodes
+                for (IEadEntry child : getChildrenInSameProcess()) {
+                    importSubElementMetadata(prefs, logical, child);
                 }
             }
         } catch (UGHException | IOException | SwapException e) {
             log.error(e);
+        }
+    }
+
+    void importSubElementMetadata(Prefs prefs, DocStruct logical, IEadEntry node) {
+        DocStruct subElement = findSubElement(logical, node.getId());
+        if (subElement == null) {
+            log.warn("No element with node id {} found in process {}", node.getId(), goobiProcessTitle);
+            return;
+        }
+        importDocStructMetadata(prefs, subElement, node);
+    }
+
+    /**
+     * Check for each field of the node, if the element contains metadata. If yes, replace the node metadata with the values of the element.
+     */
+    private void importDocStructMetadata(Prefs prefs, DocStruct docstruct, IEadEntry node) {
+        for (IMetadataField emf : getAllAreaFields(node)) {
+            if (emf.isGroup()) {
+                importGroupData(prefs, docstruct, emf);
+            } else if (StringUtils.isNotBlank(emf.getMetadataName())) {
+                importMetadata(prefs, docstruct, emf);
+            }
         }
     }
 
@@ -1278,23 +1291,20 @@ public class EadEntry implements IEadEntry {
     }
 
     /**
-     * Find the element of the process holding the metadata of this node. This is the logical element itself, or the sub element with the id of this
-     * node, if the node was imported into the process of its parent node.
+     * Find the sub element of the logical element holding the metadata of the node with the given id.
      *
      * @param logical logical element of the process
-     * @return the element of this node, {@code null} if no sub element with the id of this node exists
+     * @param nodeId id of the node
+     * @return the sub element with the given node id, {@code null} if it does not exist
      */
-    DocStruct findDocStructOfNode(DocStruct logical) {
-        if (!isPartOfParentProcess()) {
-            return logical;
-        }
+    static DocStruct findSubElement(DocStruct logical, String nodeId) {
         if (logical.getAllChildren() == null) {
             return null;
         }
         for (DocStruct child : logical.getAllChildren()) {
             if (child.getAllMetadata() != null) {
                 for (Metadata md : child.getAllMetadata()) {
-                    if ("NodeId".equals(md.getType().getName()) && getId().equals(md.getValue())) {
+                    if ("NodeId".equals(md.getType().getName()) && nodeId.equals(md.getValue())) {
                         return child;
                     }
                 }

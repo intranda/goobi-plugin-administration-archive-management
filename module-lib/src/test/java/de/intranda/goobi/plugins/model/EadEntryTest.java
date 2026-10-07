@@ -982,22 +982,111 @@ public class EadEntryTest {
         assertNull(logical.getAllChildren());
     }
 
-    @Test
-    public void testFindDocStructOfNode() throws UGHException {
-        Prefs prefs = loadPrefs();
-        EadEntry parent = createParentWithImportedChild();
-        EadEntry child = (EadEntry) parent.getSubEntryList().get(0);
-        parent.setGoobiProcessTitle("process");
-        child.setGoobiProcessTitle("process");
-        DigitalDocument digDoc = new DigitalDocument();
+    private DocStruct createLogicalElement(Prefs prefs, DigitalDocument digDoc) throws UGHException {
         DocStruct logical = digDoc.createDocStruct(prefs.getDocStrctTypeByName("File"));
         digDoc.setLogicalDocStruct(logical);
+        return logical;
+    }
 
-        // without a sub element the metadata of the child must not be written into the logical element
-        assertNull(child.findDocStructOfNode(logical));
+    @Test
+    public void testFindSubElement() throws UGHException {
+        Prefs prefs = loadPrefs();
+        EadEntry parent = createParentWithImportedChild();
+        IEadEntry child = parent.getSubEntryList().get(0);
+        DigitalDocument digDoc = new DigitalDocument();
+        DocStruct logical = createLogicalElement(prefs, digDoc);
+
+        assertNull(EadEntry.findSubElement(logical, "child"));
 
         parent.createSubElement(prefs, digDoc, logical, child);
-        assertEquals(logical, parent.findDocStructOfNode(logical));
-        assertEquals(logical.getAllChildren().get(0), child.findDocStructOfNode(logical));
+        assertEquals(logical.getAllChildren().get(0), EadEntry.findSubElement(logical, "child"));
+        assertNull(EadEntry.findSubElement(logical, "unknown"));
+    }
+
+    @Test
+    public void testGetChildrenInSameProcessContainsOnlyLinkedChildren() {
+        EadEntry parent = createParentWithImportedChild();
+        parent.setGoobiProcessTitle("process");
+        IEadEntry linkedChild = parent.getSubEntryList().get(0);
+        linkedChild.setGoobiProcessTitle("process");
+        EadEntry childWithOwnProcess = createEntryWithOriginationField(2, false, "value");
+        childWithOwnProcess.setNodeType(createNodeType("other", "Other", true));
+        childWithOwnProcess.setGoobiProcessTitle("other process");
+        parent.addSubEntry(childWithOwnProcess);
+
+        List<IEadEntry> children = parent.getChildrenInSameProcess();
+        assertEquals(1, children.size());
+        assertEquals("child", children.get(0).getId());
+    }
+
+    @Test
+    public void testGetChildrenInSameProcessSkipsChildrenWithoutMetadata() {
+        EadEntry parent = createParentWithImportedChild();
+        parent.setGoobiProcessTitle("process");
+        parent.getSubEntryList().get(0).setGoobiProcessTitle("process");
+        EadEntry childWithoutMetadata = new EadEntry(2, 1);
+        childWithoutMetadata.setNodeType(createNodeType("other", "Other", true));
+        childWithoutMetadata.setGoobiProcessTitle("process");
+        parent.addSubEntry(childWithoutMetadata);
+
+        // the empty fields of a node without loaded metadata must not overwrite the process metadata
+        assertEquals(1, parent.getChildrenInSameProcess().size());
+    }
+
+    @Test
+    public void testWriteSubElementMetadataUpdatesExistingSubElement() throws UGHException {
+        Prefs prefs = loadPrefs();
+        EadEntry parent = createParentWithImportedChild();
+        IEadEntry child = parent.getSubEntryList().get(0);
+        DigitalDocument digDoc = new DigitalDocument();
+        DocStruct logical = createLogicalElement(prefs, digDoc);
+        parent.createSubElement(prefs, digDoc, logical, child);
+
+        child.getFieldByName("origination").getValues().get(0).setValue("changed value");
+        parent.writeSubElementMetadata(prefs, digDoc, logical, child);
+
+        assertEquals(1, logical.getAllChildren().size());
+        DocStruct subElement = logical.getAllChildren().get(0);
+        assertEquals("changed value", getMetadataValue(subElement, "Origination"));
+        assertEquals(2, subElement.getAllMetadata().size());
+        // the logical element is not touched
+        assertNull(logical.getAllMetadata());
+    }
+
+    @Test
+    public void testWriteSubElementMetadataCreatesMissingSubElement() throws UGHException {
+        Prefs prefs = loadPrefs();
+        EadEntry parent = createParentWithImportedChild();
+        IEadEntry child = parent.getSubEntryList().get(0);
+        DigitalDocument digDoc = new DigitalDocument();
+        DocStruct logical = createLogicalElement(prefs, digDoc);
+
+        parent.writeSubElementMetadata(prefs, digDoc, logical, child);
+
+        assertEquals(1, logical.getAllChildren().size());
+        assertEquals("child value", getMetadataValue(logical.getAllChildren().get(0), "Origination"));
+    }
+
+    @Test
+    public void testImportSubElementMetadataReadsValuesOfSubElement() throws UGHException {
+        Prefs prefs = loadPrefs();
+        EadEntry parent = createParentWithImportedChild();
+        IEadEntry child = parent.getSubEntryList().get(0);
+        DigitalDocument digDoc = new DigitalDocument();
+        DocStruct logical = createLogicalElement(prefs, digDoc);
+        Metadata parentValue = new Metadata(prefs.getMetadataTypeByName("Origination"));
+        parentValue.setValue("value of logical element");
+        logical.addMetadata(parentValue);
+        parent.createSubElement(prefs, digDoc, logical, child);
+        for (Metadata md : logical.getAllChildren().get(0).getAllMetadata()) {
+            if ("Origination".equals(md.getType().getName())) {
+                md.setValue("value of sub element");
+            }
+        }
+
+        parent.importSubElementMetadata(prefs, logical, child);
+
+        assertEquals("value of sub element", child.getFieldByName("origination").getValues().get(0).getValue());
+        assertEquals("parent value", parent.getFieldByName("origination").getValues().get(0).getValue());
     }
 }

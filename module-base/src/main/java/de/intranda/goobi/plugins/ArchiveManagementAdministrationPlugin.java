@@ -3072,6 +3072,60 @@ public class ArchiveManagementAdministrationPlugin implements IArchiveManagement
         }
     }
 
+    /**
+     * Copy the metadata of the selected node into its process. If the process contains sub elements of child nodes, their metadata is copied as
+     * well.
+     */
+    public void updateProcessWithNodeMetadata() {
+        if (selectedEntry == null) {
+            return;
+        }
+        loadMetadataForChildrenInProcess(selectedEntry);
+        selectedEntry.updateProcessWithNodeMetadata();
+    }
+
+    /**
+     * Import the metadata of the process into the selected node. If the process contains sub elements of child nodes, their metadata is imported
+     * into the child nodes as well.
+     */
+    public void updateNodeWithProcessMetadata() {
+        if (selectedEntry == null) {
+            return;
+        }
+        loadMetadataForChildrenInProcess(selectedEntry);
+        List<IEadEntry> children = selectedEntry.getChildrenInSameProcess();
+        Map<IEadEntry, String> fingerprints = new HashMap<>();
+        for (IEadEntry child : children) {
+            child.calculateFingerprint();
+            fingerprints.put(child, child.getFingerprint());
+        }
+
+        selectedEntry.updateNodeWithProcessMetadata();
+
+        // the selected node is saved when it gets deselected, the child nodes must be saved here
+        for (IEadEntry child : children) {
+            child.calculateFingerprint();
+            if (!child.getFingerprint().equals(fingerprints.get(child))) {
+                updateChangeHistory(child);
+                ArchiveManagementManager.saveNode(recordGroup.getId(), child);
+            }
+        }
+    }
+
+    /**
+     * Load the metadata of all child nodes stored as sub elements in the process of the given node.
+     */
+    private void loadMetadataForChildrenInProcess(IEadEntry entry) {
+        if (testMode) {
+            return;
+        }
+        for (IEadEntry child : entry.getChildrenForProcessCreation()) {
+            if (child.isPartOfParentProcess()) {
+                loadMetadataForNode(child);
+            }
+        }
+    }
+
     private void loadMetadataForNode(IEadEntry entry) {
         // clear old, outdated metadata
         if (entry.getDatabaseId() != null) {

@@ -56,11 +56,18 @@ public class UpdateProcessJob extends AbstractGoobiJob {
             List<IEadEntry> nodes = root.getAllNodes();
             // for each node, check, if node has a process assigned
             for (IEadEntry entry : nodes) {
-                if (StringUtils.isNotBlank(entry.getGoobiProcessTitle())) {
+                // nodes stored as sub element in the process of their parent node are updated together with the parent node
+                if (StringUtils.isNotBlank(entry.getGoobiProcessTitle()) && !entry.isPartOfParentProcess()) {
 
                     // init metadata of the node and of its ancestors, values can be inherited from them
                     for (IEadEntry nodeToInit : NodeInitializer.collectNodesToInitialize(entry)) {
                         NodeInitializer.initEadNodeWithMetadata(nodeToInit, archive.getConfig().getConfiguredFields());
+                    }
+                    // init metadata of the child nodes stored as sub elements in the process
+                    for (IEadEntry child : entry.getChildrenForProcessCreation()) {
+                        if (child.isPartOfParentProcess()) {
+                            NodeInitializer.initEadNodeWithMetadata(child, archive.getConfig().getConfiguredFields());
+                        }
                     }
                     // copy metadata to process
                     entry.updateProcessWithNodeMetadata();
