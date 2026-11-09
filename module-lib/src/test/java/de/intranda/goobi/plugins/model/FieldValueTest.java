@@ -59,6 +59,16 @@ public class FieldValueTest {
     }
 
     @Test
+    public void testViafSearchIsCreatedLazily() throws Exception {
+        // a ViafSearch needs ~3 KB, it must not be created for every value of every node
+        java.lang.reflect.Field viafField = FieldValue.class.getDeclaredField("viafSearch");
+        viafField.setAccessible(true);
+        assertNull(viafField.get(fieldValue));
+        assertNotNull(fieldValue.getViafSearch());
+        assertNotNull(viafField.get(fieldValue));
+    }
+
+    @Test
     public void testSettersAndGetters() {
         fieldValue.setValue("TestValue");
         assertEquals("TestValue", fieldValue.getValue());

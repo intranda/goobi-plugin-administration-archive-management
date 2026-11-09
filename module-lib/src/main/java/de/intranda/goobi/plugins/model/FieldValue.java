@@ -68,12 +68,20 @@ public class FieldValue implements IFieldValue {
     private List<Toponym> resultList;
     private int totalResults;
 
-    // viaf search fields
+    // viaf search fields, created on first use.
     @ToString.Exclude
-    private ViafSearch viafSearch = new ViafSearch();
+    private ViafSearch viafSearch;
 
     public FieldValue(IMetadataField field) {
         this.field = field;
+    }
+
+    @Override
+    public ViafSearch getViafSearch() {
+        if (viafSearch == null) {
+            viafSearch = new ViafSearch();
+        }
+        return viafSearch;
     }
 
     @Override
@@ -261,11 +269,11 @@ public class FieldValue implements IFieldValue {
 
     @Override
     public void importViafData() {
-        if (viafSearch.getCurrentDatabase() != null) {
-            MarcRecord recordToImport = NormDataImporter.getSingleMarcRecord(viafSearch.getCurrentDatabase().getMarcRecordUrl());
+        if (getViafSearch().getCurrentDatabase() != null) {
+            MarcRecord recordToImport = NormDataImporter.getSingleMarcRecord(getViafSearch().getCurrentDatabase().getMarcRecordUrl());
             // TODO: person corp
             List<String> names = new ArrayList<>();
-            for (TagDescription tag : viafSearch.getMainTagList()) {
+            for (TagDescription tag : getViafSearch().getMainTagList()) {
                 if (tag.getSubfieldCode() == null) {
                     String val = recordToImport.getControlfieldValue(tag.getDatafieldTag());
                     if (StringUtils.isNotBlank(val)) {
@@ -280,7 +288,7 @@ public class FieldValue implements IFieldValue {
             }
             if (!names.isEmpty()) {
                 authorityType = "viaf";
-                authorityValue = viafSearch.getCurrentDatabase().getMarcRecordUrl();
+                authorityValue = getViafSearch().getCurrentDatabase().getMarcRecordUrl();
                 value = names.get(0);
             }
         }
@@ -288,9 +296,9 @@ public class FieldValue implements IFieldValue {
 
     @Override
     public void searchViaf() {
-        viafSearch.setSource(field.getViafSearchFields());
-        viafSearch.setField(field.getViafDisplayFields());
-        viafSearch.performSearchRequest();
+        getViafSearch().setSource(field.getViafSearchFields());
+        getViafSearch().setField(field.getViafDisplayFields());
+        getViafSearch().performSearchRequest();
     }
 
     public boolean isBooleanValue() {
